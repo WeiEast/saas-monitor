@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+    <context id="common-dao" targetRuntime="MyBatis3">
+
+        <plugin type="org.mybatis.generator.plugins.RenameExampleClassPlugin">
+            <property name="searchString" value="Example$"/>
+            <property name="replaceString" value="Criteria"/>
+        </plugin>
+
+        <plugin type="org.mybatis.generator.plugins.RowBoundsPlugin"/>
+        <plugin type="org.mybatis.generator.plugins.ToStringPlugin"/>
+        <plugin type="org.mybatis.generator.plugins.SerializablePlugin"/>
+        <!--<plugin type="org.mybatis.generator.plugins.CachePlugin"> -->
+        <!--<property name="enableSubPackages" value="true"/> -->
+        <!--</plugin> -->
+
+        <commentGenerator>
+            <!-- 去除自动生成的注释 -->
+            <property name="suppressAllComments" value="false"/>
+            <property name="suppressDate" value="false"/>
+        </commentGenerator>
+
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://192.168.5.24:3306/saas-monitor"
+                        userId="root"
+                        password="Tianxing@0701">
+        </jdbcConnection>
+
+        <!-- NOTE: When targetProject is set to "MAVEN", the default output is type/generated-sources/mybatis-generator -->
+
+        <javaModelGenerator targetPackage="com.treefinance.saas.monitor.dao.entity"
+                            targetProject="src/main/java"><!-- src/generated/java -->
+            <property name="enableSubPackages" value="true"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <sqlMapGenerator targetPackage="sqlmap"
+                         targetProject="src/main/resources"> <!-- src/generated/resources -->
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <javaClientGenerator type="XMLMAPPER"
+                             targetPackage="com.treefinance.saas.monitor.dao.mapper"
+                             targetProject="src/main/java"> <!-- src/generated/java -->
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <table tableName="merchant_stat_access" domainObjectName="MerchantStatAccess">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+        <table tableName="merchant_stat_bank" domainObjectName="MerchantStatBank">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+        <table tableName="merchant_stat_ecommerce" domainObjectName="MerchantStatEcommerce">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+        <table tableName="merchant_stat_operator" domainObjectName="MerchantStatOperator">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+        <table tableName="merchant_stat_mail" domainObjectName="MerchantStatMail">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+        <table tableName="t_bank" domainObjectName="Bank">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+
+        <table tableName="t_ecommerce" domainObjectName="Ecommerce">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+        <table tableName="t_operator" domainObjectName="Operator">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+        <table tableName="t_website" domainObjectName="Website">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+    </context>
+
+</generatorConfiguration>
