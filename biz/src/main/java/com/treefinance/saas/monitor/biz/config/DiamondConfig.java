@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 /**
  * super-diamond 配置
  */
-@Component("mqConfig")
+@Component("diamondConfig")
 @Scope
 @DResource
 public class DiamondConfig {
@@ -63,5 +63,25 @@ public class DiamondConfig {
 
     public Integer getMonitorIntervalMinutes() {
         return monitorIntervalMinutes;
+    }
+
+    public void setNamesrvAddr(String namesrvAddr) {
+        this.namesrvAddr = namesrvAddr;
+    }
+
+    public void setMonitorGroupName(String monitorGroupName) {
+        this.monitorGroupName = monitorGroupName;
+    }
+
+    public void setMonitorAccessTopic(String monitorAccessTopic) {
+        this.monitorAccessTopic = monitorAccessTopic;
+    }
+
+    public void setMonitorAccessTag(String monitorAccessTag) {
+        this.monitorAccessTag = monitorAccessTag;
+    }
+
+    public void setMonitorIntervalMinutes(Integer monitorIntervalMinutes) {
+        this.monitorIntervalMinutes = monitorIntervalMinutes;
     }
 }

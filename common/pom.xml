@@ -11,10 +11,6 @@
 	<artifactId>monitor-common</artifactId>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>com.datatrees.common</groupId>

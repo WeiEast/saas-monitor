@@ -21,7 +21,7 @@
   </bean>
 
   <bean id="redisTemplate"
-    class="MoreRedisTemplate">
+    class="com.treefinance.saas.monitor.common.cache.redis.MoreRedisTemplate">
     <property name="keySerializer">
       <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
     </property>
@@ -44,7 +44,7 @@
       </map>
     </property>
   </bean>
-  <bean id="cacheKeyGenerator" class="CacheKeyGenerator"/>
+  <bean id="cacheKeyGenerator" class="com.treefinance.saas.monitor.common.cache.CacheKeyGenerator"/>
   <!-- turn on declarative caching -->
   <cache:annotation-driven cache-manager="defaultCacheManager" key-generator="cacheKeyGenerator"
     mode="aspectj"/>

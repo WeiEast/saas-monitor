@@ -34,7 +34,7 @@ public class ListenerStarter {
     @PreDestroy
     public void destroy() {
         monitorAccessConsumer.shutdown();
-        logger.info("关闭指令数据的消费者");
+        logger.info("关闭监控数据的消费者");
     }
 
     /**

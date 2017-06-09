@@ -29,27 +29,32 @@ public class StatDataFlushJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        int intervalMinutes = diamondConfig.getMonitorIntervalMinutes();
-        Date now = new Date();
-        redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
-            @Override
-            public Object execute(RedisOperations redisOperations) throws DataAccessException {
-                redisOperations.multi();
+        try {
+            int intervalMinutes = diamondConfig.getMonitorIntervalMinutes();
+            logger.info("intervalMinutes={}", intervalMinutes);
+            Date now = new Date();
+            redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
+                @Override
+                public Object execute(RedisOperations redisOperations) throws DataAccessException {
+                    redisOperations.multi();
 
-                String dayKey = RedisKeyHelper.keyOfDay(now);
+                    String dayKey = RedisKeyHelper.keyOfDay(now);
 
-                Set<String> intervalTimeSet = redisOperations.opsForSet().members(dayKey);
-                if (CollectionUtils.isEmpty(intervalTimeSet)) {
-                    return null;
-                }
-                intervalTimeSet.forEach(t -> {
-                    Long time = Long.valueOf(t);
+                    Set<String> intervalTimeSet = redisOperations.opsForSet().members(dayKey);
+                    if (CollectionUtils.isEmpty(intervalTimeSet)) {
+                        return null;
+                    }
+                    intervalTimeSet.forEach(t -> {
+                        Long time = Long.valueOf(t);
 //                    String totalKey = RedisKeyHelper.keyOfTotal();
 
-                    redisOperations.opsForSet().remove(dayKey, t);
-                });
-                return null;
-            }
-        });
+                        redisOperations.opsForSet().remove(dayKey, t);
+                    });
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            logger.error("statdataflushjob exception : ", e);
+        }
     }
 }
