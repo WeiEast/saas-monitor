@@ -169,10 +169,13 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
                 // 开启事务
                 redisOperations.multi();
+                // appId列表
+                String appIdKey = RedisKeyHelper.keyOfAppIds();
+                redisOperations.opsForSet().add(appIdKey, appId);
 
                 // 当日时间列表
                 String dayKey = RedisKeyHelper.keyOfDay(intervalTime);
-                redisOperations.opsForSet().add(dayKey, intervalTime.getTime()+"");
+                redisOperations.opsForSet().add(dayKey, intervalTime.getTime() + "");
 
                 statMap.put("dataTime", intervalTime.getTime());
                 statMap.put("appId", appId);
@@ -187,6 +190,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
                 statMap.put("totalCount", totalCount);
 
                 // 统计用户数: 未存在用户+1
+
                 if (redisOperations.opsForValue().setIfAbsent(userKey, uniqueId)) {
                     Long userCount = redisOperations.opsForHash().increment(key, "userCount", 1);
                     statMap.put("userCount", userCount);

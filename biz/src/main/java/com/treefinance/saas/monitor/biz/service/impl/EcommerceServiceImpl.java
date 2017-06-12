@@ -10,6 +10,8 @@ import com.treefinance.saas.monitor.dao.entity.Ecommerce;
 import com.treefinance.saas.monitor.dao.entity.EcommerceCriteria;
 import com.treefinance.saas.monitor.dao.mapper.EcommerceMapper;
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,10 @@ import java.util.List;
  */
 @Service("ecommerceService")
 public class EcommerceServiceImpl implements EcommerceService {
+    /**
+     * logger
+     */
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private EcommerceMapper ecommerceMapper;
     @Autowired
@@ -38,5 +44,17 @@ public class EcommerceServiceImpl implements EcommerceService {
             return null;
         }
         return DataConverterUtils.convert(list.get(0), EcommerceDTO.class);
+    }
+
+    @Override
+    public List<EcommerceDTO> getAll() {
+        EcommerceCriteria criteria = new EcommerceCriteria();
+        criteria.createCriteria();
+        List<Ecommerce> list = ecommerceMapper.selectByExample(criteria);
+        if (CollectionUtils.isEmpty(list)) {
+            logger.error("电商列表为空...");
+            return null;
+        }
+        return DataConverterUtils.convert(list, EcommerceDTO.class);
     }
 }

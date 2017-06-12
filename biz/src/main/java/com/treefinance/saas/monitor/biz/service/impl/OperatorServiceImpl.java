@@ -25,6 +25,17 @@ public class OperatorServiceImpl implements OperatorService {
     private WebsiteService websiteService;
 
     @Override
+    public List<OperatorDTO> getAll() {
+        OperatorCriteria criteria = new OperatorCriteria();
+        criteria.createCriteria();
+        List<Operator> list = operatorMapper.selectByExample(criteria);
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        return DataConverterUtils.convert(list, OperatorDTO.class);
+    }
+
+    @Override
     public OperatorDTO getOperatorByWebsiteId(Integer websiteId) {
         OperatorCriteria criteria = new OperatorCriteria();
         criteria.createCriteria().andWebsiteIdEqualTo(websiteId);

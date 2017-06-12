@@ -20,13 +20,21 @@ public class RedisKeyHelper {
     public static final String STAT_OPERATOR = "stat-operator";
 
     /**
+     * appId列表
+     */
+    public static String keyOfAppIds() {
+        return Joiner.on(":").join(KEY_PREFIX, "stat-appids").toString();
+    }
+
+    /**
      * 日期时间
+     *
      * @param date
      * @return
      */
     public static String keyOfDay(Date date) {
-        String day = DateFormatUtils.format(date,"yyyy-MM-dd");
-        return Joiner.on(":").join(KEY_PREFIX, "statday", day).toString();
+        String day = DateFormatUtils.format(date, "yyyy-MM-dd");
+        return Joiner.on(":").join(KEY_PREFIX, "stat-day", day).toString();
     }
 
     /**
@@ -95,5 +103,4 @@ public class RedisKeyHelper {
     public static String keyOfUniqueId(String key, String uniqueId) {
         return Joiner.on(":").join(key, uniqueId).toString();
     }
-
 }

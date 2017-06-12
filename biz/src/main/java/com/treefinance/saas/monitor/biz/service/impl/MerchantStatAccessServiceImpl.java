@@ -82,4 +82,36 @@ public class MerchantStatAccessServiceImpl implements MerchantStatAccessService 
         List<MerchantStatOperator> list = merchantStatOperatorMapper.selectByExample(criteria);
         return DataConverterUtils.convert(list, MerchantStatOperatorDTO.class);
     }
+
+
+    @Override
+    public void batchInsertStatAccess(List<MerchantStatAccessDTO> list) {
+        List<MerchantStatAccess> dataList = DataConverterUtils.convert(list, MerchantStatAccess.class);
+        dataList.forEach(data -> merchantStatAccessMapper.insert(data));
+    }
+
+    @Override
+    public void batchInsertBankList(List<MerchantStatBankDTO> list) {
+        List<MerchantStatBank> dataList = DataConverterUtils.convert(list, MerchantStatBank.class);
+        dataList.forEach(data -> merchantStatBankMapper.insert(data));
+    }
+
+    @Override
+    public void batchInsertEcommerce(List<MerchantStatEcommerceDTO> list) {
+        List<MerchantStatEcommerce> dataList = DataConverterUtils.convert(list, MerchantStatEcommerce.class);
+        dataList.forEach(data -> merchantStatEcommerceMapper.insert(data));
+    }
+
+    @Override
+    public void batchInsertMail(List<MerchantStatMailDTO> list) {
+        List<MerchantStatMail> dataList = DataConverterUtils.convert(list, MerchantStatMail.class);
+        dataList.forEach(data -> merchantStatMailMapper.insert(data));
+    }
+
+    @Override
+    public void batchInsertOperator(List<MerchantStatOperatorDTO> list) {
+        List<MerchantStatOperator> dataList = DataConverterUtils.convert(list, MerchantStatOperator.class);
+        dataList.forEach(data -> merchantStatOperatorMapper.insert(data));
+    }
+
 }

@@ -30,4 +30,15 @@ public class WebsiteServiceImpl implements WebsiteService {
         }
         return DataConverterUtils.convert(list.get(0), WebsiteDTO.class);
     }
+
+    @Override
+    public List<WebsiteDTO> getSupportMails() {
+        WebsiteCriteria criteria = new WebsiteCriteria();
+        criteria.createCriteria().andWebsiteTypeEqualTo("mail");
+        List<Website> list = websiteMapper.selectByExample(criteria);
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        return DataConverterUtils.convert(list, WebsiteDTO.class);
+    }
 }
