@@ -16,9 +16,9 @@
     <!--生产者 -->
     <dubbo:service ref="merchantStatAccessFacade"
                    interface="com.treefinance.saas.monitor.facade.service.stat.MerchantStatAccessFacade" version="1.0.0"/>
-    <dubbo:service ref="mailFacade" interface="com.treefinance.saas.monitor.facade.service.MailFacade"/>
-    <dubbo:service ref="ecommerceFacade" interface="com.treefinance.saas.monitor.facade.service.EcommerceFacade"/>
-    <dubbo:service ref="operatorFacade" interface="com.treefinance.saas.monitor.facade.service.OperatorFacade"/>
+    <dubbo:service ref="mailFacade" interface="com.treefinance.saas.monitor.facade.service.MailFacade" version="1.0.0"/>
+    <dubbo:service ref="ecommerceFacade" interface="com.treefinance.saas.monitor.facade.service.EcommerceFacade" version="1.0.0"/>
+    <dubbo:service ref="operatorFacade" interface="com.treefinance.saas.monitor.facade.service.OperatorFacade" version="1.0.0"/>
 </beans>
 
 
