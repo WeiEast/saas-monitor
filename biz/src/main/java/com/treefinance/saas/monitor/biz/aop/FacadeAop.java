@@ -25,9 +25,6 @@ public class FacadeAop {
 
     @Around("service()")
     public Object arround(ProceedingJoinPoint point) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("{}.{} request {}", point.getTarget().getClass(), point.getSignature().getName(), JSON.toJSONString(point.getArgs()));
-        }
         Object result = null;
         try {
             result = point.proceed();
@@ -37,6 +34,10 @@ public class FacadeAop {
         } catch (Throwable e) {
             logger.error(point.getTarget().getClass() + " 处理请求失败：args=" + JSON.toJSONString(point.getArgs()), e);
             result = MonitorResultBuilder.build("服务器内部异常：errorMsg=" + e.getMessage());
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("{} request={}， param={}", point.getTarget().getClass(), JSON.toJSONString(point.getArgs()), JSON.toJSONString(result));
         }
         return result;
     }
