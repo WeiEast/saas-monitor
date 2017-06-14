@@ -25,6 +25,9 @@ public class FacadeAop {
 
     @Around("service()")
     public Object arround(ProceedingJoinPoint point) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("{}.{} request {}", point.getTarget().getClass(), point.getSignature().getName(), JSON.toJSONString(point.getArgs()));
+        }
         Object result = null;
         try {
             result = point.proceed();
