@@ -24,7 +24,7 @@
         </commentGenerator>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://192.168.5.24:3306/saas-monitor"
+                        connectionURL="jdbc:mysql://192.168.5.24:3306/saas_monitor"
                         userId="root"
                         password="Tianxing@0701">
         </jdbcConnection>
