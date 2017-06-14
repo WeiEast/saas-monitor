@@ -34,7 +34,7 @@ public class WebsiteServiceImpl implements WebsiteService {
     @Override
     public List<WebsiteDTO> getSupportMails() {
         WebsiteCriteria criteria = new WebsiteCriteria();
-        criteria.createCriteria().andWebsiteTypeEqualTo("mail").andTemplateIdIsNotNull();
+        criteria.createCriteria().andWebsiteTypeEqualTo("1").andTemplateIdIsNotNull();
         List<Website> list = websiteMapper.selectByExample(criteria);
         if (CollectionUtils.isEmpty(list)) {
             return null;
