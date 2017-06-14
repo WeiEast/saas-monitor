@@ -37,7 +37,7 @@ public class FacadeAop {
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("{} request={}， param={}", point.getTarget().getClass(), JSON.toJSONString(point.getArgs()), JSON.toJSONString(result));
+            logger.debug("request={}， param={}", JSON.toJSONString(point.getArgs()), JSON.toJSONString(result));
         }
         return result;
     }
