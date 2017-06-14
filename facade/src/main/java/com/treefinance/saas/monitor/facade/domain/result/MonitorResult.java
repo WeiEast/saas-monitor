@@ -16,11 +16,13 @@
 
 package com.treefinance.saas.monitor.facade.domain.result;
 
+import java.io.Serializable;
+
 /**
  * 监控工具类
  * @param <T>
  */
-public class MonitorResult<T> {
+public class MonitorResult<T> implements Serializable{
 
   private long timestamp = System.currentTimeMillis();
   private String errorMsg;
