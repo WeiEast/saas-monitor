@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
+import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.service.EcommerceService;
 import com.treefinance.saas.monitor.biz.service.MerchantStatAccessService;
 import com.treefinance.saas.monitor.biz.service.OperatorService;
@@ -51,17 +52,16 @@ public class StatDataFlushJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
+        long start = System.currentTimeMillis();
         try {
             int intervalMinutes = diamondConfig.getMonitorIntervalMinutes();
             logger.info("intervalMinutes={}", intervalMinutes);
             Date now = new Date();
-            // 电商列表
-            List<EcommerceDTO> ecommerceDTOList = ecommerceService.getAll();
+            Date intervalTime = StatHelper.calculateIntervalTime(now, intervalMinutes);
 
             redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
                 @Override
                 public Object execute(RedisOperations redisOperations) throws DataAccessException {
-                    redisOperations.multi();
                     // 统计时间
                     String dayKey = RedisKeyHelper.keyOfDay(now);
                     Set<String> intervalSets = redisOperations.opsForSet().members(dayKey);
@@ -87,11 +87,26 @@ public class StatDataFlushJob implements SimpleJob {
                     saveMailData(intervalTimeSets, appIdSet, redisOperations);
                     // 4.保存运营商数据
                     saveOperatorData(intervalTimeSets, appIdSet, redisOperations);
+
+                    // 5.删除已生成数据key
+                    String currentInterval = intervalTime.getTime() + "";
+                    List<String> deleteList = Lists.newArrayList();
+                    intervalSets.forEach(time -> {
+                        if (!time.equals(currentInterval)) {
+                            deleteList.add(time);
+                        }
+                    });
+                    if (!deleteList.isEmpty()) {
+                        logger.info("刷新数据完成，清除数据：deleteList={}", JSON.toJSONString(deleteList));
+                        redisOperations.opsForSet().remove(dayKey, deleteList.toArray(new String[]{}));
+                    }
                     return null;
                 }
             });
         } catch (Exception e) {
             logger.error("statdataflushjob exception : ", e);
+        } finally {
+            logger.info("定时刷新数据完成，耗时time={}ms", System.currentTimeMillis() - start);
         }
     }
 
@@ -110,11 +125,16 @@ public class StatDataFlushJob implements SimpleJob {
                 for (EStatType type : EStatType.values()) {
                     String totalkey = RedisKeyHelper.keyOfTotal(appId, intervalTime, type);
                     Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalkey);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("key={} , value={}", totalkey, JSON.toJSONString(totalMap));
+                    }
                     if (MapUtils.isEmpty(totalMap)) {
                         continue;
                     }
                     String json = JSON.toJSONString(totalMap);
                     MerchantStatAccessDTO dto = JSON.parseObject(json, MerchantStatAccessDTO.class);
+                    dto.setDataType(type.getType());
+                    dto.setAppId(appId);
                     totalList.add(dto);
                 }
             });
@@ -146,11 +166,16 @@ public class StatDataFlushJob implements SimpleJob {
                     String hashKey = RedisKeyHelper.keyOfEcommerce(appId, intervalTime, ecommerceId);
                     if (redisOperations.hasKey(hashKey)) {
                         Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("key={} , value={}", hashKey, JSON.toJSONString(dataMap));
+                        }
                         if (MapUtils.isEmpty(dataMap)) {
                             continue;
                         }
                         String json = JSON.toJSONString(dataMap);
                         MerchantStatEcommerceDTO dto = JSON.parseObject(json, MerchantStatEcommerceDTO.class);
+                        dto.setEcommerceId(ecommerceId);
+                        dto.setAppId(appId);
                         dataList.add(dto);
                     }
                 }
@@ -164,6 +189,7 @@ public class StatDataFlushJob implements SimpleJob {
 
     /**
      * 邮箱数据保存
+     *
      * @param intervalTimes
      * @param appIds
      * @param redisOperations
@@ -182,11 +208,16 @@ public class StatDataFlushJob implements SimpleJob {
                     String hashKey = RedisKeyHelper.keyOfMail(appId, intervalTime, mailCode);
                     if (redisOperations.hasKey(hashKey)) {
                         Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("key={} , value={}", hashKey, JSON.toJSONString(dataMap));
+                        }
                         if (MapUtils.isEmpty(dataMap)) {
                             continue;
                         }
                         String json = JSON.toJSONString(dataMap);
                         MerchantStatMailDTO dto = JSON.parseObject(json, MerchantStatMailDTO.class);
+                        dto.setAppId(appId);
+                        dto.setMailCode(mailCode);
                         dataList.add(dto);
                     }
                 }
@@ -201,6 +232,7 @@ public class StatDataFlushJob implements SimpleJob {
 
     /**
      * 运营商数据保存
+     *
      * @param intervalTimes
      * @param appIds
      * @param redisOperations
@@ -219,11 +251,16 @@ public class StatDataFlushJob implements SimpleJob {
                     String hashKey = RedisKeyHelper.keyOfOperator(appId, intervalTime, operatorId);
                     if (redisOperations.hasKey(hashKey)) {
                         Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("key={} , value={}", hashKey, JSON.toJSONString(dataMap));
+                        }
                         if (MapUtils.isEmpty(dataMap)) {
                             continue;
                         }
                         String json = JSON.toJSONString(dataMap);
                         MerchantStatOperatorDTO dto = JSON.parseObject(json, MerchantStatOperatorDTO.class);
+                        dto.setAppId(appId);
+                        dto.setOperaterId(operatorId);
                         dataList.add(dto);
                     }
                 }
