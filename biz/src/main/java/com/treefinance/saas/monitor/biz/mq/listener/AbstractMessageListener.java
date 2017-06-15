@@ -38,10 +38,10 @@ public abstract class AbstractMessageListener<T> implements MessageListenerConcu
 
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
-        logger.info("收到消息==>{}", JSON.toJSONString(list));
         MessageExt msg = null;
         T message = null;
         try {
+            logger.info("收到消息==>{}", JSON.toJSONString(list));
             msg = list.get(0);
             message = convertMessage(msg.getBody());
             handleMessage(message);
