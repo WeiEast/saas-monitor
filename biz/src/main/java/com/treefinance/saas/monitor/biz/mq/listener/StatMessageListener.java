@@ -180,7 +180,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
                 statMap.put("dataTime", intervalTime.getTime());
                 statMap.put("appId", appId);
                 // 判断是否有key
-                if (!redisOperations.hasKey(key)) {
+                if (Boolean.FALSE.equals(redisOperations.hasKey(key))) {
                     redisOperations.opsForHash().putAll(key, statMap);
                     // 设定超时时间默认为1天
                     redisOperations.expire(key, 2, TimeUnit.DAYS);
@@ -191,7 +191,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
 
                 // 统计用户数: 未存在用户+1
 
-                if (redisOperations.opsForValue().setIfAbsent(userKey, uniqueId)) {
+                if (Boolean.TRUE.equals(redisOperations.opsForValue().setIfAbsent(userKey, uniqueId))) {
                     Long userCount = redisOperations.opsForHash().increment(key, "userCount", 1);
                     statMap.put("userCount", userCount);
                     // 设定超时时间
