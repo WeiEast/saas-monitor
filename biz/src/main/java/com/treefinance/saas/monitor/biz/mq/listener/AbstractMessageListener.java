@@ -41,12 +41,15 @@ public abstract class AbstractMessageListener<T> implements MessageListenerConcu
         MessageExt msg = null;
         T message = null;
         try {
-            logger.info("收到消息==>{}", JSON.toJSONString(list));
+            logger.info("收到消息==>{}", list);
             msg = list.get(0);
             message = convertMessage(msg.getBody());
             handleMessage(message);
         } catch (Throwable cause) {
-            if (msg.getReconsumeTimes() > 0) {
+            if (msg == null) {
+                logger.error(String.format("消费消息时出错, 即将再重试一次body=%s", msg), cause);
+                return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+            } else if (msg.getReconsumeTimes() > 0) {
                 logger.error(String.format("丢弃消息,因为重试一次之后, 处理消息仍然出错.body=%s", message), cause);
                 return CONSUME_SUCCESS;
             } else {
