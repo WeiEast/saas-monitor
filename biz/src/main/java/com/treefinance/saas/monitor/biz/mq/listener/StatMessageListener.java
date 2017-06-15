@@ -18,6 +18,7 @@ import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Service;
@@ -101,7 +102,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
      * @param type
      */
     private void updateTotalData(Date intervalTime, GatewayAccessMessage message, EStatType type) {
-        updateData(intervalTime, message, statMap -> statMap.put("dataType", type.getType()), () -> RedisKeyHelper.keyOfTotal(message.getAppId(), intervalTime, type));
+        updateData(intervalTime, message, statMap -> statMap.put("dataType", type.getType()+""), () -> RedisKeyHelper.keyOfTotal(message.getAppId(), intervalTime, type));
     }
 
     /**
@@ -140,7 +141,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
         String website = message.getWebSite();
         EcommerceDTO ecommerceDTO = ecommerceService.getEcommerceByWebsite(website);
         Short ecommerceId = ecommerceDTO != null ? ecommerceDTO.getId() : null;
-        updateData(intervalTime, message, statMap -> statMap.put("ecommerceId", ecommerceId), () -> RedisKeyHelper.keyOfEcommerce(message.getAppId(), intervalTime, ecommerceId));
+        updateData(intervalTime, message, statMap -> statMap.put("ecommerceId", ecommerceId+""), () -> RedisKeyHelper.keyOfEcommerce(message.getAppId(), intervalTime, ecommerceId));
 
     }
 
@@ -152,11 +153,11 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
      * @param dataInitor
      * @param keyGenerator
      */
-    private void updateData(Date intervalTime, GatewayAccessMessage message, Consumer<Map<String, Object>> dataInitor, Supplier<String> keyGenerator) {
+    private void updateData(Date intervalTime, GatewayAccessMessage message, Consumer<Map<String, String>> dataInitor, Supplier<String> keyGenerator) {
         String appId = message.getAppId();
         Byte status = message.getStatus();
         String uniqueId = message.getUniqueId();
-        Map<String, Object> statMap = Maps.newHashMap();
+        Map<String, String> statMap = Maps.newHashMap();
         if (dataInitor != null) {
             dataInitor.accept(statMap);
         }
@@ -168,7 +169,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
             @Override
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
                 // 开启事务
-                redisOperations.multi();
+//                redisOperations.multi();
                 // appId列表
                 String appIdKey = RedisKeyHelper.keyOfAppIds();
                 redisOperations.opsForSet().add(appIdKey, appId);
@@ -177,41 +178,42 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
                 String dayKey = RedisKeyHelper.keyOfDay(intervalTime);
                 redisOperations.opsForSet().add(dayKey, intervalTime.getTime() + "");
 
-                statMap.put("dataTime", intervalTime.getTime());
+                statMap.put("dataTime", intervalTime.getTime()+"");
                 statMap.put("appId", appId);
                 // 判断是否有key
-                if (!redisOperations.hasKey(key)) {
-                    redisOperations.opsForHash().putAll(key, statMap);
+                BoundHashOperations<String,String,String> hashOperations = redisOperations.boundHashOps(key);
+                if (!Boolean.TRUE.equals(hashOperations.hasKey(key))) {
+                    hashOperations.put("dataTime", intervalTime.getTime()+"");
+                    hashOperations.put("appId", appId);
                     // 设定超时时间默认为1天
-                    redisOperations.expire(key, 2, TimeUnit.DAYS);
+                    hashOperations.expire(2, TimeUnit.DAYS);
                 }
                 // 统计总数
-                Long totalCount = redisOperations.opsForHash().increment(key, "totalCount", 1);
-                statMap.put("totalCount", totalCount);
+                Long totalCount = hashOperations.increment("totalCount", 1);
+                statMap.put("totalCount", totalCount+"");
 
                 // 统计用户数: 未存在用户+1
-
-                if (redisOperations.opsForValue().setIfAbsent(userKey, uniqueId)) {
-                    Long userCount = redisOperations.opsForHash().increment(key, "userCount", 1);
-                    statMap.put("userCount", userCount);
+                if (Boolean.TRUE.equals(redisOperations.opsForValue().setIfAbsent(userKey, uniqueId))) {
+                    Long userCount = hashOperations.increment("userCount", 1);
+                    statMap.put("userCount", userCount+"");
                     // 设定超时时间
                     redisOperations.expire(userKey, diamondConfig.getMonitorIntervalMinutes() * 2, TimeUnit.MINUTES);
                 }
 
                 // 统计取消数
                 if (ETaskStatus.CANCEL.getStatus().equals(status)) {
-                    Long cancelCount = redisOperations.opsForHash().increment(key, "cancelCount", 1);
-                    statMap.put("cancelCount", cancelCount);
+                    Long cancelCount = hashOperations.increment("cancelCount", 1);
+                    statMap.put("cancelCount", cancelCount+"");
                 }
                 // 统计成功数
                 else if (ETaskStatus.SUCCESS.getStatus().equals(status)) {
-                    Long successCount = redisOperations.opsForHash().increment(key, "successCount", 1);
-                    statMap.put("successCount", successCount);
+                    Long successCount = hashOperations.increment("successCount", 1);
+                    statMap.put("successCount", successCount+"");
                 }
                 // 统计失败数
                 else if (ETaskStatus.FAIL.getStatus().equals(status)) {
-                    Long failCount = redisOperations.opsForHash().increment(key, "failCount", 1);
-                    statMap.put("failCount", failCount);
+                    Long failCount = hashOperations.increment("failCount", 1);
+                    statMap.put("failCount", failCount+"");
                 }
                 return null;
             }
