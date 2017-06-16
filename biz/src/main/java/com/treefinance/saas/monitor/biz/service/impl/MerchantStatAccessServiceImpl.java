@@ -87,31 +87,31 @@ public class MerchantStatAccessServiceImpl implements MerchantStatAccessService 
     @Override
     public void batchInsertStatAccess(List<MerchantStatAccessDTO> list) {
         List<MerchantStatAccess> dataList = DataConverterUtils.convert(list, MerchantStatAccess.class);
-        dataList.forEach(data -> merchantStatAccessMapper.insert(data));
+        dataList.forEach(data -> merchantStatAccessMapper.insertSelective(data));
     }
 
     @Override
     public void batchInsertBankList(List<MerchantStatBankDTO> list) {
         List<MerchantStatBank> dataList = DataConverterUtils.convert(list, MerchantStatBank.class);
-        dataList.forEach(data -> merchantStatBankMapper.insert(data));
+        dataList.forEach(data -> merchantStatBankMapper.insertSelective(data));
     }
 
     @Override
     public void batchInsertEcommerce(List<MerchantStatEcommerceDTO> list) {
         List<MerchantStatEcommerce> dataList = DataConverterUtils.convert(list, MerchantStatEcommerce.class);
-        dataList.forEach(data -> merchantStatEcommerceMapper.insert(data));
+        dataList.forEach(data -> merchantStatEcommerceMapper.insertSelective(data));
     }
 
     @Override
     public void batchInsertMail(List<MerchantStatMailDTO> list) {
         List<MerchantStatMail> dataList = DataConverterUtils.convert(list, MerchantStatMail.class);
-        dataList.forEach(data -> merchantStatMailMapper.insert(data));
+        dataList.forEach(data -> merchantStatMailMapper.insertSelective(data));
     }
 
     @Override
     public void batchInsertOperator(List<MerchantStatOperatorDTO> list) {
         List<MerchantStatOperator> dataList = DataConverterUtils.convert(list, MerchantStatOperator.class);
-        dataList.forEach(data -> merchantStatOperatorMapper.insert(data));
+        dataList.forEach(data -> merchantStatOperatorMapper.insertSelective(data));
     }
 
 }

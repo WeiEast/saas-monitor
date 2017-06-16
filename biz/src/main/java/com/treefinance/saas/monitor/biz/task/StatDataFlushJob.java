@@ -26,6 +26,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.SessionCallback;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,7 @@ public class StatDataFlushJob implements SimpleJob {
             logger.info("intervalMinutes={}", intervalMinutes);
             Date now = new Date();
             Date intervalTime = StatHelper.calculateIntervalTime(now, intervalMinutes);
+            String currentInterval = intervalTime.getTime() + "";
 
             redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
                 @Override
@@ -70,8 +72,10 @@ public class StatDataFlushJob implements SimpleJob {
                     }
                     Set<Date> intervalTimeSets = Sets.newHashSet();
                     intervalSets.forEach(t -> {
-                        Long time = Long.valueOf(t);
-                        intervalTimeSets.add(new Date(time));
+                        if (!t.equals(currentInterval)) {
+                            Long time = Long.valueOf(t);
+                            intervalTimeSets.add(new Date(time));
+                        }
                     });
                     // appId列表
                     String appIdKey = RedisKeyHelper.keyOfAppIds();
@@ -89,7 +93,6 @@ public class StatDataFlushJob implements SimpleJob {
                     saveOperatorData(intervalTimeSets, appIdSet, redisOperations);
 
                     // 5.删除已生成数据key
-                    String currentInterval = intervalTime.getTime() + "";
                     List<String> deleteList = Lists.newArrayList();
                     intervalSets.forEach(time -> {
                         if (!time.equals(currentInterval)) {
@@ -135,6 +138,8 @@ public class StatDataFlushJob implements SimpleJob {
                     MerchantStatAccessDTO dto = JSON.parseObject(json, MerchantStatAccessDTO.class);
                     dto.setDataType(type.getType());
                     dto.setAppId(appId);
+                    dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
+                    dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
                     totalList.add(dto);
                 }
             });
@@ -144,6 +149,7 @@ public class StatDataFlushJob implements SimpleJob {
             merchantStatAccessService.batchInsertStatAccess(totalList);
         }
     }
+
 
     /**
      * 保存电商数据
@@ -176,6 +182,8 @@ public class StatDataFlushJob implements SimpleJob {
                         MerchantStatEcommerceDTO dto = JSON.parseObject(json, MerchantStatEcommerceDTO.class);
                         dto.setEcommerceId(ecommerceId);
                         dto.setAppId(appId);
+                        dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
+                        dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
                         dataList.add(dto);
                     }
                 }
@@ -218,6 +226,8 @@ public class StatDataFlushJob implements SimpleJob {
                         MerchantStatMailDTO dto = JSON.parseObject(json, MerchantStatMailDTO.class);
                         dto.setAppId(appId);
                         dto.setMailCode(mailCode);
+                        dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
+                        dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
                         dataList.add(dto);
                     }
                 }
@@ -261,6 +271,8 @@ public class StatDataFlushJob implements SimpleJob {
                         MerchantStatOperatorDTO dto = JSON.parseObject(json, MerchantStatOperatorDTO.class);
                         dto.setAppId(appId);
                         dto.setOperaterId(operatorId);
+                        dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
+                        dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
                         dataList.add(dto);
                     }
                 }
@@ -270,5 +282,26 @@ public class StatDataFlushJob implements SimpleJob {
             logger.info("saveEcommerceData : data={}", JSON.toJSONString(dataList));
             merchantStatAccessService.batchInsertOperator(dataList);
         }
+    }
+
+
+    /**
+     * 计算比率
+     *
+     * @param totalCount 总数
+     * @param rateCount  比率数
+     * @return
+     */
+    private BigDecimal calcRate(Integer totalCount, Integer rateCount) {
+        if (totalCount == null || rateCount == null) {
+            return null;
+        }
+        if (totalCount == 0) {
+            return null;
+        }
+        BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(totalCount, 2), 2);
+        return rate;
     }
 }
