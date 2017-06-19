@@ -19,6 +19,7 @@
     <dubbo:service ref="mailFacade" interface="com.treefinance.saas.monitor.facade.service.MailFacade" version="1.0.0"/>
     <dubbo:service ref="ecommerceFacade" interface="com.treefinance.saas.monitor.facade.service.EcommerceFacade" version="1.0.0"/>
     <dubbo:service ref="operatorFacade" interface="com.treefinance.saas.monitor.facade.service.OperatorFacade" version="1.0.0"/>
+    <dubbo:service ref="bankFacade" interface="com.treefinance.saas.monitor.facade.service.BankFacade" version="1.0.0"/>
 </beans>
 
 
