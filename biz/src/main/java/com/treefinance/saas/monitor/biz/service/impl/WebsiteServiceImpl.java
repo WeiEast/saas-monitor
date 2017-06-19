@@ -7,6 +7,7 @@ import com.treefinance.saas.monitor.dao.entity.Website;
 import com.treefinance.saas.monitor.dao.entity.WebsiteCriteria;
 import com.treefinance.saas.monitor.dao.mapper.WebsiteMapper;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,9 @@ public class WebsiteServiceImpl implements WebsiteService {
 
     @Override
     public WebsiteDTO getWebsiteByName(String websiteName) {
+        if (StringUtils.isEmpty(websiteName)){
+            return null;
+        }
         WebsiteCriteria criteria = new WebsiteCriteria();
         criteria.createCriteria().andWebsiteNameEqualTo(websiteName);
         List<Website> list = websiteMapper.selectByExample(criteria);
