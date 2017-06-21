@@ -102,4 +102,11 @@ public interface MerchantStatAccessMapper {
      * @mbggenerated Wed Jun 14 17:16:27 CST 2017
      */
     int updateByPrimaryKey(MerchantStatAccess record);
+
+    /**
+     * 插入更新
+     * @param record
+     * @return
+     */
+    int insertOrUpdateSelective(MerchantStatAccess record);
 }

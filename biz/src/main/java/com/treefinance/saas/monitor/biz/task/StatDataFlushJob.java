@@ -72,10 +72,8 @@ public class StatDataFlushJob implements SimpleJob {
                     }
                     Set<Date> intervalTimeSets = Sets.newHashSet();
                     intervalSets.forEach(t -> {
-                        if (!t.equals(currentInterval)) {
-                            Long time = Long.valueOf(t);
-                            intervalTimeSets.add(new Date(time));
-                        }
+                        Long time = Long.valueOf(t);
+                        intervalTimeSets.add(new Date(time));
                     });
                     // appId列表
                     String appIdKey = RedisKeyHelper.keyOfAppIds();
@@ -121,32 +119,37 @@ public class StatDataFlushJob implements SimpleJob {
      * @param redisOperations
      */
     private void saveTotalData(Set<Date> intervalTimes, Set<String> appIds, RedisOperations redisOperations) {
-        List<MerchantStatAccessDTO> totalList = Lists.newArrayList();
-        intervalTimes.forEach(intervalTime -> {
-            // 统计总数
-            appIds.forEach(appId -> {
-                for (EStatType type : EStatType.values()) {
-                    String totalkey = RedisKeyHelper.keyOfTotal(appId, intervalTime, type);
-                    Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalkey);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("key={} , value={}", totalkey, JSON.toJSONString(totalMap));
+        try {
+            List<MerchantStatAccessDTO> totalList = Lists.newArrayList();
+            intervalTimes.forEach(intervalTime -> {
+                // 统计总数
+                appIds.forEach(appId -> {
+                    for (EStatType type : EStatType.values()) {
+                        String totalkey = RedisKeyHelper.keyOfTotal(appId, intervalTime, type);
+                        Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalkey);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("key={} , value={}", totalkey, JSON.toJSONString(totalMap));
+                        }
+                        if (MapUtils.isEmpty(totalMap)) {
+                            continue;
+                        }
+                        String json = JSON.toJSONString(totalMap);
+                        MerchantStatAccessDTO dto = JSON.parseObject(json, MerchantStatAccessDTO.class);
+                        dto.setDataType(type.getType());
+                        dto.setAppId(appId);
+                        dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
+                        dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
+                        dto.setLastUpdateTime(new Date());
+                        totalList.add(dto);
                     }
-                    if (MapUtils.isEmpty(totalMap)) {
-                        continue;
-                    }
-                    String json = JSON.toJSONString(totalMap);
-                    MerchantStatAccessDTO dto = JSON.parseObject(json, MerchantStatAccessDTO.class);
-                    dto.setDataType(type.getType());
-                    dto.setAppId(appId);
-                    dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
-                    dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
-                    totalList.add(dto);
-                }
+                });
             });
-        });
-        if (CollectionUtils.isNotEmpty(totalList)) {
-            logger.info("saveTotalData : data={}", JSON.toJSONString(totalList));
-            merchantStatAccessService.batchInsertStatAccess(totalList);
+            if (CollectionUtils.isNotEmpty(totalList)) {
+                logger.info("saveTotalData : data={}", JSON.toJSONString(totalList));
+                merchantStatAccessService.batchInsertStatAccess(totalList);
+            }
+        } catch (Exception e) {
+            logger.error("saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
         }
     }
 
@@ -159,39 +162,44 @@ public class StatDataFlushJob implements SimpleJob {
      * @param redisOperations
      */
     private void saveEcommerceData(Set<Date> intervalTimes, Set<String> appIds, RedisOperations redisOperations) {
-        List<EcommerceDTO> ecommerceList = ecommerceService.getAll();
-        if (CollectionUtils.isEmpty(ecommerceList)) {
-            return;
-        }
-        List<MerchantStatEcommerceDTO> dataList = Lists.newArrayList();
+        try {
+            List<EcommerceDTO> ecommerceList = ecommerceService.getAll();
+            if (CollectionUtils.isEmpty(ecommerceList)) {
+                return;
+            }
+            List<MerchantStatEcommerceDTO> dataList = Lists.newArrayList();
 
-        intervalTimes.forEach(intervalTime -> {
-            appIds.forEach(appId -> {
-                for (EcommerceDTO ecommerceDTO : ecommerceList) {
-                    Short ecommerceId = ecommerceDTO.getId();
-                    String hashKey = RedisKeyHelper.keyOfEcommerce(appId, intervalTime, ecommerceId);
-                    if (redisOperations.hasKey(hashKey)) {
-                        Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("key={} , value={}", hashKey, JSON.toJSONString(dataMap));
+            intervalTimes.forEach(intervalTime -> {
+                appIds.forEach(appId -> {
+                    for (EcommerceDTO ecommerceDTO : ecommerceList) {
+                        Short ecommerceId = ecommerceDTO.getId();
+                        String hashKey = RedisKeyHelper.keyOfEcommerce(appId, intervalTime, ecommerceId);
+                        if (redisOperations.hasKey(hashKey)) {
+                            Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("key={} , value={}", hashKey, JSON.toJSONString(dataMap));
+                            }
+                            if (MapUtils.isEmpty(dataMap)) {
+                                continue;
+                            }
+                            String json = JSON.toJSONString(dataMap);
+                            MerchantStatEcommerceDTO dto = JSON.parseObject(json, MerchantStatEcommerceDTO.class);
+                            dto.setEcommerceId(ecommerceId);
+                            dto.setAppId(appId);
+                            dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
+                            dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
+                            dto.setLastUpdateTime(new Date());
+                            dataList.add(dto);
                         }
-                        if (MapUtils.isEmpty(dataMap)) {
-                            continue;
-                        }
-                        String json = JSON.toJSONString(dataMap);
-                        MerchantStatEcommerceDTO dto = JSON.parseObject(json, MerchantStatEcommerceDTO.class);
-                        dto.setEcommerceId(ecommerceId);
-                        dto.setAppId(appId);
-                        dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
-                        dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
-                        dataList.add(dto);
                     }
-                }
+                });
             });
-        });
-        if (CollectionUtils.isNotEmpty(dataList)) {
-            logger.info("saveEcommerceData : data={}", JSON.toJSONString(dataList));
-            merchantStatAccessService.batchInsertEcommerce(dataList);
+            if (CollectionUtils.isNotEmpty(dataList)) {
+                logger.info("saveEcommerceData : data={}", JSON.toJSONString(dataList));
+                merchantStatAccessService.batchInsertEcommerce(dataList);
+            }
+        } catch (Exception e) {
+            logger.error("saveEcommerceData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
         }
     }
 
@@ -203,39 +211,44 @@ public class StatDataFlushJob implements SimpleJob {
      * @param redisOperations
      */
     private void saveMailData(Set<Date> intervalTimes, Set<String> appIds, RedisOperations redisOperations) {
-        List<WebsiteDTO> mails = websiteService.getSupportMails();
-        if (CollectionUtils.isEmpty(mails)) {
-            return;
-        }
-        List<MerchantStatMailDTO> dataList = Lists.newArrayList();
+        try {
+            List<WebsiteDTO> mails = websiteService.getSupportMails();
+            if (CollectionUtils.isEmpty(mails)) {
+                return;
+            }
+            List<MerchantStatMailDTO> dataList = Lists.newArrayList();
 
-        intervalTimes.forEach(intervalTime -> {
-            appIds.forEach(appId -> {
-                for (WebsiteDTO mail : mails) {
-                    String mailCode = mail.getWebsiteName();
-                    String hashKey = RedisKeyHelper.keyOfMail(appId, intervalTime, mailCode);
-                    if (redisOperations.hasKey(hashKey)) {
-                        Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("key={} , value={}", hashKey, JSON.toJSONString(dataMap));
+            intervalTimes.forEach(intervalTime -> {
+                appIds.forEach(appId -> {
+                    for (WebsiteDTO mail : mails) {
+                        String mailCode = mail.getWebsiteName();
+                        String hashKey = RedisKeyHelper.keyOfMail(appId, intervalTime, mailCode);
+                        if (redisOperations.hasKey(hashKey)) {
+                            Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("key={} , value={}", hashKey, JSON.toJSONString(dataMap));
+                            }
+                            if (MapUtils.isEmpty(dataMap)) {
+                                continue;
+                            }
+                            String json = JSON.toJSONString(dataMap);
+                            MerchantStatMailDTO dto = JSON.parseObject(json, MerchantStatMailDTO.class);
+                            dto.setAppId(appId);
+                            dto.setMailCode(mailCode);
+                            dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
+                            dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
+                            dto.setLastUpdateTime(new Date());
+                            dataList.add(dto);
                         }
-                        if (MapUtils.isEmpty(dataMap)) {
-                            continue;
-                        }
-                        String json = JSON.toJSONString(dataMap);
-                        MerchantStatMailDTO dto = JSON.parseObject(json, MerchantStatMailDTO.class);
-                        dto.setAppId(appId);
-                        dto.setMailCode(mailCode);
-                        dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
-                        dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
-                        dataList.add(dto);
                     }
-                }
+                });
             });
-        });
-        if (CollectionUtils.isNotEmpty(dataList)) {
-            logger.info("saveEcommerceData : data={}", JSON.toJSONString(dataList));
-            merchantStatAccessService.batchInsertMail(dataList);
+            if (CollectionUtils.isNotEmpty(dataList)) {
+                logger.info("saveMailData : data={}", JSON.toJSONString(dataList));
+                merchantStatAccessService.batchInsertMail(dataList);
+            }
+        } catch (Exception e) {
+            logger.error("saveMailData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
         }
     }
 
@@ -248,39 +261,44 @@ public class StatDataFlushJob implements SimpleJob {
      * @param redisOperations
      */
     private void saveOperatorData(Set<Date> intervalTimes, Set<String> appIds, RedisOperations redisOperations) {
-        List<OperatorDTO> operators = operatorService.getAll();
-        if (CollectionUtils.isEmpty(operators)) {
-            return;
-        }
-        List<MerchantStatOperatorDTO> dataList = Lists.newArrayList();
+        try {
+            List<OperatorDTO> operators = operatorService.getAll();
+            if (CollectionUtils.isEmpty(operators)) {
+                return;
+            }
+            List<MerchantStatOperatorDTO> dataList = Lists.newArrayList();
 
-        intervalTimes.forEach(intervalTime -> {
-            appIds.forEach(appId -> {
-                for (OperatorDTO operatorDTO : operators) {
-                    String operatorId = operatorDTO.getId().toString();
-                    String hashKey = RedisKeyHelper.keyOfOperator(appId, intervalTime, operatorId);
-                    if (redisOperations.hasKey(hashKey)) {
-                        Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("key={} , value={}", hashKey, JSON.toJSONString(dataMap));
+            intervalTimes.forEach(intervalTime -> {
+                appIds.forEach(appId -> {
+                    for (OperatorDTO operatorDTO : operators) {
+                        String operatorId = operatorDTO.getId().toString();
+                        String hashKey = RedisKeyHelper.keyOfOperator(appId, intervalTime, operatorId);
+                        if (redisOperations.hasKey(hashKey)) {
+                            Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("key={} , value={}", hashKey, JSON.toJSONString(dataMap));
+                            }
+                            if (MapUtils.isEmpty(dataMap)) {
+                                continue;
+                            }
+                            String json = JSON.toJSONString(dataMap);
+                            MerchantStatOperatorDTO dto = JSON.parseObject(json, MerchantStatOperatorDTO.class);
+                            dto.setAppId(appId);
+                            dto.setOperaterId(operatorId);
+                            dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
+                            dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
+                            dto.setLastUpdateTime(new Date());
+                            dataList.add(dto);
                         }
-                        if (MapUtils.isEmpty(dataMap)) {
-                            continue;
-                        }
-                        String json = JSON.toJSONString(dataMap);
-                        MerchantStatOperatorDTO dto = JSON.parseObject(json, MerchantStatOperatorDTO.class);
-                        dto.setAppId(appId);
-                        dto.setOperaterId(operatorId);
-                        dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
-                        dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
-                        dataList.add(dto);
                     }
-                }
+                });
             });
-        });
-        if (CollectionUtils.isNotEmpty(dataList)) {
-            logger.info("saveEcommerceData : data={}", JSON.toJSONString(dataList));
-            merchantStatAccessService.batchInsertOperator(dataList);
+            if (CollectionUtils.isNotEmpty(dataList)) {
+                logger.info("saveOperatorData : data={}", JSON.toJSONString(dataList));
+                merchantStatAccessService.batchInsertOperator(dataList);
+            }
+        } catch (Exception e) {
+            logger.error("saveOperatorData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
         }
     }
 
