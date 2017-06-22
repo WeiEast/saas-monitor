@@ -6,16 +6,20 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.mq.model.GatewayAccessMessage;
+import com.treefinance.saas.monitor.biz.service.AccessHistoryService;
 import com.treefinance.saas.monitor.biz.service.EcommerceService;
 import com.treefinance.saas.monitor.biz.service.OperatorService;
 import com.treefinance.saas.monitor.biz.service.WebsiteService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceDTO;
+import com.treefinance.saas.monitor.common.domain.dto.MerchantAccessHistoryDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorDTO;
 import com.treefinance.saas.monitor.common.domain.dto.WebsiteDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatus;
+import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.dao.entity.MerchantAccessHistory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.BoundHashOperations;
@@ -45,25 +49,35 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
     private OperatorService operatorService;
     @Autowired
     private EcommerceService ecommerceService;
+    @Autowired
+    private AccessHistoryService accessHistoryService;
 
     @Override
     public void handleMessage(GatewayAccessMessage message) {
-        Date completeTime = message.getCompleteTime();
-        Date intervalTime = StatHelper.calculateIntervalTime(completeTime, diamondConfig.getMonitorIntervalMinutes());
-        // 1.总数统计
-        statTotal(message, intervalTime);
-        // 2.电商、银行、邮箱、运营商维度统计
-        EBizType bizType = EBizType.getBizType(message.getBizType());
-        switch (bizType) {
-            case EMAIL:
-                updateEmailData(intervalTime, message);
-                break;
-            case OPERATOR:
-                updateOperatorData(intervalTime, message);
-                break;
-            case ECOMMERCE:
-                updateEcommerceData(intervalTime, message);
-                break;
+        long start = System.currentTimeMillis();
+        try {
+            Date completeTime = message.getCompleteTime();
+            Date intervalTime = StatHelper.calculateIntervalTime(completeTime, diamondConfig.getMonitorIntervalMinutes());
+            // 1.总数统计
+            statTotal(message, intervalTime);
+            // 2.电商、银行、邮箱、运营商维度统计
+            EBizType bizType = EBizType.getBizType(message.getBizType());
+            switch (bizType) {
+                case EMAIL:
+                    updateEmailData(intervalTime, message);
+                    break;
+                case OPERATOR:
+                    updateOperatorData(intervalTime, message);
+                    break;
+                case ECOMMERCE:
+                    updateEcommerceData(intervalTime, message);
+                    break;
+            }
+//            // 插入历史记录
+//            MerchantAccessHistoryDTO historyDTO = DataConverterUtils.convert(message, MerchantAccessHistoryDTO.class);
+//            accessHistoryService.insertAccessHistory(historyDTO);
+        } finally {
+            logger.info("handleMessage cost {} ms , message={}", System.currentTimeMillis() - start, JSON.toJSONString(message));
         }
 
     }
@@ -100,15 +114,17 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
 
     /**
      * 按日统计数据
+     *
      * @param intervalTime
      * @param message
      * @param type
      */
     private void updateTotalDayData(Date intervalTime, GatewayAccessMessage message, EStatType type) {
         updateData(intervalTime, message,
-                statMap -> statMap.put("dataType", type.getType()+""),
+                statMap -> statMap.put("dataType", type.getType() + ""),
                 () -> RedisKeyHelper.keyOfTotalDay(message.getAppId(), intervalTime, type));
     }
+
     /**
      * 更新总计数据
      *
@@ -117,7 +133,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
      * @param type
      */
     private void updateTotalData(Date intervalTime, GatewayAccessMessage message, EStatType type) {
-        updateData(intervalTime, message, statMap -> statMap.put("dataType", type.getType()+""), () -> RedisKeyHelper.keyOfTotal(message.getAppId(), intervalTime, type));
+        updateData(intervalTime, message, statMap -> statMap.put("dataType", type.getType() + ""), () -> RedisKeyHelper.keyOfTotal(message.getAppId(), intervalTime, type));
     }
 
     /**
@@ -156,7 +172,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
         String website = message.getWebSite();
         EcommerceDTO ecommerceDTO = ecommerceService.getEcommerceByWebsite(website);
         Short ecommerceId = ecommerceDTO != null ? ecommerceDTO.getId() : null;
-        updateData(intervalTime, message, statMap -> statMap.put("ecommerceId", ecommerceId+""), () -> RedisKeyHelper.keyOfEcommerce(message.getAppId(), intervalTime, ecommerceId));
+        updateData(intervalTime, message, statMap -> statMap.put("ecommerceId", ecommerceId + ""), () -> RedisKeyHelper.keyOfEcommerce(message.getAppId(), intervalTime, ecommerceId));
 
     }
 
@@ -193,24 +209,24 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
                 String dayKey = RedisKeyHelper.keyOfDay(intervalTime);
                 redisOperations.opsForSet().add(dayKey, intervalTime.getTime() + "");
 
-                statMap.put("dataTime", intervalTime.getTime()+"");
+                statMap.put("dataTime", intervalTime.getTime() + "");
                 statMap.put("appId", appId);
                 // 判断是否有key
-                BoundHashOperations<String,String,String> hashOperations = redisOperations.boundHashOps(key);
+                BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(hashOperations.hasKey(key))) {
-                    hashOperations.put("dataTime", intervalTime.getTime()+"");
+                    hashOperations.put("dataTime", intervalTime.getTime() + "");
                     hashOperations.put("appId", appId);
                     // 设定超时时间默认为1天
                     hashOperations.expire(2, TimeUnit.DAYS);
                 }
                 // 统计总数
                 Long totalCount = hashOperations.increment("totalCount", 1);
-                statMap.put("totalCount", totalCount+"");
+                statMap.put("totalCount", totalCount + "");
 
                 // 统计用户数: 未存在用户+1
                 if (Boolean.TRUE.equals(redisOperations.opsForValue().setIfAbsent(userKey, uniqueId))) {
                     Long userCount = hashOperations.increment("userCount", 1);
-                    statMap.put("userCount", userCount+"");
+                    statMap.put("userCount", userCount + "");
                     // 设定超时时间
                     redisOperations.expire(userKey, diamondConfig.getMonitorIntervalMinutes() * 2, TimeUnit.MINUTES);
                 }
@@ -218,17 +234,17 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
                 // 统计取消数
                 if (ETaskStatus.CANCEL.getStatus().equals(status)) {
                     Long cancelCount = hashOperations.increment("cancelCount", 1);
-                    statMap.put("cancelCount", cancelCount+"");
+                    statMap.put("cancelCount", cancelCount + "");
                 }
                 // 统计成功数
                 else if (ETaskStatus.SUCCESS.getStatus().equals(status)) {
                     Long successCount = hashOperations.increment("successCount", 1);
-                    statMap.put("successCount", successCount+"");
+                    statMap.put("successCount", successCount + "");
                 }
                 // 统计失败数
                 else if (ETaskStatus.FAIL.getStatus().equals(status)) {
                     Long failCount = hashOperations.increment("failCount", 1);
-                    statMap.put("failCount", failCount+"");
+                    statMap.put("failCount", failCount + "");
                 }
                 return null;
             }
