@@ -8,17 +8,13 @@ import com.google.common.collect.Sets;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
-import com.treefinance.saas.monitor.biz.service.EcommerceService;
-import com.treefinance.saas.monitor.biz.service.MerchantStatAccessService;
-import com.treefinance.saas.monitor.biz.service.OperatorService;
-import com.treefinance.saas.monitor.biz.service.WebsiteService;
+import com.treefinance.saas.monitor.biz.service.*;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.*;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
-import com.treefinance.saas.monitor.dao.entity.Ecommerce;
-import com.treefinance.saas.monitor.dao.entity.MerchantStatAccess;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +23,7 @@ import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.SessionCallback;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 数据统计Job
@@ -49,7 +42,7 @@ public class StatDataFlushJob implements SimpleJob {
     @Autowired
     private OperatorService operatorService;
     @Autowired
-    private MerchantStatAccessService merchantStatAccessService;
+    private StatAccessUpdateService statAccessUpdateService;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -82,15 +75,17 @@ public class StatDataFlushJob implements SimpleJob {
                         return null;
                     }
                     // 1.保存合计数据
+                    saveTotalDayData(intervalTimeSets, appIdSet, redisOperations);
+                    // 2.保存合计数据
                     saveTotalData(intervalTimeSets, appIdSet, redisOperations);
-                    // 2.保存电商数据
+                    // 3.保存电商数据
                     saveEcommerceData(intervalTimeSets, appIdSet, redisOperations);
-                    // 3.保存邮箱数据
+                    // 4.保存邮箱数据
                     saveMailData(intervalTimeSets, appIdSet, redisOperations);
-                    // 4.保存运营商数据
+                    // 5.保存运营商数据
                     saveOperatorData(intervalTimeSets, appIdSet, redisOperations);
 
-                    // 5.删除已生成数据key
+                    // 6.删除已生成数据key
                     List<String> deleteList = Lists.newArrayList();
                     intervalSets.forEach(time -> {
                         if (!time.equals(currentInterval)) {
@@ -108,6 +103,52 @@ public class StatDataFlushJob implements SimpleJob {
             logger.error("statdataflushjob exception : ", e);
         } finally {
             logger.info("定时刷新数据完成，耗时time={}ms", System.currentTimeMillis() - start);
+        }
+    }
+
+    /**
+     * 保存日合计数据
+     *
+     * @param intervalTimes   统计时间
+     * @param appIds          商户ID
+     * @param redisOperations
+     */
+    private void saveTotalDayData(Set<Date> intervalTimes, Set<String> appIds, RedisOperations redisOperations) {
+        try {
+            List<MerchantStatDayAccessDTO> totalList = Lists.newArrayList();
+            intervalTimes.forEach(intervalTime -> {
+                // 统计总数
+                appIds.forEach(appId -> {
+                    for (EStatType type : EStatType.values()) {
+                        String totalDaykey = RedisKeyHelper.keyOfTotalDay(appId, intervalTime, type);
+                        Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalDaykey);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("key={} , value={}", totalDaykey, JSON.toJSONString(totalMap));
+                        }
+                        if (MapUtils.isEmpty(totalMap)) {
+                            continue;
+                        }
+                        String json = JSON.toJSONString(totalMap);
+                        MerchantStatDayAccessDTO dto = JSON.parseObject(json, MerchantStatDayAccessDTO.class);
+                        dto.setDataType(type.getType());
+                        dto.setAppId(appId);
+                        Date dataTime = dto.getDataTime();
+                        if (dataTime != null) {
+                            dto.setDataTime(DateUtils.truncate(dataTime, Calendar.DAY_OF_MONTH));
+                        }
+                        dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
+                        dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
+                        dto.setLastUpdateTime(new Date());
+                        totalList.add(dto);
+                    }
+                });
+            });
+            if (CollectionUtils.isNotEmpty(totalList)) {
+                logger.info("saveTotalData : data={}", JSON.toJSONString(totalList));
+                statAccessUpdateService.batchInsertStaDayAccess(totalList);
+            }
+        } catch (Exception e) {
+            logger.error("saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
         }
     }
 
@@ -137,8 +178,8 @@ public class StatDataFlushJob implements SimpleJob {
                         MerchantStatAccessDTO dto = JSON.parseObject(json, MerchantStatAccessDTO.class);
                         dto.setDataType(type.getType());
                         dto.setAppId(appId);
-                        dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
-                        dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
+                        dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
+                        dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
                         dto.setLastUpdateTime(new Date());
                         totalList.add(dto);
                     }
@@ -146,7 +187,7 @@ public class StatDataFlushJob implements SimpleJob {
             });
             if (CollectionUtils.isNotEmpty(totalList)) {
                 logger.info("saveTotalData : data={}", JSON.toJSONString(totalList));
-                merchantStatAccessService.batchInsertStatAccess(totalList);
+                statAccessUpdateService.batchInsertStatAccess(totalList);
             }
         } catch (Exception e) {
             logger.error("saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
@@ -186,8 +227,8 @@ public class StatDataFlushJob implements SimpleJob {
                             MerchantStatEcommerceDTO dto = JSON.parseObject(json, MerchantStatEcommerceDTO.class);
                             dto.setEcommerceId(ecommerceId);
                             dto.setAppId(appId);
-                            dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
-                            dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
+                            dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
+                            dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
                             dto.setLastUpdateTime(new Date());
                             dataList.add(dto);
                         }
@@ -196,7 +237,7 @@ public class StatDataFlushJob implements SimpleJob {
             });
             if (CollectionUtils.isNotEmpty(dataList)) {
                 logger.info("saveEcommerceData : data={}", JSON.toJSONString(dataList));
-                merchantStatAccessService.batchInsertEcommerce(dataList);
+                statAccessUpdateService.batchInsertEcommerce(dataList);
             }
         } catch (Exception e) {
             logger.error("saveEcommerceData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
@@ -235,8 +276,8 @@ public class StatDataFlushJob implements SimpleJob {
                             MerchantStatMailDTO dto = JSON.parseObject(json, MerchantStatMailDTO.class);
                             dto.setAppId(appId);
                             dto.setMailCode(mailCode);
-                            dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
-                            dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
+                            dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
+                            dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
                             dto.setLastUpdateTime(new Date());
                             dataList.add(dto);
                         }
@@ -245,7 +286,7 @@ public class StatDataFlushJob implements SimpleJob {
             });
             if (CollectionUtils.isNotEmpty(dataList)) {
                 logger.info("saveMailData : data={}", JSON.toJSONString(dataList));
-                merchantStatAccessService.batchInsertMail(dataList);
+                statAccessUpdateService.batchInsertMail(dataList);
             }
         } catch (Exception e) {
             logger.error("saveMailData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
@@ -285,8 +326,8 @@ public class StatDataFlushJob implements SimpleJob {
                             MerchantStatOperatorDTO dto = JSON.parseObject(json, MerchantStatOperatorDTO.class);
                             dto.setAppId(appId);
                             dto.setOperaterId(operatorId);
-                            dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getSuccessCount()));
-                            dto.setFailRate(calcRate(dto.getTotalCount(), dto.getFailCount()));
+                            dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
+                            dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
                             dto.setLastUpdateTime(new Date());
                             dataList.add(dto);
                         }
@@ -295,7 +336,7 @@ public class StatDataFlushJob implements SimpleJob {
             });
             if (CollectionUtils.isNotEmpty(dataList)) {
                 logger.info("saveOperatorData : data={}", JSON.toJSONString(dataList));
-                merchantStatAccessService.batchInsertOperator(dataList);
+                statAccessUpdateService.batchInsertOperator(dataList);
             }
         } catch (Exception e) {
             logger.error("saveOperatorData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
@@ -310,12 +351,15 @@ public class StatDataFlushJob implements SimpleJob {
      * @param rateCount  比率数
      * @return
      */
-    private BigDecimal calcRate(Integer totalCount, Integer rateCount) {
+    private BigDecimal calcRate(Integer totalCount, Integer cancelCount, Integer rateCount) {
         if (totalCount == null || rateCount == null) {
             return null;
         }
         if (totalCount == 0) {
             return null;
+        }
+        if (cancelCount != null) {
+            totalCount -= cancelCount;
         }
         BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
                 .multiply(BigDecimal.valueOf(100))

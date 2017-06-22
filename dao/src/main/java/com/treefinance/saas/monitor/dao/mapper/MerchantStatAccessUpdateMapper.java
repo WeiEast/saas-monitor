@@ -4,6 +4,14 @@ import com.treefinance.saas.monitor.dao.entity.*;
 
 public interface MerchantStatAccessUpdateMapper {
     /**
+     * 插入更新日Total数据
+     *
+     * @param record
+     * @return
+     */
+    int insertOrUpdateSelectiveDayTotal(MerchantStatDayAccess record);
+
+    /**
      * 插入更新Total
      *
      * @param record

@@ -1,5 +1,6 @@
-package com.treefinance.saas.monitor.facade.service.stat;
+package com.treefinance.saas.monitor.biz.service;
 
+import com.treefinance.saas.monitor.common.domain.dto.*;
 import com.treefinance.saas.monitor.facade.domain.request.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.PageResult;
@@ -8,12 +9,12 @@ import com.treefinance.saas.monitor.facade.domain.ro.stat.*;
 import java.util.List;
 
 /**
- * 商户访问统计Facade
- * Created by yh-treefinance on 2017/5/27.
+ * Created by yh-treefinance on 2017/6/1.
  */
-public interface MerchantStatAccessFacade {
+public interface StatAccessService {
+
     /**
-     * 查询商户日访问数据
+     * 查询商户访问数据
      *
      * @param request
      * @return

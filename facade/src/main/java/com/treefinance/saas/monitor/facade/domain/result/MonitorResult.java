@@ -16,56 +16,65 @@
 
 package com.treefinance.saas.monitor.facade.domain.result;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import java.io.Serializable;
 
 /**
  * 监控工具类
+ *
  * @param <T>
  */
-public class MonitorResult<T> implements Serializable{
+public class MonitorResult<T> implements Serializable {
+    private long timestamp = System.currentTimeMillis();
+    private String errorMsg;
+    private T data;
 
-  private long timestamp = System.currentTimeMillis();
-  private String errorMsg;
-  private T data;
+    public MonitorResult() {
+    }
 
-  public MonitorResult() {
-  }
+    public MonitorResult(T data) {
+        this.data = data;
+    }
 
-  public MonitorResult(T data) {
-    this.data = data;
-  }
+    public MonitorResult(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
 
-  public MonitorResult(String errorMsg) {
-    this.errorMsg = errorMsg;
-  }
+    public MonitorResult(long timestamp, String errorMsg, T data) {
+        this.timestamp = timestamp;
+        this.errorMsg = errorMsg;
+        this.data = data;
+    }
 
-  public MonitorResult(long timestamp, String errorMsg, T data) {
-    this.timestamp = timestamp;
-    this.errorMsg = errorMsg;
-    this.data = data;
-  }
+    public long getTimestamp() {
+        return timestamp;
+    }
 
-  public long getTimestamp() {
-    return timestamp;
-  }
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
 
-  public void setTimestamp(long timestamp) {
-    this.timestamp = timestamp;
-  }
+    public String getErrorMsg() {
+        return errorMsg;
+    }
 
-  public String getErrorMsg() {
-    return errorMsg;
-  }
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
 
-  public void setErrorMsg(String errorMsg) {
-    this.errorMsg = errorMsg;
-  }
+    public T getData() {
+        return data;
+    }
 
-  public T getData() {
-    return data;
-  }
+    public void setData(T data) {
+        this.data = data;
+    }
 
-  public void setData(T data) {
-    this.data = data;
-  }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE);
+    }
 }

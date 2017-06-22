@@ -1,11 +1,15 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
-import com.treefinance.saas.monitor.biz.service.MerchantStatAccessService;
-import com.treefinance.saas.monitor.common.domain.dto.*;
+import com.google.common.collect.Lists;
+import com.treefinance.saas.monitor.biz.service.StatAccessService;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.*;
 import com.treefinance.saas.monitor.facade.domain.request.*;
+import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
+import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
+import com.treefinance.saas.monitor.facade.domain.result.PageResult;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,8 +18,10 @@ import java.util.List;
 /**
  * Created by yh-treefinance on 2017/6/2.
  */
-@Service("merchantStatAccessService")
-public class MerchantStatAccessServiceImpl implements MerchantStatAccessService {
+@Service("statAccessService")
+public class StatAccessServiceImpl implements StatAccessService {
+    @Autowired
+    private MerchantStatDayAccessMapper merchantStatDayAccessMapper;
     @Autowired
     private MerchantStatAccessMapper merchantStatAccessMapper;
     @Autowired
@@ -26,94 +32,85 @@ public class MerchantStatAccessServiceImpl implements MerchantStatAccessService 
     private MerchantStatMailMapper merchantStatMailMapper;
     @Autowired
     private MerchantStatOperatorMapper merchantStatOperatorMapper;
-    @Autowired
-    private MerchantStatAccessUpdateMapper merchantStatAccessUpdateMapper;
-
 
     @Override
-    public List<MerchantStatAccessDTO> queryAccessList(MerchantStatAccessRequest request) {
+    public PageResult<MerchantStatDayAccessRO> queryDayAccessList(MerchantStatDayAccessRequest request) {
+        MerchantStatDayAccessCriteria criteria = new MerchantStatDayAccessCriteria();
+        criteria.setOrderByClause("dataTime desc");
+        criteria.setLimit(request.getPageSize());
+        criteria.setOffset(request.getOffset());
+        criteria.createCriteria().andAppIdEqualTo(request.getAppId())
+                .andDataTypeEqualTo(request.getDataType())
+                .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        int totalCount = merchantStatDayAccessMapper.countByExample(criteria);
+        List<MerchantStatDayAccessRO> data = Lists.newArrayList();
+        if (totalCount > 0){
+            List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
+            data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
+        }
+        return MonitorResultBuilder.pageResult(request, data, totalCount);
+    }
+
+    @Override
+    public MonitorResult<List<MerchantStatAccessRO>> queryAccessList(MerchantStatAccessRequest request) {
         MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
         criteria.setOrderByClause("lastUpdateTime asc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<MerchantStatAccess> list = merchantStatAccessMapper.selectByExample(criteria);
-        return DataConverterUtils.convert(list, MerchantStatAccessDTO.class);
+        List<MerchantStatAccessRO> data = DataConverterUtils.convert(list, MerchantStatAccessRO.class);
+        return MonitorResultBuilder.build(data);
     }
 
     @Override
-    public List<MerchantStatBankDTO> queryBankList(MerchantStatBankRequest request) {
+    public MonitorResult<List<MerchantStatBankRO>> queryBankList(MerchantStatBankRequest request) {
         MerchantStatBankCriteria criteria = new MerchantStatBankCriteria();
         criteria.setOrderByClause("lastUpdateTime asc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andBankIdEqualTo(request.getBankId())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<MerchantStatBank> list = merchantStatBankMapper.selectByExample(criteria);
-        return DataConverterUtils.convert(list, MerchantStatBankDTO.class);
+
+        List<MerchantStatBankRO> data = DataConverterUtils.convert(list, MerchantStatBankRO.class);
+        return MonitorResultBuilder.build(data);
     }
 
     @Override
-    public List<MerchantStatEcommerceDTO> queryEcommerceList(MerchantStatEcommerceRequest request) {
+    public MonitorResult<List<MerchantStatEcommerceRO>> queryEcommerceList(MerchantStatEcommerceRequest request) {
         MerchantStatEcommerceCriteria criteria = new MerchantStatEcommerceCriteria();
         criteria.setOrderByClause("lastUpdateTime asc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andEcommerceIdEqualTo(request.getEcommerceId())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<MerchantStatEcommerce> list = merchantStatEcommerceMapper.selectByExample(criteria);
-        return DataConverterUtils.convert(list, MerchantStatEcommerceDTO.class);
+
+        List<MerchantStatEcommerceRO> data = DataConverterUtils.convert(list, MerchantStatEcommerceRO.class);
+        return MonitorResultBuilder.build(data);
     }
 
     @Override
-    public List<MerchantStatMailDTO> queryMailList(MerchantStatMailRequest request) {
+    public MonitorResult<List<MerchantStatMailRO>> queryMailList(MerchantStatMailRequest request) {
         MerchantStatMailCriteria criteria = new MerchantStatMailCriteria();
         criteria.setOrderByClause("lastUpdateTime asc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andMailCodeEqualTo(request.getMailCode())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<MerchantStatMail> list = merchantStatMailMapper.selectByExample(criteria);
-        return DataConverterUtils.convert(list, MerchantStatMailDTO.class);
+
+        List<MerchantStatMailRO> data = DataConverterUtils.convert(list, MerchantStatMailRO.class);
+        return MonitorResultBuilder.build(data);
     }
 
     @Override
-    public List<MerchantStatOperatorDTO> queryOperatorList(MerchantStatOperaterRequest request) {
+    public MonitorResult<List<MerchantStatOperatorRO>> queryOperatorList(MerchantStatOperaterRequest request) {
         MerchantStatOperatorCriteria criteria = new MerchantStatOperatorCriteria();
         criteria.setOrderByClause("lastUpdateTime asc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andOperaterIdEqualTo(request.getOperaterId())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<MerchantStatOperator> list = merchantStatOperatorMapper.selectByExample(criteria);
-        return DataConverterUtils.convert(list, MerchantStatOperatorDTO.class);
+        List<MerchantStatOperatorRO> data = DataConverterUtils.convert(list, MerchantStatOperatorRO.class);
+        return MonitorResultBuilder.build(data);
     }
-
-
-    @Override
-    public void batchInsertStatAccess(List<MerchantStatAccessDTO> list) {
-        List<MerchantStatAccess> dataList = DataConverterUtils.convert(list, MerchantStatAccess.class);
-        dataList.forEach(data -> merchantStatAccessUpdateMapper.insertOrUpdateSelectiveTotal(data));
-    }
-
-    @Override
-    public void batchInsertBankList(List<MerchantStatBankDTO> list) {
-        List<MerchantStatBank> dataList = DataConverterUtils.convert(list, MerchantStatBank.class);
-        dataList.forEach(data -> merchantStatAccessUpdateMapper.insertOrUpdateSelectiveBank(data));
-    }
-
-    @Override
-    public void batchInsertEcommerce(List<MerchantStatEcommerceDTO> list) {
-        List<MerchantStatEcommerce> dataList = DataConverterUtils.convert(list, MerchantStatEcommerce.class);
-        dataList.forEach(data -> merchantStatAccessUpdateMapper.insertOrUpdateSelectiveEcommerce(data));
-    }
-
-    @Override
-    public void batchInsertMail(List<MerchantStatMailDTO> list) {
-        List<MerchantStatMail> dataList = DataConverterUtils.convert(list, MerchantStatMail.class);
-        dataList.forEach(data -> merchantStatAccessUpdateMapper.insertOrUpdateSelectiveMail(data));
-    }
-
-    @Override
-    public void batchInsertOperator(List<MerchantStatOperatorDTO> list) {
-        List<MerchantStatOperator> dataList = DataConverterUtils.convert(list, MerchantStatOperator.class);
-        dataList.forEach(data -> merchantStatAccessUpdateMapper.insertOrUpdateSelectiveOperator(data));
-    }
-
 }

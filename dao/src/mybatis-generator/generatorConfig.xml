@@ -48,50 +48,62 @@
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
 
-        <table tableName="merchant_stat_access" domainObjectName="MerchantStatAccess">
+        <!-- <table tableName="merchant_stat_access" domainObjectName="MerchantStatAccess">
+             <property name="useActualColumnNames" value="true"/>
+             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+         </table>
+
+         <table tableName="merchant_stat_bank" domainObjectName="MerchantStatBank">
+             <property name="useActualColumnNames" value="true"/>
+             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+         </table>
+
+         <table tableName="merchant_stat_ecommerce" domainObjectName="MerchantStatEcommerce">
+             <property name="useActualColumnNames" value="true"/>
+             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+         </table>
+
+         <table tableName="merchant_stat_operator" domainObjectName="MerchantStatOperator">
+             <property name="useActualColumnNames" value="true"/>
+             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+         </table>
+
+         <table tableName="merchant_stat_mail" domainObjectName="MerchantStatMail">
+             <property name="useActualColumnNames" value="true"/>
+             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+         </table>
+
+         <table tableName="t_bank" domainObjectName="Bank">
+             <property name="useActualColumnNames" value="true"/>
+             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+         </table>
+
+
+         <table tableName="t_ecommerce" domainObjectName="Ecommerce">
+             <property name="useActualColumnNames" value="true"/>
+             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+         </table>
+
+         <table tableName="t_operator" domainObjectName="Operator">
+             <property name="useActualColumnNames" value="true"/>
+             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+         </table>
+         <table tableName="t_website" domainObjectName="Website">
+             <property name="useActualColumnNames" value="true"/>
+             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+         </table>-->
+
+        <table tableName="merchant_access_history" domainObjectName="MerchantAccessHistory">
             <property name="useActualColumnNames" value="true"/>
             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
         </table>
 
-        <table tableName="merchant_stat_bank" domainObjectName="MerchantStatBank">
+
+        <table tableName="merchant_stat_day_access" domainObjectName="MerchantStatDayAccess">
             <property name="useActualColumnNames" value="true"/>
             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
         </table>
 
-        <table tableName="merchant_stat_ecommerce" domainObjectName="MerchantStatEcommerce">
-            <property name="useActualColumnNames" value="true"/>
-            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
-        </table>
-
-        <table tableName="merchant_stat_operator" domainObjectName="MerchantStatOperator">
-            <property name="useActualColumnNames" value="true"/>
-            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
-        </table>
-
-        <table tableName="merchant_stat_mail" domainObjectName="MerchantStatMail">
-            <property name="useActualColumnNames" value="true"/>
-            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
-        </table>
-
-        <table tableName="t_bank" domainObjectName="Bank">
-            <property name="useActualColumnNames" value="true"/>
-            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
-        </table>
-
-
-        <table tableName="t_ecommerce" domainObjectName="Ecommerce">
-            <property name="useActualColumnNames" value="true"/>
-            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
-        </table>
-
-        <table tableName="t_operator" domainObjectName="Operator">
-            <property name="useActualColumnNames" value="true"/>
-            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
-        </table>
-        <table tableName="t_website" domainObjectName="Website">
-            <property name="useActualColumnNames" value="true"/>
-            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
-        </table>
     </context>
 
 </generatorConfiguration>

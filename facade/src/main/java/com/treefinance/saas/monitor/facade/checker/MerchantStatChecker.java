@@ -52,7 +52,21 @@ public class MerchantStatChecker {
         }
     }
 
-
+    /**
+     * 校验商户统计参数
+     *
+     * @param request
+     */
+    public static void checkDayAccessRequest(MerchantStatDayAccessRequest request) {
+        checkBase(request);
+        Byte dataType = request.getDataType();
+        if (request.getDataType() == null) {
+            throw new ParamCheckerException("请求参数dataType不能为空");
+        }
+        if (dataType < 0 || dataType > 4) {
+            throw new ParamCheckerException("请求参数dataType非法");
+        }
+    }
 
     /**
      * 校验商户统计参数

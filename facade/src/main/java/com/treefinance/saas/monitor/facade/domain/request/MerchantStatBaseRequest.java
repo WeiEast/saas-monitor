@@ -1,6 +1,6 @@
 package com.treefinance.saas.monitor.facade.domain.request;
 
-import com.treefinance.saas.monitor.facade.domain.base.BaseRequest;
+import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
 
 import java.util.Date;
 
@@ -9,7 +9,7 @@ import java.util.Date;
  * 商户统计基础对象
  * Created by yh-treefinance on 2017/6/5.
  */
-public class MerchantStatBaseRequest extends BaseRequest {
+public class MerchantStatBaseRequest extends PageRequest {
 
     /**
      * appId

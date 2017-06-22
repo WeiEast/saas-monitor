@@ -1,5 +1,9 @@
 package com.treefinance.saas.monitor.facade.domain.result;
 
+import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
+
+import java.util.List;
+
 /**
  * Created by yh-treefinance on 2017/6/5.
  */
@@ -19,5 +23,9 @@ public class MonitorResultBuilder {
 
     public static <T> MonitorResult<T> build(long timestamp, String errorMsg, T data) {
         return new MonitorResult<T>(timestamp, errorMsg, data);
+    }
+
+    public static <T> PageResult<T> pageResult(PageRequest request, List<T> data, long totalCount){
+        return new PageResult<T>(request,data,totalCount);
     }
 }

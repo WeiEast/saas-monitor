@@ -3,9 +3,7 @@ package com.treefinance.saas.monitor.biz.helper;
 import com.google.common.base.Joiner;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.DateUtils;
 
-import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -15,6 +13,7 @@ public class RedisKeyHelper {
 
     public static final String KEY_PREFIX = "saas-monitor";
     public static final String STAT_ACCESS = "stat-access";
+    public static final String STAT_ACCESS_DAY = "stat-access-day";
     public static final String STAT_MAIL = "stat-mail";
     public static final String STAT_ECOMMERCE = "stat-ecommerce";
     public static final String STAT_OPERATOR = "stat-operator";
@@ -37,6 +36,16 @@ public class RedisKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "stat-day", day).toString();
     }
 
+    /**
+     * 获取日统计key
+     *
+     * @param intervalTime
+     * @return
+     */
+    public static String keyOfTotalDay(String appId, Date intervalTime, EStatType statType) {
+        String day = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, STAT_ACCESS_DAY, appId, statType, day).toString();
+    }
     /**
      * 获取统计key
      *

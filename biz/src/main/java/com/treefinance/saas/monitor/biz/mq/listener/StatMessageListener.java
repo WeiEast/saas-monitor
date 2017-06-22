@@ -78,22 +78,37 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
         EBizType bizType = EBizType.getBizType(message.getBizType());
         // 总数
         updateTotalData(intervalTime, message, EStatType.TOTAL);
+        updateTotalDayData(intervalTime, message, EStatType.TOTAL);
         // 电商
         if (bizType == EBizType.ECOMMERCE) {
             updateTotalData(intervalTime, message, EStatType.ECOMMERCE);
+            updateTotalDayData(intervalTime, message, EStatType.ECOMMERCE);
         }
         // 邮箱或者账单
         else if (bizType == EBizType.EMAIL) {
             updateTotalData(intervalTime, message, EStatType.EMAIL);
+            updateTotalDayData(intervalTime, message, EStatType.EMAIL);
             // #TODO 银行暂不统计
 //            updateTotalData(intervalTime, message, EStatType.BANK);
         }
         // 运营商
         else if (bizType == EBizType.OPERATOR) {
             updateTotalData(intervalTime, message, EStatType.OPERATER);
+            updateTotalDayData(intervalTime, message, EStatType.OPERATER);
         }
     }
 
+    /**
+     * 按日统计数据
+     * @param intervalTime
+     * @param message
+     * @param type
+     */
+    private void updateTotalDayData(Date intervalTime, GatewayAccessMessage message, EStatType type) {
+        updateData(intervalTime, message,
+                statMap -> statMap.put("dataType", type.getType()+""),
+                () -> RedisKeyHelper.keyOfTotalDay(message.getAppId(), intervalTime, type));
+    }
     /**
      * 更新总计数据
      *

@@ -6,17 +6,10 @@ import com.treefinance.saas.monitor.facade.domain.request.*;
 import java.util.List;
 
 /**
+ * 统计数据更新Service
  * Created by yh-treefinance on 2017/6/1.
  */
-public interface MerchantStatAccessService {
-
-    /**
-     * 查询商户访问数据
-     *
-     * @param request
-     * @return
-     */
-    List<MerchantStatAccessDTO> queryAccessList(MerchantStatAccessRequest request);
+public interface StatAccessUpdateService {
 
     /**
      * 批量保存商户访问数据
@@ -26,12 +19,11 @@ public interface MerchantStatAccessService {
     void batchInsertStatAccess(List<MerchantStatAccessDTO> list);
 
     /**
-     * 查询银行访问数据
+     * 批量保存商户日访问数据
      *
-     * @param request
-     * @return
+     * @param list
      */
-    List<MerchantStatBankDTO> queryBankList(MerchantStatBankRequest request);
+    void batchInsertStaDayAccess(List<MerchantStatDayAccessDTO> list);
 
     /**
      * 批量保存银行访问数据
@@ -41,14 +33,6 @@ public interface MerchantStatAccessService {
     void batchInsertBankList(List<MerchantStatBankDTO> list);
 
     /**
-     * 查询电商访问数据
-     *
-     * @param request
-     * @return
-     */
-    List<MerchantStatEcommerceDTO> queryEcommerceList(MerchantStatEcommerceRequest request);
-
-    /**
      * 批量保存电商访问数据
      *
      * @param list
@@ -56,28 +40,11 @@ public interface MerchantStatAccessService {
     void batchInsertEcommerce(List<MerchantStatEcommerceDTO> list);
 
     /**
-     * 查询邮箱访问数据
-     *
-     * @param request
-     * @return
-     */
-    List<MerchantStatMailDTO> queryMailList(MerchantStatMailRequest request);
-
-    /**
      * 批量保存邮箱访问数据
      *
      * @param list
      */
     void batchInsertMail(List<MerchantStatMailDTO> list);
-
-    /**
-     * 查询运营商列表
-     *
-     * @param request
-     * @return
-     */
-    List<MerchantStatOperatorDTO> queryOperatorList(MerchantStatOperaterRequest request);
-
     /**
      * 批量保存运营商访问数据
      *
