@@ -4,7 +4,6 @@ import com.treefinance.saas.monitor.biz.service.StatAccessService;
 import com.treefinance.saas.monitor.facade.checker.MerchantStatChecker;
 import com.treefinance.saas.monitor.facade.domain.request.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
-import com.treefinance.saas.monitor.facade.domain.result.PageResult;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.*;
 import com.treefinance.saas.monitor.facade.service.stat.MerchantStatAccessFacade;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,7 @@ public class MerchantStatAccessFacadeImpl implements MerchantStatAccessFacade {
     private StatAccessService statAccessService;
 
     @Override
-    public PageResult<MerchantStatDayAccessRO> queryDayAccessList(MerchantStatDayAccessRequest request) {
+    public MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessList(MerchantStatDayAccessRequest request) {
         MerchantStatChecker.checkDayAccessRequest(request);
         return statAccessService.queryDayAccessList(request);
     }

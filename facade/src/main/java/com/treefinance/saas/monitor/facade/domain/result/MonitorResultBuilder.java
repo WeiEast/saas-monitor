@@ -25,7 +25,7 @@ public class MonitorResultBuilder {
         return new MonitorResult<T>(timestamp, errorMsg, data);
     }
 
-    public static <T> PageResult<T> pageResult(PageRequest request, List<T> data, long totalCount){
-        return new PageResult<T>(request,data,totalCount);
+    public static <T> MonitorResult<T> pageResult(PageRequest request, T data, long totalCount){
+        return new MonitorResult<T>(request,data,totalCount);
     }
 }

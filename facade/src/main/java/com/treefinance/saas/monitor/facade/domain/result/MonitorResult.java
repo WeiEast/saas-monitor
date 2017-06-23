@@ -16,10 +16,12 @@
 
 package com.treefinance.saas.monitor.facade.domain.result;
 
+import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 监控工具类
@@ -30,6 +32,14 @@ public class MonitorResult<T> implements Serializable {
     private long timestamp = System.currentTimeMillis();
     private String errorMsg;
     private T data;
+    /**
+     * 总数
+     */
+    private long totalCount = 0;
+    /**
+     * 请求参数
+     */
+    private PageRequest request;
 
     public MonitorResult() {
     }
@@ -46,6 +56,12 @@ public class MonitorResult<T> implements Serializable {
         this.timestamp = timestamp;
         this.errorMsg = errorMsg;
         this.data = data;
+    }
+
+    public MonitorResult(PageRequest request, T data, long totalCount) {
+        this.data = data;
+        this.request = request;
+        this.totalCount = totalCount;
     }
 
     public long getTimestamp() {
@@ -72,6 +88,21 @@ public class MonitorResult<T> implements Serializable {
         this.data = data;
     }
 
+    public long getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(long totalCount) {
+        this.totalCount = totalCount;
+    }
+
+    public PageRequest getRequest() {
+        return request;
+    }
+
+    public void setRequest(PageRequest request) {
+        this.request = request;
+    }
 
     @Override
     public String toString() {

@@ -8,7 +8,6 @@ import com.treefinance.saas.monitor.dao.mapper.*;
 import com.treefinance.saas.monitor.facade.domain.request.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
-import com.treefinance.saas.monitor.facade.domain.result.PageResult;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,7 +33,7 @@ public class StatAccessServiceImpl implements StatAccessService {
     private MerchantStatOperatorMapper merchantStatOperatorMapper;
 
     @Override
-    public PageResult<MerchantStatDayAccessRO> queryDayAccessList(MerchantStatDayAccessRequest request) {
+    public MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessList(MerchantStatDayAccessRequest request) {
         MerchantStatDayAccessCriteria criteria = new MerchantStatDayAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
         criteria.setLimit(request.getPageSize());

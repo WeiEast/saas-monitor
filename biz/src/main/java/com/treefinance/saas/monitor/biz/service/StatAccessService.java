@@ -1,9 +1,7 @@
 package com.treefinance.saas.monitor.biz.service;
 
-import com.treefinance.saas.monitor.common.domain.dto.*;
 import com.treefinance.saas.monitor.facade.domain.request.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
-import com.treefinance.saas.monitor.facade.domain.result.PageResult;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.*;
 
 import java.util.List;
@@ -19,7 +17,7 @@ public interface StatAccessService {
      * @param request
      * @return
      */
-    PageResult<MerchantStatDayAccessRO> queryDayAccessList(MerchantStatDayAccessRequest request);
+    MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessList(MerchantStatDayAccessRequest request);
 
     /**
      * 查询商户访问数据
