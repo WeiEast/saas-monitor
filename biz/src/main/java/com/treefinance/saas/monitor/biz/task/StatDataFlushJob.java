@@ -43,6 +43,8 @@ public class StatDataFlushJob implements SimpleJob {
     private OperatorService operatorService;
     @Autowired
     private StatAccessUpdateService statAccessUpdateService;
+    @Autowired
+    private AlarmService alarmService;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -103,6 +105,54 @@ public class StatDataFlushJob implements SimpleJob {
             logger.error("statdataflushjob exception : ", e);
         } finally {
             logger.info("定时刷新数据完成，耗时time={}ms", System.currentTimeMillis() - start);
+            alarm();
+        }
+    }
+
+    /**
+     * 监控消息
+     */
+    private void alarm() {
+        long start = System.currentTimeMillis();
+        try {
+            // 超阈值次数, 默认3次
+            int thresholdCount = diamondConfig.getMonitorAlarmThresholdCount() == null ? 3 : diamondConfig.getMonitorAlarmThresholdCount();
+
+            redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
+                @Override
+                public Object execute(RedisOperations redisOperations) throws DataAccessException {
+                    // appId列表
+                    String appIdKey = RedisKeyHelper.keyOfAppIds();
+                    Set<String> appIdSet = redisOperations.opsForSet().members(appIdKey);
+                    if (CollectionUtils.isEmpty(appIdSet)) {
+                        return null;
+                    }
+                    appIdSet.forEach(appId -> {
+                        for (EStatType statType : EStatType.values()) {
+                            if (statType == EStatType.TOTAL) {
+                                continue;
+                            }
+                            String alarmKey = RedisKeyHelper.keyOfAlarm(appId, statType);
+                            Object flag = redisOperations.opsForValue().get(alarmKey);
+                            logger.info("alarm job running : {}={}  thresholdCount={} 。。。", alarmKey, flag, thresholdCount);
+                            if (flag == null) {
+                                continue;
+                            }
+                            Integer alarmNums = Integer.valueOf(flag.toString());
+                            if (alarmNums >= thresholdCount) {
+                                alarmService.alarm(appId, statType);
+                                redisOperations.delete(alarmKey);
+                            }
+                        }
+                    });
+                    return null;
+                }
+            });
+
+        } catch (Exception e) {
+            logger.error("alarm job exception ", e);
+        } finally {
+            logger.info("alarm job completed cost {} ms", (System.currentTimeMillis() - start));
         }
     }
 
