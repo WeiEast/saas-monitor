@@ -261,7 +261,7 @@ public class StatDataFlushJob implements SimpleJob {
                     }
                     if (successRate.compareTo(alarmThreshold) >= 0) {
                         logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, 0, JSON.toJSONString(dto));
-                        redisOperations.opsForValue().set(alarmKey, "0");
+                        redisOperations.delete(alarmKey);
                     }
                     // 成功率 > 阀值， 计数器+1
                     else {
