@@ -3,6 +3,8 @@
         PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 <generatorConfiguration>
+    <!--<classPathEntry location="/Users/yh-treefinance/MyApp/Git/monitor-server/dao/src/mybatis-generator/mysql-connector-java-5.1.30.jar"/>-->
+
     <context id="common-dao" targetRuntime="MyBatis3">
 
         <plugin type="org.mybatis.generator.plugins.RenameExampleClassPlugin">
@@ -47,12 +49,17 @@
                              targetProject="src/main/java"> <!-- src/generated/java -->
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
-
-        <!-- <table tableName="merchant_stat_access" domainObjectName="MerchantStatAccess">
+        <table tableName="merchant_stat_access" domainObjectName="MerchantStatAccess"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
              <property name="useActualColumnNames" value="true"/>
              <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
          </table>
 
+        <!--
          <table tableName="merchant_stat_bank" domainObjectName="MerchantStatBank">
              <property name="useActualColumnNames" value="true"/>
              <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
@@ -93,7 +100,12 @@
              <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
          </table>-->
 
-        <table tableName="merchant_access_history" domainObjectName="MerchantAccessHistory">
+<!--        <table tableName="merchant_access_history" domainObjectName="MerchantAccessHistory"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
             <property name="useActualColumnNames" value="true"/>
             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
         </table>
@@ -102,7 +114,7 @@
         <table tableName="merchant_stat_day_access" domainObjectName="MerchantStatDayAccess">
             <property name="useActualColumnNames" value="true"/>
             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
-        </table>
+        </table>-->
 
     </context>
 

@@ -17,6 +17,8 @@ public class RedisKeyHelper {
     public static final String STAT_MAIL = "stat-mail";
     public static final String STAT_ECOMMERCE = "stat-ecommerce";
     public static final String STAT_OPERATOR = "stat-operator";
+    public static final String ALARM_ACCESS_DAY = "alarm-flag";
+
 
     /**
      * appId列表
@@ -54,6 +56,16 @@ public class RedisKeyHelper {
      */
     public static String keyOfTotal(String appId, Date intervalTime, EStatType statType) {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, STAT_ACCESS, appId, statType, intervalTime.getTime()).toString();
+    }
+
+
+    /**
+     * 预警标记key
+     *
+     * @return
+     */
+    public static String keyOfAlarm(String appId, EStatType statType) {
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, ALARM_ACCESS_DAY, appId, statType).toString();
     }
 
     /**

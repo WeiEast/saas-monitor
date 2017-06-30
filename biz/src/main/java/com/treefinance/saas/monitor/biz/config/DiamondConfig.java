@@ -35,6 +35,83 @@ public class DiamondConfig {
     @DAttribute(key = "monitor.interval.minutes")
     private Integer monitorIntervalMinutes;
 
+    // 预警消息，group
+    @DAttribute(key = "monitor.alarm.group.name")
+    private String monitorAlarmGroupName;
+    // 预警消息，topic
+    @DAttribute(key = "monitor.alarm.topic")
+    private String monitorAlarmTopic;
+    // 预警消息，邮件tag
+    @DAttribute(key = "monitor.alarm.tag.mail")
+    private String monitorAlarmMailTag;
+    // 预警消息，邮件列表
+    @DAttribute(key = "monitor.alarm.mail")
+    private String monitorAlarmMails;
+    // 预警消息，微信tag
+    @DAttribute(key = "monitor.alarm.tag.webchart")
+    private String monitorAlarmWebchartTag;
+    // 预警消息，报警阈值
+    @DAttribute(key = "monitor.alarm.threshold")
+    private Double monitorAlarmThreshold;
+    // 预警消息，超阈值次数
+    @DAttribute(key = "monitor.alarm.thresholdCount")
+    private Integer monitorAlarmThresholdCount;
+
+    public Integer getMonitorAlarmThresholdCount() {
+        return monitorAlarmThresholdCount;
+    }
+
+    public void setMonitorAlarmThresholdCount(Integer monitorAlarmThresholdCount) {
+        this.monitorAlarmThresholdCount = monitorAlarmThresholdCount;
+    }
+
+    public String getMonitorAlarmMailTag() {
+        return monitorAlarmMailTag;
+    }
+
+    public void setMonitorAlarmMailTag(String monitorAlarmMailTag) {
+        this.monitorAlarmMailTag = monitorAlarmMailTag;
+    }
+
+    public String getMonitorAlarmWebchartTag() {
+        return monitorAlarmWebchartTag;
+    }
+
+    public void setMonitorAlarmWebchartTag(String monitorAlarmWebchartTag) {
+        this.monitorAlarmWebchartTag = monitorAlarmWebchartTag;
+    }
+
+    public String getMonitorAlarmGroupName() {
+        return monitorAlarmGroupName;
+    }
+
+    public void setMonitorAlarmGroupName(String monitorAlarmGroupName) {
+        this.monitorAlarmGroupName = monitorAlarmGroupName;
+    }
+
+    public String getMonitorAlarmTopic() {
+        return monitorAlarmTopic;
+    }
+
+    public void setMonitorAlarmTopic(String monitorAlarmTopic) {
+        this.monitorAlarmTopic = monitorAlarmTopic;
+    }
+
+    public String getMonitorAlarmMails() {
+        return monitorAlarmMails;
+    }
+
+    public void setMonitorAlarmMails(String monitorAlarmMails) {
+        this.monitorAlarmMails = monitorAlarmMails;
+    }
+    public Double getMonitorAlarmThreshold() {
+        return monitorAlarmThreshold;
+    }
+
+    public void setMonitorAlarmThreshold(Double monitorAlarmThreshold) {
+        this.monitorAlarmThreshold = monitorAlarmThreshold;
+    }
+
     @BeforeUpdate
     public void before(String key, Object newValue) {
         logger.info(key + " update to " + newValue + " start...");

@@ -22,6 +22,7 @@ public class ListenerStarter {
 
     @Autowired
     private DiamondConfig diamondConfig;
+
     private DefaultMQPushConsumer monitorAccessConsumer;
     @Autowired
     private StatMessageListener gatewayAccessMessageListener;

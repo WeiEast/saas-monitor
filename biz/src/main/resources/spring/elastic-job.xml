@@ -11,10 +11,16 @@
                         http://www.dangdang.com/schema/ddframe/job/job.xsd
                         ">
     <!--配置作业注册中心 -->
-    <reg:zookeeper id="regCenter" server-lists="${zk.address}" namespace="monitor-job" base-sleep-time-milliseconds="1000"
+    <reg:zookeeper id="regCenter" server-lists="${zk.address}" namespace="monitor-job"
+                   base-sleep-time-milliseconds="1000"
                    max-sleep-time-milliseconds="3000" max-retries="3"/>
 
     <!-- 配置作业-->
-    <job:simple id="statDataFlushJob" class="com.treefinance.saas.monitor.biz.task.StatDataFlushJob" registry-center-ref="regCenter" cron="0 0/10 * * * ?"
-                sharding-total-count="1" overwrite="true" />
+    <job:simple id="statDataFlushJob" class="com.treefinance.saas.monitor.biz.task.StatDataFlushJob"
+                registry-center-ref="regCenter" cron="0 0/10 * * * ?"
+                sharding-total-count="1" overwrite="true"/>
+    <!-- 报警任务 -->
+    <job:simple id="alarmJob" class="com.treefinance.saas.monitor.biz.task.AlarmJob" registry-center-ref="regCenter"
+                cron="0 2/10 * * * ?"
+                sharding-total-count="1" overwrite="true"/>
 </beans>

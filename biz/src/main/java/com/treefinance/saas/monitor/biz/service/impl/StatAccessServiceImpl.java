@@ -53,7 +53,7 @@ public class StatAccessServiceImpl implements StatAccessService {
     @Override
     public MonitorResult<List<MerchantStatAccessRO>> queryAccessList(MerchantStatAccessRequest request) {
         MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
-        criteria.setOrderByClause("lastUpdateTime asc");
+        criteria.setOrderByClause("dataTime asc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
@@ -65,7 +65,7 @@ public class StatAccessServiceImpl implements StatAccessService {
     @Override
     public MonitorResult<List<MerchantStatBankRO>> queryBankList(MerchantStatBankRequest request) {
         MerchantStatBankCriteria criteria = new MerchantStatBankCriteria();
-        criteria.setOrderByClause("lastUpdateTime asc");
+        criteria.setOrderByClause("dataTime asc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andBankIdEqualTo(request.getBankId())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
@@ -78,7 +78,7 @@ public class StatAccessServiceImpl implements StatAccessService {
     @Override
     public MonitorResult<List<MerchantStatEcommerceRO>> queryEcommerceList(MerchantStatEcommerceRequest request) {
         MerchantStatEcommerceCriteria criteria = new MerchantStatEcommerceCriteria();
-        criteria.setOrderByClause("lastUpdateTime asc");
+        criteria.setOrderByClause("dataTime asc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andEcommerceIdEqualTo(request.getEcommerceId())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
@@ -91,7 +91,7 @@ public class StatAccessServiceImpl implements StatAccessService {
     @Override
     public MonitorResult<List<MerchantStatMailRO>> queryMailList(MerchantStatMailRequest request) {
         MerchantStatMailCriteria criteria = new MerchantStatMailCriteria();
-        criteria.setOrderByClause("lastUpdateTime asc");
+        criteria.setOrderByClause("dataTime asc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andMailCodeEqualTo(request.getMailCode())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
@@ -104,7 +104,7 @@ public class StatAccessServiceImpl implements StatAccessService {
     @Override
     public MonitorResult<List<MerchantStatOperatorRO>> queryOperatorList(MerchantStatOperaterRequest request) {
         MerchantStatOperatorCriteria criteria = new MerchantStatOperatorCriteria();
-        criteria.setOrderByClause("lastUpdateTime asc");
+        criteria.setOrderByClause("dataTime asc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andOperaterIdEqualTo(request.getOperaterId())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());

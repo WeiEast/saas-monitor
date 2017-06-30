@@ -188,6 +188,33 @@ public class StatDataFlushJob implements SimpleJob {
             if (CollectionUtils.isNotEmpty(totalList)) {
                 logger.info("saveTotalData : data={}", JSON.toJSONString(totalList));
                 statAccessUpdateService.batchInsertStatAccess(totalList);
+
+                // 未设置预警阀值
+                if (diamondConfig.getMonitorAlarmThreshold() == null) {
+                    return;
+                }
+                BigDecimal alarmThreshold = BigDecimal.valueOf(diamondConfig.getMonitorAlarmThreshold());
+                for (MerchantStatAccessDTO dto : totalList) {
+                    String appId = dto.getAppId();
+                    EStatType statType = EStatType.getById(dto.getDataType());
+                    if (statType == EStatType.TOTAL) {
+                        continue;
+                    }
+                    BigDecimal successRate = dto.getSuccessRate();
+                    // 无成功率，不计数
+                    if (successRate == null) {
+                        continue;
+                    }
+                    // 成功率 > 阀值， 清零计数
+                    String alarmKey = RedisKeyHelper.keyOfAlarm(appId, statType);
+                    if (successRate.compareTo(alarmThreshold) >= 0) {
+                        redisOperations.opsForValue().set(alarmKey, 0);
+                    }
+                    // 成功率 > 阀值， 计数器+1
+                    else {
+                        redisOperations.opsForValue().increment(alarmKey, 1);
+                    }
+                }
             }
         } catch (Exception e) {
             logger.error("saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
