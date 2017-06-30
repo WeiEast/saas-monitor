@@ -201,10 +201,6 @@ public class StatDataFlushJob implements SimpleJob {
                         continue;
                     }
                     BigDecimal successRate = dto.getSuccessRate();
-                    // 无成功率，不计数
-                    if (successRate == null) {
-                        continue;
-                    }
                     // 成功率 > 阀值， 清零计数
                     String alarmKey = RedisKeyHelper.keyOfAlarm(appId, statType);
                     // 没有成功、失败，跳过
