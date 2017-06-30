@@ -7,9 +7,10 @@ import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.dao.entity.MerchantStatAccess;
 import com.treefinance.saas.monitor.dao.entity.MerchantStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.MerchantStatAccessMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -20,6 +21,7 @@ import java.util.List;
  */
 @Service
 public class AlarmServiceImpl implements AlarmService {
+    private static final Logger logger = LoggerFactory.getLogger(AlarmServiceImpl.class);
     @Autowired
     private DiamondConfig diamondConfig;
     @Autowired
@@ -29,9 +31,7 @@ public class AlarmServiceImpl implements AlarmService {
 
     @Override
     public void alarm(String appId, EStatType type) {
-        if (diamondConfig.getMonitorAlarmThreshold() == null) {
-            return;
-        }
+        logger.info("alarm appId={},type={} ", appId, type);
         Integer thresholdCount = diamondConfig.getMonitorAlarmThresholdCount() == null ? 3 : diamondConfig.getMonitorAlarmThresholdCount();
 
         BigDecimal alarmThreshold = BigDecimal.valueOf(diamondConfig.getMonitorAlarmThreshold());

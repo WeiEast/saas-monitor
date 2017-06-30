@@ -35,7 +35,7 @@ public class AlarmJob implements SimpleJob {
         long start = System.currentTimeMillis();
         try {
             // 超阈值次数, 默认3次
-            Integer thresholdCount = diamondConfig.getMonitorAlarmThresholdCount() == null ? 3 : diamondConfig.getMonitorAlarmThresholdCount();
+            int thresholdCount = diamondConfig.getMonitorAlarmThresholdCount() == null ? 3 : diamondConfig.getMonitorAlarmThresholdCount();
 
             redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
                 @Override
@@ -58,7 +58,7 @@ public class AlarmJob implements SimpleJob {
                             }
                             logger.info("alarm job running : {}={}  thresholdCount={} 。。。", alarmKey, flag, thresholdCount);
                             Integer alarmNums = Integer.valueOf(flag.toString());
-                            if (alarmNums > thresholdCount) {
+                            if (alarmNums >= thresholdCount) {
                                 alarmService.alarm(appId, statType);
                                 redisOperations.delete(alarmKey);
                             }
