@@ -68,6 +68,7 @@ public class AlarmMessageProducer {
             logger.info("No mail list are configured，do not alarm : message={} ", JSON.toJSONString(data));
             return;
         }
+        logger.info("send alarm mail to {} ", mails);
         String topic = diamondConfig.getMonitorAlarmTopic();
         String tag = diamondConfig.getMonitorAlarmMailTag();
         String key = UUID.randomUUID().toString() + "_" + tag;
