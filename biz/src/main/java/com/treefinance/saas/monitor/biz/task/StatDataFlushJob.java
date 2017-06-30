@@ -210,14 +210,17 @@ public class StatDataFlushJob implements SimpleJob {
                     // 没有成功、失败，跳过
                     if ((dto.getFailCount() == null || dto.getFailCount() == 0)
                             && (dto.getSuccessCount() == null || dto.getSuccessCount() == 0)) {
+                        logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto));
                         continue;
                     }
                     if (successRate.compareTo(alarmThreshold) >= 0) {
                         redisOperations.opsForValue().set(alarmKey, 0);
+                        logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, 0, JSON.toJSONString(dto));
                     }
                     // 成功率 > 阀值， 计数器+1
                     else {
-                        redisOperations.opsForValue().increment(alarmKey, 1);
+                        Long result = redisOperations.opsForValue().increment(alarmKey, 1);
+                        logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, result, JSON.toJSONString(dto));
                     }
                 }
             }
