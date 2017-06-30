@@ -21,6 +21,6 @@
                 sharding-total-count="1" overwrite="true"/>
     <!-- 报警任务 -->
     <job:simple id="alarmJob" class="com.treefinance.saas.monitor.biz.task.AlarmJob" registry-center-ref="regCenter"
-                cron="0 0/1 * * * ?"
+                cron="0 1/2 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
 </beans>

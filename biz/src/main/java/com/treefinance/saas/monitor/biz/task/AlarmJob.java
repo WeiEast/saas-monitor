@@ -53,10 +53,10 @@ public class AlarmJob implements SimpleJob {
                             }
                             String alarmKey = RedisKeyHelper.keyOfAlarm(appId, statType);
                             Object flag = redisOperations.opsForValue().get(alarmKey);
+                            logger.info("alarm job running : {}={}  thresholdCount={} 。。。", alarmKey, flag, thresholdCount);
                             if (flag == null) {
                                 continue;
                             }
-                            logger.info("alarm job running : {}={}  thresholdCount={} 。。。", alarmKey, flag, thresholdCount);
                             Integer alarmNums = Integer.valueOf(flag.toString());
                             if (alarmNums >= thresholdCount) {
                                 alarmService.alarm(appId, statType);
