@@ -17,10 +17,10 @@
 
     <!-- 配置作业-->
     <job:simple id="statDataFlushJob" class="com.treefinance.saas.monitor.biz.task.StatDataFlushJob"
-                registry-center-ref="regCenter" cron="0 0/10 * * * ?"
+                registry-center-ref="regCenter" cron="0 0/1 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
     <!-- 报警任务 -->
     <job:simple id="alarmJob" class="com.treefinance.saas.monitor.biz.task.AlarmJob" registry-center-ref="regCenter"
-                cron="0 2/10 * * * ?"
+                cron="0 0/1 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
 </beans>
