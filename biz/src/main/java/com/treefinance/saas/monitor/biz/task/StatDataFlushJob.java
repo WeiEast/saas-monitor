@@ -207,8 +207,9 @@ public class StatDataFlushJob implements SimpleJob {
                     }
                     // 成功率 > 阀值， 清零计数
                     String alarmKey = RedisKeyHelper.keyOfAlarm(appId, statType);
-                    // ==0 跳过
-                    if (dto.getSuccessCount() == null || 0 == dto.getSuccessCount()) {
+                    // 没有成功、失败，跳过
+                    if ((dto.getFailCount() == null || dto.getFailCount() == 0)
+                            && (dto.getSuccessCount() == null || dto.getSuccessCount() == 0)) {
                         continue;
                     }
                     if (successRate.compareTo(alarmThreshold) >= 0) {
