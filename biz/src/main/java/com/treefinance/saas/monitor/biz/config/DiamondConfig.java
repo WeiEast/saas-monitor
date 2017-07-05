@@ -56,6 +56,28 @@ public class DiamondConfig {
     // 预警消息，超阈值次数
     @DAttribute(key = "monitor.alarm.thresholdCount")
     private Integer monitorAlarmThresholdCount;
+    // 预警消息，剔除的商户
+    @DAttribute(key = "monitor.alarm.excludeAppIds")
+    private String monitorAlarmExcludeAppIds;
+    // 监控环境
+    @DAttribute(key = "monitor.environment")
+    private String monitorEnvironment;
+
+    public String getMonitorEnvironment() {
+        return monitorEnvironment;
+    }
+
+    public void setMonitorEnvironment(String monitorEnvironment) {
+        this.monitorEnvironment = monitorEnvironment;
+    }
+
+    public String getMonitorAlarmExcludeAppIds() {
+        return monitorAlarmExcludeAppIds;
+    }
+
+    public void setMonitorAlarmExcludeAppIds(String monitorAlarmExcludeAppIds) {
+        this.monitorAlarmExcludeAppIds = monitorAlarmExcludeAppIds;
+    }
 
     public Integer getMonitorAlarmThresholdCount() {
         return monitorAlarmThresholdCount;
@@ -104,6 +126,7 @@ public class DiamondConfig {
     public void setMonitorAlarmMails(String monitorAlarmMails) {
         this.monitorAlarmMails = monitorAlarmMails;
     }
+
     public Double getMonitorAlarmThreshold() {
         return monitorAlarmThreshold;
     }

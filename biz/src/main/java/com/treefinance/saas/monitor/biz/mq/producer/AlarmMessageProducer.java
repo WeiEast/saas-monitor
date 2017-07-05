@@ -15,7 +15,9 @@ import com.datatrees.notify.async.body.wechat.WeChatBody;
 import com.datatrees.notify.async.body.wechat.WeChatEnum;
 import com.datatrees.notify.async.body.wechat.message.TXTMessage;
 import com.datatrees.notify.async.util.BeanUtil;
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.dao.entity.MerchantStatAccess;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.UUID;
@@ -88,7 +91,7 @@ public class AlarmMessageProducer {
     }
 
     private String generateTitle(EStatType type) {
-        return "saas-[" + type.getName() + "]任务成功率预警";
+        return "saas-" + diamondConfig.getMonitorEnvironment() + "[" + type.getName() + "]任务成功率预警";
     }
 
     /**
@@ -98,14 +101,37 @@ public class AlarmMessageProducer {
         StringBuffer buffer = new StringBuffer();
         buffer.append("您好，").append(generateTitle(type)).append("，监控数据如下，请及时处理：").append("\n");
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        List<String> appIdList = Lists.newArrayList();
+        List<String> dataTimeList = Lists.newArrayList();
+        List<Integer> totalCountList = Lists.newArrayList();
+        List<BigDecimal> successRateList = Lists.newArrayList();
+        List<Integer> successCountList = Lists.newArrayList();
+        List<BigDecimal> failRateList = Lists.newArrayList();
+        List<Integer> failCountList = Lists.newArrayList();
+        List<Integer> cancelCountList = Lists.newArrayList();
         data.forEach(access -> {
-            buffer.append("商户：" + access.getAppId() + ", 数据时间: " + fmt.format(access.getDataTime())
-                    + ", 任务总数：" + access.getTotalCount()
-                    + ", 成功率/成功数:" + access.getSuccessRate() + "% / " + access.getSuccessCount()
-                    + ", 失败率/失败数: " + access.getFailRate() + "% / " + access.getFailCount()
-                    + "，取消数:" + access.getCancelCount()
-            ).append("\n");
+            String appId = access.getAppId();
+            if (!appIdList.contains(appId)) {
+                appIdList.add(appId);
+            }
+            dataTimeList.add(fmt.format(access.getDataTime()));
+            totalCountList.add(access.getTotalCount());
+            successRateList.add(access.getSuccessRate());
+            successCountList.add(access.getSuccessCount());
+            failRateList.add(access.getFailRate());
+            failCountList.add(access.getFailCount());
+            cancelCountList.add(access.getCancelCount());
         });
+
+
+        buffer.append(" 商户: " + Joiner.on(" | ").useForNull(" ").join(appIdList) + " \n");
+        buffer.append(" 数据时间: " + Joiner.on(" | ").useForNull(" ").join(dataTimeList) + " \n");
+        buffer.append(" 任务总数: " + Joiner.on(" | ").useForNull(" ").join(totalCountList) + " \n");
+        buffer.append(" 成功率(%): " + Joiner.on(" | ").useForNull(" ").join(successRateList) + " \n");
+        buffer.append(" 成功数: " + Joiner.on(" | ").useForNull(" ").join(successCountList) + " \n");
+        buffer.append(" 失败率(%): " + Joiner.on(" | ").useForNull(" ").join(failRateList) + " \n");
+        buffer.append(" 失败数: " + Joiner.on(" | ").useForNull(" ").join(failCountList) + " \n");
+        buffer.append(" 取消数: " + Joiner.on(" | ").useForNull(" ").join(cancelCountList) + " \n");
         return buffer.toString();
     }
 
@@ -138,8 +164,6 @@ public class AlarmMessageProducer {
      * @param tag
      * @param key
      * @param body
-     *
-     *
      */
     private void sendMessage(String topic, String tag, String key, byte[] body) {
         try {
