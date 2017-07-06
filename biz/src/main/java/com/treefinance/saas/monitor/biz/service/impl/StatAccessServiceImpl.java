@@ -41,13 +41,25 @@ public class StatAccessServiceImpl implements StatAccessService {
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
-        int totalCount = merchantStatDayAccessMapper.countByExample(criteria);
+        long totalCount = merchantStatDayAccessMapper.countByExample(criteria);
         List<MerchantStatDayAccessRO> data = Lists.newArrayList();
-        if (totalCount > 0){
-            List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
+        if (totalCount > 0) {
+            List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectPaginationByExample(criteria);
             data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
         }
         return MonitorResultBuilder.pageResult(request, data, totalCount);
+    }
+
+    @Override
+    public MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessListNoPage(MerchantStatDayAccessRequest request) {
+        MerchantStatDayAccessCriteria criteria = new MerchantStatDayAccessCriteria();
+        criteria.setOrderByClause("dataTime desc");
+        criteria.createCriteria().andAppIdEqualTo(request.getAppId())
+                .andDataTypeEqualTo(request.getDataType())
+                .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
+        List<MerchantStatDayAccessRO> data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
+        return MonitorResultBuilder.build(data);
     }
 
     @Override

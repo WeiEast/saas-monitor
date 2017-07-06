@@ -20,6 +20,14 @@ public interface StatAccessService {
     MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessList(MerchantStatDayAccessRequest request);
 
     /**
+     * 查询商户日访问数据,不分页
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessListNoPage(MerchantStatDayAccessRequest request);
+
+    /**
      * 查询商户访问数据
      *
      * @param request
