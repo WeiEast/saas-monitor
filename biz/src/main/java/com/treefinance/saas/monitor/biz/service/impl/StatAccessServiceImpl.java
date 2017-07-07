@@ -75,6 +75,17 @@ public class StatAccessServiceImpl implements StatAccessService {
     }
 
     @Override
+    public MonitorResult<List<MerchantStatAccessRO>> queryAllAccessList(MerchantStatAccessRequest request) {
+        MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
+        criteria.setOrderByClause("dataTime asc");
+        criteria.createCriteria().andDataTypeEqualTo(request.getDataType())
+                .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        List<MerchantStatAccess> list = merchantStatAccessMapper.selectByExample(criteria);
+        List<MerchantStatAccessRO> data = DataConverterUtils.convert(list, MerchantStatAccessRO.class);
+        return MonitorResultBuilder.build(data);
+    }
+
+    @Override
     public MonitorResult<List<MerchantStatBankRO>> queryBankList(MerchantStatBankRequest request) {
         MerchantStatBankCriteria criteria = new MerchantStatBankCriteria();
         criteria.setOrderByClause("dataTime asc");
