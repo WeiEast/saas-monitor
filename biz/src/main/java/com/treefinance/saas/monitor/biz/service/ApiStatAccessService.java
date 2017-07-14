@@ -18,4 +18,10 @@ public interface ApiStatAccessService {
     MonitorResult<List<ApiStatDayAccessRO>> queryDayAccessList(ApiStatBaseRequest request);
 
     MonitorResult<List<ApiStatAccessRO>> queryStatAccessList(ApiStatBaseRequest request);
+
+    MonitorResult<Boolean> batchInsertApiStatTotalAccess(List<ApiBaseStatRO> list);
+
+    MonitorResult<Boolean> batchInsertApiStatMerchantDayAccess(List<ApiStatDayAccessRO> list);
+
+    MonitorResult<Boolean> batchInsertApiStatAccess(List<ApiStatAccessRO> list);
 }

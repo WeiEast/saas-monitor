@@ -1,43 +1,46 @@
-package com.treefinance.saas.monitor.biz.mq.listener;
+package com.treefinance.saas.monitor.biz.mq.handler.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.rocketmq.common.message.MessageExt;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.saas.gateway.servicefacade.enums.MonitorTypeEnum;
+import com.treefinance.saas.gateway.servicefacade.model.mq.TaskMonitorMessage;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
-import com.treefinance.saas.monitor.biz.mq.model.GatewayAccessMessage;
+import com.treefinance.saas.monitor.biz.mq.handler.AbstractMessageHandler;
 import com.treefinance.saas.monitor.biz.service.AccessHistoryService;
 import com.treefinance.saas.monitor.biz.service.EcommerceService;
 import com.treefinance.saas.monitor.biz.service.OperatorService;
 import com.treefinance.saas.monitor.biz.service.WebsiteService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceDTO;
-import com.treefinance.saas.monitor.common.domain.dto.MerchantAccessHistoryDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorDTO;
 import com.treefinance.saas.monitor.common.domain.dto.WebsiteDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatus;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.dao.entity.MerchantAccessHistory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.SessionCallback;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * Created by yh-treefinance on 2017/6/6.
+ * 任务监控消息处理
+ * Created by yh-treefinance on 2017/7/13.
  */
-@Service
-public class StatMessageListener extends AbstractMessageListener<GatewayAccessMessage> {
+@Component
+public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonitorMessage> {
 
     @Autowired
     private DiamondConfig diamondConfig;
@@ -53,7 +56,15 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
     private AccessHistoryService accessHistoryService;
 
     @Override
-    public void handleMessage(GatewayAccessMessage message) {
+    public boolean isHandleAble(MessageExt messageExt) {
+        return messageExt.getTopic().equals(diamondConfig.getMonitorAccessTopic())
+                && messageExt.getTags().equalsIgnoreCase(MonitorTypeEnum.TASK.name());
+    }
+
+    @Override
+    public void handleMessage(byte[] messageBody) {
+        TaskMonitorMessage message = convertMessage(messageBody);
+
         long start = System.currentTimeMillis();
         try {
             Date completeTime = message.getCompleteTime();
@@ -79,7 +90,6 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
         } finally {
             logger.info("handleMessage cost {} ms , message={}", System.currentTimeMillis() - start, JSON.toJSONString(message));
         }
-
     }
 
     /**
@@ -88,7 +98,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
      * @param message
      * @param intervalTime
      */
-    private void statTotal(GatewayAccessMessage message, Date intervalTime) {
+    private void statTotal(TaskMonitorMessage message, Date intervalTime) {
         EBizType bizType = EBizType.getBizType(message.getBizType());
         // 总数
         updateTotalData(intervalTime, message, EStatType.TOTAL);
@@ -119,7 +129,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
      * @param message
      * @param type
      */
-    private void updateTotalDayData(Date intervalTime, GatewayAccessMessage message, EStatType type) {
+    private void updateTotalDayData(Date intervalTime, TaskMonitorMessage message, EStatType type) {
         updateData(intervalTime, message,
                 statMap -> statMap.put("dataType", type.getType() + ""),
                 () -> RedisKeyHelper.keyOfTotalDay(message.getAppId(), intervalTime, type));
@@ -132,7 +142,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
      * @param message
      * @param type
      */
-    private void updateTotalData(Date intervalTime, GatewayAccessMessage message, EStatType type) {
+    private void updateTotalData(Date intervalTime, TaskMonitorMessage message, EStatType type) {
         updateData(intervalTime, message, statMap -> statMap.put("dataType", type.getType() + ""), () -> RedisKeyHelper.keyOfTotal(message.getAppId(), intervalTime, type));
     }
 
@@ -142,7 +152,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
      * @param intervalTime
      * @param message
      */
-    private void updateEmailData(Date intervalTime, GatewayAccessMessage message) {
+    private void updateEmailData(Date intervalTime, TaskMonitorMessage message) {
         String website = message.getWebSite();
         WebsiteDTO websiteDTO = websiteService.getWebsiteByName(website);
         String mailCode = websiteDTO != null ? websiteDTO.getWebsiteName() : null;
@@ -155,7 +165,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
      * @param intervalTime
      * @param message
      */
-    private void updateOperatorData(Date intervalTime, GatewayAccessMessage message) {
+    private void updateOperatorData(Date intervalTime, TaskMonitorMessage message) {
         String website = message.getWebSite();
         OperatorDTO operatorDTO = operatorService.getOperatorByWebsite(website);
         String operatorId = operatorDTO != null ? operatorDTO.getId().toString() : null;
@@ -168,7 +178,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
      * @param intervalTime
      * @param message
      */
-    private void updateEcommerceData(Date intervalTime, GatewayAccessMessage message) {
+    private void updateEcommerceData(Date intervalTime, TaskMonitorMessage message) {
         String website = message.getWebSite();
         EcommerceDTO ecommerceDTO = ecommerceService.getEcommerceByWebsite(website);
         Short ecommerceId = ecommerceDTO != null ? ecommerceDTO.getId() : null;
@@ -184,7 +194,7 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
      * @param dataInitor
      * @param keyGenerator
      */
-    private void updateData(Date intervalTime, GatewayAccessMessage message, Consumer<Map<String, String>> dataInitor, Supplier<String> keyGenerator) {
+    private void updateData(Date intervalTime, TaskMonitorMessage message, Consumer<Map<String, String>> dataInitor, Supplier<String> keyGenerator) {
         String appId = message.getAppId();
         Byte status = message.getStatus();
         String uniqueId = message.getUniqueId();
@@ -251,5 +261,4 @@ public class StatMessageListener extends AbstractMessageListener<GatewayAccessMe
         });
         logger.info("update redis access data: key={},value={}", key, JSON.toJSONString(statMap));
     }
-
 }

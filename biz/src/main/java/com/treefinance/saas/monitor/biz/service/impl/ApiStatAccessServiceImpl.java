@@ -12,6 +12,7 @@ import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiBaseStatRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiStatAccessRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiStatDayAccessRO;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -60,5 +61,36 @@ public class ApiStatAccessServiceImpl implements ApiStatAccessService {
         return MonitorResultBuilder.build(dataList);
     }
 
+    @Override
+    public MonitorResult<Boolean> batchInsertApiStatTotalAccess(List<ApiBaseStatRO> list) {
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<ApiStatTotalAccess> accessList = DataConverterUtils.convert(list, ApiStatTotalAccess.class);
+            for (ApiStatTotalAccess access : accessList) {
+                apiStatTotalAccessMapper.insertOrUpdateBySelective(access);
+            }
+        }
+        return MonitorResultBuilder.build(true);
+    }
 
+    @Override
+    public MonitorResult<Boolean> batchInsertApiStatMerchantDayAccess(List<ApiStatDayAccessRO> list) {
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<ApiStatMerchantDayAccess> accessList = DataConverterUtils.convert(list, ApiStatMerchantDayAccess.class);
+            for (ApiStatMerchantDayAccess access : accessList) {
+                apiStatMerchantDayAccessMapper.insertOrUpdateBySelective(access);
+            }
+        }
+        return MonitorResultBuilder.build(true);
+    }
+
+    @Override
+    public MonitorResult<Boolean> batchInsertApiStatAccess(List<ApiStatAccessRO> list) {
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<ApiStatAccess> accessList = DataConverterUtils.convert(list, ApiStatAccess.class);
+            for (ApiStatAccess access : accessList) {
+                apiStatAccessMapper.insertOrUpdateBySelective(access);
+            }
+        }
+        return MonitorResultBuilder.build(true);
+    }
 }
