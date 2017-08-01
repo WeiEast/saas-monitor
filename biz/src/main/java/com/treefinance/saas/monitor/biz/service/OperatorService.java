@@ -1,9 +1,10 @@
 package com.treefinance.saas.monitor.biz.service;
 
 import com.treefinance.saas.monitor.common.domain.dto.OperatorDTO;
-import com.treefinance.saas.monitor.dao.entity.Operator;
+import com.treefinance.saas.monitor.facade.domain.ro.OperatorRO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 运营商服务
@@ -32,4 +33,20 @@ public interface OperatorService {
      * @return
      */
     OperatorDTO getOperatorByWebsite(String website);
+
+    /**
+     * 根据website名称批量查询运营商信息
+     *
+     * @param websites
+     * @return
+     */
+    Map<String, OperatorRO> getOperatorByWebsites(List<String> websites);
+
+    /**
+     * 根据websiteId批量查询运营商信息
+     *
+     * @param websiteIds
+     * @return
+     */
+    List<OperatorDTO> getOperatorListByWebsiteIds(List<Integer> websiteIds);
 }

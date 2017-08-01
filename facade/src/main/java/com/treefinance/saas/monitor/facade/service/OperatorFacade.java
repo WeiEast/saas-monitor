@@ -4,6 +4,7 @@ import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.OperatorRO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by yh-treefinance on 2017/6/12.
@@ -16,4 +17,12 @@ public interface OperatorFacade {
      * @return
      */
     MonitorResult<List<OperatorRO>> queryAll();
+
+    /**
+     * 根据website批量查询operator
+     *
+     * @param websites
+     * @return
+     */
+    MonitorResult<Map<String, OperatorRO>> queryOperatorByWebsites(List<String> websites);
 }

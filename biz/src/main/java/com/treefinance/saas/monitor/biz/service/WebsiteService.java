@@ -22,4 +22,12 @@ public interface WebsiteService {
      * @return
      */
     List<WebsiteDTO> getSupportMails();
+
+    /**
+     * 批量获取站点名称
+     *
+     * @param websites
+     * @return
+     */
+    List<WebsiteDTO> getWebsiteListByName(List<String> websites);
 }
