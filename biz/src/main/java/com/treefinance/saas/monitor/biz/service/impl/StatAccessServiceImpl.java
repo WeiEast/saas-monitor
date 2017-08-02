@@ -9,6 +9,8 @@ import com.treefinance.saas.monitor.facade.domain.request.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +45,7 @@ public class StatAccessServiceImpl implements StatAccessService {
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         int totalCount = merchantStatDayAccessMapper.countByExample(criteria);
         List<MerchantStatDayAccessRO> data = Lists.newArrayList();
-        if (totalCount > 0){
+        if (totalCount > 0) {
             List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
             data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
         }
@@ -105,11 +107,19 @@ public class StatAccessServiceImpl implements StatAccessService {
     public MonitorResult<List<MerchantStatOperatorRO>> queryOperatorList(MerchantStatOperaterRequest request) {
         MerchantStatOperatorCriteria criteria = new MerchantStatOperatorCriteria();
         criteria.setOrderByClause("dataTime asc");
-        criteria.createCriteria().andAppIdEqualTo(request.getAppId())
-                .andOperaterIdEqualTo(request.getOperaterId())
+        MerchantStatOperatorCriteria.Criteria operatorCriteria = criteria.createCriteria();
+        operatorCriteria.andAppIdEqualTo(request.getAppId())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        if (StringUtils.isNotBlank(request.getOperaterId())) {
+            operatorCriteria.andOperaterIdEqualTo(request.getOperaterId());
+        }
         List<MerchantStatOperator> list = merchantStatOperatorMapper.selectByExample(criteria);
-        List<MerchantStatOperatorRO> data = DataConverterUtils.convert(list, MerchantStatOperatorRO.class);
+
+        List<MerchantStatOperatorRO> data = Lists.newArrayList();
+        if (CollectionUtils.isEmpty(list)) {
+            return MonitorResultBuilder.build(data);
+        }
+        data = DataConverterUtils.convert(list, MerchantStatOperatorRO.class);
         return MonitorResultBuilder.build(data);
     }
 }
