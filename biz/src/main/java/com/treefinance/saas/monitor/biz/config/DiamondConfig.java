@@ -34,6 +34,11 @@ public class DiamondConfig {
      */
     @DAttribute(key = "monitor.interval.minutes")
     private Integer monitorIntervalMinutes;
+    /**
+     * 统计时间间隔:分钟为单位
+     */
+    @DAttribute(key = "monitor.http.interval.minutes")
+    private Integer monitorHttpIntervalMinutes;
 
     // 预警消息，group
     @DAttribute(key = "monitor.alarm.group.name")
@@ -183,5 +188,13 @@ public class DiamondConfig {
 
     public void setMonitorIntervalMinutes(Integer monitorIntervalMinutes) {
         this.monitorIntervalMinutes = monitorIntervalMinutes;
+    }
+
+    public Integer getMonitorHttpIntervalMinutes() {
+        return monitorHttpIntervalMinutes;
+    }
+
+    public void setMonitorHttpIntervalMinutes(Integer monitorHttpIntervalMinutes) {
+        this.monitorHttpIntervalMinutes = monitorHttpIntervalMinutes;
     }
 }

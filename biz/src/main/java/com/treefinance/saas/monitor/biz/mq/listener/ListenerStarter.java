@@ -24,12 +24,14 @@ public class ListenerStarter {
     private DiamondConfig diamondConfig;
 
     private DefaultMQPushConsumer monitorAccessConsumer;
+
     @Autowired
-    private StatMessageListener gatewayAccessMessageListener;
+    private TagBaseMonitorMessageListener tagBaseMonitorMessageListener;
 
     @PostConstruct
     public void init() throws MQClientException {
-        initGatewayAccessMessageMQ();
+        initMonitorMessageMQ();
+        logger.info("开启监控数据的消费者");
     }
 
     @PreDestroy
@@ -42,13 +44,13 @@ public class ListenerStarter {
      * 初始化网关访问监控
      * @throws MQClientException
      */
-    private void initGatewayAccessMessageMQ() throws MQClientException {
+    private void initMonitorMessageMQ() throws MQClientException {
         monitorAccessConsumer = new DefaultMQPushConsumer(diamondConfig.getMonitorGroupName());
         monitorAccessConsumer.setInstanceName(diamondConfig.getMonitorGroupName());
         monitorAccessConsumer.setNamesrvAddr(diamondConfig.getNamesrvAddr());
         monitorAccessConsumer.subscribe(diamondConfig.getMonitorAccessTopic(), diamondConfig.getMonitorAccessTag());
         monitorAccessConsumer.setMessageModel(CLUSTERING);
-        monitorAccessConsumer.registerMessageListener(gatewayAccessMessageListener);
+        monitorAccessConsumer.registerMessageListener(tagBaseMonitorMessageListener);
         monitorAccessConsumer.start();
         logger.info("启动saas-gateway的消费者.nameserver:{},topic:{},tag:{}", diamondConfig.getNamesrvAddr(),
                 diamondConfig.getMonitorAccessTopic(), diamondConfig.getMonitorAccessTag());

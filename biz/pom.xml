@@ -12,6 +12,10 @@
 
 	<dependencies>
 		<dependency>
+			<artifactId>gateway-facade</artifactId>
+			<groupId>com.treefinance.saas.gateway</groupId>
+		</dependency>
+		<dependency>
 			<groupId>com.treefinance.saas.monitor</groupId>
 			<artifactId>monitor-facade</artifactId>
 		</dependency>

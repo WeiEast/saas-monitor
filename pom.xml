@@ -103,6 +103,11 @@
 				<artifactId>uid-worker</artifactId>
 				<version>1.7.0</version>
 			</dependency>
+			<dependency>
+				<artifactId>gateway-facade</artifactId>
+				<groupId>com.treefinance.saas.gateway</groupId>
+				<version>1.0.0-SNAPSHOT</version>
+			</dependency>
 
 			<!-- 配置中心 -->
 			<dependency>

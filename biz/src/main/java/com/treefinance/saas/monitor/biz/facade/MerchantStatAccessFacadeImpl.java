@@ -26,9 +26,21 @@ public class MerchantStatAccessFacadeImpl implements MerchantStatAccessFacade {
     }
 
     @Override
+    public MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessListNoPage(MerchantStatDayAccessRequest request) {
+        MerchantStatChecker.checkDayAccessRequest(request);
+        return statAccessService.queryDayAccessListNoPage(request);
+    }
+
+    @Override
     public MonitorResult<List<MerchantStatAccessRO>> queryAccessList(MerchantStatAccessRequest request) {
         MerchantStatChecker.checkAccessRequest(request);
         return statAccessService.queryAccessList(request);
+    }
+
+    @Override
+    public MonitorResult<List<MerchantStatAccessRO>> queryAllAccessList(MerchantStatAccessRequest request) {
+        MerchantStatChecker.checkAllAccessRequest(request);
+        return statAccessService.queryAllAccessList(request);
     }
 
     @Override

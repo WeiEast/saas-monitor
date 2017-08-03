@@ -49,15 +49,15 @@
                              targetProject="src/main/java"> <!-- src/generated/java -->
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
-        <table tableName="merchant_stat_access" domainObjectName="MerchantStatAccess"
-               enableSelectPaginationByExample="true"
-               enableInsertOrUpdateBySelective="true"
-               enableBatchInsert="true"
-               enableBatchUpdateByPrimaryKey="true"
-               enableBatchUpdateByPrimaryKeySelective="true">
-             <property name="useActualColumnNames" value="true"/>
-             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
-         </table>
+        <!--<table tableName="merchant_stat_access" domainObjectName="MerchantStatAccess"-->
+               <!--enableSelectPaginationByExample="true"-->
+               <!--enableInsertOrUpdateBySelective="true"-->
+               <!--enableBatchInsert="true"-->
+               <!--enableBatchUpdateByPrimaryKey="true"-->
+               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+             <!--<property name="useActualColumnNames" value="true"/>-->
+             <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
+         <!--</table>-->
 
         <!--
          <table tableName="merchant_stat_bank" domainObjectName="MerchantStatBank">
@@ -110,11 +110,48 @@
             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
         </table>
 
+        -->
 
-        <table tableName="merchant_stat_day_access" domainObjectName="MerchantStatDayAccess">
+
+        <!--<table tableName="merchant_stat_day_access" domainObjectName="MerchantStatDayAccess"-->
+               <!--enableSelectPaginationByExample="true"-->
+               <!--enableInsertOrUpdateBySelective="true"-->
+               <!--enableBatchInsert="true"-->
+               <!--enableBatchUpdateByPrimaryKey="true"-->
+               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+            <!--<property name="useActualColumnNames" value="true"/>-->
+            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
+        <!--</table>-->
+
+        <table tableName="api_stat_access" domainObjectName="ApiStatAccess"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
             <property name="useActualColumnNames" value="true"/>
             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
-        </table>-->
+        </table>
+
+        <table tableName="api_stat_merchant_day_access" domainObjectName="ApiStatMerchantDayAccess"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+        <table tableName="api_stat_total_access" domainObjectName="ApiStatTotalAccess"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
 
     </context>
 

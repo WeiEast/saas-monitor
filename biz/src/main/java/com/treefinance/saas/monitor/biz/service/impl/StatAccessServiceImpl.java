@@ -43,7 +43,7 @@ public class StatAccessServiceImpl implements StatAccessService {
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
-        int totalCount = merchantStatDayAccessMapper.countByExample(criteria);
+        long totalCount = merchantStatDayAccessMapper.countByExample(criteria);
         List<MerchantStatDayAccessRO> data = Lists.newArrayList();
         if (totalCount > 0) {
             List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
@@ -53,11 +53,34 @@ public class StatAccessServiceImpl implements StatAccessService {
     }
 
     @Override
+    public MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessListNoPage(MerchantStatDayAccessRequest request) {
+        MerchantStatDayAccessCriteria criteria = new MerchantStatDayAccessCriteria();
+        criteria.setOrderByClause("dataTime desc");
+        criteria.createCriteria().andAppIdEqualTo(request.getAppId())
+                .andDataTypeEqualTo(request.getDataType())
+                .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
+        List<MerchantStatDayAccessRO> data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
+        return MonitorResultBuilder.build(data);
+    }
+
+    @Override
     public MonitorResult<List<MerchantStatAccessRO>> queryAccessList(MerchantStatAccessRequest request) {
         MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
         criteria.setOrderByClause("dataTime asc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getDataType())
+                .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        List<MerchantStatAccess> list = merchantStatAccessMapper.selectByExample(criteria);
+        List<MerchantStatAccessRO> data = DataConverterUtils.convert(list, MerchantStatAccessRO.class);
+        return MonitorResultBuilder.build(data);
+    }
+
+    @Override
+    public MonitorResult<List<MerchantStatAccessRO>> queryAllAccessList(MerchantStatAccessRequest request) {
+        MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
+        criteria.setOrderByClause("dataTime asc");
+        criteria.createCriteria().andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<MerchantStatAccess> list = merchantStatAccessMapper.selectByExample(criteria);
         List<MerchantStatAccessRO> data = DataConverterUtils.convert(list, MerchantStatAccessRO.class);

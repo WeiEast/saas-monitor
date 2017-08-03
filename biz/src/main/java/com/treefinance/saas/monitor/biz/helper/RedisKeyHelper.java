@@ -18,7 +18,64 @@ public class RedisKeyHelper {
     public static final String STAT_ECOMMERCE = "stat-ecommerce";
     public static final String STAT_OPERATOR = "stat-operator";
     public static final String ALARM_ACCESS_DAY = "alarm-flag";
+    public static final String HTTP_STAT = "stat-http";
 
+    /**
+     * http 请求总
+     *
+     * @param date
+     * @return
+     */
+    public static String keyOfHttpTotal(Date date) {
+        String day = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, HTTP_STAT, "total", day).toString();
+    }
+
+    /**
+     * http 请求商户
+     *
+     * @param date
+     * @param appId
+     * @return
+     */
+    public static String keyOfHttpMerchant(Date date, String appId) {
+        String day = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, HTTP_STAT, "merchant", appId, day).toString();
+    }
+
+    /**
+     * http 请求api
+     *
+     * @param date
+     * @return
+     */
+    public static String keyOfHttpApi(Date date, String api) {
+        String day = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, HTTP_STAT, "api", api, day).toString();
+    }
+
+
+    public static String keyOfHttpMerchantList(Date date) {
+        String day = DateFormatUtils.format(date, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, HTTP_STAT, "merchant-list", day).toString();
+    }
+
+
+    public static String keyOfHttpApiList(Date date) {
+        String day = DateFormatUtils.format(date, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, HTTP_STAT, "api-list", day).toString();
+    }
+
+    /**
+     * http 请求日
+     *
+     * @param date
+     * @return
+     */
+    public static String keyOfHttpDay(Date date) {
+        String day = DateFormatUtils.format(date, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, HTTP_STAT, "day", day).toString();
+    }
 
     /**
      * appId列表
@@ -38,6 +95,7 @@ public class RedisKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "stat-day", day).toString();
     }
 
+
     /**
      * 获取日统计key
      *
@@ -48,6 +106,7 @@ public class RedisKeyHelper {
         String day = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, STAT_ACCESS_DAY, appId, statType, day).toString();
     }
+
     /**
      * 获取统计key
      *

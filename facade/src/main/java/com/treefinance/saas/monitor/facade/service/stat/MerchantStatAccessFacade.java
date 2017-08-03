@@ -19,6 +19,15 @@ public interface MerchantStatAccessFacade {
      */
     MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessList(MerchantStatDayAccessRequest request);
 
+
+    /**
+     * 查询商户日访问数据,不分页
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessListNoPage(MerchantStatDayAccessRequest request);
+
     /**
      * 查询商户访问数据
      *
@@ -26,6 +35,14 @@ public interface MerchantStatAccessFacade {
      * @return
      */
     MonitorResult<List<MerchantStatAccessRO>> queryAccessList(MerchantStatAccessRequest request);
+
+    /**
+     * 查询所有商户访问数据
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<List<MerchantStatAccessRO>> queryAllAccessList(MerchantStatAccessRequest request);
 
     /**
      * 查询银行访问数据

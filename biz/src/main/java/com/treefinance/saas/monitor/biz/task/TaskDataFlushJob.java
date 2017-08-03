@@ -29,8 +29,8 @@ import java.util.*;
  * 数据统计Job
  * Created by yh-treefinance on 2017/5/25.
  */
-public class StatDataFlushJob implements SimpleJob {
-    private static final Logger logger = LoggerFactory.getLogger(StatDataFlushJob.class);
+public class TaskDataFlushJob implements SimpleJob {
+    private static final Logger logger = LoggerFactory.getLogger(TaskDataFlushJob.class);
     @Autowired
     private RedisDao redisDao;
     @Autowired
