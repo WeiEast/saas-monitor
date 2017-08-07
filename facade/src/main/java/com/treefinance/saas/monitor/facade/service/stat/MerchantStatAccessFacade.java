@@ -29,6 +29,23 @@ public interface MerchantStatAccessFacade {
     MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessListNoPage(MerchantStatDayAccessRequest request);
 
     /**
+     * 查询所有商户日访问数据
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<List<MerchantStatDayAccessRO>> queryAllDayAccessList(MerchantStatDayAccessRequest request);
+
+
+    /**
+     * 查询所有商户日访问数据,不分页
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<List<MerchantStatDayAccessRO>> queryAllDayAccessListNoPage(MerchantStatDayAccessRequest request);
+
+    /**
      * 查询商户访问数据
      *
      * @param request

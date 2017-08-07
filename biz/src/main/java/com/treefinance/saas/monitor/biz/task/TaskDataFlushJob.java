@@ -114,7 +114,7 @@ public class TaskDataFlushJob implements SimpleJob {
             logger.error("statdataflushjob exception : ", e);
         } finally {
             logger.info("定时刷新数据完成，耗时time={}ms", System.currentTimeMillis() - start);
-            alarm();
+            allAlarm();
         }
     }
 

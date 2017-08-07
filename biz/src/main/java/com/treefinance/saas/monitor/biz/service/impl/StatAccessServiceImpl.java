@@ -65,6 +65,34 @@ public class StatAccessServiceImpl implements StatAccessService {
     }
 
     @Override
+    public MonitorResult<List<MerchantStatDayAccessRO>> queryAllDayAccessList(MerchantStatDayAccessRequest request) {
+        MerchantStatDayAccessCriteria criteria = new MerchantStatDayAccessCriteria();
+        criteria.setOrderByClause("dataTime desc");
+        criteria.setLimit(request.getPageSize());
+        criteria.setOffset(request.getOffset());
+        criteria.createCriteria().andDataTypeEqualTo(request.getDataType())
+                .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        long totalCount = merchantStatDayAccessMapper.countByExample(criteria);
+        List<MerchantStatDayAccessRO> data = Lists.newArrayList();
+        if (totalCount > 0) {
+            List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
+            data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
+        }
+        return MonitorResultBuilder.pageResult(request, data, totalCount);
+    }
+
+    @Override
+    public MonitorResult<List<MerchantStatDayAccessRO>> queryAllDayAccessListNoPage(MerchantStatDayAccessRequest request) {
+        MerchantStatDayAccessCriteria criteria = new MerchantStatDayAccessCriteria();
+        criteria.setOrderByClause("dataTime desc");
+        criteria.createCriteria().andDataTypeEqualTo(request.getDataType())
+                .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
+        List<MerchantStatDayAccessRO> data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
+        return MonitorResultBuilder.build(data);
+    }
+
+    @Override
     public MonitorResult<List<MerchantStatAccessRO>> queryAccessList(MerchantStatAccessRequest request) {
         MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
         criteria.setOrderByClause("dataTime asc");
