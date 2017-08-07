@@ -106,7 +106,8 @@ public class TaskDataFlushJob implements SimpleJob {
                     });
                     if (!deleteList.isEmpty()) {
                         logger.info("刷新数据完成，清除数据：deleteList={},currentInterval={}", JSON.toJSONString(deleteList), currentInterval);
-                        redisOperations.opsForSet().remove(dayKey, deleteList.toArray(new String[]{}));
+                        String[] array = new String[deleteList.size()];
+                        redisOperations.opsForSet().remove(dayKey, deleteList.toArray(array));
                     }
                     return null;
                 }
