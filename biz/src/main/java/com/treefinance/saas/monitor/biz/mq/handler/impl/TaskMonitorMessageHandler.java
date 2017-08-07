@@ -2,7 +2,6 @@ package com.treefinance.saas.monitor.biz.mq.handler.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.common.message.MessageExt;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.gateway.servicefacade.enums.MonitorTypeEnum;
 import com.treefinance.saas.gateway.servicefacade.model.mq.TaskMonitorMessage;
@@ -29,7 +28,6 @@ import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -71,6 +69,8 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
             Date intervalTime = StatHelper.calculateIntervalTime(completeTime, diamondConfig.getMonitorIntervalMinutes());
             // 1.总数统计
             statTotal(message, intervalTime);
+            // 合计所有商户的总数统计
+            statAllTotal(message, intervalTime);
             // 2.电商、银行、邮箱、运营商维度统计
             EBizType bizType = EBizType.getBizType(message.getBizType());
             switch (bizType) {
@@ -90,6 +90,46 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
         } finally {
             logger.info("handleMessage cost {} ms , message={}", System.currentTimeMillis() - start, JSON.toJSONString(message));
         }
+    }
+
+    /**
+     * 合计所有商户的总数统计
+     *
+     * @param message
+     * @param intervalTime
+     */
+    private void statAllTotal(TaskMonitorMessage message, Date intervalTime) {
+        EBizType bizType = EBizType.getBizType(message.getBizType());
+        updateAllTotalData(intervalTime, message, EStatType.TOTAL);
+        updateAllTotalDayData(intervalTime, message, EStatType.TOTAL);
+        // 电商
+        if (bizType == EBizType.ECOMMERCE) {
+            updateAllTotalData(intervalTime, message, EStatType.ECOMMERCE);
+            updateAllTotalDayData(intervalTime, message, EStatType.ECOMMERCE);
+        }
+        // 邮箱或者账单
+        else if (bizType == EBizType.EMAIL) {
+            updateAllTotalData(intervalTime, message, EStatType.EMAIL);
+            updateAllTotalDayData(intervalTime, message, EStatType.EMAIL);
+//             #TODO 银行暂不统计
+//            updateAllTotalData();(intervalTime, message, EStatType.BANK);
+        }
+        // 运营商
+        else if (bizType == EBizType.OPERATOR) {
+            updateAllTotalData(intervalTime, message, EStatType.OPERATER);
+            updateAllTotalDayData(intervalTime, message, EStatType.OPERATER);
+        }
+    }
+
+    private void updateAllTotalDayData(Date intervalTime, TaskMonitorMessage message, EStatType type) {
+        updateAllData(intervalTime, message,
+                statMap -> statMap.put("dataType", type.getType() + ""),
+                () -> RedisKeyHelper.keyOfAllTotalDay(intervalTime, type));
+    }
+
+    private void updateAllTotalData(Date intervalTime, TaskMonitorMessage message, EStatType type) {
+        updateAllData(intervalTime, message, statMap -> statMap.put("dataType", type.getType() + ""),
+                () -> RedisKeyHelper.keyOfAllTotal(intervalTime, type));
     }
 
     /**
@@ -143,7 +183,8 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
      * @param type
      */
     private void updateTotalData(Date intervalTime, TaskMonitorMessage message, EStatType type) {
-        updateData(intervalTime, message, statMap -> statMap.put("dataType", type.getType() + ""), () -> RedisKeyHelper.keyOfTotal(message.getAppId(), intervalTime, type));
+        updateData(intervalTime, message, statMap -> statMap.put("dataType", type.getType() + ""),
+                () -> RedisKeyHelper.keyOfTotal(message.getAppId(), intervalTime, type));
     }
 
     /**
@@ -184,6 +225,74 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
         Short ecommerceId = ecommerceDTO != null ? ecommerceDTO.getId() : null;
         updateData(intervalTime, message, statMap -> statMap.put("ecommerceId", ecommerceId + ""), () -> RedisKeyHelper.keyOfEcommerce(message.getAppId(), intervalTime, ecommerceId));
 
+    }
+
+
+    /**
+     * 更新数据
+     *
+     * @param intervalTime 循环时间
+     * @param message
+     * @param dataInitor
+     * @param keyGenerator
+     */
+    private void updateAllData(Date intervalTime, TaskMonitorMessage message, Consumer<Map<String, String>> dataInitor, Supplier<String> keyGenerator) {
+        Byte status = message.getStatus();
+        String uniqueId = message.getUniqueId();
+        Map<String, String> statMap = Maps.newHashMap();
+        if (dataInitor != null) {
+            dataInitor.accept(statMap);
+        }
+        String key = keyGenerator.get();
+        String userKey = RedisKeyHelper.keyOfUniqueId(key, uniqueId);
+        redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
+
+            @Override
+            public Object execute(RedisOperations redisOperations) throws DataAccessException {
+
+                // 当日时间列表
+                String dayKey = RedisKeyHelper.keyOfDay(intervalTime);
+                redisOperations.opsForSet().add(dayKey, intervalTime.getTime() + "");
+
+                statMap.put("dataTime", intervalTime.getTime() + "");
+                // 判断是否有key
+                BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
+                if (!Boolean.TRUE.equals(hashOperations.hasKey(key))) {
+                    hashOperations.put("dataTime", intervalTime.getTime() + "");
+                    // 设定超时时间默认为1天
+                    hashOperations.expire(2, TimeUnit.DAYS);
+                }
+                // 统计总数
+                Long totalCount = hashOperations.increment("totalCount", 1);
+                statMap.put("totalCount", totalCount + "");
+
+                // 统计用户数: 未存在用户+1
+                if (Boolean.TRUE.equals(redisOperations.opsForValue().setIfAbsent(userKey, uniqueId))) {
+                    Long userCount = hashOperations.increment("userCount", 1);
+                    statMap.put("userCount", userCount + "");
+                    // 设定超时时间
+                    redisOperations.expire(userKey, diamondConfig.getMonitorIntervalMinutes() * 2, TimeUnit.MINUTES);
+                }
+
+                // 统计取消数
+                if (ETaskStatus.CANCEL.getStatus().equals(status)) {
+                    Long cancelCount = hashOperations.increment("cancelCount", 1);
+                    statMap.put("cancelCount", cancelCount + "");
+                }
+                // 统计成功数
+                else if (ETaskStatus.SUCCESS.getStatus().equals(status)) {
+                    Long successCount = hashOperations.increment("successCount", 1);
+                    statMap.put("successCount", successCount + "");
+                }
+                // 统计失败数
+                else if (ETaskStatus.FAIL.getStatus().equals(status)) {
+                    Long failCount = hashOperations.increment("failCount", 1);
+                    statMap.put("failCount", failCount + "");
+                }
+                return null;
+            }
+        });
+        logger.info("update redis access data: key={},value={}", key, JSON.toJSONString(statMap));
     }
 
     /**

@@ -123,7 +123,7 @@
             <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
         <!--</table>-->
 
-        <table tableName="api_stat_access" domainObjectName="ApiStatAccess"
+        <table tableName="saas_stat_access" domainObjectName="SaasStatAccess"
                enableSelectPaginationByExample="true"
                enableInsertOrUpdateBySelective="true"
                enableBatchInsert="true"
@@ -133,7 +133,7 @@
             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
         </table>
 
-        <table tableName="api_stat_merchant_day_access" domainObjectName="ApiStatMerchantDayAccess"
+        <table tableName="saas_stat_day_access" domainObjectName="SaasStatDayAccess"
                enableSelectPaginationByExample="true"
                enableInsertOrUpdateBySelective="true"
                enableBatchInsert="true"
@@ -143,15 +143,25 @@
             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
         </table>
 
-        <table tableName="api_stat_total_access" domainObjectName="ApiStatTotalAccess"
-               enableSelectPaginationByExample="true"
-               enableInsertOrUpdateBySelective="true"
-               enableBatchInsert="true"
-               enableBatchUpdateByPrimaryKey="true"
-               enableBatchUpdateByPrimaryKeySelective="true">
-            <property name="useActualColumnNames" value="true"/>
-            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
-        </table>
+        <!--<table tableName="api_stat_merchant_day_access" domainObjectName="ApiStatMerchantDayAccess"-->
+               <!--enableSelectPaginationByExample="true"-->
+               <!--enableInsertOrUpdateBySelective="true"-->
+               <!--enableBatchInsert="true"-->
+               <!--enableBatchUpdateByPrimaryKey="true"-->
+               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+            <!--<property name="useActualColumnNames" value="true"/>-->
+            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
+        <!--</table>-->
+
+        <!--<table tableName="api_stat_total_access" domainObjectName="ApiStatTotalAccess"-->
+               <!--enableSelectPaginationByExample="true"-->
+               <!--enableInsertOrUpdateBySelective="true"-->
+               <!--enableBatchInsert="true"-->
+               <!--enableBatchUpdateByPrimaryKey="true"-->
+               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+            <!--<property name="useActualColumnNames" value="true"/>-->
+            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
+        <!--</table>-->
 
     </context>
 

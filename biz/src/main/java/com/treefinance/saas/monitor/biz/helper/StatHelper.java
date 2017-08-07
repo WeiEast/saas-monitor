@@ -34,10 +34,15 @@ public abstract class StatHelper {
 
     /**
      * 计算日期
+     *
      * @param date
      * @return
      */
     public static Date calculateDayTime(Date date) {
         return DateUtils.truncate(date, Calendar.DAY_OF_MONTH);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(StatHelper.calculateIntervalTime(new Date(), 10));
     }
 }

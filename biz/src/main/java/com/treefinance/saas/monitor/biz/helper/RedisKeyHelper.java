@@ -13,11 +13,14 @@ public class RedisKeyHelper {
 
     public static final String KEY_PREFIX = "saas-monitor";
     public static final String STAT_ACCESS = "stat-access";
+    public static final String STAT_ACCESS_ALL = "stat-access-all";
     public static final String STAT_ACCESS_DAY = "stat-access-day";
+    public static final String STAT_ACCESS_DAY_ALL = "stat-access-day-all";
     public static final String STAT_MAIL = "stat-mail";
     public static final String STAT_ECOMMERCE = "stat-ecommerce";
     public static final String STAT_OPERATOR = "stat-operator";
     public static final String ALARM_ACCESS_DAY = "alarm-flag";
+    public static final String ALARM_ACCESS_DAY_ALL = "alarm-flag_all";
     public static final String HTTP_STAT = "stat-http";
 
     /**
@@ -108,6 +111,17 @@ public class RedisKeyHelper {
     }
 
     /**
+     * 获取日统计key(合计所有的商户)
+     *
+     * @param intervalTime
+     * @return
+     */
+    public static String keyOfAllTotalDay(Date intervalTime, EStatType statType) {
+        String day = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, STAT_ACCESS_DAY_ALL, statType, day).toString();
+    }
+
+    /**
      * 获取统计key
      *
      * @param intervalTime
@@ -119,12 +133,32 @@ public class RedisKeyHelper {
 
 
     /**
+     * 获取统计key(合计所有的商户)
+     *
+     * @param intervalTime
+     * @return
+     */
+    public static String keyOfAllTotal(Date intervalTime, EStatType statType) {
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, STAT_ACCESS_ALL, statType, intervalTime.getTime()).toString();
+    }
+
+
+    /**
      * 预警标记key
      *
      * @return
      */
     public static String keyOfAlarm(String appId, EStatType statType) {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, ALARM_ACCESS_DAY, appId, statType).toString();
+    }
+
+    /**
+     * 预警标记key(针对所有商户)
+     *
+     * @return
+     */
+    public static String keyOfAllAlarm(EStatType statType) {
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, ALARM_ACCESS_DAY_ALL, statType).toString();
     }
 
     /**

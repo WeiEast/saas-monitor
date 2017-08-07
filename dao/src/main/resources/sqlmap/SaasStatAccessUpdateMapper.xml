@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.treefinance.saas.monitor.dao.mapper.SaasStatAccessUpdateMapper">
+
+  <!-- 日总计数据 -->
+  <insert id="insertOrUpdateSelectiveDayTotal" parameterType="com.treefinance.saas.monitor.dao.entity.SaasStatDayAccess">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into saas_stat_day_access
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="dataTime != null">
+        dataTime,
+      </if>
+      <if test="dataType != null">
+        dataType,
+      </if>
+      <if test="userCount != null">
+        userCount,
+      </if>
+      <if test="totalCount != null">
+        totalCount,
+      </if>
+      <if test="successCount != null">
+        successCount,
+      </if>
+      <if test="failCount != null">
+        failCount,
+      </if>
+      <if test="cancelCount != null">
+        cancelCount,
+      </if>
+      <if test="successRate != null">
+        successRate,
+      </if>
+      <if test="failRate != null">
+        failRate,
+      </if>
+      <if test="createTime != null">
+        createTime,
+      </if>
+      <if test="lastUpdateTime != null">
+        lastUpdateTime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="dataTime != null">
+        #{dataTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="dataType != null">
+        #{dataType,jdbcType=TINYINT},
+      </if>
+      <if test="userCount != null">
+        #{userCount,jdbcType=INTEGER},
+      </if>
+      <if test="totalCount != null">
+        #{totalCount,jdbcType=INTEGER},
+      </if>
+      <if test="successCount != null">
+        #{successCount,jdbcType=INTEGER},
+      </if>
+      <if test="failCount != null">
+        #{failCount,jdbcType=INTEGER},
+      </if>
+      <if test="cancelCount != null">
+        #{cancelCount,jdbcType=INTEGER},
+      </if>
+      <if test="successRate != null">
+        #{successRate,jdbcType=DECIMAL},
+      </if>
+      <if test="failRate != null">
+        #{failRate,jdbcType=DECIMAL},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastUpdateTime != null">
+        #{lastUpdateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+    ON DUPLICATE KEY UPDATE
+    <trim suffixOverrides=",">
+      <if test="dataTime != null">
+        dataTime = #{dataTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="dataType != null">
+        dataType = #{dataType,jdbcType=TINYINT},
+      </if>
+      <if test="userCount != null">
+        userCount = #{userCount,jdbcType=INTEGER},
+      </if>
+      <if test="totalCount != null">
+        totalCount = #{totalCount,jdbcType=INTEGER},
+      </if>
+      <if test="successCount != null">
+        successCount = #{successCount,jdbcType=INTEGER},
+      </if>
+      <if test="failCount != null">
+        failCount = #{failCount,jdbcType=INTEGER},
+      </if>
+      <if test="cancelCount != null">
+        cancelCount = #{cancelCount,jdbcType=INTEGER},
+      </if>
+      <if test="successRate != null">
+        successRate = #{successRate,jdbcType=DECIMAL},
+      </if>
+      <if test="failRate != null">
+        failRate = #{failRate,jdbcType=DECIMAL},
+      </if>
+      <if test="createTime != null">
+        createTime = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastUpdateTime != null">
+        lastUpdateTime = #{lastUpdateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+
+  <!-- 总计数据 -->
+  <insert id="insertOrUpdateSelectiveTotal" parameterType="com.treefinance.saas.monitor.dao.entity.SaasStatAccess">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into saas_stat_access
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="dataTime != null">
+        dataTime,
+      </if>
+      <if test="dataType != null">
+        dataType,
+      </if>
+      <if test="userCount != null">
+        userCount,
+      </if>
+      <if test="totalCount != null">
+        totalCount,
+      </if>
+      <if test="successCount != null">
+        successCount,
+      </if>
+      <if test="failCount != null">
+        failCount,
+      </if>
+      <if test="cancelCount != null">
+        cancelCount,
+      </if>
+      <if test="successRate != null">
+        successRate,
+      </if>
+      <if test="failRate != null">
+        failRate,
+      </if>
+      <if test="createTime != null">
+        createTime,
+      </if>
+      <if test="lastUpdateTime != null">
+        lastUpdateTime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="dataTime != null">
+        #{dataTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="dataType != null">
+        #{dataType,jdbcType=TINYINT},
+      </if>
+      <if test="userCount != null">
+        #{userCount,jdbcType=INTEGER},
+      </if>
+      <if test="totalCount != null">
+        #{totalCount,jdbcType=INTEGER},
+      </if>
+      <if test="successCount != null">
+        #{successCount,jdbcType=INTEGER},
+      </if>
+      <if test="failCount != null">
+        #{failCount,jdbcType=INTEGER},
+      </if>
+      <if test="cancelCount != null">
+        #{cancelCount,jdbcType=INTEGER},
+      </if>
+      <if test="successRate != null">
+        #{successRate,jdbcType=DECIMAL},
+      </if>
+      <if test="failRate != null">
+        #{failRate,jdbcType=DECIMAL},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastUpdateTime != null">
+        #{lastUpdateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+    ON DUPLICATE KEY UPDATE
+    <trim suffixOverrides=",">
+      <if test="dataTime != null">
+        dataTime = #{dataTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="dataType != null">
+        dataType = #{dataType,jdbcType=TINYINT},
+      </if>
+      <if test="userCount != null">
+        userCount = #{userCount,jdbcType=INTEGER},
+      </if>
+      <if test="totalCount != null">
+        totalCount = #{totalCount,jdbcType=INTEGER},
+      </if>
+      <if test="successCount != null">
+        successCount = #{successCount,jdbcType=INTEGER},
+      </if>
+      <if test="failCount != null">
+        failCount = #{failCount,jdbcType=INTEGER},
+      </if>
+      <if test="cancelCount != null">
+        cancelCount = #{cancelCount,jdbcType=INTEGER},
+      </if>
+      <if test="successRate != null">
+        successRate = #{successRate,jdbcType=DECIMAL},
+      </if>
+      <if test="failRate != null">
+        failRate = #{failRate,jdbcType=DECIMAL},
+      </if>
+      <if test="createTime != null">
+        createTime = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastUpdateTime != null">
+        lastUpdateTime = #{lastUpdateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+
+
+</mapper>

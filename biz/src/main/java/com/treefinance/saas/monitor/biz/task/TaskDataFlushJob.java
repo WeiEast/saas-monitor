@@ -24,6 +24,7 @@ import org.springframework.data.redis.core.SessionCallback;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 数据统计Job
@@ -44,7 +45,11 @@ public class TaskDataFlushJob implements SimpleJob {
     @Autowired
     private StatAccessUpdateService statAccessUpdateService;
     @Autowired
+    private SaasStatAccessUpdateService saasStatAccessUpdateService;
+    @Autowired
     private AlarmService alarmService;
+    @Autowired
+    private AllAlarmService allAlarmService;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -87,6 +92,10 @@ public class TaskDataFlushJob implements SimpleJob {
                     // 5.保存运营商数据
                     saveOperatorData(intervalTimeSets, appIdSet, redisOperations);
 
+                    //6.保存合计所有商户后的总计数据
+                    saveAllTotalDayData(intervalTimeSets, redisOperations);
+                    saveAllTotalData(intervalTimeSets, redisOperations);
+
                     // 6.删除已生成数据key
                     List<String> deleteList = Lists.newArrayList();
                     intervalSets.forEach(time -> {
@@ -106,6 +115,45 @@ public class TaskDataFlushJob implements SimpleJob {
         } finally {
             logger.info("定时刷新数据完成，耗时time={}ms", System.currentTimeMillis() - start);
             alarm();
+        }
+    }
+
+    /**
+     * 监控消息(合计所有商户后的监控消息)
+     */
+    private void allAlarm() {
+        long start = System.currentTimeMillis();
+        try {
+            // 超阈值次数, 默认3次
+            int thresholdCount = diamondConfig.getMonitorAlarmThresholdCount() == null ? 3 : diamondConfig.getMonitorAlarmThresholdCount();
+
+            redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
+                @Override
+                public Object execute(RedisOperations redisOperations) throws DataAccessException {
+                    for (EStatType statType : EStatType.values()) {
+                        if (statType == EStatType.TOTAL) {
+                            continue;
+                        }
+                        String alarmKey = RedisKeyHelper.keyOfAllAlarm(statType);
+                        Object flag = redisOperations.opsForValue().get(alarmKey);
+                        logger.info("alarm job running : {}={}  thresholdCount={} 。。。", alarmKey, flag, thresholdCount);
+                        if (flag == null) {
+                            continue;
+                        }
+                        Integer alarmNums = Integer.valueOf(flag.toString());
+                        if (alarmNums >= thresholdCount) {
+                            allAlarmService.alarm(statType);
+                            redisOperations.delete(alarmKey);
+                        }
+                    }
+                    return null;
+                }
+            });
+
+        } catch (Exception e) {
+            logger.error("alarm job exception ", e);
+        } finally {
+            logger.info("alarm job completed cost {} ms", (System.currentTimeMillis() - start));
         }
     }
 
@@ -199,6 +247,118 @@ public class TaskDataFlushJob implements SimpleJob {
             }
         } catch (Exception e) {
             logger.error("saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
+        }
+    }
+
+    /**
+     * 保存合计所有商户后的日合计数据
+     *
+     * @param intervalTimes   统计时间
+     * @param redisOperations
+     */
+    private void saveAllTotalDayData(Set<Date> intervalTimes, RedisOperations redisOperations) {
+        try {
+            List<SaasStatDayAccessDTO> totalList = Lists.newArrayList();
+            intervalTimes.forEach(intervalTime -> {
+                for (EStatType type : EStatType.values()) {
+                    String totalDaykey = RedisKeyHelper.keyOfAllTotalDay(intervalTime, type);
+                    Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalDaykey);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("key={} , value={}", totalDaykey, JSON.toJSONString(totalMap));
+                    }
+                    if (MapUtils.isEmpty(totalMap)) {
+                        continue;
+                    }
+                    String json = JSON.toJSONString(totalMap);
+                    SaasStatDayAccessDTO dto = JSON.parseObject(json, SaasStatDayAccessDTO.class);
+                    dto.setDataType(type.getType());
+                    Date dataTime = dto.getDataTime();
+                    if (dataTime != null) {
+                        dto.setDataTime(DateUtils.truncate(dataTime, Calendar.DAY_OF_MONTH));
+                    }
+                    dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
+                    dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
+                    dto.setLastUpdateTime(new Date());
+                    totalList.add(dto);
+                }
+
+            });
+            if (CollectionUtils.isNotEmpty(totalList)) {
+                logger.info("saveTotalData : data={}", JSON.toJSONString(totalList));
+                saasStatAccessUpdateService.batchInsertStaDayAccess(totalList);
+            }
+        } catch (Exception e) {
+            logger.error("saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + " : ", e);
+        }
+    }
+
+    /**
+     * 保存合计数据
+     *
+     * @param intervalTimes   统计时间
+     * @param redisOperations
+     */
+    private void saveAllTotalData(Set<Date> intervalTimes, RedisOperations redisOperations) {
+        try {
+            List<SaasStatAccessDTO> totalList = Lists.newArrayList();
+            intervalTimes.forEach(intervalTime -> {
+
+                for (EStatType type : EStatType.values()) {
+                    String totalkey = RedisKeyHelper.keyOfAllTotal(intervalTime, type);
+                    Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalkey);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("key={} , value={}", totalkey, JSON.toJSONString(totalMap));
+                    }
+                    if (MapUtils.isEmpty(totalMap)) {
+                        continue;
+                    }
+                    String json = JSON.toJSONString(totalMap);
+                    SaasStatAccessDTO dto = JSON.parseObject(json, SaasStatAccessDTO.class);
+                    dto.setDataType(type.getType());
+                    dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
+                    dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
+                    dto.setLastUpdateTime(new Date());
+                    totalList.add(dto);
+                }
+            });
+            if (CollectionUtils.isNotEmpty(totalList)) {
+                logger.info("saveTotalData : data={}", JSON.toJSONString(totalList));
+                saasStatAccessUpdateService.batchInsertStatAccess(totalList);
+
+                // 未设置预警阀值
+                if (diamondConfig.getMonitorAlarmThreshold() == null) {
+                    return;
+                }
+                BigDecimal alarmThreshold = BigDecimal.valueOf(diamondConfig.getMonitorAlarmThreshold());
+                List<SaasStatAccessDTO> sortedTotalList = totalList.stream()
+                        .sorted((o1, o2) -> o1.getDataTime().compareTo(o2.getDataTime())).collect(Collectors.toList());
+                for (SaasStatAccessDTO dto : sortedTotalList) {
+                    EStatType statType = EStatType.getById(dto.getDataType());
+                    if (statType == EStatType.TOTAL) {
+                        continue;
+                    }
+                    BigDecimal successRate = dto.getSuccessRate();
+                    // 成功率 > 阀值， 清零计数
+                    String alarmKey = RedisKeyHelper.keyOfAllAlarm(statType);
+                    // 没有成功、失败，跳过
+                    if ((dto.getFailCount() == null || dto.getFailCount() == 0)
+                            && (dto.getSuccessCount() == null || dto.getSuccessCount() == 0)) {
+                        logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto));
+                        continue;
+                    }
+                    if (successRate.compareTo(alarmThreshold) >= 0) {
+                        logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, 0, JSON.toJSONString(dto));
+                        redisOperations.delete(alarmKey);
+                    }
+                    // 成功率 < 阀值， 计数器+1
+                    else {
+                        Long result = redisOperations.opsForValue().increment(alarmKey, 1);
+                        logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, result, JSON.toJSONString(dto));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + " : ", e);
         }
     }
 
@@ -446,5 +606,14 @@ public class TaskDataFlushJob implements SimpleJob {
                 .multiply(BigDecimal.valueOf(100))
                 .divide(BigDecimal.valueOf(totalCount, 2), 2);
         return rate;
+    }
+
+    public static void main(String[] args) {
+        List<Integer> list = Lists.newArrayList(2, 3, 4, 5, 10, 1);
+        for (int i = 0; i < 10; i++) {
+            list.add(i);
+        }
+        list = list.stream().sorted(Integer::compareTo).collect(Collectors.toList());
+        System.out.println(list);
     }
 }
