@@ -75,6 +75,7 @@ public class TaskDataFlushJob implements SimpleJob {
                         Long time = Long.valueOf(t);
                         intervalTimeSets.add(new Date(time));
                     });
+                    logger.info("TaskDataFlushJob中intervalTimeSets={}", JSON.toJSONString(intervalTimeSets));
                     // appId列表
                     String appIdKey = RedisKeyHelper.keyOfAppIds();
                     Set<String> appIdSet = redisOperations.opsForSet().members(appIdKey);
@@ -104,7 +105,7 @@ public class TaskDataFlushJob implements SimpleJob {
                         }
                     });
                     if (!deleteList.isEmpty()) {
-                        logger.info("刷新数据完成，清除数据：deleteList={}", JSON.toJSONString(deleteList));
+                        logger.info("刷新数据完成，清除数据：deleteList={},currentInterval={}", JSON.toJSONString(deleteList), currentInterval);
                         redisOperations.opsForSet().remove(dayKey, deleteList.toArray(new String[]{}));
                     }
                     return null;
@@ -136,10 +137,10 @@ public class TaskDataFlushJob implements SimpleJob {
                         }
                         String alarmKey = RedisKeyHelper.keyOfAllAlarm(statType);
                         Object flag = redisOperations.opsForValue().get(alarmKey);
-                        logger.info("alarm job running : {}={}  thresholdCount={} 。。。", alarmKey, flag, thresholdCount);
                         if (flag == null) {
                             continue;
                         }
+                        logger.info("alarm job running : {}={}  thresholdCount={} 。。。", alarmKey, flag, thresholdCount);
                         Integer alarmNums = Integer.valueOf(flag.toString());
                         if (alarmNums >= thresholdCount) {
                             allAlarmService.alarm(statType);
@@ -307,7 +308,7 @@ public class TaskDataFlushJob implements SimpleJob {
                     String totalkey = RedisKeyHelper.keyOfAllTotal(intervalTime, type);
                     Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalkey);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("key={} , value={}", totalkey, JSON.toJSONString(totalMap));
+                        logger.debug("保存合计商户后的合计数据:key={} , value={}", totalkey, JSON.toJSONString(totalMap));
                     }
                     if (MapUtils.isEmpty(totalMap)) {
                         continue;
