@@ -292,7 +292,7 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
                 return null;
             }
         });
-        logger.info("update redis access data: key={},value={}", key, JSON.toJSONString(statMap));
+        logger.info("update redis all access data: key={},value={}", key, JSON.toJSONString(statMap));
     }
 
     /**

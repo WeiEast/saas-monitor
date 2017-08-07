@@ -32,7 +32,7 @@ public class AllAlarmServiceImpl implements AllAlarmService {
     public void alarm(EStatType type) {
         Integer thresholdCount = diamondConfig.getMonitorAlarmThresholdCount() == null ? 3 : diamondConfig.getMonitorAlarmThresholdCount();
 //        String monitorAlarmExcludeAppIds = diamondConfig.getMonitorAlarmExcludeAppIds();
-        logger.info("type={} trigger alarm message", type);
+        logger.info("type={} trigger all alarm message", type);
 
 //        // 验证是否排除的预警消息
 //        if (StringUtils.isNotEmpty(monitorAlarmExcludeAppIds)) {
