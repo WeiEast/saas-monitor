@@ -6,6 +6,9 @@
   <insert id="insertOrUpdateSelectiveDayTotal" parameterType="com.treefinance.saas.monitor.dao.entity.SaasStatDayAccess">
     insert into saas_stat_day_access
     <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id !=null">
+        id,
+      </if>
       <if test="dataTime != null">
         dataTime,
       </if>
@@ -41,6 +44,9 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id},
+      </if>
       <if test="dataTime != null">
         #{dataTime,jdbcType=TIMESTAMP},
       </if>
@@ -77,6 +83,9 @@
     </trim>
     ON DUPLICATE KEY UPDATE
     <trim suffixOverrides=",">
+      <if test="id != null">
+        id = #{id},
+      </if>
       <if test="dataTime != null">
         dataTime = #{dataTime,jdbcType=TIMESTAMP},
       </if>
@@ -117,6 +126,9 @@
   <insert id="insertOrUpdateSelectiveTotal" parameterType="com.treefinance.saas.monitor.dao.entity.SaasStatAccess">
     insert into saas_stat_access
     <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
       <if test="dataTime != null">
         dataTime,
       </if>
@@ -152,6 +164,9 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id},
+      </if>
       <if test="dataTime != null">
         #{dataTime,jdbcType=TIMESTAMP},
       </if>
@@ -188,6 +203,9 @@
     </trim>
     ON DUPLICATE KEY UPDATE
     <trim suffixOverrides=",">
+      <if test="id != null">
+        id = #{id},
+      </if>
       <if test="dataTime != null">
         dataTime = #{dataTime,jdbcType=TIMESTAMP},
       </if>
