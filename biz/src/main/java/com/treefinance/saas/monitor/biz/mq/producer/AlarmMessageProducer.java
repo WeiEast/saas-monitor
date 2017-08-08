@@ -189,44 +189,52 @@ public class AlarmMessageProducer {
     }
 
     public void sendMail4All(List<SaasStatAccess> data, EStatType type) {
-        String mails = diamondConfig.getMonitorAlarmMails();
-        if (StringUtils.isEmpty(mails)) {
-            logger.info("No mail list are configured，do not alarm : message={} ", JSON.toJSONString(data));
-            return;
-        }
-        logger.info("send alarm mail to {} ", mails);
-        String topic = diamondConfig.getMonitorAlarmTopic();
-        String tag = diamondConfig.getMonitorAlarmMailTag();
-        String key = UUID.randomUUID().toString() + "_" + tag;
-        List<String> tolist = Splitter.on(",").splitToList(mails);
+        try {
+            String mails = diamondConfig.getMonitorAlarmMails();
+            if (StringUtils.isEmpty(mails)) {
+                logger.info("No mail list are configured，do not alarm : message={} ", JSON.toJSONString(data));
+                return;
+            }
+            logger.info("send alarm mail to {} ", mails);
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmMailTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
+            List<String> tolist = Splitter.on(",").splitToList(mails);
 
-        MailBody body = new MailBody();
-        //设置邮件方式，具体看枚举值
-        body.setMailEnum(MailEnum.SIMPLE_MAIL);
-        //设置业务线，预警设置为alarm
-        body.setBusiness("alarm");
-        //设置发送给谁
-        body.setToList(tolist);
-        body.setSubject(generateTitle(type));
-        body.setBody(generateAllBody(data, type));
-        logger.info("send alarm mail message : message={}", JSON.toJSONString(body));
-        sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+            MailBody body = new MailBody();
+            //设置邮件方式，具体看枚举值
+            body.setMailEnum(MailEnum.SIMPLE_MAIL);
+            //设置业务线，预警设置为alarm
+            body.setBusiness("alarm");
+            //设置发送给谁
+            body.setToList(tolist);
+            body.setSubject(generateTitle(type));
+            body.setBody(generateAllBody(data, type));
+            logger.info("send alarm mail message : message={}", JSON.toJSONString(body));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+        } catch (Exception e) {
+            logger.error("sendMail failed : type={}, data={}", type.getName(), JSON.toJSONString(data), e);
+        }
     }
 
     public void sendWebChart4All(List<SaasStatAccess> data, EStatType type) {
-        String topic = diamondConfig.getMonitorAlarmTopic();
-        String tag = diamondConfig.getMonitorAlarmWebchartTag();
-        String key = UUID.randomUUID().toString() + "_" + tag;
+        try {
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmWebchartTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
 
-        WeChatBody body = new WeChatBody();
-        body.setAgentId(AGENT_ID);
-        TXTMessage msg = new TXTMessage();
-        msg.setMessage(generateAllBody(data, type));
-        body.setMessage(msg);
-        body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
-        body.setNotifyEnum(NotifyEnum.WECHAT);
-        logger.info("send alarm webchat message : message={}", JSON.toJSONString(body));
-        sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+            WeChatBody body = new WeChatBody();
+            body.setAgentId(AGENT_ID);
+            TXTMessage msg = new TXTMessage();
+            msg.setMessage(generateAllBody(data, type));
+            body.setMessage(msg);
+            body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
+            body.setNotifyEnum(NotifyEnum.WECHAT);
+            logger.info("send alarm webchat message : message={}", JSON.toJSONString(body));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+        } catch (Exception e) {
+            logger.error("sendWechat failed :type={},data={}", type.getName(), JSON.toJSONString(data));
+        }
     }
 
     private String generateAllBody(List<SaasStatAccess> data, EStatType type) {
