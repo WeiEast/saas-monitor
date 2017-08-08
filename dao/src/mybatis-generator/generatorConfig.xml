@@ -130,7 +130,7 @@
                enableBatchUpdateByPrimaryKey="true"
                enableBatchUpdateByPrimaryKeySelective="true">
             <property name="useActualColumnNames" value="true"/>
-            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
         </table>
 
         <table tableName="saas_stat_day_access" domainObjectName="SaasStatDayAccess"
@@ -140,7 +140,7 @@
                enableBatchUpdateByPrimaryKey="true"
                enableBatchUpdateByPrimaryKeySelective="true">
             <property name="useActualColumnNames" value="true"/>
-            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
         </table>
 
         <!--<table tableName="api_stat_merchant_day_access" domainObjectName="ApiStatMerchantDayAccess"-->

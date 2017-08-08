@@ -4,9 +4,6 @@
 
   <!-- 日总计数据 -->
   <insert id="insertOrUpdateSelectiveDayTotal" parameterType="com.treefinance.saas.monitor.dao.entity.SaasStatDayAccess">
-    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into saas_stat_day_access
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="dataTime != null">
@@ -118,9 +115,6 @@
 
   <!-- 总计数据 -->
   <insert id="insertOrUpdateSelectiveTotal" parameterType="com.treefinance.saas.monitor.dao.entity.SaasStatAccess">
-    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into saas_stat_access
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="dataTime != null">
