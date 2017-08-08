@@ -250,23 +250,28 @@ public class TaskDataFlushJob implements SimpleJob {
                     if (statType == EStatType.TOTAL) {
                         continue;
                     }
-                    BigDecimal successRate = dto.getSuccessRate();
                     // 成功率 > 阀值， 清零计数
                     String alarmKey = RedisKeyHelper.keyOfAlarm(appId, statType);
-                    // 没有成功、失败，跳过
-                    if ((dto.getFailCount() == null || dto.getFailCount() == 0)
-                            && (dto.getSuccessCount() == null || dto.getSuccessCount() == 0)) {
-                        logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto));
-                        continue;
-                    }
-                    if (successRate.compareTo(alarmThreshold) >= 0) {
-                        logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, 0, JSON.toJSONString(dto));
-                        redisOperations.delete(alarmKey);
-                    }
-                    // 成功率 > 阀值， 计数器+1
-                    else {
-                        Long result = redisOperations.opsForValue().increment(alarmKey, 1);
-                        logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, result, JSON.toJSONString(dto));
+                    try {
+                        BigDecimal successRate = dto.getSuccessRate();
+                        // 没有成功、失败，跳过
+                        if ((dto.getFailCount() == null || dto.getFailCount() == 0)
+                                && (dto.getSuccessCount() == null || dto.getSuccessCount() == 0)) {
+                            logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto));
+                            continue;
+                        }
+                        if (successRate != null && successRate.compareTo(alarmThreshold) >= 0) {
+                            logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, 0, JSON.toJSONString(dto));
+                            redisOperations.delete(alarmKey);
+                        }
+                        // 成功率 > 阀值， 计数器+1
+                        else {
+                            Long result = redisOperations.opsForValue().increment(alarmKey, 1);
+                            logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, result, JSON.toJSONString(dto));
+                        }
+
+                    } catch (Exception e) {
+                        logger.error("update alarm flag error: data=" + JSON.toJSONString(dto), e);
                     }
                 }
             }
