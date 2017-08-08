@@ -66,28 +66,32 @@ public class AlarmMessageProducer {
      * @param data
      */
     public void sendMail(List<MerchantStatAccess> data, EStatType type) {
-        String mails = diamondConfig.getMonitorAlarmMails();
-        if (StringUtils.isEmpty(mails)) {
-            logger.info("No mail list are configured，do not alarm : message={} ", JSON.toJSONString(data));
-            return;
-        }
-        logger.info("send alarm mail to {} ", mails);
-        String topic = diamondConfig.getMonitorAlarmTopic();
-        String tag = diamondConfig.getMonitorAlarmMailTag();
-        String key = UUID.randomUUID().toString() + "_" + tag;
-        List<String> tolist = Splitter.on(",").splitToList(mails);
+        try {
+            String mails = diamondConfig.getMonitorAlarmMails();
+            if (StringUtils.isEmpty(mails)) {
+                logger.info("No mail list are configured，do not alarm : message={} ", JSON.toJSONString(data));
+                return;
+            }
+            logger.info("send alarm mail to {} ", mails);
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmMailTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
+            List<String> tolist = Splitter.on(",").splitToList(mails);
 
-        MailBody body = new MailBody();
-        //设置邮件方式，具体看枚举值
-        body.setMailEnum(MailEnum.SIMPLE_MAIL);
-        //设置业务线，预警设置为alarm
-        body.setBusiness("alarm");
-        //设置发送给谁
-        body.setToList(tolist);
-        body.setSubject(generateTitle(type));
-        body.setBody(generateBody(data, type));
-        logger.info("send alarm mail message : message={}", JSON.toJSONString(body));
-        sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+            MailBody body = new MailBody();
+            //设置邮件方式，具体看枚举值
+            body.setMailEnum(MailEnum.SIMPLE_MAIL);
+            //设置业务线，预警设置为alarm
+            body.setBusiness("alarm");
+            //设置发送给谁
+            body.setToList(tolist);
+            body.setSubject(generateTitle(type));
+            body.setBody(generateBody(data, type));
+            logger.info("send alarm mail message : message={}", JSON.toJSONString(body));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+        } catch (Exception e) {
+            logger.error("sendMail failed : type=" + type + ", data=" + JSON.toJSONString(data), e);
+        }
     }
 
     private String generateTitle(EStatType type) {
@@ -142,19 +146,23 @@ public class AlarmMessageProducer {
      * @param type
      */
     public void sendWebChart(List<MerchantStatAccess> data, EStatType type) {
-        String topic = diamondConfig.getMonitorAlarmTopic();
-        String tag = diamondConfig.getMonitorAlarmWebchartTag();
-        String key = UUID.randomUUID().toString() + "_" + tag;
+        try {
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmWebchartTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
 
-        WeChatBody body = new WeChatBody();
-        body.setAgentId(AGENT_ID);
-        TXTMessage msg = new TXTMessage();
-        msg.setMessage(generateBody(data, type));
-        body.setMessage(msg);
-        body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
-        body.setNotifyEnum(NotifyEnum.WECHAT);
-        logger.info("send alarm webchat message : message={}", JSON.toJSONString(body));
-        sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+            WeChatBody body = new WeChatBody();
+            body.setAgentId(AGENT_ID);
+            TXTMessage msg = new TXTMessage();
+            msg.setMessage(generateBody(data, type));
+            body.setMessage(msg);
+            body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
+            body.setNotifyEnum(NotifyEnum.WECHAT);
+            logger.info("send alarm webchat message : message={}", JSON.toJSONString(body));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+        } catch (Exception e) {
+            logger.error("sendWebChart failed : type=" + type + ", data=" + JSON.toJSONString(data), e);
+        }
     }
 
     /**
