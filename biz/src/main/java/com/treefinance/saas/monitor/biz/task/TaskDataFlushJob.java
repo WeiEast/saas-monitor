@@ -5,6 +5,7 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
@@ -273,6 +274,7 @@ public class TaskDataFlushJob implements SimpleJob {
                     }
                     String json = JSON.toJSONString(totalMap);
                     SaasStatDayAccessDTO dto = JSON.parseObject(json, SaasStatDayAccessDTO.class);
+                    dto.setId(UidGenerator.getId());
                     dto.setDataType(type.getType());
                     Date dataTime = dto.getDataTime();
                     if (dataTime != null) {
@@ -316,6 +318,7 @@ public class TaskDataFlushJob implements SimpleJob {
                     }
                     String json = JSON.toJSONString(totalMap);
                     SaasStatAccessDTO dto = JSON.parseObject(json, SaasStatAccessDTO.class);
+                    dto.setId(UidGenerator.getId());
                     dto.setDataType(type.getType());
                     dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
                     dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
