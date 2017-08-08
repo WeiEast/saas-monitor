@@ -33,30 +33,34 @@ public class AlarmServiceImpl implements AlarmService {
 
     @Override
     public void alarm(String appId, EStatType type) {
-        Integer thresholdCount = diamondConfig.getMonitorAlarmThresholdCount() == null ? 3 : diamondConfig.getMonitorAlarmThresholdCount();
-        String monitorAlarmExcludeAppIds = diamondConfig.getMonitorAlarmExcludeAppIds();
-        logger.info("appId={},type={} trigger alarm message , and excludeAppIds is {}", appId, type, monitorAlarmExcludeAppIds);
+        try {
+            Integer thresholdCount = diamondConfig.getMonitorAlarmThresholdCount() == null ? 3 : diamondConfig.getMonitorAlarmThresholdCount();
+            String monitorAlarmExcludeAppIds = diamondConfig.getMonitorAlarmExcludeAppIds();
+            logger.info("appId={},type={} trigger alarm message , and excludeAppIds is {}", appId, type, monitorAlarmExcludeAppIds);
 
-        // 验证是否排除的预警消息
-        if (StringUtils.isNotEmpty(monitorAlarmExcludeAppIds)) {
-            List<String> excludeAppIds = Splitter.on(",").trimResults().splitToList(monitorAlarmExcludeAppIds);
-            if (excludeAppIds != null && excludeAppIds.contains(appId)) {
-                return;
+            // 验证是否排除的预警消息
+            if (StringUtils.isNotEmpty(monitorAlarmExcludeAppIds)) {
+                List<String> excludeAppIds = Splitter.on(",").trimResults().splitToList(monitorAlarmExcludeAppIds);
+                if (excludeAppIds != null && excludeAppIds.contains(appId)) {
+                    return;
+                }
             }
-        }
 
-        BigDecimal alarmThreshold = BigDecimal.valueOf(diamondConfig.getMonitorAlarmThreshold());
-        MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
-        criteria.setOrderByClause("dataTime desc");
-        criteria.setOffset(0);
-        criteria.setLimit(thresholdCount);
-        criteria.createCriteria()
-                .andSuccessRateLessThan(alarmThreshold)
-                .andDataTimeLessThanOrEqualTo(new Date())
-                .andDataTypeEqualTo(type.getType())
-                .andAppIdEqualTo(appId);
-        List<MerchantStatAccess> list = merchantStatAccessMapper.selectPaginationByExample(criteria);
-        alarmMessageProducer.sendMail(list, type);
-        alarmMessageProducer.sendWebChart(list, type);
+            BigDecimal alarmThreshold = BigDecimal.valueOf(diamondConfig.getMonitorAlarmThreshold());
+            MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
+            criteria.setOrderByClause("dataTime desc");
+            criteria.setOffset(0);
+            criteria.setLimit(thresholdCount);
+            criteria.createCriteria()
+                    .andSuccessRateLessThan(alarmThreshold)
+                    .andDataTimeLessThanOrEqualTo(new Date())
+                    .andDataTypeEqualTo(type.getType())
+                    .andAppIdEqualTo(appId);
+            List<MerchantStatAccess> list = merchantStatAccessMapper.selectPaginationByExample(criteria);
+            alarmMessageProducer.sendMail(list, type);
+            alarmMessageProducer.sendWebChart(list, type);
+        } catch (Exception e) {
+            logger.error("alarm failed : appId=" + appId + ",type=" + type, e);
+        }
     }
 }
