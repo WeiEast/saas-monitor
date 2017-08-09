@@ -41,6 +41,6 @@ public class AllAlarmServiceImpl implements AllAlarmService {
                 .andDataTypeEqualTo(type.getType());
         List<SaasStatAccess> list = saasStatAccessMapper.selectByExample(criteria);
         alarmMessageProducer.sendMail4All(list, type);
-//        alarmMessageProducer.sendWebChart4All(list, type);
+        alarmMessageProducer.sendWebChart4All(list, type);
     }
 }
