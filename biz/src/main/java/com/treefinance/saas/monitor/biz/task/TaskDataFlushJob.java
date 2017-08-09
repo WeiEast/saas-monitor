@@ -322,11 +322,11 @@ public class TaskDataFlushJob implements SimpleJob {
                 for (EStatType type : EStatType.values()) {
                     String totalkey = RedisKeyHelper.keyOfAllTotal(intervalTime, type);
                     Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalkey);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("TaskMonitorAlarm:保存合计商户后的合计数据:key={} , value={}", totalkey, JSON.toJSONString(totalMap));
-                    }
                     if (MapUtils.isEmpty(totalMap)) {
                         continue;
+                    }
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("TaskMonitorAlarm:保存合计商户后的合计数据:key={} , value={}", totalkey, JSON.toJSONString(totalMap));
                     }
                     String json = JSON.toJSONString(totalMap);
                     SaasStatAccessDTO dto = JSON.parseObject(json, SaasStatAccessDTO.class);
