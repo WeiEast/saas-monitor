@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -30,6 +31,9 @@ public class AllAlarmServiceImpl implements AllAlarmService {
     @Override
     public void alarm(EStatType type, List<Date> alarmTimes) {
         logger.info("type={} alarmTimes={} trigger all alarm message", type, JSON.toJSONString(alarmTimes));
+        if (CollectionUtils.isEmpty(alarmTimes)) {
+            return;
+        }
         SaasStatAccessCriteria criteria = new SaasStatAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
         criteria.createCriteria()
@@ -37,6 +41,6 @@ public class AllAlarmServiceImpl implements AllAlarmService {
                 .andDataTypeEqualTo(type.getType());
         List<SaasStatAccess> list = saasStatAccessMapper.selectByExample(criteria);
         alarmMessageProducer.sendMail4All(list, type);
-        alarmMessageProducer.sendWebChart4All(list, type);
+//        alarmMessageProducer.sendWebChart4All(list, type);
     }
 }

@@ -253,7 +253,7 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
                 // 当日时间列表
                 String dayKey = RedisKeyHelper.keyOfDay(intervalTime);
                 redisOperations.opsForSet().add(dayKey, intervalTime.getTime() + "");
-                logger.info("stat-day中的值为:daykey={},value={}", dayKey, JSON.toJSONString(redisOperations.opsForSet().members(dayKey)));
+                logger.info("TaskMonitorAlarm:stat-day中的值为:daykey={},value={}", dayKey, JSON.toJSONString(redisOperations.opsForSet().members(dayKey)));
                 statMap.put("dataTime", intervalTime.getTime() + "");
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
@@ -292,7 +292,7 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
                 return null;
             }
         });
-        logger.info("update redis all access data: key={},value={}", key, JSON.toJSONString(statMap));
+        logger.info("TaskMonitorAlarm:update redis all access data: key={},value={}", key, JSON.toJSONString(statMap));
     }
 
     /**

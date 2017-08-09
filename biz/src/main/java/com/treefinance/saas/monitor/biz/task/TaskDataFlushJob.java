@@ -57,7 +57,7 @@ public class TaskDataFlushJob implements SimpleJob {
         long start = System.currentTimeMillis();
         try {
             int intervalMinutes = diamondConfig.getMonitorIntervalMinutes();
-            logger.info("intervalMinutes={}", intervalMinutes);
+            logger.info("TaskMonitorAlarm:intervalMinutes={}", intervalMinutes);
             Date now = new Date();
             Date intervalTime = StatHelper.calculateIntervalTime(now, intervalMinutes);
             //下一个监控时间 比如当前是9:00则currentInterval=9:10
@@ -79,8 +79,8 @@ public class TaskDataFlushJob implements SimpleJob {
                         Long time = Long.valueOf(t);
                         intervalTimeSets.add(new Date(time));
                     });
-                    intervalTimeSets.remove(intervalTime);
-                    logger.info("TaskDataFlushJob中intervalTimeSets={}", JSON.toJSONString(intervalTimeSets));
+                    intervalTimeSets.remove(new Date(Long.valueOf(currentInterval)));
+                    logger.info("TaskMonitorAlarm:TaskDataFlushJob中intervalTimeSets={}", JSON.toJSONString(intervalTimeSets));
                     // appId列表
                     String appIdKey = RedisKeyHelper.keyOfAppIds();
                     Set<String> appIdSet = redisOperations.opsForSet().members(appIdKey);
@@ -110,7 +110,7 @@ public class TaskDataFlushJob implements SimpleJob {
                         }
                     });
                     if (!deleteList.isEmpty()) {
-                        logger.info("刷新数据完成，清除数据：deleteList={},currentInterval={}", JSON.toJSONString(deleteList), currentInterval);
+                        logger.info("TaskMonitorAlarm:刷新数据完成，清除数据：deleteList={},currentInterval={}", JSON.toJSONString(deleteList), currentInterval);
                         String[] array = new String[deleteList.size()];
                         redisOperations.opsForSet().remove(dayKey, deleteList.toArray(array));
                     }
@@ -120,7 +120,7 @@ public class TaskDataFlushJob implements SimpleJob {
         } catch (Exception e) {
             logger.error("statdataflushjob exception : ", e);
         } finally {
-            logger.info("定时刷新数据完成，耗时time={}ms", System.currentTimeMillis() - start);
+            logger.info("TaskMonitorAlarm:定时刷新数据完成，耗时time={}ms", System.currentTimeMillis() - start);
             allAlarm();
         }
     }
@@ -323,7 +323,7 @@ public class TaskDataFlushJob implements SimpleJob {
                     String totalkey = RedisKeyHelper.keyOfAllTotal(intervalTime, type);
                     Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalkey);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("保存合计商户后的合计数据:key={} , value={}", totalkey, JSON.toJSONString(totalMap));
+                        logger.debug("TaskMonitorAlarm:保存合计商户后的合计数据:key={} , value={}", totalkey, JSON.toJSONString(totalMap));
                     }
                     if (MapUtils.isEmpty(totalMap)) {
                         continue;
@@ -339,7 +339,7 @@ public class TaskDataFlushJob implements SimpleJob {
                 }
             });
             if (CollectionUtils.isNotEmpty(totalList)) {
-                logger.info("saveTotalData : data={}", JSON.toJSONString(totalList));
+                logger.info("TaskMonitorAlarm:saveTotalData : data={}", JSON.toJSONString(totalList));
                 saasStatAccessUpdateService.batchInsertStatAccess(totalList);
 
                 // 未设置预警阀值
@@ -362,11 +362,11 @@ public class TaskDataFlushJob implements SimpleJob {
                         // 没有成功、失败，跳过
                         if ((dto.getFailCount() == null || dto.getFailCount() == 0)
                                 && (dto.getSuccessCount() == null || dto.getSuccessCount() == 0)) {
-                            logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto));
+                            logger.info(" TaskMonitorAlarm:update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto));
                             continue;
                         }
                         if (successRate != null && successRate.compareTo(alarmThreshold) >= 0) {
-                            logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, 0, JSON.toJSONString(dto));
+                            logger.info(" TaskMonitorAlarm:update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, 0, JSON.toJSONString(dto));
                             redisOperations.delete(alarmKey);
                             redisOperations.delete(alarmTimesKey);
                         }
@@ -383,10 +383,10 @@ public class TaskDataFlushJob implements SimpleJob {
                             }
                             Long result = redisOperations.opsForValue().increment(alarmKey, 1);
                             redisOperations.opsForSet().add(alarmTimesKey, dto.getDataTime().getTime() + "");
-                            logger.info(" update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, result, JSON.toJSONString(dto));
+                            logger.info(" TaskMonitorAlarm:update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, result, JSON.toJSONString(dto));
                         }
                     } catch (Exception e) {
-                        logger.error("update alarm flag error: data={}", JSON.toJSONString(dto), e);
+                        logger.error("TaskMonitorAlarm:update alarm flag error: data={}", JSON.toJSONString(dto), e);
                     }
                 }
             }
