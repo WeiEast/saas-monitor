@@ -1,6 +1,6 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
-import com.treefinance.saas.monitor.biz.config.DiamondConfig;
+import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.biz.service.AllAlarmService;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -24,36 +23,19 @@ public class AllAlarmServiceImpl implements AllAlarmService {
 
     private static final Logger logger = LoggerFactory.getLogger(AlarmServiceImpl.class);
     @Autowired
-    private DiamondConfig diamondConfig;
-    @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
     private SaasStatAccessMapper saasStatAccessMapper;
 
     @Override
-    public void alarm(EStatType type) {
-        Integer thresholdCount = diamondConfig.getMonitorAlarmThresholdCount() == null ? 3 : diamondConfig.getMonitorAlarmThresholdCount();
-//        String monitorAlarmExcludeAppIds = diamondConfig.getMonitorAlarmExcludeAppIds();
-        logger.info("type={} trigger all alarm message", type);
-
-//        // 验证是否排除的预警消息
-//        if (StringUtils.isNotEmpty(monitorAlarmExcludeAppIds)) {
-//            List<String> excludeAppIds = Splitter.on(",").trimResults().splitToList(monitorAlarmExcludeAppIds);
-//            if (excludeAppIds != null && excludeAppIds.contains(appId)) {
-//                return;
-//            }
-//        }
-
-        BigDecimal alarmThreshold = BigDecimal.valueOf(diamondConfig.getMonitorAlarmThreshold());
+    public void alarm(EStatType type, List<Date> alarmTimes) {
+        logger.info("type={} alarmTimes={} trigger all alarm message", type, JSON.toJSONString(alarmTimes));
         SaasStatAccessCriteria criteria = new SaasStatAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
-        criteria.setOffset(0);
-        criteria.setLimit(thresholdCount);
         criteria.createCriteria()
-                .andSuccessRateLessThan(alarmThreshold)
-                .andDataTimeLessThanOrEqualTo(new Date())
+                .andDataTimeIn(alarmTimes)
                 .andDataTypeEqualTo(type.getType());
-        List<SaasStatAccess> list = saasStatAccessMapper.selectPaginationByExample(criteria);
+        List<SaasStatAccess> list = saasStatAccessMapper.selectByExample(criteria);
         alarmMessageProducer.sendMail4All(list, type);
         alarmMessageProducer.sendWebChart4All(list, type);
     }
