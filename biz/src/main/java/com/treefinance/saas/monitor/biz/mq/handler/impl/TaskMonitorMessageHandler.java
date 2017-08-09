@@ -9,7 +9,6 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.mq.handler.AbstractMessageHandler;
-import com.treefinance.saas.monitor.biz.service.AccessHistoryService;
 import com.treefinance.saas.monitor.biz.service.EcommerceService;
 import com.treefinance.saas.monitor.biz.service.OperatorService;
 import com.treefinance.saas.monitor.biz.service.WebsiteService;
@@ -50,8 +49,6 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
     private OperatorService operatorService;
     @Autowired
     private EcommerceService ecommerceService;
-    @Autowired
-    private AccessHistoryService accessHistoryService;
 
     @Override
     public boolean isHandleAble(MessageExt messageExt) {
