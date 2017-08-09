@@ -63,7 +63,7 @@ public class TaskDataFlushJob implements SimpleJob {
             //下一个监控时间 比如当前是9:00则currentInterval=9:10
             String currentInterval = intervalTime.getTime() + "";
             //当前监控时间 比如当前是9:00则previousCurrentInterval=9:00
-            String previousCurrentInterval = DateUtils.addMinutes(intervalTime, -intervalMinutes).getTime() + "";
+//            String previousCurrentInterval = DateUtils.addMinutes(intervalTime, -intervalMinutes).getTime() + "";
 
             redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
                 @Override
@@ -105,7 +105,7 @@ public class TaskDataFlushJob implements SimpleJob {
                     // 6.删除已生成数据key
                     List<String> deleteList = Lists.newArrayList();
                     intervalSets.forEach(time -> {
-                        if (!time.equals(currentInterval) || !time.equals(previousCurrentInterval)) {
+                        if (!time.equals(currentInterval)) {
                             deleteList.add(time);
                         }
                     });
@@ -372,13 +372,8 @@ public class TaskDataFlushJob implements SimpleJob {
                         }
                         // 成功率 < 阀值， 计数器+1
                         else {
-                            Set<String> alarmTimesStrSet = redisOperations.opsForSet().members(alarmTimesKey);
-                            Set<Date> alarmTimesSet = Sets.newHashSet();
-                            alarmTimesStrSet.forEach(t -> {
-                                Long time = Long.valueOf(t);
-                                alarmTimesSet.add(new Date(time));
-                            });
-                            if (CollectionUtils.isNotEmpty(alarmTimesSet) && alarmTimesSet.contains(dto.getDataTime())) {
+                            Boolean flag = redisOperations.opsForSet().isMember(alarmTimesKey, dto.getDataTime().getTime() + "");
+                            if (flag) {
                                 continue;
                             }
                             Long result = redisOperations.opsForValue().increment(alarmKey, 1);
