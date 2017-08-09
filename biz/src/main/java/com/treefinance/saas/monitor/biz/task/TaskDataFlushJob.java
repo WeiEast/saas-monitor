@@ -105,7 +105,7 @@ public class TaskDataFlushJob implements SimpleJob {
                     // 6.删除已生成数据key
                     List<String> deleteList = Lists.newArrayList();
                     intervalSets.forEach(time -> {
-                        if (!time.equals(currentInterval) && !time.equals(previousCurrentInterval)) {
+                        if (!time.equals(currentInterval)) {
                             deleteList.add(time);
                         }
                     });
@@ -372,13 +372,8 @@ public class TaskDataFlushJob implements SimpleJob {
                         }
                         // 成功率 < 阀值， 计数器+1
                         else {
-                            Set<String> alarmTimesStrSet = redisOperations.opsForSet().members(alarmTimesKey);
-                            Set<Date> alarmTimesSet = Sets.newHashSet();
-                            alarmTimesStrSet.forEach(t -> {
-                                Long time = Long.valueOf(t);
-                                alarmTimesSet.add(new Date(time));
-                            });
-                            if (CollectionUtils.isNotEmpty(alarmTimesSet) && alarmTimesSet.contains(dto.getDataTime())) {
+                            Boolean flag = redisOperations.opsForSet().isMember(alarmTimesKey, dto.getDataTime().getTime() + "");
+                            if (flag) {
                                 continue;
                             }
                             Long result = redisOperations.opsForValue().increment(alarmKey, 1);
