@@ -21,6 +21,7 @@ public class RedisKeyHelper {
     public static final String STAT_OPERATOR = "stat-operator";
     public static final String ALARM_ACCESS_DAY = "alarm-flag";
     public static final String ALARM_ACCESS_DAY_ALL = "alarm-flag_all";
+    public static final String ALARM_ACCESS_DAY_TIMES_ALL = "alarm-flag_times_all";
     public static final String HTTP_STAT = "stat-http";
 
     /**
@@ -162,6 +163,16 @@ public class RedisKeyHelper {
     }
 
     /**
+     * 预警标记key所标记的时间区段(针对所有商户)
+     *
+     * @param statType
+     * @return
+     */
+    public static String keyOfAllAlarmTimes(EStatType statType) {
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, ALARM_ACCESS_DAY_TIMES_ALL, statType).toString();
+    }
+
+    /**
      * 获取邮箱统计key
      *
      * @param intervalTime
@@ -217,4 +228,6 @@ public class RedisKeyHelper {
     public static String keyOfUniqueId(String key, String uniqueId) {
         return Joiner.on(":").useForNull("null").join(key, uniqueId).toString();
     }
+
+
 }
