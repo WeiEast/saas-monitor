@@ -64,6 +64,12 @@ public class DiamondConfig {
     // 预警消息，剔除的商户
     @DAttribute(key = "monitor.alarm.excludeAppIds")
     private String monitorAlarmExcludeAppIds;
+    //预警消息,微信通知开关
+    @DAttribute(key = "monitor.alarm.wechat.switch")
+    private String monitorAlarmWechatSwitch;
+    //预警消息,邮箱通知开关
+    @DAttribute(key = "monitor.alarm.mail.switch")
+    private String monitorAlarmMailSwitch;
     // 监控环境
     @DAttribute(key = "monitor.environment")
     private String monitorEnvironment;
@@ -196,5 +202,21 @@ public class DiamondConfig {
 
     public void setMonitorHttpIntervalMinutes(Integer monitorHttpIntervalMinutes) {
         this.monitorHttpIntervalMinutes = monitorHttpIntervalMinutes;
+    }
+
+    public String getMonitorAlarmWechatSwitch() {
+        return monitorAlarmWechatSwitch;
+    }
+
+    public void setMonitorAlarmWechatSwitch(String monitorAlarmWechatSwitch) {
+        this.monitorAlarmWechatSwitch = monitorAlarmWechatSwitch;
+    }
+
+    public String getMonitorAlarmMailSwitch() {
+        return monitorAlarmMailSwitch;
+    }
+
+    public void setMonitorAlarmMailSwitch(String monitorAlarmMailSwitch) {
+        this.monitorAlarmMailSwitch = monitorAlarmMailSwitch;
     }
 }

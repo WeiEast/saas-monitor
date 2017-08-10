@@ -80,7 +80,7 @@ public class TaskDataFlushJob implements SimpleJob {
                         intervalTimeSets.add(new Date(time));
                     });
                     intervalTimeSets.remove(new Date(Long.valueOf(currentInterval)));
-                    logger.info("TaskMonitorAlarm:TaskDataFlushJob中intervalTimeSets={}", JSON.toJSONString(intervalTimeSets));
+                    logger.info("TaskMonitorAlarm:TaskDataFlushJob中intervalTimeSets={} currentInterval={}", JSON.toJSONString(intervalTimeSets), currentInterval);
                     // appId列表
                     String appIdKey = RedisKeyHelper.keyOfAppIds();
                     Set<String> appIdSet = redisOperations.opsForSet().members(appIdKey);
@@ -118,7 +118,7 @@ public class TaskDataFlushJob implements SimpleJob {
                 }
             });
         } catch (Exception e) {
-            logger.error("statdataflushjob exception : ", e);
+            logger.error("TaskMonitorAlarm:statdataflushjob exception : ", e);
         } finally {
             logger.info("TaskMonitorAlarm:定时刷新数据完成，耗时time={}ms", System.currentTimeMillis() - start);
             allAlarm();
@@ -147,7 +147,7 @@ public class TaskDataFlushJob implements SimpleJob {
                         if (flag == null) {
                             continue;
                         }
-                        logger.info("alarm job running : {}={}  thresholdCount={} 。。。", alarmKey, flag, thresholdCount);
+                        logger.info("TaskMonitorAlarm:alarm job running : {}={}  thresholdCount={} 。。。", alarmKey, flag, thresholdCount);
                         Integer alarmNums = Integer.valueOf(flag.toString());
                         if (alarmNums >= thresholdCount) {
                             Set<String> alarmTimesStrSet = redisOperations.opsForSet().members(alarmTimesKey);
@@ -386,7 +386,7 @@ public class TaskDataFlushJob implements SimpleJob {
                 }
             }
         } catch (Exception e) {
-            logger.error("saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + " : ", e);
+            logger.error("TaskMonitorAlarm:saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + " : ", e);
         }
     }
 
