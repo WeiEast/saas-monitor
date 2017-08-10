@@ -64,6 +64,9 @@ public class DiamondConfig {
     // 预警消息，剔除的商户
     @DAttribute(key = "monitor.alarm.excludeAppIds")
     private String monitorAlarmExcludeAppIds;
+    // 预警消息，剔除的环境
+    @DAttribute(key = "monitor.alarm.exclude.environment")
+    private String monitorAlarmExcludeEnvironment;
     //预警消息,微信通知开关
     @DAttribute(key = "monitor.alarm.wechat.switch")
     private String monitorAlarmWechatSwitch;
@@ -218,5 +221,13 @@ public class DiamondConfig {
 
     public void setMonitorAlarmMailSwitch(String monitorAlarmMailSwitch) {
         this.monitorAlarmMailSwitch = monitorAlarmMailSwitch;
+    }
+
+    public String getMonitorAlarmExcludeEnvironment() {
+        return monitorAlarmExcludeEnvironment;
+    }
+
+    public void setMonitorAlarmExcludeEnvironment(String monitorAlarmExcludeEnvironment) {
+        this.monitorAlarmExcludeEnvironment = monitorAlarmExcludeEnvironment;
     }
 }
