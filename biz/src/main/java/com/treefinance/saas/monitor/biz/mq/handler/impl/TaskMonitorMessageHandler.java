@@ -85,7 +85,7 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
 //            MerchantAccessHistoryDTO historyDTO = DataConverterUtils.convert(message, MerchantAccessHistoryDTO.class);
 //            accessHistoryService.insertAccessHistory(historyDTO);
         } finally {
-            logger.info("handleMessage cost {} ms , message={}", System.currentTimeMillis() - start, JSON.toJSONString(message));
+            logger.info("TaskMonitorAlarm:handleMessage cost {} ms , message={}", System.currentTimeMillis() - start, JSON.toJSONString(message));
         }
     }
 
