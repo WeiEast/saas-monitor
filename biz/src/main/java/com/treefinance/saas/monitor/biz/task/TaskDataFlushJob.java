@@ -3,6 +3,8 @@ package com.treefinance.saas.monitor.biz.task;
 import com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.treefinance.commonservice.uid.UidGenerator;
@@ -25,6 +27,7 @@ import org.springframework.data.redis.core.SessionCallback;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -35,8 +38,6 @@ public class TaskDataFlushJob implements SimpleJob {
     private static final Logger logger = LoggerFactory.getLogger(TaskDataFlushJob.class);
     @Autowired
     private RedisDao redisDao;
-    @Autowired
-    private DiamondConfig diamondConfig;
     @Autowired
     private EcommerceService ecommerceService;
     @Autowired
@@ -51,6 +52,8 @@ public class TaskDataFlushJob implements SimpleJob {
     private AlarmService alarmService;
     @Autowired
     private AllAlarmService allAlarmService;
+    @Autowired
+    private DiamondConfig diamondConfig;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -129,6 +132,12 @@ public class TaskDataFlushJob implements SimpleJob {
      * 监控消息(合计所有商户后的监控消息)
      */
     private void allAlarm() {
+        String environment = diamondConfig.getMonitorEnvironment();
+        List<String> excludeEnvironment = Splitter.on(",").trimResults().splitToList(diamondConfig.getMonitorAlarmExcludeEnvironment());
+        if (CollectionUtils.isNotEmpty(excludeEnvironment) && excludeEnvironment.contains(environment)) {
+            logger.info("TaskMonitorAlarm:all alarm is off in environment={},excludeEnvironment={}", environment, JSON.toJSONString(excludeEnvironment));
+            return;
+        }
         long start = System.currentTimeMillis();
         try {
             // 超阈值次数, 默认3次
@@ -374,13 +383,17 @@ public class TaskDataFlushJob implements SimpleJob {
                         }
                         // 成功率 < 阀值， 计数器+1
                         else {
-                            Boolean flag = redisOperations.opsForSet().isMember(alarmTimesKey, dto.getDataTime().getTime() + "");
+                            //
+                            String timeKey = Joiner.on(":").useForNull("null").join(alarmTimesKey, dto.getDataTime().getTime() + "").toString();
+                            Boolean flag = redisOperations.opsForValue().setIfAbsent(timeKey, "1");
+                            redisOperations.expire(timeKey, 1, TimeUnit.DAYS);
                             if (flag) {
-                                continue;
+                                Long result = redisOperations.opsForValue().increment(alarmKey, 1);
+                                redisOperations.opsForSet().add(alarmTimesKey, dto.getDataTime().getTime() + "");
+                                logger.info("TaskMonitorAlarm:update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, result, JSON.toJSONString(dto));
+                            } else {
+                                logger.info("TaskMonitorAlarm:has alarmed this time. timeKey={}", timeKey);
                             }
-                            Long result = redisOperations.opsForValue().increment(alarmKey, 1);
-                            redisOperations.opsForSet().add(alarmTimesKey, dto.getDataTime().getTime() + "");
-                            logger.info(" TaskMonitorAlarm:update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, result, JSON.toJSONString(dto));
                         }
                     } catch (Exception e) {
                         logger.error("TaskMonitorAlarm:update alarm flag error: data={}", JSON.toJSONString(dto), e);
