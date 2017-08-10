@@ -156,6 +156,8 @@ public class TaskDataFlushJob implements SimpleJob {
                                 Long time = Long.valueOf(t);
                                 alarmTimesSet.add(new Date(time));
                             });
+                            logger.info("TaskMonitorAlarm:alarm job running : {}={}  {}={} thresholdCount={}。。。",
+                                    alarmKey, flag, alarmTimesKey, JSON.toJSONString(alarmTimesStrSet), thresholdCount);
                             allAlarmService.alarm(statType, Lists.newArrayList(alarmTimesSet));
                             redisOperations.delete(alarmKey);
                             redisOperations.delete(alarmTimesKey);
