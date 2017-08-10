@@ -189,10 +189,14 @@ public class AlarmMessageProducer {
     }
 
     public void sendMail4All(List<SaasStatAccess> data, EStatType type) {
+        if (diamondConfig.getMonitorAlarmMailSwitch().equals("off")) {
+            logger.info("TaskMonitorAlarm:monitor alarm mail switch is off");
+            return;
+        }
         try {
             String mails = diamondConfig.getMonitorAlarmMails();
             if (StringUtils.isEmpty(mails)) {
-                logger.info("No mail list are configured，do not alarm : message={} ", JSON.toJSONString(data));
+                logger.info("TaskMonitorAlarm:No mail list are configured，do not alarm : message={} ", JSON.toJSONString(data));
                 return;
             }
             logger.info("send alarm mail to {} ", mails);
@@ -210,14 +214,18 @@ public class AlarmMessageProducer {
             body.setToList(tolist);
             body.setSubject(generateTitle(type));
             body.setBody(generateAllBody(data, type));
-            logger.info("send alarm mail message : message={}", JSON.toJSONString(body));
+            logger.info("TaskMonitorAlarm:send alarm mail message : message={}", JSON.toJSONString(body));
             sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
         } catch (Exception e) {
-            logger.error("sendMail failed : type={}, data={}", type.getName(), JSON.toJSONString(data), e);
+            logger.error("TaskMonitorAlarm:sendMail failed : type={}, data={}", type.getName(), JSON.toJSONString(data), e);
         }
     }
 
     public void sendWebChart4All(List<SaasStatAccess> data, EStatType type) {
+        if (diamondConfig.getMonitorAlarmWechatSwitch().equals("off")) {
+            logger.info("TaskMonitorAlarm:monitor alarm wechat switch is off!");
+            return;
+        }
         try {
             String topic = diamondConfig.getMonitorAlarmTopic();
             String tag = diamondConfig.getMonitorAlarmWebchartTag();
@@ -230,10 +238,10 @@ public class AlarmMessageProducer {
             body.setMessage(msg);
             body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
             body.setNotifyEnum(NotifyEnum.WECHAT);
-            logger.info("send alarm webchat message : message={}", JSON.toJSONString(body));
+            logger.info("TaskMonitorAlarm:send alarm webchat message : message={}", JSON.toJSONString(body));
             sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
         } catch (Exception e) {
-            logger.error("sendWechat failed :type={},data={}", type.getName(), JSON.toJSONString(data));
+            logger.error("TaskMonitorAlarm:sendWechat failed :type={},data={}", type.getName(), JSON.toJSONString(data));
         }
     }
 

@@ -28,9 +28,10 @@ public class AllAlarmServiceImpl implements AllAlarmService {
     @Autowired
     private SaasStatAccessMapper saasStatAccessMapper;
 
+
     @Override
     public void alarm(EStatType type, List<Date> alarmTimes) {
-        logger.info("type={} alarmTimes={} trigger all alarm message", type, JSON.toJSONString(alarmTimes));
+        logger.info("TaskMonitorAlarm:type={} alarmTimes={} trigger all alarm message", type, JSON.toJSONString(alarmTimes));
         if (CollectionUtils.isEmpty(alarmTimes)) {
             return;
         }
