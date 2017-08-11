@@ -58,6 +58,9 @@ public class DiamondConfig {
     // 预警消息，报警阈值
     @DAttribute(key = "monitor.alarm.threshold")
     private Double monitorAlarmThreshold;
+    // 预警消息，报警阈值
+    @DAttribute(key = "monitor.alarm.threshold.max")
+    private Double monitorAlarmThresholdMax;
     // 预警消息，超阈值次数
     @DAttribute(key = "monitor.alarm.thresholdCount")
     private Integer monitorAlarmThresholdCount;
@@ -229,5 +232,13 @@ public class DiamondConfig {
 
     public void setMonitorAlarmExcludeEnvironment(String monitorAlarmExcludeEnvironment) {
         this.monitorAlarmExcludeEnvironment = monitorAlarmExcludeEnvironment;
+    }
+
+    public Double getMonitorAlarmThresholdMax() {
+        return monitorAlarmThresholdMax;
+    }
+
+    public void setMonitorAlarmThresholdMax(Double monitorAlarmThresholdMax) {
+        this.monitorAlarmThresholdMax = monitorAlarmThresholdMax;
     }
 }
