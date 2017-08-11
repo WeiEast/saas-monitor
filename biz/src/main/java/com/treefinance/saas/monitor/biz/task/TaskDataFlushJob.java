@@ -358,6 +358,7 @@ public class TaskDataFlushJob implements SimpleJob {
                     return;
                 }
                 BigDecimal alarmThreshold = BigDecimal.valueOf(diamondConfig.getMonitorAlarmThreshold());
+                BigDecimal alarmThresholdMax = BigDecimal.valueOf(diamondConfig.getMonitorAlarmThresholdMax());
                 List<SaasStatAccessDTO> sortedTotalList = totalList.stream()
                         .sorted((o1, o2) -> o1.getDataTime().compareTo(o2.getDataTime())).collect(Collectors.toList());
                 for (SaasStatAccessDTO dto : sortedTotalList) {
@@ -366,7 +367,8 @@ public class TaskDataFlushJob implements SimpleJob {
                         continue;
                     }
                     try {
-                        BigDecimal successRate = dto.getSuccessRate();
+                        // 成功率= 成功数/总数
+                        BigDecimal successRate = calcTotalRate(dto.getSuccessCount(), dto.getTotalCount());
                         // 成功率 > 阀值， 清零计数
                         String alarmKey = RedisKeyHelper.keyOfAllAlarm(statType);
                         String alarmTimesKey = RedisKeyHelper.keyOfAllAlarmTimes(statType);
@@ -376,7 +378,8 @@ public class TaskDataFlushJob implements SimpleJob {
                             logger.info(" TaskMonitorAlarm:update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto));
                             continue;
                         }
-                        if (successRate != null && successRate.compareTo(alarmThreshold) >= 0) {
+                        if (successRate != null && successRate.compareTo(alarmThreshold) >= 0
+                                && successRate.compareTo(alarmThresholdMax) <= 0) {
                             logger.info(" TaskMonitorAlarm:update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, 0, JSON.toJSONString(dto));
                             redisOperations.delete(alarmKey);
                             redisOperations.delete(alarmTimesKey);
@@ -392,7 +395,7 @@ public class TaskDataFlushJob implements SimpleJob {
                                 redisOperations.opsForSet().add(alarmTimesKey, dto.getDataTime().getTime() + "");
                                 logger.info("TaskMonitorAlarm:update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, result, JSON.toJSONString(dto));
                             } else {
-                                logger.info("TaskMonitorAlarm:has alarmed this time. timeKey={}", timeKey);
+                                logger.info("TaskMonitorAlarm:has alarmed this time. alarmKey={},timeKey={}", alarmKey, timeKey);
                             }
                         }
                     } catch (Exception e) {
@@ -655,5 +658,27 @@ public class TaskDataFlushJob implements SimpleJob {
                 .divide(BigDecimal.valueOf(totalCount, 2), 2);
         return rate;
     }
+
+
+    /**
+     * 计算比率
+     *
+     * @param rateCount  比率数
+     * @param totalCount 总数
+     * @return
+     */
+    private BigDecimal calcTotalRate(Integer rateCount, Integer totalCount) {
+        if (totalCount == null || rateCount == null) {
+            return null;
+        }
+        if (totalCount == 0) {
+            return null;
+        }
+        BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(totalCount, 2), 2);
+        return rate;
+    }
+
 
 }

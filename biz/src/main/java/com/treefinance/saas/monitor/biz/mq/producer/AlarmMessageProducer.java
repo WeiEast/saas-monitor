@@ -259,20 +259,42 @@ public class AlarmMessageProducer {
         data.forEach(access -> {
             dataTimeList.add(fmt.format(access.getDataTime()));
             totalCountList.add(access.getTotalCount());
-            successRateList.add(access.getSuccessRate());
+            successRateList.add(calcRate(access.getSuccessCount(), access.getTotalCount()));
             successCountList.add(access.getSuccessCount());
-            failRateList.add(access.getFailRate());
+            failRateList.add(calcRate(access.getFailCount(), access.getTotalCount()));
             failCountList.add(access.getFailCount());
             cancelCountList.add(access.getCancelCount());
         });
 
         buffer.append(" 数据时间: " + Joiner.on(" | ").useForNull(" ").join(dataTimeList) + " \n");
         buffer.append(" 任务总数: " + Joiner.on(" | ").useForNull(" ").join(totalCountList) + " \n");
-        buffer.append(" 成功率(%): " + Joiner.on(" | ").useForNull(" ").join(successRateList) + " \n");
-        buffer.append(" 成功数: " + Joiner.on(" | ").useForNull(" ").join(successCountList) + " \n");
+        buffer.append(" 转化率(%): " + Joiner.on(" | ").useForNull(" ").join(successRateList) + " \n");
+        buffer.append(" 转化数: " + Joiner.on(" | ").useForNull(" ").join(successCountList) + " \n");
         buffer.append(" 失败率(%): " + Joiner.on(" | ").useForNull(" ").join(failRateList) + " \n");
         buffer.append(" 失败数: " + Joiner.on(" | ").useForNull(" ").join(failCountList) + " \n");
         buffer.append(" 取消数: " + Joiner.on(" | ").useForNull(" ").join(cancelCountList) + " \n");
         return buffer.toString();
     }
+
+
+    /**
+     * 计算比率
+     *
+     * @param totalCount 总数
+     * @param rateCount  比率数
+     * @return
+     */
+    private BigDecimal calcRate(Integer rateCount, Integer totalCount) {
+        if (totalCount == null || rateCount == null) {
+            return null;
+        }
+        if (totalCount == 0) {
+            return null;
+        }
+        BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(totalCount, 2), 2);
+        return rate;
+    }
+
 }
