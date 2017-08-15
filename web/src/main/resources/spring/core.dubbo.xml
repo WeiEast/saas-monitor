@@ -27,6 +27,9 @@
     <dubbo:service ref="operatorFacade" interface="com.treefinance.saas.monitor.facade.service.OperatorFacade"
                    version="1.0.0"/>
     <dubbo:service ref="bankFacade" interface="com.treefinance.saas.monitor.facade.service.BankFacade" version="1.0.0"/>
+    <dubbo:service ref="websiteFacade" interface="com.treefinance.saas.monitor.facade.service.WebsiteFacade"
+                   version="1.0.0"/>
+
 </beans>
 
 

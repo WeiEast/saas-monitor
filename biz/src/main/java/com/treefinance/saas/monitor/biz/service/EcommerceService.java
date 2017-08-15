@@ -1,7 +1,6 @@
 package com.treefinance.saas.monitor.biz.service;
 
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceDTO;
-import com.treefinance.saas.monitor.dao.entity.Ecommerce;
 
 import java.util.List;
 
@@ -12,6 +11,7 @@ public interface EcommerceService {
 
     /**
      * 根据website
+     *
      * @param website
      * @return
      */
@@ -19,7 +19,18 @@ public interface EcommerceService {
 
     /**
      * 获取所有电商列表
+     *
      * @return
      */
     List<EcommerceDTO> getAll();
+
+    /**
+     * 根据websiteIds获取电商列表
+     *
+     * @param websiteIds
+     * @return
+     */
+    List<EcommerceDTO> getEcommerceListByWebsiteIds(List<Integer> websiteIds);
+
+
 }

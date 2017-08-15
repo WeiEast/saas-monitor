@@ -57,4 +57,16 @@ public class EcommerceServiceImpl implements EcommerceService {
         }
         return DataConverterUtils.convert(list, EcommerceDTO.class);
     }
+
+    @Override
+    public List<EcommerceDTO> getEcommerceListByWebsiteIds(List<Integer> websiteIds) {
+        List<EcommerceDTO> ecommerceDTOList = Lists.newArrayList();
+        if (CollectionUtils.isEmpty(websiteIds)) {
+            return ecommerceDTOList;
+        }
+        EcommerceCriteria ecommerceCriteria = new EcommerceCriteria();
+        ecommerceCriteria.createCriteria().andWebsiteIdIn(websiteIds);
+        List<Ecommerce> ecommerceList = ecommerceMapper.selectByExample(ecommerceCriteria);
+        return DataConverterUtils.convert(ecommerceList, EcommerceDTO.class);
+    }
 }
