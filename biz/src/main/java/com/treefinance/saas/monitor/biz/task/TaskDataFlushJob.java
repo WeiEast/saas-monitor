@@ -165,11 +165,23 @@ public class TaskDataFlushJob implements SimpleJob {
                                 Long time = Long.valueOf(t);
                                 alarmTimesSet.add(new Date(time));
                             });
-                            logger.info("TaskMonitorAlarm:alarm job running : {}={}  {}={} thresholdCount={}。。。",
-                                    alarmKey, flag, alarmTimesKey, JSON.toJSONString(alarmTimesStrSet), thresholdCount);
-                            allAlarmService.alarm(statType, Lists.newArrayList(alarmTimesSet));
-                            redisOperations.delete(alarmKey);
-                            redisOperations.delete(alarmTimesKey);
+                            List<Date> alarmTimesList = Lists.newArrayList(alarmTimesSet).stream().sorted(Date::compareTo).collect(Collectors.toList());
+                            List<Date> needAlarmTimesList = Lists.newArrayList();
+                            if (alarmNums > thresholdCount) {
+                                needAlarmTimesList = alarmTimesList.subList(0, thresholdCount);
+                            } else {
+                                needAlarmTimesList = alarmTimesList;
+                            }
+                            logger.info("TaskMonitorAlarm:alarm job running : {}={}  {}={} {}={} thresholdCount={}。。。",
+                                    alarmKey, flag, alarmTimesKey, JSON.toJSONString(alarmTimesStrSet), needAlarmTimesList, JSON.toJSONString(needAlarmTimesList), thresholdCount);
+                            allAlarmService.alarm(statType, needAlarmTimesList);
+                            if (alarmNums > thresholdCount) {
+                                redisOperations.opsForValue().increment(alarmKey, -thresholdCount);
+                                redisOperations.opsForSet().remove(alarmTimesKey, needAlarmTimesList.toArray());
+                            } else {
+                                redisOperations.delete(alarmKey);
+                                redisOperations.delete(alarmTimesKey);
+                            }
                         }
                     }
                     return null;
