@@ -19,6 +19,7 @@ import com.treefinance.saas.monitor.common.domain.dto.WebsiteDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.BoundHashOperations;
@@ -68,6 +69,10 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
             statTotal(message, intervalTime);
             // 合计所有商户的总数统计
             statAllTotal(message, intervalTime);
+            if (StringUtils.isNotBlank(message.getErrorCode())) {
+                //任务失败取消环节统计
+                statAllError(message, intervalTime);
+            }
             // 2.电商、银行、邮箱、运营商维度统计
             EBizType bizType = EBizType.getBizType(message.getBizType());
             switch (bizType) {
@@ -87,6 +92,35 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
         } finally {
             logger.info("TaskMonitorAlarm:handleMessage cost {} ms , message={}", System.currentTimeMillis() - start, JSON.toJSONString(message));
         }
+    }
+
+    /**
+     * 任务失败取消环节统计
+     *
+     * @param message
+     * @param intervalTime
+     */
+    private void statAllError(TaskMonitorMessage message, Date intervalTime) {
+        EBizType bizType = EBizType.getBizType(message.getBizType());
+        updateAllErrorDayData(intervalTime, message, EStatType.TOTAL);
+        // 电商
+        if (bizType == EBizType.ECOMMERCE) {
+            updateAllErrorDayData(intervalTime, message, EStatType.ECOMMERCE);
+        }
+        // 邮箱账单
+        else if (bizType == EBizType.EMAIL) {
+            updateAllErrorDayData(intervalTime, message, EStatType.EMAIL);
+        }
+        // 运营商
+        else if (bizType == EBizType.OPERATOR) {
+            updateAllErrorDayData(intervalTime, message, EStatType.OPERATER);
+        }
+    }
+
+    private void updateAllErrorDayData(Date intervalTime, TaskMonitorMessage message, EStatType type) {
+        updateErrorData(intervalTime, message,
+                statMap -> statMap.put("dataType", type.getType() + ""),
+                () -> RedisKeyHelper.keyOfAllErrorDay(intervalTime, type, message.getErrorCode()));
     }
 
     /**
@@ -222,6 +256,55 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
         Short ecommerceId = ecommerceDTO != null ? ecommerceDTO.getId() : null;
         updateData(intervalTime, message, statMap -> statMap.put("ecommerceId", ecommerceId + ""), () -> RedisKeyHelper.keyOfEcommerce(message.getAppId(), intervalTime, ecommerceId));
 
+    }
+
+
+    /**
+     * 更新数据
+     *
+     * @param intervalTime 循环时间
+     * @param message
+     * @param dataInitor
+     * @param keyGenerator
+     */
+    private void updateErrorData(Date intervalTime, TaskMonitorMessage message, Consumer<Map<String, String>> dataInitor, Supplier<String> keyGenerator) {
+        Byte status = message.getStatus();
+        Map<String, String> statMap = Maps.newHashMap();
+        if (dataInitor != null) {
+            dataInitor.accept(statMap);
+        }
+        String key = keyGenerator.get();
+        redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
+
+            @Override
+            public Object execute(RedisOperations redisOperations) throws DataAccessException {
+
+                // 当日时间列表
+                String dayKey = RedisKeyHelper.keyOfDay(intervalTime);
+                redisOperations.opsForSet().add(dayKey, intervalTime.getTime() + "");
+                logger.info("TaskMonitorAlarm:stat-day中的值为:daykey={},value={}", dayKey, JSON.toJSONString(redisOperations.opsForSet().members(dayKey)));
+                statMap.put("dataTime", intervalTime.getTime() + "");
+                // 判断是否有key
+                BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
+                if (!Boolean.TRUE.equals(hashOperations.hasKey(key))) {
+                    hashOperations.put("dataTime", intervalTime.getTime() + "");
+                    // 设定超时时间默认为1天
+                    hashOperations.expire(2, TimeUnit.DAYS);
+                }
+                // 统计取消数
+                if (ETaskStatus.CANCEL.getStatus().equals(status)) {
+                    Long cancelCount = hashOperations.increment("cancelCount", 1);
+                    statMap.put("cancelCount", cancelCount + "");
+                }
+                // 统计失败数
+                else if (ETaskStatus.FAIL.getStatus().equals(status)) {
+                    Long failCount = hashOperations.increment("failCount", 1);
+                    statMap.put("failCount", failCount + "");
+                }
+                return null;
+            }
+        });
+        logger.info("TaskMonitorAlarm:update redis error access data: key={},value={}", key, JSON.toJSONString(statMap));
     }
 
 

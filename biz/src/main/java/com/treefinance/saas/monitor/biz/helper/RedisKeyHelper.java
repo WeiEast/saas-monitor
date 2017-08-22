@@ -16,12 +16,13 @@ public class RedisKeyHelper {
     public static final String STAT_ACCESS_ALL = "stat-access-all";
     public static final String STAT_ACCESS_DAY = "stat-access-day";
     public static final String STAT_ACCESS_DAY_ALL = "stat-access-day-all";
+    public static final String STAT_ACCESS_DAY_ERROR = "stat-access-day-error";
     public static final String STAT_MAIL = "stat-mail";
     public static final String STAT_ECOMMERCE = "stat-ecommerce";
     public static final String STAT_OPERATOR = "stat-operator";
     public static final String ALARM_ACCESS_DAY = "alarm-flag";
-    public static final String ALARM_ACCESS_DAY_ALL = "alarm-flag_all";
-    public static final String ALARM_ACCESS_DAY_TIMES_ALL = "alarm-flag_times_all";
+    public static final String ALARM_ACCESS_DAY_ALL = "alarm-flag-all";
+    public static final String ALARM_ACCESS_DAY_TIMES_ALL = "alarm-flag-times-all";
     public static final String HTTP_STAT = "stat-http";
 
     /**
@@ -230,4 +231,15 @@ public class RedisKeyHelper {
     }
 
 
+    /**
+     * 任务失败取消环节日统计key(针对所有商户)
+     *
+     * @param intervalTime
+     * @param statType
+     * @return
+     */
+    public static String keyOfAllErrorDay(Date intervalTime, EStatType statType, String errorCode) {
+        String day = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, STAT_ACCESS_DAY_ERROR, statType, day, errorCode).toString();
+    }
 }

@@ -8,6 +8,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.saas.gateway.servicefacade.enums.TaskStepEnum;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
@@ -48,6 +49,8 @@ public class TaskDataFlushJob implements SimpleJob {
     private StatAccessUpdateService statAccessUpdateService;
     @Autowired
     private SaasStatAccessUpdateService saasStatAccessUpdateService;
+    @Autowired
+    private SaasErrorDayStatUpdateService saasErrorDayStatUpdateService;
     @Autowired
     private AlarmService alarmService;
     @Autowired
@@ -105,7 +108,10 @@ public class TaskDataFlushJob implements SimpleJob {
                     saveAllTotalDayData(intervalTimeSets, redisOperations);
                     saveAllTotalData(intervalTimeSets, redisOperations);
 
-                    // 6.删除已生成数据key
+                    //7.保存任务取消失败环节统计数据
+                    saveAllErrorDayData(intervalTimeSets, redisOperations);
+
+                    // 删除已生成数据key
                     List<String> deleteList = Lists.newArrayList();
                     intervalSets.forEach(time -> {
                         if (!time.equals(currentInterval)) {
@@ -645,6 +651,79 @@ public class TaskDataFlushJob implements SimpleJob {
         } catch (Exception e) {
             logger.error("saveOperatorData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + ",appIds=" + JSON.toJSONString(appIds) + " : ", e);
         }
+    }
+
+    /**
+     * 保存任务失败取消统计数据
+     *
+     * @param intervalTimes   统计时间
+     * @param redisOperations
+     */
+    private void saveAllErrorDayData(Set<Date> intervalTimes, RedisOperations redisOperations) {
+        try {
+            List<SaasErrorDayStatDTO> totalList = Lists.newArrayList();
+            intervalTimes.forEach(intervalTime -> {
+                for (EStatType type : EStatType.values()) {
+                    String totalDayKey = RedisKeyHelper.keyOfAllTotalDay(intervalTime, type);
+                    Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalDayKey);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("key={} , value={}", totalDayKey, JSON.toJSONString(totalMap));
+                    }
+                    if (MapUtils.isEmpty(totalMap)) {
+                        continue;
+                    }
+                    String jsonTotal = JSON.toJSONString(totalMap);
+                    SaasStatDayAccessDTO dtoTotal = JSON.parseObject(jsonTotal, SaasStatDayAccessDTO.class);
+                    int total = dtoTotal.getTotalCount();
+                    for (TaskStepEnum taskStep : TaskStepEnum.values()) {
+                        String errorDayKey = RedisKeyHelper.keyOfAllErrorDay(intervalTime, type, taskStep.getCode());
+                        Map<String, Object> errorMap = redisOperations.opsForHash().entries(errorDayKey);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("key={} , value={}", errorDayKey, JSON.toJSONString(errorMap));
+                        }
+                        if (MapUtils.isEmpty(errorMap)) {
+                            continue;
+                        }
+                        String json = JSON.toJSONString(errorMap);
+                        SaasErrorDayStatDTO dto = JSON.parseObject(json, SaasErrorDayStatDTO.class);
+                        dto.setId(UidGenerator.getId());
+                        dto.setDataType(type.getType());
+                        dto.setErrorCode(taskStep.getCode());
+                        dto.setErrorMsg(TaskStepEnum.getText(taskStep.getCode()));
+                        dto.setTotalCount(total);
+                        Date dataTime = dto.getDataTime();
+                        if (dataTime != null) {
+                            dto.setDataTime(DateUtils.truncate(dataTime, Calendar.DAY_OF_MONTH));
+                        }
+                        dto.setFailRate(calcErrorRate(dto.getTotalCount(), dto.getFailCount()));
+                        dto.setCancelRate(calcErrorRate(dto.getTotalCount(), dto.getCancelCount()));
+                        dto.setLastUpdateTime(new Date());
+                        totalList.add(dto);
+                    }
+                }
+
+
+            });
+            if (CollectionUtils.isNotEmpty(totalList)) {
+                logger.info("saveAllErrorData : data={}", JSON.toJSONString(totalList));
+                saasErrorDayStatUpdateService.batchInsertErrorDayStat(totalList);
+            }
+        } catch (Exception e) {
+            logger.error("saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + " : ", e);
+        }
+    }
+
+    private BigDecimal calcErrorRate(Integer totalCount, Integer rateCount) {
+        if (totalCount == null || rateCount == null) {
+            return null;
+        }
+        if (totalCount == 0) {
+            return null;
+        }
+        BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(totalCount, 2), 2);
+        return rate;
     }
 
 
