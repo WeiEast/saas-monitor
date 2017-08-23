@@ -33,6 +33,8 @@ public class StatAccessServiceImpl implements StatAccessService {
     private MerchantStatMailMapper merchantStatMailMapper;
     @Autowired
     private MerchantStatOperatorMapper merchantStatOperatorMapper;
+    @Autowired
+    private SaasErrorStepDayStatMapper saasErrorStepDayStatMapper;
 
     @Override
     public MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessList(MerchantStatDayAccessRequest request) {
@@ -171,6 +173,17 @@ public class StatAccessServiceImpl implements StatAccessService {
             return MonitorResultBuilder.build(data);
         }
         data = DataConverterUtils.convert(list, MerchantStatOperatorRO.class);
+        return MonitorResultBuilder.build(data);
+    }
+
+    @Override
+    public MonitorResult<List<SaasErrorStepDayStatRO>> querySaasErrorDayStatListNoPage(SaasErrorStepDayStatRequest request) {
+        SaasErrorStepDayStatCriteria criteria = new SaasErrorStepDayStatCriteria();
+        criteria.setOrderByClause("dataTime desc");
+        criteria.createCriteria().andDataTypeEqualTo(request.getDataType())
+                .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        List<SaasErrorStepDayStat> list = saasErrorStepDayStatMapper.selectByExample(criteria);
+        List<SaasErrorStepDayStatRO> data = DataConverterUtils.convert(list, SaasErrorStepDayStatRO.class);
         return MonitorResultBuilder.build(data);
     }
 }

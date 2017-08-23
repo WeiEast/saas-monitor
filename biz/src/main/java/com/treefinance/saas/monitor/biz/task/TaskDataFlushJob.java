@@ -50,7 +50,7 @@ public class TaskDataFlushJob implements SimpleJob {
     @Autowired
     private SaasStatAccessUpdateService saasStatAccessUpdateService;
     @Autowired
-    private SaasErrorDayStatUpdateService saasErrorDayStatUpdateService;
+    private SaasErrorStepDayStatUpdateService saasErrorDayStatUpdateService;
     @Autowired
     private AlarmService alarmService;
     @Autowired
@@ -661,7 +661,7 @@ public class TaskDataFlushJob implements SimpleJob {
      */
     private void saveAllErrorDayData(Set<Date> intervalTimes, RedisOperations redisOperations) {
         try {
-            List<SaasErrorDayStatDTO> totalList = Lists.newArrayList();
+            List<SaasErrorStepDayStatDTO> totalList = Lists.newArrayList();
             intervalTimes.forEach(intervalTime -> {
                 for (EStatType type : EStatType.values()) {
                     String totalDayKey = RedisKeyHelper.keyOfAllTotalDay(intervalTime, type);
@@ -685,7 +685,7 @@ public class TaskDataFlushJob implements SimpleJob {
                             continue;
                         }
                         String json = JSON.toJSONString(errorMap);
-                        SaasErrorDayStatDTO dto = JSON.parseObject(json, SaasErrorDayStatDTO.class);
+                        SaasErrorStepDayStatDTO dto = JSON.parseObject(json, SaasErrorStepDayStatDTO.class);
                         dto.setId(UidGenerator.getId());
                         dto.setDataType(type.getType());
                         dto.setErrorCode(taskStep.getCode());

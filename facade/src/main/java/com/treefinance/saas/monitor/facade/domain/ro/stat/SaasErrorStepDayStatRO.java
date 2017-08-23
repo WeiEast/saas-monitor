@@ -1,66 +1,39 @@
-package com.treefinance.saas.monitor.common.domain.dto;
+package com.treefinance.saas.monitor.facade.domain.ro.stat;
 
-import com.treefinance.saas.monitor.common.domain.BaseDTO;
-
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
 /**
  * Created by haojiahong on 2017/8/22.
  */
-public class SaasErrorDayStatDTO extends BaseDTO {
+public class SaasErrorStepDayStatRO implements Serializable {
 
-    private static final long serialVersionUID = -1690299803440865834L;
+    private static final long serialVersionUID = -387012743372683536L;
 
-    /**
-     * 数据ID
-     */
     private Long id;
 
-    /**
-     * 数据时间
-     */
     private Date dataTime;
 
-    /**
-     * 数据类型：0-合计，1:银行，2：电商，3:邮箱，4:运营商
-     */
     private Byte dataType;
 
-    /**
-     * 错误编码
-     */
     private String errorCode;
 
-    /**
-     * 错误信息
-     */
     private String errorMsg;
 
-    /**
-     * 总数
-     */
     private Integer totalCount;
 
-    /**
-     * 失败数
-     */
     private Integer failCount;
 
-    /**
-     * 取消数
-     */
     private Integer cancelCount;
 
-    /**
-     * 失败率
-     */
     private BigDecimal failRate;
 
-    /**
-     * 取消率
-     */
     private BigDecimal cancelRate;
+
+    private Date createTime;
+
+    private Date lastUpdateTime;
 
     public Long getId() {
         return id;
@@ -140,5 +113,21 @@ public class SaasErrorDayStatDTO extends BaseDTO {
 
     public void setCancelRate(BigDecimal cancelRate) {
         this.cancelRate = cancelRate;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(Date lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
     }
 }

@@ -78,4 +78,10 @@ public class MerchantStatAccessFacadeImpl implements MerchantStatAccessFacade {
         MerchantStatChecker.checkOperaterRequest(request);
         return statAccessService.queryOperatorList(request);
     }
+
+    @Override
+    public MonitorResult<List<SaasErrorStepDayStatRO>> querySaasErrorDayStatListNoPage(SaasErrorStepDayStatRequest request) {
+        MerchantStatChecker.checkErrorDayStatRequest(request);
+        return statAccessService.querySaasErrorDayStatListNoPage(request);
+    }
 }

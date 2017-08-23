@@ -92,4 +92,14 @@ public interface MerchantStatAccessFacade {
      * @return
      */
     MonitorResult<List<MerchantStatOperatorRO>> queryOperatorList(MerchantStatOperaterRequest request);
+
+    /**
+     * 查询任务失败取消环节信息(不分页)
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<List<SaasErrorStepDayStatRO>> querySaasErrorDayStatListNoPage(SaasErrorStepDayStatRequest request);
+
+
 }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.treefinance.saas.monitor.dao.mapper.SaasStatAccessUpdateMapper">
+<mapper namespace="com.treefinance.saas.monitor.dao.mapper.SaasErrorStepDayStatUpdateMapper">
 
   <!-- 日总计数据 -->
-  <insert id="insertOrUpdateSelectiveDayError" parameterType="com.treefinance.saas.monitor.dao.entity.SaasErrorDayStat">
-    insert into saas_error_day_stat
+  <insert id="insertOrUpdateSelectiveDayError" parameterType="com.treefinance.saas.monitor.dao.entity.SaasErrorStepDayStat">
+    insert into saas_error_step_day_stat
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id !=null">
         id,
@@ -15,26 +15,11 @@
       <if test="dataType != null">
         dataType,
       </if>
-      <if test="errorCode != null">
-        errorCode,
-      </if>
-      <if test="errorMsg != null">
-        errorMsg,
-      </if>
-      <if test="totalCount != null">
-        totalCount,
+      <if test="errorStepCode != null">
+        errorStepCode,
       </if>
       <if test="failCount != null">
         failCount,
-      </if>
-      <if test="cancelCount != null">
-        cancelCount,
-      </if>
-      <if test="failRate != null">
-        failRate,
-      </if>
-      <if test="cancelRate != null">
-        cancelRate,
       </if>
       <if test="createTime != null">
         createTime,
@@ -53,26 +38,11 @@
       <if test="dataType != null">
         #{dataType,jdbcType=TINYINT},
       </if>
-      <if test="errorCode != null">
-        #{errorCode,jdbcType=VARCHAR},
-      </if>
-      <if test="errorMsg != null">
-        #{errorMsg,jdbcType=VARCHAR},
-      </if>
-      <if test="totalCount != null">
-        #{totalCount,jdbcType=INTEGER},
+      <if test="errorStepCode != null">
+        #{errorStepCode,jdbcType=VARCHAR},
       </if>
       <if test="failCount != null">
         #{failCount,jdbcType=INTEGER},
-      </if>
-      <if test="cancelCount != null">
-        #{cancelCount,jdbcType=INTEGER},
-      </if>
-      <if test="failRate != null">
-        #{failRate,jdbcType=DECIMAL},
-      </if>
-      <if test="cancelRate != null">
-        #{cancelRate,jdbcType=DECIMAL},
       </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},
@@ -92,26 +62,11 @@
       <if test="dataType != null">
         dataType = #{dataType,jdbcType=TINYINT},
       </if>
-      <if test="errorCode != null">
-        #{errorCode,jdbcType=VARCHAR},
-      </if>
-      <if test="errorMsg != null">
-        #{errorMsg,jdbcType=VARCHAR},
-      </if>
-      <if test="totalCount != null">
-        #{totalCount,jdbcType=INTEGER},
+      <if test="errorStepCode != null">
+        #{errorStepCode,jdbcType=VARCHAR},
       </if>
       <if test="failCount != null">
         #{failCount,jdbcType=INTEGER},
-      </if>
-      <if test="cancelCount != null">
-        #{cancelCount,jdbcType=INTEGER},
-      </if>
-      <if test="failRate != null">
-        #{failRate,jdbcType=DECIMAL},
-      </if>
-      <if test="cancelRate != null">
-        #{cancelRate,jdbcType=DECIMAL},
       </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},
