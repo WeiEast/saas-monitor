@@ -51,6 +51,11 @@
 			<groupId>com.datatrees.common</groupId>
 			<artifactId>notify-common-facade</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>com.treefinance.saas</groupId>
+			<artifactId>assistant-monitor</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -1,18 +1,19 @@
-package com.treefinance.saas.monitor.biz.mq.handler.impl;
+package com.treefinance.saas.monitor.biz.mq.handler;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.collect.Lists;
-import com.treefinance.saas.gateway.servicefacade.enums.MonitorTypeEnum;
-import com.treefinance.saas.gateway.servicefacade.model.mq.HttpMonitorMessage;
+import com.treefinance.saas.assistant.listener.TagBaseMessageHandler;
+import com.treefinance.saas.assistant.model.HttpMonitorMessage;
+import com.treefinance.saas.assistant.model.MonitorTagEnum;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
-import com.treefinance.saas.monitor.biz.mq.handler.AbstractMessageHandler;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.dao.entity.ApiStatAccess;
 import com.treefinance.saas.monitor.dao.entity.ApiStatMerchantDayAccess;
 import com.treefinance.saas.monitor.dao.entity.ApiStatTotalAccess;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.BoundHashOperations;
@@ -29,7 +30,9 @@ import java.util.stream.Collectors;
  * Created by yh-treefinance on 2017/7/13.
  */
 @Component
-public class HttpMonitorMessageHandler extends AbstractMessageHandler<HttpMonitorMessage> {
+public class HttpMonitorMessageHandler implements TagBaseMessageHandler<List<HttpMonitorMessage>> {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private DiamondConfig diamondConfig;
@@ -37,14 +40,12 @@ public class HttpMonitorMessageHandler extends AbstractMessageHandler<HttpMonito
     private RedisDao redisDao;
 
     @Override
-    public boolean isHandleAble(MessageExt messageExt) {
-        return messageExt.getTopic().equals(diamondConfig.getMonitorAccessTopic())
-                && messageExt.getTags().equalsIgnoreCase(MonitorTypeEnum.HTTP.name());
+    public MonitorTagEnum getMonitorType() {
+        return MonitorTagEnum.HTTP;
     }
 
     @Override
-    public void handleMessage(byte[] messageBody) {
-        List<HttpMonitorMessage> list = convertMessageList(messageBody);
+    public void handleMessage(List<HttpMonitorMessage> list) {
         long start = System.currentTimeMillis();
         try {
             // 1.更新总计数据

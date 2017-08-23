@@ -197,6 +197,12 @@
 				<artifactId>notify-common-facade</artifactId>
 				<version>3.4.3</version>
 			</dependency>
+
+			<dependency>
+				<groupId>com.treefinance.saas</groupId>
+				<artifactId>assistant-monitor</artifactId>
+				<version>1.0.0</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

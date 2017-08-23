@@ -1,14 +1,13 @@
-package com.treefinance.saas.monitor.biz.mq.handler.impl;
+package com.treefinance.saas.monitor.biz.mq.handler;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.collect.Maps;
-import com.treefinance.saas.gateway.servicefacade.enums.MonitorTypeEnum;
-import com.treefinance.saas.gateway.servicefacade.model.mq.TaskMonitorMessage;
+import com.treefinance.saas.assistant.listener.TagBaseMessageHandler;
+import com.treefinance.saas.assistant.model.MonitorTagEnum;
+import com.treefinance.saas.assistant.model.TaskMonitorMessage;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
-import com.treefinance.saas.monitor.biz.mq.handler.AbstractMessageHandler;
 import com.treefinance.saas.monitor.biz.service.EcommerceService;
 import com.treefinance.saas.monitor.biz.service.OperatorService;
 import com.treefinance.saas.monitor.biz.service.WebsiteService;
@@ -19,6 +18,8 @@ import com.treefinance.saas.monitor.common.domain.dto.WebsiteDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.BoundHashOperations;
@@ -37,7 +38,8 @@ import java.util.function.Supplier;
  * Created by yh-treefinance on 2017/7/13.
  */
 @Component
-public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonitorMessage> {
+public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMonitorMessage> {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private DiamondConfig diamondConfig;
@@ -51,15 +53,12 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
     private EcommerceService ecommerceService;
 
     @Override
-    public boolean isHandleAble(MessageExt messageExt) {
-        return messageExt.getTopic().equals(diamondConfig.getMonitorAccessTopic())
-                && messageExt.getTags().equalsIgnoreCase(MonitorTypeEnum.TASK.name());
+    public MonitorTagEnum getMonitorType() {
+        return MonitorTagEnum.TASK;
     }
 
     @Override
-    public void handleMessage(byte[] messageBody) {
-        TaskMonitorMessage message = convertMessage(messageBody);
-
+    public void handleMessage(TaskMonitorMessage message) {
         long start = System.currentTimeMillis();
         try {
             Date completeTime = message.getCompleteTime();
