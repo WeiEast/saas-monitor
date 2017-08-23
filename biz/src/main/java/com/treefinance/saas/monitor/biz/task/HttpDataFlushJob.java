@@ -5,23 +5,16 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.treefinance.saas.gateway.servicefacade.model.mq.HttpMonitorMessage;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
-import com.treefinance.saas.monitor.biz.service.*;
+import com.treefinance.saas.monitor.biz.service.ApiStatAccessService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
-import com.treefinance.saas.monitor.common.domain.dto.*;
-import com.treefinance.saas.monitor.common.enumeration.EStatType;
-import com.treefinance.saas.monitor.dao.entity.ApiStatAccess;
-import com.treefinance.saas.monitor.dao.entity.ApiStatMerchantDayAccess;
-import com.treefinance.saas.monitor.dao.entity.ApiStatTotalAccess;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiBaseStatRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiStatAccessRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiStatDayAccessRO;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +22,10 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.SessionCallback;
 
-import java.math.BigDecimal;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 数据统计Job
