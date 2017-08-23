@@ -2,7 +2,6 @@ package com.treefinance.saas.monitor.common.domain.dto;
 
 import com.treefinance.saas.monitor.common.domain.BaseDTO;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -30,37 +29,12 @@ public class SaasErrorStepDayStatDTO extends BaseDTO {
     /**
      * 错误编码
      */
-    private String errorCode;
-
-    /**
-     * 错误信息
-     */
-    private String errorMsg;
-
-    /**
-     * 总数
-     */
-    private Integer totalCount;
-
+    private String errorStepCode;
     /**
      * 失败数
      */
     private Integer failCount;
 
-    /**
-     * 取消数
-     */
-    private Integer cancelCount;
-
-    /**
-     * 失败率
-     */
-    private BigDecimal failRate;
-
-    /**
-     * 取消率
-     */
-    private BigDecimal cancelRate;
 
     public Long getId() {
         return id;
@@ -86,30 +60,6 @@ public class SaasErrorStepDayStatDTO extends BaseDTO {
         this.dataType = dataType;
     }
 
-    public String getErrorCode() {
-        return errorCode;
-    }
-
-    public void setErrorCode(String errorCode) {
-        this.errorCode = errorCode;
-    }
-
-    public String getErrorMsg() {
-        return errorMsg;
-    }
-
-    public void setErrorMsg(String errorMsg) {
-        this.errorMsg = errorMsg;
-    }
-
-    public Integer getTotalCount() {
-        return totalCount;
-    }
-
-    public void setTotalCount(Integer totalCount) {
-        this.totalCount = totalCount;
-    }
-
     public Integer getFailCount() {
         return failCount;
     }
@@ -118,27 +68,11 @@ public class SaasErrorStepDayStatDTO extends BaseDTO {
         this.failCount = failCount;
     }
 
-    public Integer getCancelCount() {
-        return cancelCount;
+    public String getErrorStepCode() {
+        return errorStepCode;
     }
 
-    public void setCancelCount(Integer cancelCount) {
-        this.cancelCount = cancelCount;
-    }
-
-    public BigDecimal getFailRate() {
-        return failRate;
-    }
-
-    public void setFailRate(BigDecimal failRate) {
-        this.failRate = failRate;
-    }
-
-    public BigDecimal getCancelRate() {
-        return cancelRate;
-    }
-
-    public void setCancelRate(BigDecimal cancelRate) {
-        this.cancelRate = cancelRate;
+    public void setErrorStepCode(String errorStepCode) {
+        this.errorStepCode = errorStepCode;
     }
 }

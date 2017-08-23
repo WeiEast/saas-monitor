@@ -69,8 +69,8 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
             statTotal(message, intervalTime);
             // 合计所有商户的总数统计
             statAllTotal(message, intervalTime);
-            if (StringUtils.isNotBlank(message.getErrorCode())) {
-                //任务失败取消环节统计
+            if (StringUtils.isNotBlank(message.getStepCode())) {
+                //任务失败环节统计
                 statAllError(message, intervalTime);
             }
             // 2.电商、银行、邮箱、运营商维度统计
@@ -120,7 +120,7 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
     private void updateAllErrorDayData(Date intervalTime, TaskMonitorMessage message, EStatType type) {
         updateErrorData(intervalTime, message,
                 statMap -> statMap.put("dataType", type.getType() + ""),
-                () -> RedisKeyHelper.keyOfAllErrorDay(intervalTime, type, message.getErrorCode()));
+                () -> RedisKeyHelper.keyOfAllErrorDay(intervalTime, type, message.getStepCode()));
     }
 
     /**
@@ -291,13 +291,8 @@ public class TaskMonitorMessageHandler extends AbstractMessageHandler<TaskMonito
                     // 设定超时时间默认为1天
                     hashOperations.expire(2, TimeUnit.DAYS);
                 }
-                // 统计取消数
-                if (ETaskStatus.CANCEL.getStatus().equals(status)) {
-                    Long cancelCount = hashOperations.increment("cancelCount", 1);
-                    statMap.put("cancelCount", cancelCount + "");
-                }
                 // 统计失败数
-                else if (ETaskStatus.FAIL.getStatus().equals(status)) {
+                if (ETaskStatus.FAIL.getStatus().equals(status)) {
                     Long failCount = hashOperations.increment("failCount", 1);
                     statMap.put("failCount", failCount + "");
                 }

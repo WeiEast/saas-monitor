@@ -177,7 +177,7 @@ public class StatAccessServiceImpl implements StatAccessService {
     }
 
     @Override
-    public MonitorResult<List<SaasErrorStepDayStatRO>> querySaasErrorDayStatListNoPage(SaasErrorStepDayStatRequest request) {
+    public MonitorResult<List<SaasErrorStepDayStatRO>> querySaasErrorStepDayStatListNoPage(SaasErrorStepDayStatRequest request) {
         SaasErrorStepDayStatCriteria criteria = new SaasErrorStepDayStatCriteria();
         criteria.setOrderByClause("dataTime desc");
         criteria.createCriteria().andDataTypeEqualTo(request.getDataType())

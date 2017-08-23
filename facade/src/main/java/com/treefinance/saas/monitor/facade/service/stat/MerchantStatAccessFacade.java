@@ -99,7 +99,7 @@ public interface MerchantStatAccessFacade {
      * @param request
      * @return
      */
-    MonitorResult<List<SaasErrorStepDayStatRO>> querySaasErrorDayStatListNoPage(SaasErrorStepDayStatRequest request);
+    MonitorResult<List<SaasErrorStepDayStatRO>> querySaasErrorStepDayStatListNoPage(SaasErrorStepDayStatRequest request);
 
 
 }

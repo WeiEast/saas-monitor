@@ -108,7 +108,7 @@ public class TaskDataFlushJob implements SimpleJob {
                     saveAllTotalDayData(intervalTimeSets, redisOperations);
                     saveAllTotalData(intervalTimeSets, redisOperations);
 
-                    //7.保存任务取消失败环节统计数据
+                    //7.保存任务失败环节统计数据
                     saveAllErrorDayData(intervalTimeSets, redisOperations);
 
                     // 删除已生成数据key
@@ -664,19 +664,8 @@ public class TaskDataFlushJob implements SimpleJob {
             List<SaasErrorStepDayStatDTO> totalList = Lists.newArrayList();
             intervalTimes.forEach(intervalTime -> {
                 for (EStatType type : EStatType.values()) {
-                    String totalDayKey = RedisKeyHelper.keyOfAllTotalDay(intervalTime, type);
-                    Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalDayKey);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("key={} , value={}", totalDayKey, JSON.toJSONString(totalMap));
-                    }
-                    if (MapUtils.isEmpty(totalMap)) {
-                        continue;
-                    }
-                    String jsonTotal = JSON.toJSONString(totalMap);
-                    SaasStatDayAccessDTO dtoTotal = JSON.parseObject(jsonTotal, SaasStatDayAccessDTO.class);
-                    int total = dtoTotal.getTotalCount();
                     for (TaskStepEnum taskStep : TaskStepEnum.values()) {
-                        String errorDayKey = RedisKeyHelper.keyOfAllErrorDay(intervalTime, type, taskStep.getCode());
+                        String errorDayKey = RedisKeyHelper.keyOfAllErrorDay(intervalTime, type, taskStep.getStepCode());
                         Map<String, Object> errorMap = redisOperations.opsForHash().entries(errorDayKey);
                         if (logger.isDebugEnabled()) {
                             logger.debug("key={} , value={}", errorDayKey, JSON.toJSONString(errorMap));
@@ -688,15 +677,11 @@ public class TaskDataFlushJob implements SimpleJob {
                         SaasErrorStepDayStatDTO dto = JSON.parseObject(json, SaasErrorStepDayStatDTO.class);
                         dto.setId(UidGenerator.getId());
                         dto.setDataType(type.getType());
-                        dto.setErrorCode(taskStep.getCode());
-                        dto.setErrorMsg(TaskStepEnum.getText(taskStep.getCode()));
-                        dto.setTotalCount(total);
+                        dto.setErrorStepCode(taskStep.getStepCode());
                         Date dataTime = dto.getDataTime();
                         if (dataTime != null) {
                             dto.setDataTime(DateUtils.truncate(dataTime, Calendar.DAY_OF_MONTH));
                         }
-                        dto.setFailRate(calcErrorRate(dto.getTotalCount(), dto.getFailCount()));
-                        dto.setCancelRate(calcErrorRate(dto.getTotalCount(), dto.getCancelCount()));
                         dto.setLastUpdateTime(new Date());
                         totalList.add(dto);
                     }
@@ -711,19 +696,6 @@ public class TaskDataFlushJob implements SimpleJob {
         } catch (Exception e) {
             logger.error("saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + " : ", e);
         }
-    }
-
-    private BigDecimal calcErrorRate(Integer totalCount, Integer rateCount) {
-        if (totalCount == null || rateCount == null) {
-            return null;
-        }
-        if (totalCount == 0) {
-            return null;
-        }
-        BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
-                .multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(totalCount, 2), 2);
-        return rate;
     }
 
 

@@ -80,8 +80,8 @@ public class MerchantStatAccessFacadeImpl implements MerchantStatAccessFacade {
     }
 
     @Override
-    public MonitorResult<List<SaasErrorStepDayStatRO>> querySaasErrorDayStatListNoPage(SaasErrorStepDayStatRequest request) {
+    public MonitorResult<List<SaasErrorStepDayStatRO>> querySaasErrorStepDayStatListNoPage(SaasErrorStepDayStatRequest request) {
         MerchantStatChecker.checkErrorDayStatRequest(request);
-        return statAccessService.querySaasErrorDayStatListNoPage(request);
+        return statAccessService.querySaasErrorStepDayStatListNoPage(request);
     }
 }
