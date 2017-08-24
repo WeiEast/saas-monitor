@@ -63,16 +63,16 @@
         dataType = #{dataType,jdbcType=TINYINT},
       </if>
       <if test="errorStepCode != null">
-        #{errorStepCode,jdbcType=VARCHAR},
+        errorStepCode = #{errorStepCode,jdbcType=VARCHAR},
       </if>
       <if test="failCount != null">
-        #{failCount,jdbcType=INTEGER},
+        failCount = #{failCount,jdbcType=INTEGER},
       </if>
       <if test="createTime != null">
-        #{createTime,jdbcType=TIMESTAMP},
+        createTime = #{createTime,jdbcType=TIMESTAMP},
       </if>
       <if test="lastUpdateTime != null">
-        #{lastUpdateTime,jdbcType=TIMESTAMP},
+        lastUpdateTime = #{lastUpdateTime,jdbcType=TIMESTAMP},
       </if>
     </trim>
   </insert>
