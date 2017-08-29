@@ -79,6 +79,9 @@ public class DiamondConfig {
     // 监控环境
     @DAttribute(key = "monitor.environment")
     private String monitorEnvironment;
+    //预警消息,剔除的商户
+    @DAttribute(key = "monitor.alarm.excludeAppIdsAll")
+    private String monitorAlarmExcludeAppIdsAll;
 
     public String getMonitorEnvironment() {
         return monitorEnvironment;
@@ -240,5 +243,13 @@ public class DiamondConfig {
 
     public void setMonitorAlarmThresholdMax(Double monitorAlarmThresholdMax) {
         this.monitorAlarmThresholdMax = monitorAlarmThresholdMax;
+    }
+
+    public String getMonitorAlarmExcludeAppIdsAll() {
+        return monitorAlarmExcludeAppIdsAll;
+    }
+
+    public void setMonitorAlarmExcludeAppIdsAll(String monitorAlarmExcludeAppIdsAll) {
+        this.monitorAlarmExcludeAppIdsAll = monitorAlarmExcludeAppIdsAll;
     }
 }
