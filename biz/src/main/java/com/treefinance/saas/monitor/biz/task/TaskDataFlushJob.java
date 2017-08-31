@@ -18,6 +18,7 @@ import com.treefinance.saas.monitor.common.domain.dto.*;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -375,6 +376,13 @@ public class TaskDataFlushJob implements SimpleJob {
                 if (diamondConfig.getMonitorAlarmThreshold() == null) {
                     return;
                 }
+                //获取需要排除的商户的统计信息
+                List<String> excludeAppIds = Lists.newArrayList();
+                if (StringUtils.isNotBlank(diamondConfig.getMonitorAlarmExcludeAppIdsAll())) {
+                    excludeAppIds = Splitter.on(",").trimResults().splitToList(diamondConfig.getMonitorAlarmExcludeAppIdsAll());
+                }
+                List<MerchantStatAccessDTO> excludeAppTotalDataList = this.getExcludeAppTotalDataList(intervalTimes, excludeAppIds, redisOperations);
+
                 BigDecimal alarmThreshold = BigDecimal.valueOf(diamondConfig.getMonitorAlarmThreshold());
                 BigDecimal alarmThresholdMax = BigDecimal.valueOf(diamondConfig.getMonitorAlarmThresholdMax());
                 List<SaasStatAccessDTO> sortedTotalList = totalList.stream()
@@ -384,9 +392,12 @@ public class TaskDataFlushJob implements SimpleJob {
                     if (statType == EStatType.TOTAL) {
                         continue;
                     }
+                    List<MerchantStatAccessDTO> filterExcludeAppTotalDataList = excludeAppTotalDataList.stream()
+                            .filter(data -> data.getDataType().equals(dto.getDataType()) && data.getDataTime().equals(dto.getDataTime()))
+                            .collect(Collectors.toList());
                     try {
                         // 成功率= 成功数/总数
-                        BigDecimal successRate = calcTotalRate(dto.getSuccessCount(), dto.getTotalCount());
+                        BigDecimal successRate = calcTotalRate(dto.getSuccessCount(), dto.getTotalCount(), filterExcludeAppTotalDataList);
                         // 成功率 > 阀值， 清零计数
                         String alarmKey = RedisKeyHelper.keyOfAllAlarm(statType);
                         String alarmTimesKey = RedisKeyHelper.keyOfAllAlarmTimes(statType);
@@ -424,6 +435,34 @@ public class TaskDataFlushJob implements SimpleJob {
         } catch (Exception e) {
             logger.error("TaskMonitorAlarm:saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + " : ", e);
         }
+    }
+
+    private List<MerchantStatAccessDTO> getExcludeAppTotalDataList(Set<Date> intervalTimes, List<String> excludeAppIds, RedisOperations redisOperations) {
+        List<MerchantStatAccessDTO> totalList = Lists.newArrayList();
+        intervalTimes.forEach(intervalTime -> {
+            // 统计总数
+            excludeAppIds.forEach(appId -> {
+                for (EStatType type : EStatType.values()) {
+                    String totalkey = RedisKeyHelper.keyOfTotal(appId, intervalTime, type);
+                    Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalkey);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("excludeAppData : key={} , value={}", totalkey, JSON.toJSONString(totalMap));
+                    }
+                    if (MapUtils.isEmpty(totalMap)) {
+                        continue;
+                    }
+                    String json = JSON.toJSONString(totalMap);
+                    MerchantStatAccessDTO dto = JSON.parseObject(json, MerchantStatAccessDTO.class);
+                    dto.setDataType(type.getType());
+                    dto.setAppId(appId);
+                    dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
+                    dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
+                    dto.setLastUpdateTime(new Date());
+                    totalList.add(dto);
+                }
+            });
+        });
+        return totalList;
     }
 
     /**
@@ -728,13 +767,23 @@ public class TaskDataFlushJob implements SimpleJob {
      *
      * @param rateCount  比率数
      * @param totalCount 总数
+     * @param list       需要排除的商户统计数据
      * @return
      */
-    private BigDecimal calcTotalRate(Integer rateCount, Integer totalCount) {
+    private BigDecimal calcTotalRate(Integer rateCount, Integer totalCount, List<MerchantStatAccessDTO> list) {
         if (totalCount == null || rateCount == null) {
             return null;
         }
         if (totalCount == 0) {
+            return null;
+        }
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (MerchantStatAccessDTO dto : list) {
+                rateCount = rateCount - dto.getSuccessCount();
+                totalCount = totalCount - dto.getTotalCount();
+            }
+        }
+        if (rateCount < 0 || totalCount <= 0) {
             return null;
         }
         BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
