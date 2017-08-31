@@ -275,6 +275,18 @@ public class TaskDataFlushJob implements SimpleJob {
                         MerchantStatDayAccessDTO dto = JSON.parseObject(json, MerchantStatDayAccessDTO.class);
                         dto.setDataType(type.getType());
                         dto.setAppId(appId);
+                        if (dto.getTotalCount() == null) {
+                            dto.setTotalCount(0);
+                        }
+                        if (dto.getSuccessCount() == null) {
+                            dto.setSuccessCount(0);
+                        }
+                        if (dto.getFailCount() == null) {
+                            dto.setFailCount(0);
+                        }
+                        if (dto.getCancelCount() == null) {
+                            dto.setCancelCount(0);
+                        }
                         Date dataTime = dto.getDataTime();
                         if (dataTime != null) {
                             dto.setDataTime(DateUtils.truncate(dataTime, Calendar.DAY_OF_MONTH));
@@ -322,6 +334,18 @@ public class TaskDataFlushJob implements SimpleJob {
                     if (dataTime != null) {
                         dto.setDataTime(DateUtils.truncate(dataTime, Calendar.DAY_OF_MONTH));
                     }
+                    if (dto.getTotalCount() == null) {
+                        dto.setTotalCount(0);
+                    }
+                    if (dto.getSuccessCount() == null) {
+                        dto.setSuccessCount(0);
+                    }
+                    if (dto.getFailCount() == null) {
+                        dto.setFailCount(0);
+                    }
+                    if (dto.getCancelCount() == null) {
+                        dto.setCancelCount(0);
+                    }
                     dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
                     dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
                     dto.setLastUpdateTime(new Date());
@@ -362,6 +386,18 @@ public class TaskDataFlushJob implements SimpleJob {
                     SaasStatAccessDTO dto = JSON.parseObject(json, SaasStatAccessDTO.class);
                     dto.setId(UidGenerator.getId());
                     dto.setDataType(type.getType());
+                    if (dto.getTotalCount() == null) {
+                        dto.setTotalCount(0);
+                    }
+                    if (dto.getSuccessCount() == null) {//如果未统计到成功数量,redis中不存在successCount,这里会为空.赋值为0,防止出现计算转化率为null的错误情况
+                        dto.setSuccessCount(0);
+                    }
+                    if (dto.getFailCount() == null) {
+                        dto.setFailCount(0);
+                    }
+                    if (dto.getCancelCount() == null) {
+                        dto.setCancelCount(0);
+                    }
                     dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
                     dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
                     dto.setLastUpdateTime(new Date());
@@ -405,13 +441,13 @@ public class TaskDataFlushJob implements SimpleJob {
                         // 没有成功、失败，跳过
                         if ((dto.getFailCount() == null || dto.getFailCount() == 0)
                                 && (dto.getSuccessCount() == null || dto.getSuccessCount() == 0)) {
-                            logger.info(" TaskMonitorAlarm:update alarm flag :成功失败数量均为0: alarmKey={}, value={}, dto={},successRate={}",
+                            logger.info(" TaskMonitorAlarm:update alarm flag :成功失败数量均为0,不做统计预警: alarmKey={}, value={}, dto={},successRate={}",
                                     alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto), successRate);
                             continue;
                         }
                         if (successRate == null) {
-                            logger.info("TaskMonitorAlarm:update alarm flag :转化率为null,直接过滤此数据: alarmKey={}, value={}, dto={},successRate={}",
-                                    alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto), null);
+                            logger.info("TaskMonitorAlarm:update alarm flag :转化率为null,数据存在问题,过滤此数据: alarmKey={}, value={}, dto={}",
+                                    alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto));
                             continue;
                         }
                         if (successRate.compareTo(alarmThreshold) >= 0 && successRate.compareTo(alarmThresholdMax) <= 0) {
@@ -463,6 +499,18 @@ public class TaskDataFlushJob implements SimpleJob {
                     MerchantStatAccessDTO dto = JSON.parseObject(json, MerchantStatAccessDTO.class);
                     dto.setDataType(type.getType());
                     dto.setAppId(appId);
+                    if (dto.getTotalCount() == null) {
+                        dto.setTotalCount(0);
+                    }
+                    if (dto.getSuccessCount() == null) {
+                        dto.setSuccessCount(0);
+                    }
+                    if (dto.getFailCount() == null) {
+                        dto.setFailCount(0);
+                    }
+                    if (dto.getCancelCount() == null) {
+                        dto.setCancelCount(0);
+                    }
                     dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
                     dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
                     dto.setLastUpdateTime(new Date());
@@ -499,6 +547,18 @@ public class TaskDataFlushJob implements SimpleJob {
                         MerchantStatAccessDTO dto = JSON.parseObject(json, MerchantStatAccessDTO.class);
                         dto.setDataType(type.getType());
                         dto.setAppId(appId);
+                        if (dto.getTotalCount() == null) {
+                            dto.setTotalCount(0);
+                        }
+                        if (dto.getSuccessCount() == null) {
+                            dto.setSuccessCount(0);
+                        }
+                        if (dto.getFailCount() == null) {
+                            dto.setFailCount(0);
+                        }
+                        if (dto.getCancelCount() == null) {
+                            dto.setCancelCount(0);
+                        }
                         dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
                         dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
                         dto.setLastUpdateTime(new Date());
@@ -584,6 +644,18 @@ public class TaskDataFlushJob implements SimpleJob {
                             MerchantStatEcommerceDTO dto = JSON.parseObject(json, MerchantStatEcommerceDTO.class);
                             dto.setEcommerceId(ecommerceId);
                             dto.setAppId(appId);
+                            if (dto.getTotalCount() == null) {
+                                dto.setTotalCount(0);
+                            }
+                            if (dto.getSuccessCount() == null) {
+                                dto.setSuccessCount(0);
+                            }
+                            if (dto.getFailCount() == null) {
+                                dto.setFailCount(0);
+                            }
+                            if (dto.getCancelCount() == null) {
+                                dto.setCancelCount(0);
+                            }
                             dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
                             dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
                             dto.setLastUpdateTime(new Date());
@@ -632,6 +704,18 @@ public class TaskDataFlushJob implements SimpleJob {
                             String json = JSON.toJSONString(dataMap);
                             MerchantStatMailDTO dto = JSON.parseObject(json, MerchantStatMailDTO.class);
                             dto.setAppId(appId);
+                            if (dto.getTotalCount() == null) {
+                                dto.setTotalCount(0);
+                            }
+                            if (dto.getSuccessCount() == null) {
+                                dto.setSuccessCount(0);
+                            }
+                            if (dto.getFailCount() == null) {
+                                dto.setFailCount(0);
+                            }
+                            if (dto.getCancelCount() == null) {
+                                dto.setCancelCount(0);
+                            }
                             dto.setMailCode(mailCode);
                             dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
                             dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
@@ -682,6 +766,18 @@ public class TaskDataFlushJob implements SimpleJob {
                             String json = JSON.toJSONString(dataMap);
                             MerchantStatOperatorDTO dto = JSON.parseObject(json, MerchantStatOperatorDTO.class);
                             dto.setAppId(appId);
+                            if (dto.getTotalCount() == null) {
+                                dto.setTotalCount(0);
+                            }
+                            if (dto.getSuccessCount() == null) {
+                                dto.setSuccessCount(0);
+                            }
+                            if (dto.getFailCount() == null) {
+                                dto.setFailCount(0);
+                            }
+                            if (dto.getCancelCount() == null) {
+                                dto.setCancelCount(0);
+                            }
                             dto.setOperaterId(operatorId);
                             dto.setSuccessRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getSuccessCount()));
                             dto.setFailRate(calcRate(dto.getTotalCount(), dto.getCancelCount(), dto.getFailCount()));
@@ -754,11 +850,8 @@ public class TaskDataFlushJob implements SimpleJob {
      * @return
      */
     private BigDecimal calcRate(Integer totalCount, Integer cancelCount, Integer rateCount) {
-        if (totalCount == null || rateCount == null) {
-            return null;
-        }
         if (totalCount == 0) {
-            return null;
+            return BigDecimal.ZERO;
         }
         if (cancelCount != null) {
             totalCount -= cancelCount;
@@ -781,12 +874,6 @@ public class TaskDataFlushJob implements SimpleJob {
     private BigDecimal calcTotalRate(Integer rateCount, Integer totalCount, List<MerchantStatAccessDTO> list) {
         logger.info("TaskMonitorAlarm:update alarm flag:计算转化率:rateCount={},totalCount={},excludeAppDatas={}",
                 rateCount, totalCount, JSON.toJSONString(list));
-        if (totalCount == null || rateCount == null) {
-            return null;
-        }
-        if (totalCount == 0) {
-            return null;
-        }
         if (CollectionUtils.isNotEmpty(list)) {
             for (MerchantStatAccessDTO dto : list) {
                 rateCount = rateCount - dto.getSuccessCount();
