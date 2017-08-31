@@ -404,12 +404,19 @@ public class TaskDataFlushJob implements SimpleJob {
                         // 没有成功、失败，跳过
                         if ((dto.getFailCount() == null || dto.getFailCount() == 0)
                                 && (dto.getSuccessCount() == null || dto.getSuccessCount() == 0)) {
-                            logger.info(" TaskMonitorAlarm:update alarm flag :成功失败数量均为0: alarmKey={}, value={}, dto={}", alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto));
+                            logger.info(" TaskMonitorAlarm:update alarm flag :成功失败数量均为0: alarmKey={}, value={}, dto={},successRate={}",
+                                    alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto), successRate);
+                            continue;
+                        }
+                        if (successRate == null) {
+                            logger.info("TaskMonitorAlarm:update alarm flag :转化率为null,直接过滤此数据: alarmKey={}, value={}, dto={},successRate={}",
+                                    alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto), null);
                             continue;
                         }
                         if (successRate != null && successRate.compareTo(alarmThreshold) >= 0
                                 && successRate.compareTo(alarmThresholdMax) <= 0) {
-                            logger.info(" TaskMonitorAlarm:update alarm flag :转化率在合法阈值之内: alarmKey={}, value={}, dto={}", alarmKey, 0, JSON.toJSONString(dto));
+                            logger.info(" TaskMonitorAlarm:update alarm flag :转化率在合法阈值之内: alarmKey={}, value={}, dto={},successRate={}",
+                                    alarmKey, 0, JSON.toJSONString(dto), successRate);
                             redisOperations.delete(alarmKey);
                             redisOperations.delete(alarmTimesKey);
                         }
@@ -422,7 +429,8 @@ public class TaskDataFlushJob implements SimpleJob {
                             if (flag) {
                                 Long result = redisOperations.opsForValue().increment(alarmKey, 1);
                                 redisOperations.opsForSet().add(alarmTimesKey, dto.getDataTime().getTime() + "");
-                                logger.info("TaskMonitorAlarm:update alarm flag : alarmKey={}, value={}, dto={}", alarmKey, result, JSON.toJSONString(dto));
+                                logger.info("TaskMonitorAlarm:update alarm flag :转化率不在合法阈值范围内,预警值+1: alarmKey={}, value={}, dto={},successRate={}",
+                                        alarmKey, result, JSON.toJSONString(dto), successRate);
                             } else {
                                 logger.info("TaskMonitorAlarm:has alarmed this time. alarmKey={},timeKey={}", alarmKey, timeKey);
                             }
