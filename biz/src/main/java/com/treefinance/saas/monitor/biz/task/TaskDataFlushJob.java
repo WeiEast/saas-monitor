@@ -779,6 +779,8 @@ public class TaskDataFlushJob implements SimpleJob {
      * @return
      */
     private BigDecimal calcTotalRate(Integer rateCount, Integer totalCount, List<MerchantStatAccessDTO> list) {
+        logger.info("TaskMonitorAlarm:update alarm flag:计算转化率:rateCount={},totalCount={},excludeAppDatas={}",
+                rateCount, totalCount, JSON.toJSONString(list));
         if (totalCount == null || rateCount == null) {
             return null;
         }
