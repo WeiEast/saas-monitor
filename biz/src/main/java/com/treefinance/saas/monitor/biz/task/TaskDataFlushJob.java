@@ -380,6 +380,7 @@ public class TaskDataFlushJob implements SimpleJob {
                 List<String> excludeAppIds = Lists.newArrayList();
                 if (StringUtils.isNotBlank(diamondConfig.getMonitorAlarmExcludeAppIdsAll())) {
                     excludeAppIds = Splitter.on(",").trimResults().splitToList(diamondConfig.getMonitorAlarmExcludeAppIdsAll());
+                    logger.info("TaskMonitorAlarm: excludeAppIds={}", JSON.toJSONString(excludeAppIds));
                 }
                 List<MerchantStatAccessDTO> excludeAppTotalDataList = this.getExcludeAppTotalDataList(intervalTimes, excludeAppIds, redisOperations);
 
@@ -413,8 +414,7 @@ public class TaskDataFlushJob implements SimpleJob {
                                     alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto), null);
                             continue;
                         }
-                        if (successRate != null && successRate.compareTo(alarmThreshold) >= 0
-                                && successRate.compareTo(alarmThresholdMax) <= 0) {
+                        if (successRate.compareTo(alarmThreshold) >= 0 && successRate.compareTo(alarmThresholdMax) <= 0) {
                             logger.info(" TaskMonitorAlarm:update alarm flag :转化率在合法阈值之内: alarmKey={}, value={}, dto={},successRate={}",
                                     alarmKey, 0, JSON.toJSONString(dto), successRate);
                             redisOperations.delete(alarmKey);
@@ -454,7 +454,7 @@ public class TaskDataFlushJob implements SimpleJob {
                     String totalkey = RedisKeyHelper.keyOfTotal(appId, intervalTime, type);
                     Map<String, Object> totalMap = redisOperations.opsForHash().entries(totalkey);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("excludeAppData : key={} , value={}", totalkey, JSON.toJSONString(totalMap));
+                        logger.debug("TaskMonitorAlarm: excludeAppData : key={} , value={}", totalkey, JSON.toJSONString(totalMap));
                     }
                     if (MapUtils.isEmpty(totalMap)) {
                         continue;
