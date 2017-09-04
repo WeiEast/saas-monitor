@@ -446,7 +446,7 @@ public class TaskDataFlushJob implements SimpleJob {
                             continue;
                         }
                         if (successRate == null) {
-                            logger.info("TaskMonitorAlarm:update alarm flag :转化率为null,数据存在问题,过滤此数据: alarmKey={}, value={}, dto={}",
+                            logger.info("TaskMonitorAlarm:update alarm flag :转化率为null,数据存在问题或这段时间所统计商户均被排除,过滤此数据: alarmKey={}, value={}, dto={}",
                                     alarmKey, redisOperations.opsForValue().get(alarmKey), JSON.toJSONString(dto));
                             continue;
                         }
@@ -850,11 +850,11 @@ public class TaskDataFlushJob implements SimpleJob {
      * @return
      */
     private BigDecimal calcRate(Integer totalCount, Integer cancelCount, Integer rateCount) {
-        if (totalCount == 0) {
-            return BigDecimal.ZERO;
-        }
         if (cancelCount != null) {
             totalCount -= cancelCount;
+        }
+        if (totalCount == 0) {
+            return BigDecimal.ZERO;
         }
         BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
                 .multiply(BigDecimal.valueOf(100))
