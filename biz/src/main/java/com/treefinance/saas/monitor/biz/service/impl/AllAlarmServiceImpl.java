@@ -75,13 +75,15 @@ public class AllAlarmServiceImpl implements AllAlarmService {
             for (SaasStatAccess data : list) {
                 SaasStatAccess saasStatAccess = new SaasStatAccess();
                 BeanUtils.copyProperties(data, saasStatAccess);
-                List<MerchantStatAccess> excludeMerchantList = excludeMerchantMap.get(data.getDataTime());
                 int excludeTotalCount = 0, excludeSuccessCount = 0, excludeFailCount = 0, excludeCancelCount = 0;
-                for (MerchantStatAccess merchantStatAccess : excludeMerchantList) {
-                    excludeTotalCount = excludeTotalCount + merchantStatAccess.getTotalCount();
-                    excludeSuccessCount = excludeSuccessCount + merchantStatAccess.getSuccessCount();
-                    excludeFailCount = excludeFailCount + merchantStatAccess.getFailCount();
-                    excludeCancelCount = excludeCancelCount + merchantStatAccess.getCancelCount();
+                List<MerchantStatAccess> excludeMerchantList = excludeMerchantMap.get(data.getDataTime());
+                if (!CollectionUtils.isEmpty(excludeMerchantList)) {
+                    for (MerchantStatAccess merchantStatAccess : excludeMerchantList) {
+                        excludeTotalCount = excludeTotalCount + (merchantStatAccess.getTotalCount() == null ? 0 : merchantStatAccess.getTotalCount());
+                        excludeSuccessCount = excludeSuccessCount + (merchantStatAccess.getSuccessCount() == null ? 0 : merchantStatAccess.getSuccessCount());
+                        excludeFailCount = excludeFailCount + (merchantStatAccess.getFailCount() == null ? 0 : merchantStatAccess.getFailCount());
+                        excludeCancelCount = excludeCancelCount + (merchantStatAccess.getCancelCount() == null ? 0 : merchantStatAccess.getCancelCount());
+                    }
                 }
                 int totalCount = saasStatAccess.getTotalCount() == null ? 0 : saasStatAccess.getTotalCount();
                 int successCount = saasStatAccess.getSuccessCount() == null ? 0 : saasStatAccess.getSuccessCount();
