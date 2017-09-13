@@ -183,8 +183,9 @@ public class TaskDataFlushJob implements SimpleJob {
                                     alarmKey, flag, alarmTimesKey, JSON.toJSONString(alarmTimesStrSet), needAlarmTimesList, JSON.toJSONString(needAlarmTimesList), thresholdCount);
                             allAlarmService.alarm(statType, needAlarmTimesList);
                             if (alarmNums > thresholdCount) {
+                                List<String> needAlarmTimeStrList = needAlarmTimesList.stream().map(o -> o.getTime() + "").collect(Collectors.toList());
                                 redisOperations.opsForValue().increment(alarmKey, -thresholdCount);
-                                redisOperations.opsForSet().remove(alarmTimesKey, needAlarmTimesList.toArray());
+                                redisOperations.opsForSet().remove(alarmTimesKey, needAlarmTimeStrList.toArray());
                             } else {
                                 redisOperations.delete(alarmKey);
                                 redisOperations.delete(alarmTimesKey);
