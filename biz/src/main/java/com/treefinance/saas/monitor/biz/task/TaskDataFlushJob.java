@@ -434,8 +434,10 @@ public class TaskDataFlushJob implements SimpleJob {
                             .filter(data -> data.getDataType().equals(dto.getDataType()) && data.getDataTime().equals(dto.getDataTime()))
                             .collect(Collectors.toList());
                     try {
+                        //过滤排除商户任务数量,重新赋值successCount,failCount和totalCount;
+                        newFilterExcludeAppDTO(dto, filterExcludeAppTotalDataList);
                         // 成功率= 成功数/总数
-                        BigDecimal successRate = calcTotalRate(dto.getSuccessCount(), dto.getTotalCount(), filterExcludeAppTotalDataList);
+                        BigDecimal successRate = calcTotalRate(dto.getSuccessCount(), dto.getTotalCount());
                         // 成功率 > 阀值， 清零计数
                         String alarmKey = RedisKeyHelper.keyOfAllAlarm(statType);
                         String alarmTimesKey = RedisKeyHelper.keyOfAllAlarmTimes(statType);
@@ -480,6 +482,23 @@ public class TaskDataFlushJob implements SimpleJob {
         } catch (Exception e) {
             logger.error("TaskMonitorAlarm:saveTotalData error: intervalTimes=" + JSON.toJSONString(intervalTimes) + " : ", e);
         }
+    }
+
+    private void newFilterExcludeAppDTO(SaasStatAccessDTO dto, List<MerchantStatAccessDTO> list) {
+        int successCount = dto.getSuccessCount() == null ? 0 : dto.getSuccessCount();
+        int failCount = dto.getFailCount() == null ? 0 : dto.getFailCount();
+        int totalCount = dto.getTotalCount() == null ? 0 : dto.getTotalCount();
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (MerchantStatAccessDTO merchantStatAccessDTO : list) {
+                successCount = successCount - merchantStatAccessDTO.getSuccessCount();
+                failCount = failCount - merchantStatAccessDTO.getFailCount();
+                totalCount = totalCount - merchantStatAccessDTO.getTotalCount();
+
+            }
+        }
+        dto.setSuccessCount(successCount);
+        dto.setFailCount(failCount);
+        dto.setTotalCount(totalCount);
     }
 
     private List<MerchantStatAccessDTO> getExcludeAppTotalDataList(Set<Date> intervalTimes, List<String> excludeAppIds, RedisOperations redisOperations) {
@@ -881,6 +900,18 @@ public class TaskDataFlushJob implements SimpleJob {
                 totalCount = totalCount - dto.getTotalCount();
             }
         }
+        if (rateCount < 0 || totalCount <= 0) {
+            return null;
+        }
+        BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(totalCount, 2), 2);
+        return rate;
+    }
+
+    private BigDecimal calcTotalRate(Integer rateCount, Integer totalCount) {
+        logger.info("TaskMonitorAlarm:update alarm flag:计算转化率:rateCount={},totalCount={}",
+                rateCount, totalCount);
         if (rateCount < 0 || totalCount <= 0) {
             return null;
         }
