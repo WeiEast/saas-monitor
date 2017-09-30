@@ -8,7 +8,8 @@ import org.apache.commons.lang3.StringUtils;
 public enum EBizType {
     EMAIL("EMAIL", (byte) 1),
     ECOMMERCE("ECOMMERCE", (byte) 2),
-    OPERATOR("OPERATOR", (byte) 3);
+    OPERATOR("OPERATOR", (byte) 3),
+    FUND("FUND", (byte) 4);
 
     private Byte code;
     private String text;

@@ -114,6 +114,10 @@ public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMoni
         else if (bizType == EBizType.OPERATOR) {
             updateAllErrorDayData(intervalTime, message, EStatType.OPERATER);
         }
+        //公积金
+        else if (bizType == EBizType.FUND) {
+            updateAllErrorDayData(intervalTime, message, EStatType.FUND);
+        }
     }
 
     private void updateAllErrorDayData(Date intervalTime, TaskMonitorMessage message, EStatType type) {
@@ -148,6 +152,11 @@ public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMoni
         else if (bizType == EBizType.OPERATOR) {
             updateAllTotalData(intervalTime, message, EStatType.OPERATER);
             updateAllTotalDayData(intervalTime, message, EStatType.OPERATER);
+        }
+        //公积金
+        else if (bizType == EBizType.FUND) {
+            updateAllTotalData(intervalTime, message, EStatType.FUND);
+            updateAllTotalDayData(intervalTime, message, EStatType.FUND);
         }
     }
 
@@ -189,6 +198,11 @@ public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMoni
         else if (bizType == EBizType.OPERATOR) {
             updateTotalData(intervalTime, message, EStatType.OPERATER);
             updateTotalDayData(intervalTime, message, EStatType.OPERATER);
+        }
+        //公积金
+        else if (bizType == EBizType.FUND) {
+            updateTotalData(intervalTime, message, EStatType.FUND);
+            updateTotalDayData(intervalTime, message, EStatType.FUND);
         }
     }
 
