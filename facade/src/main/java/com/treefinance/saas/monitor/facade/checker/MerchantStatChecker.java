@@ -47,7 +47,7 @@ public class MerchantStatChecker {
         if (request.getDataType() == null) {
             throw new ParamCheckerException("请求参数dataType不能为空");
         }
-        if (dataType < 0 || dataType > 4) {
+        if (dataType < 0) {
             throw new ParamCheckerException("请求参数dataType非法");
         }
     }
@@ -71,7 +71,7 @@ public class MerchantStatChecker {
         if (request.getDataType() == null) {
             throw new ParamCheckerException("请求参数dataType不能为空");
         }
-        if (dataType < 0 || dataType > 4) {
+        if (dataType < 0) {
             throw new ParamCheckerException("请求参数dataType非法");
         }
     }
@@ -96,7 +96,7 @@ public class MerchantStatChecker {
         if (request.getDataType() == null) {
             throw new ParamCheckerException("请求参数dataType不能为空");
         }
-        if (dataType < 0 || dataType > 4) {
+        if (dataType < 0) {
             throw new ParamCheckerException("请求参数dataType非法");
         }
     }
@@ -113,7 +113,7 @@ public class MerchantStatChecker {
         if (request.getDataType() == null) {
             throw new ParamCheckerException("请求参数dataType不能为空");
         }
-        if (dataType < 0 || dataType > 4) {
+        if (dataType < 0) {
             throw new ParamCheckerException("请求参数dataType非法");
         }
     }
@@ -178,7 +178,7 @@ public class MerchantStatChecker {
         if (request.getDataType() == null) {
             throw new ParamCheckerException("请求参数dataType不能为空");
         }
-        if (dataType < 0 || dataType > 4) {
+        if (dataType < 0) {
             throw new ParamCheckerException("请求参数dataType非法");
         }
     }
