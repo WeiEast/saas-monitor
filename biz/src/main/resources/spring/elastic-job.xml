@@ -23,6 +23,11 @@
     <job:simple id="httpDataFlushJob" class="com.treefinance.saas.monitor.biz.task.HttpDataFlushJob"
                 registry-center-ref="regCenter" cron="0 2/10 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
+
+    <!--运营商监控-->
+    <job:simple id="taskOperatorFlushJob" class="com.treefinance.saas.monitor.biz.task.TaskOperatorDataFlushJob"
+                registry-center-ref="regCenter" cron="0 5/10 * * * ?"
+                sharding-total-count="1" overwrite="true"/>
     <!--
     &lt;!&ndash; 报警任务 &ndash;&gt;
     <job:simple id="alarmJob" class="com.treefinance.saas.monitor.biz.task.AlarmJob" registry-center-ref="regCenter"
