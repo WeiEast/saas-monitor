@@ -133,7 +133,27 @@
             <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
         <!--</table>-->
 
-        <table tableName="saas_error_step_day_stat" domainObjectName="SaasErrorStepDayStat"
+        <table tableName="all_operator_stat_day_access" domainObjectName="AllOperatorStatDayAccess"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
+        </table>
+
+        <table tableName="operator_stat_day_access" domainObjectName="OperatorStatDayAccess"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
+        </table>
+
+        <table tableName="operator_stat_access" domainObjectName="OperatorStatAccess"
                enableSelectPaginationByExample="true"
                enableInsertOrUpdateBySelective="true"
                enableBatchInsert="true"

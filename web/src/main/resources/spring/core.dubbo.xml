@@ -21,6 +21,9 @@
     <dubbo:service ref="apiStatAccessFacade"
                    interface="com.treefinance.saas.monitor.facade.service.stat.ApiStatAccessFacade"
                    version="1.0.0"/>
+    <dubbo:service ref="operatorStatAccessFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.stat.OperatorStatAccessFacade"
+                   version="1.0.0"/>
     <dubbo:service ref="mailFacade" interface="com.treefinance.saas.monitor.facade.service.MailFacade" version="1.0.0"/>
     <dubbo:service ref="ecommerceFacade" interface="com.treefinance.saas.monitor.facade.service.EcommerceFacade"
                    version="1.0.0"/>
