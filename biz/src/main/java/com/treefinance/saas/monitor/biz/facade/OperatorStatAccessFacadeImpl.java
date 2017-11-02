@@ -77,7 +77,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.createCriteria().andDataTimeEqualTo(request.getDataDate());
         long total = operatorStatDayAccessMapper.countByExample(criteria);
         if (total > 0) {
-            List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectByExample(criteria);
+            List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectPaginationByExample(criteria);
             result = DataConverterUtils.convert(list, OperatorStatDayAccessRO.class);
         }
         logger.info("查询各个运营商日监控统计数据(分页),返回结果result={}", JSON.toJSONString(result));
@@ -160,7 +160,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.createCriteria().andDataTimeBetween(request.getStartDate(), request.getEndDate());
         long total = allOperatorStatDayAccessMapper.countByExample(criteria);
         if (total > 0) {
-            List<AllOperatorStatDayAccess> list = allOperatorStatDayAccessMapper.selectByExample(criteria);
+            List<AllOperatorStatDayAccess> list = allOperatorStatDayAccessMapper.selectPaginationByExample(criteria);
             result = DataConverterUtils.convert(list, AllOperatorStatDayAccessRO.class);
         }
         logger.info("查询所有运营商日监控统计数据(分页),输出结果result={}", JSON.toJSONString(result));
