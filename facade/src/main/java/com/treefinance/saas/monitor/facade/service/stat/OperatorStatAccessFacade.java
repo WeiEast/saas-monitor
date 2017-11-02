@@ -57,5 +57,13 @@ public interface OperatorStatAccessFacade {
      */
     MonitorResult<List<AllOperatorStatDayAccessRO>> queryAllOperatorStatDayAccessList(OperatorStatAccessRequest request);
 
+    /**
+     * 查询所有运营商日监控统计数据(分页)
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<List<AllOperatorStatDayAccessRO>> queryAllOperatorStatDayAccessListWithPage(OperatorStatAccessRequest request);
+
 
 }
