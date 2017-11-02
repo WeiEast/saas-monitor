@@ -100,7 +100,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.createCriteria().andDataTimeBetween(request.getStartDate(), request.getEndDate());
         long total = operatorStatDayAccessMapper.countByExample(criteria);
         if (total > 0) {
-            List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectByExample(criteria);
+            List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectPaginationByExample(criteria);
             result = DataConverterUtils.convert(list, OperatorStatDayAccessRO.class);
         }
         logger.info("查询某一个运营商日监控统计数据(分页),返回结果result={}", JSON.toJSONString(result));
