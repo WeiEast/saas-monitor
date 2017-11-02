@@ -145,4 +145,26 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         return MonitorResultBuilder.build(result);
     }
 
+    @Override
+    public MonitorResult<List<AllOperatorStatDayAccessRO>> queryAllOperatorStatDayAccessListWithPage(OperatorStatAccessRequest request) {
+        if (request == null || request.getStartDate() == null || request.getEndDate() == null) {
+            logger.error("查询所有运营商日监控统计数据(分页),输入参数为空,request={}", JSON.toJSONString(request));
+            throw new ParamCheckerException("请求参数非法");
+        }
+        logger.info("查询所有运营商日监控统计数据(分页),输入参数request={}", JSON.toJSONString(request));
+        List<AllOperatorStatDayAccessRO> result = Lists.newArrayList();
+        AllOperatorStatDayAccessCriteria criteria = new AllOperatorStatDayAccessCriteria();
+        criteria.setOrderByClause("dataTime desc");
+        criteria.setLimit(request.getPageSize());
+        criteria.setOffset(request.getOffset());
+        criteria.createCriteria().andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        long total = allOperatorStatDayAccessMapper.countByExample(criteria);
+        if (total > 0) {
+            List<AllOperatorStatDayAccess> list = allOperatorStatDayAccessMapper.selectByExample(criteria);
+            result = DataConverterUtils.convert(list, AllOperatorStatDayAccessRO.class);
+        }
+        logger.info("查询所有运营商日监控统计数据(分页),输出结果result={}", JSON.toJSONString(result));
+        return MonitorResultBuilder.pageResult(request, result, total);
+    }
+
 }
