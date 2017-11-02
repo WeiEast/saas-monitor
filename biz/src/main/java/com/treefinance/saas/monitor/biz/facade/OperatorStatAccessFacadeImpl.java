@@ -74,9 +74,9 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.setOrderByClause("confirmMobileCount desc");
         criteria.setLimit(request.getPageSize());
         criteria.setOffset(request.getOffset());
+        criteria.createCriteria().andDataTimeEqualTo(request.getDataDate());
         long total = operatorStatDayAccessMapper.countByExample(criteria);
         if (total > 0) {
-            criteria.createCriteria().andDataTimeEqualTo(request.getDataDate());
             List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectByExample(criteria);
             result = DataConverterUtils.convert(list, OperatorStatDayAccessRO.class);
         }
@@ -157,9 +157,9 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.setOrderByClause("dataTime desc");
         criteria.setLimit(request.getPageSize());
         criteria.setOffset(request.getOffset());
+        criteria.createCriteria().andDataTimeBetween(request.getStartDate(), request.getEndDate());
         long total = allOperatorStatDayAccessMapper.countByExample(criteria);
         if (total > 0) {
-            criteria.createCriteria().andDataTimeBetween(request.getStartDate(), request.getEndDate());
             List<AllOperatorStatDayAccess> list = allOperatorStatDayAccessMapper.selectByExample(criteria);
             result = DataConverterUtils.convert(list, AllOperatorStatDayAccessRO.class);
         }
