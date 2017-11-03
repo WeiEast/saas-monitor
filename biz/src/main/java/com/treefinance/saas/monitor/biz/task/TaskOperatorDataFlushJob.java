@@ -5,6 +5,7 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.OperatorStatAccessUpdateService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
@@ -62,7 +63,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
         } catch (Exception e) {
             logger.error("运营商监控,定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
         } finally {
-            logger.info("运营商监控,定时任务执行jobTime={}完成,耗时{}", MonitorDateUtils.format(jobTime), System.currentTimeMillis() - start);
+            logger.info("运营商监控,定时任务执行jobTime={}完成,耗时{}ms", MonitorDateUtils.format(jobTime), System.currentTimeMillis() - start);
         }
     }
 
@@ -79,6 +80,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             }
             String json = JSON.toJSONString(dataMap);
             AllOperatorStatDayAccessDTO dto = JSON.parseObject(json, AllOperatorStatDayAccessDTO.class);
+            dto.setId(UidGenerator.getId());
             if (dto.getEntryCount() == null) {
                 dto.setEntryCount(0);
             }
@@ -124,6 +126,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                 }
                 String json = JSON.toJSONString(dataMap);
                 OperatorStatDayAccessDTO dto = JSON.parseObject(json, OperatorStatDayAccessDTO.class);
+                dto.setId(UidGenerator.getId());
                 if (dto.getConfirmMobileCount() == null) {
                     dto.setConfirmMobileCount(0);
                 }
@@ -188,6 +191,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                     }
                     String json = JSON.toJSONString(dataMap);
                     OperatorStatAccessDTO dto = JSON.parseObject(json, OperatorStatAccessDTO.class);
+                    dto.setId(UidGenerator.getId());
                     if (dto.getConfirmMobileCount() == null) {
                         dto.setConfirmMobileCount(0);
                     }
