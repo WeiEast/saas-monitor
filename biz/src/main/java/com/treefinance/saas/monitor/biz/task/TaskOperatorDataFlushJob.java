@@ -169,7 +169,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                 return;
             }
             logger.info("运营商监控,定时任务执行jobTime={},此次任务需要统计的时间段有dataTimeStrSets={}",
-                    JSON.toJSONString(redisStatDataTimeStrSets));
+                    MonitorDateUtils.format(jobTime), JSON.toJSONString(redisStatDataTimeStrSets));
             Set<Date> redisStatDataTimeSets = Sets.newHashSet();
             for (String dateStr : redisStatDataTimeStrSets) {
                 Date date = MonitorDateUtils.parse(dateStr);
