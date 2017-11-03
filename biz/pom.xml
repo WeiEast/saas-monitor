@@ -28,6 +28,12 @@
 			<artifactId>monitor-common</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.treefinance.saas</groupId>
+			<artifactId>grap-server-facade</artifactId>
+			<version>1.0.1-SNAPSHOT</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

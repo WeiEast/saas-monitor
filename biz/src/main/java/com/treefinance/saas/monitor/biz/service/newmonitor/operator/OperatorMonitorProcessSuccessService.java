@@ -7,9 +7,11 @@ import java.util.Date;
 /**
  * Created by haojiahong on 2017/10/30.
  */
-public interface OperatorMonitorLoginService {
+public interface OperatorMonitorProcessSuccessService {
 
     void updateIntervalData(Date intervalTime, TaskOperatorMonitorMessage message);
 
     void updateDayData(Date intervalTime, TaskOperatorMonitorMessage message);
+
+    void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message);
 }
