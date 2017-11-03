@@ -90,7 +90,7 @@ public class TaskOperatorMonitorMessageProcessor {
     public void updateDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status) {
         Map<String, String> statMap = Maps.newHashMap();
         statMap.put("dataType", status + "");
-        String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeIntervalStat(intervalTime, message.getGroupCode());
+        String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeDayStat(intervalTime, message.getGroupCode());
 
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
@@ -132,7 +132,7 @@ public class TaskOperatorMonitorMessageProcessor {
     public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status) {
         Map<String, String> statMap = Maps.newHashMap();
         statMap.put("dataType", status + "");
-        String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeIntervalStat(intervalTime, message.getGroupCode());
+        String key = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(intervalTime);
 
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
