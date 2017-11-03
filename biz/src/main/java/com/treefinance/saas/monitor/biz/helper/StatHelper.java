@@ -43,6 +43,6 @@ public abstract class StatHelper {
     }
 
     public static void main(String[] args) {
-        System.out.println(StatHelper.calculateIntervalTime(new Date(), 10));
+        System.out.println(StatHelper.calculateIntervalTime(new Date(), 60));
     }
 }

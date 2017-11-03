@@ -12,4 +12,5 @@ public interface OperatorMonitorConfirmMobileService {
     void updateIntervalData(Date intervalTime, TaskOperatorMonitorMessage message);
 
     void updateDayData(Date intervalTime, TaskOperatorMonitorMessage message);
+
 }

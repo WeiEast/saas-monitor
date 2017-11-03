@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessUpdateMapper">
+
+    <!-- 所有运营商日总计数据 -->
+    <insert id="insertOrUpdateSelectiveAllDayData"
+            parameterType="com.treefinance.saas.monitor.dao.entity.AllOperatorStatDayAccess">
+        insert into all_operator_stat_day_access
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id !=null">
+                id,
+            </if>
+            <if test="dataTime != null">
+                dataTime,
+            </if>
+            <if test="dataType != null">
+                dataType,
+            </if>
+            <if test="errorStepCode != null">
+                errorStepCode,
+            </if>
+            <if test="failCount != null">
+                failCount,
+            </if>
+            <if test="createTime != null">
+                createTime,
+            </if>
+            <if test="lastUpdateTime != null">
+                lastUpdateTime,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="dataTime != null">
+                #{dataTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="dataType != null">
+                #{dataType,jdbcType=TINYINT},
+            </if>
+            <if test="errorStepCode != null">
+                #{errorStepCode,jdbcType=VARCHAR},
+            </if>
+            <if test="failCount != null">
+                #{failCount,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="lastUpdateTime != null">
+                #{lastUpdateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+        ON DUPLICATE KEY UPDATE
+        <trim suffixOverrides=",">
+            <if test="id != null">
+                id = #{id},
+            </if>
+            <if test="dataTime != null">
+                dataTime = #{dataTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="dataType != null">
+                dataType = #{dataType,jdbcType=TINYINT},
+            </if>
+            <if test="errorStepCode != null">
+                errorStepCode = #{errorStepCode,jdbcType=VARCHAR},
+            </if>
+            <if test="failCount != null">
+                failCount = #{failCount,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null">
+                createTime = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="lastUpdateTime != null">
+                lastUpdateTime = #{lastUpdateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+
+</mapper>

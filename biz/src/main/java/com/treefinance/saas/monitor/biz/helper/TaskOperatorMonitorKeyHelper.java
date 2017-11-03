@@ -1,9 +1,10 @@
 package com.treefinance.saas.monitor.biz.helper;
 
 import com.google.common.base.Joiner;
-import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatus;
 import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
+import java.text.ParseException;
 import java.util.Date;
 
 /**
@@ -11,31 +12,49 @@ import java.util.Date;
  */
 public class TaskOperatorMonitorKeyHelper {
 
-    private static final String KEY_PREFIX = "saas-monitor";
-    private static final String KEY_DAY = "task-operator-monitor-key-days";
-    private static final String STAT_ACCESS_INTERVAL = "task-operator-monitor-stat-interval";
-    private static final String STAT_ACCESS_DAY = "task-operator-monitor-stat-day";
+    private static final String KEY_PREFIX = "saas-monitor-task-operator-monitor";
+    private static final String KEY_DAY = "key-days";
+    private static final String GROUP_STAT_ACCESS_INTERVAL = "group-stat-interval";
+    private static final String GROUP_STAT_ACCESS_DAY = "group-stat-day";
+    private static final String ALL_STAT_ACCESS_DAY = "all-stat-day";
 
     /**
-     * 获取统计key
+     * 获取特定运营商统计key
+     * saas-monitor-task-operator-monitor:group-stat-interval:groupCode:yyyy-MM-dd HH:mm:ss
      *
      * @param intervalTime
+     * @param groupCode
      * @return
      */
-    public static String keyOfIntervalStat(Date intervalTime, ETaskOperatorStatus status) {
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, STAT_ACCESS_INTERVAL, status, intervalTime.getTime());
+    public static String keyOfGroupCodeIntervalStat(Date intervalTime, String groupCode) {
+        String intervalTimeStr = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, GROUP_STAT_ACCESS_INTERVAL, groupCode, intervalTimeStr);
     }
 
 
     /**
-     * 获取日统计key
+     * 获取特定运营商日统计key
+     * saas-monitor-task-operator-monitor:group-stat-day:groupCode:yyyy-MM-dd
+     *
+     * @param intervalTime
+     * @param groupCode
+     * @return
+     */
+    public static String keyOfGroupCodeDayStat(Date intervalTime, String groupCode) {
+        String day = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, GROUP_STAT_ACCESS_DAY, groupCode, day);
+    }
+
+    /**
+     * 获取所有运营商日统计key
+     * saas-monitor-task-operator-monitor:all-stat-day:yyyy-MM-dd
      *
      * @param intervalTime
      * @return
      */
-    public static String keyOfDayStat(Date intervalTime, ETaskOperatorStatus status) {
+    public static String keyOfAllDayStat(Date intervalTime) {
         String day = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, STAT_ACCESS_DAY, status, day);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, ALL_STAT_ACCESS_DAY, day);
     }
 
 
@@ -44,7 +63,21 @@ public class TaskOperatorMonitorKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_DAY, day);
     }
 
-    public static String getDateTimeStr(Date date) {
-        return DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
+
+    /**
+     * redis中存入的时间段key,如设置60位:7:00,8:00,9:00
+     *
+     * @param dataTime
+     * @return
+     */
+    public static Date getRedisStatDateTime(Date dataTime) {
+        Date intervalTime = StatHelper.calculateIntervalTime(dataTime, 60);//按小时统计数据的时间点,如6:00,7:00
+        return intervalTime;
+
     }
+
+    public static String keyOfGroupCodes() {
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "stat-group-codes");
+    }
+
 }
