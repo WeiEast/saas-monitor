@@ -157,8 +157,8 @@ public class TaskOperatorMonitorMessageProcessor {
         ETaskOperatorMonitorStatus status = ETaskOperatorMonitorStatus.getMonitorStats(message.getStatus());
         switch (status) {
             case CREATE_TASK:
-                Long createTaskCount = hashOperations.increment("createTaskCount", 1);
-                statMap.put("createTaskCount", createTaskCount + "");
+                Long createTaskCount = hashOperations.increment("entryCount", 1);
+                statMap.put("entryCount", createTaskCount + "");
                 break;
             case COMFIRM_MOBILE:
                 Long confirmMobileCount = hashOperations.increment("confirmMobileCount", 1);
