@@ -78,6 +78,8 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             if (MapUtils.isEmpty(dataMap)) {
                 return;
             }
+            logger.info("运营商监控,定时任务执行jobTime={},刷新所有运营商日统计数据到db中,key={},data={}",
+                    MonitorDateUtils.format(jobTime), hashKey, JSON.toJSONString(dataMap));
             String json = JSON.toJSONString(dataMap);
             AllOperatorStatDayAccessDTO dto = JSON.parseObject(json, AllOperatorStatDayAccessDTO.class);
             dto.setId(UidGenerator.getId());
@@ -124,6 +126,8 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                 if (MapUtils.isEmpty(dataMap)) {
                     continue;
                 }
+                logger.info("运营商监控,定时任务执行jobTime={},刷新特定运营商日统计数据到db中,key={},data={},groupCode={}",
+                        MonitorDateUtils.format(jobTime), hashKey, JSON.toJSONString(dataMap), groupCode);
                 String json = JSON.toJSONString(dataMap);
                 OperatorStatDayAccessDTO dto = JSON.parseObject(json, OperatorStatDayAccessDTO.class);
                 dto.setId(UidGenerator.getId());
@@ -189,6 +193,8 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                     if (MapUtils.isEmpty(dataMap)) {
                         continue;
                     }
+                    logger.info("运营商监控,定时任务执行jobTime={},刷新特定运营商按时间段统计数据到db中,key={},data={},groupCode={},redisStatTime={}",
+                            MonitorDateUtils.format(jobTime), hashKey, JSON.toJSONString(dataMap), groupCode, MonitorDateUtils.format(redisStatDataTime));
                     String json = JSON.toJSONString(dataMap);
                     OperatorStatAccessDTO dto = JSON.parseObject(json, OperatorStatAccessDTO.class);
                     dto.setId(UidGenerator.getId());
