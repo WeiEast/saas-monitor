@@ -34,6 +34,13 @@ public class DiamondConfig {
      */
     @DAttribute(key = "monitor.interval.minutes")
     private Integer monitorIntervalMinutes;
+
+    /**
+     * (运营商监控)统计时间间隔:分钟为单位
+     */
+    @DAttribute(key = "operator.monitor.interval.minutes")
+    private Integer operatorMonitorIntervalMinutes;
+
     /**
      * 统计时间间隔:分钟为单位
      */
@@ -251,5 +258,13 @@ public class DiamondConfig {
 
     public void setMonitorAlarmExcludeAppIdsAll(String monitorAlarmExcludeAppIdsAll) {
         this.monitorAlarmExcludeAppIdsAll = monitorAlarmExcludeAppIdsAll;
+    }
+
+    public Integer getOperatorMonitorIntervalMinutes() {
+        return operatorMonitorIntervalMinutes;
+    }
+
+    public void setOperatorMonitorIntervalMinutes(Integer operatorMonitorIntervalMinutes) {
+        this.operatorMonitorIntervalMinutes = operatorMonitorIntervalMinutes;
     }
 }

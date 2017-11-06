@@ -52,7 +52,9 @@ public class TaskOperatorMonitorMessageProcessor {
                 // 需统计的当日特定时间列表
                 String dayKey = TaskOperatorMonitorKeyHelper.keyOfDay(intervalTime);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
-                setOperations.expire(2, TimeUnit.DAYS);
+                if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
+                    setOperations.expire(2, TimeUnit.DAYS);
+                }
                 setOperations.add(MonitorDateUtils.format(intervalTime));
 
                 //需统计的运营商GroupCode
@@ -63,7 +65,7 @@ public class TaskOperatorMonitorMessageProcessor {
 
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
-                if (!Boolean.TRUE.equals(hashOperations.hasKey(key))) {
+                if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
                     hashOperations.put("dataTime", MonitorDateUtils.format(intervalTime));
                     hashOperations.put("groupCode", message.getGroupCode());
                     hashOperations.put("groupName", message.getGroupName());
@@ -104,7 +106,7 @@ public class TaskOperatorMonitorMessageProcessor {
 
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
-                if (!Boolean.TRUE.equals(hashOperations.hasKey(key))) {
+                if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
                     hashOperations.put("dataTime", MonitorDateUtils.getDayTimeStr(intervalTime));
                     hashOperations.put("groupCode", message.getGroupCode());
                     hashOperations.put("groupName", message.getGroupName());
@@ -140,7 +142,7 @@ public class TaskOperatorMonitorMessageProcessor {
 
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
-                if (!Boolean.TRUE.equals(hashOperations.hasKey(key))) {
+                if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
                     hashOperations.put("dataTime", MonitorDateUtils.getDayTimeStr(intervalTime));
                     statMap.put("dataTime", MonitorDateUtils.getDayTimeStr(intervalTime));
                     // 设定超时时间默认为2天
