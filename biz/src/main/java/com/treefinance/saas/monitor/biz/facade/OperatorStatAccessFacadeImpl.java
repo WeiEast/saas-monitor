@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.facade;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.AllOperatorStatDayAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
@@ -97,7 +98,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.setOrderByClause("dataTime desc");
         criteria.setLimit(request.getPageSize());
         criteria.setOffset(request.getOffset());
-        criteria.createCriteria().andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        criteria.createCriteria().andGroupCodeEqualTo(request.getGroupCode()).andDataTimeBetween(request.getStartDate(), request.getEndDate());
         long total = operatorStatDayAccessMapper.countByExample(criteria);
         if (total > 0) {
             List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectPaginationByExample(criteria);
@@ -117,7 +118,8 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         List<OperatorStatAccessRO> result = Lists.newArrayList();
         OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
-        criteria.createCriteria().andGroupCodeEqualTo(request.getGroupCode()).andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        criteria.createCriteria().andGroupCodeEqualTo(request.getGroupCode())
+                .andDataTimeBetween(MonitorDateUtils.getDayStartTime(request.getStartDate()), MonitorDateUtils.getDayEndTime(request.getEndDate()));
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
         if (!CollectionUtils.isEmpty(list)) {
             result = DataConverterUtils.convert(list, OperatorStatAccessRO.class);
