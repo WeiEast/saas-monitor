@@ -20,6 +20,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
+import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.MerchantStatAccess;
 import com.treefinance.saas.monitor.dao.entity.SaasStatAccess;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -244,6 +246,82 @@ public class AlarmMessageProducer {
             logger.error("TaskMonitorAlarm:sendWechat failed :type={},data={}", type.getName(), JSON.toJSONString(data));
         }
     }
+
+
+    /**
+     * 运营商监控预警(邮件)
+     *
+     * @param title
+     * @param dataBody
+     */
+    public void sendMail4OperatorMonitor(String title, String dataBody, Date jobTime) {
+        if (diamondConfig.getMonitorAlarmMailSwitch().equals("off")) {
+            logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
+            return;
+        }
+        try {
+            String mails = diamondConfig.getMonitorAlarmMails();
+            if (StringUtils.isEmpty(mails)) {
+                logger.info("运营商监控,预警定时任务执行jobTime={},未配置邮件接收人,邮件发送失败,title={},dataBody={}",
+                        MonitorDateUtils.format(jobTime), title, dataBody);
+                return;
+            }
+            logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件到mails={}",
+                    MonitorDateUtils.format(jobTime), mails);
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmMailTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
+            List<String> tolist = Splitter.on(",").splitToList(mails);
+
+            MailBody body = new MailBody();
+            //设置邮件方式，具体看枚举值
+            body.setMailEnum(MailEnum.HTML_MAIL);
+            //设置业务线，预警设置为alarm
+            body.setBusiness("alarm");
+            //设置发送给谁
+            body.setToList(tolist);
+            body.setSubject(title);
+            body.setBody(dataBody);
+            logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件message={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(body));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+        } catch (Exception e) {
+            logger.error("运营商监控,预警定时任务执行jobTime={},发送邮件异常", MonitorDateUtils.format(jobTime), e);
+        }
+    }
+
+
+    /**
+     * 运营商监控预警(微信)
+     *
+     * @param dataBody
+     * @param jobTime
+     */
+    public void sendWebChart4OperatorMonitor(String dataBody, Date jobTime) {
+
+        if (diamondConfig.getMonitorAlarmWechatSwitch().equals("off")) {
+            logger.info("运营商监控,预警定时任务执行jobTime={},发送微信开关已关闭", MonitorDateUtils.format(jobTime));
+            return;
+        }
+        try {
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmWebchartTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
+
+            WeChatBody body = new WeChatBody();
+            body.setAgentId(AGENT_ID);
+            TXTMessage msg = new TXTMessage();
+            msg.setMessage(dataBody);
+            body.setMessage(msg);
+            body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
+            body.setNotifyEnum(NotifyEnum.WECHAT);
+            logger.info("运营商监控,预警定时任务执行jobTime={},发送微信message={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(body));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+        } catch (Exception e) {
+            logger.error("运营商监控,预警定时任务执行jobTime={},发送微信异常", MonitorDateUtils.format(jobTime), e);
+        }
+
+    }
+
 
     private String generateAllBody(List<SaasStatAccess> data, EStatType type) {
         StringBuffer buffer = new StringBuffer();
