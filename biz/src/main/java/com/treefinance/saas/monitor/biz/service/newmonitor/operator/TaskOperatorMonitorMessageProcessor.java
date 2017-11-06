@@ -107,10 +107,10 @@ public class TaskOperatorMonitorMessageProcessor {
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
-                    hashOperations.put("dataTime", MonitorDateUtils.getDayTimeStr(intervalTime));
+                    hashOperations.put("dataTime", MonitorDateUtils.getDayStartTimeStr(intervalTime));
                     hashOperations.put("groupCode", message.getGroupCode());
                     hashOperations.put("groupName", message.getGroupName());
-                    statMap.put("dataTime", MonitorDateUtils.getDayTimeStr(intervalTime));
+                    statMap.put("dataTime", MonitorDateUtils.getDayStartTimeStr(intervalTime));
                     statMap.put("groupCode", message.getGroupCode());
                     statMap.put("groupName", message.getGroupName());
                     // 设定超时时间默认为2天
@@ -143,8 +143,8 @@ public class TaskOperatorMonitorMessageProcessor {
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
-                    hashOperations.put("dataTime", MonitorDateUtils.getDayTimeStr(intervalTime));
-                    statMap.put("dataTime", MonitorDateUtils.getDayTimeStr(intervalTime));
+                    hashOperations.put("dataTime", MonitorDateUtils.getDayStartTimeStr(intervalTime));
+                    statMap.put("dataTime", MonitorDateUtils.getDayStartTimeStr(intervalTime));
                     // 设定超时时间默认为2天
                     hashOperations.expire(2, TimeUnit.DAYS);
                 }

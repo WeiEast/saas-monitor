@@ -36,7 +36,7 @@ public class MonitorDateUtils {
      * @param date
      * @return
      */
-    public static Date getDayTime(Date date) {
+    public static Date getDayStartTime(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -47,13 +47,29 @@ public class MonitorDateUtils {
     }
 
     /**
+     * 获取当期日期最后时间
+     *
+     * @param date
+     * @return
+     */
+    public static Date getDayEndTime(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    /**
      * 获取当前日期零点时间字符串
      *
      * @param date
      * @return
      */
-    public static String getDayTimeStr(Date date) {
-        return format(getDayTime(date));
+    public static String getDayStartTimeStr(Date date) {
+        return format(getDayStartTime(date));
     }
 
 }
