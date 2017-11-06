@@ -2,9 +2,7 @@ package com.treefinance.saas.monitor.biz.helper;
 
 import com.google.common.base.Joiner;
 import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
 
-import java.text.ParseException;
 import java.util.Date;
 
 /**
@@ -70,8 +68,11 @@ public class TaskOperatorMonitorKeyHelper {
      * @param dataTime
      * @return
      */
-    public static Date getRedisStatDateTime(Date dataTime) {
-        Date intervalTime = StatHelper.calculateIntervalTime(dataTime, 60);//按小时统计数据的时间点,如6:00,7:00
+    public static Date getRedisStatDateTime(Date dataTime, Integer intervalMinutes) {
+        if (intervalMinutes == null) {
+            intervalMinutes = 60;//默认定时统计时间段为60分钟
+        }
+        Date intervalTime = StatHelper.calculateIntervalTime(dataTime, intervalMinutes);//按小时统计数据的时间点,如6:00,7:00
         return intervalTime;
 
     }

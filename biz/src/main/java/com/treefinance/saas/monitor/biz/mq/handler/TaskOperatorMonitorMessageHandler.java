@@ -5,6 +5,7 @@ import com.treefinance.saas.assistant.listener.TagBaseMessageHandler;
 import com.treefinance.saas.assistant.model.MonitorTagEnum;
 import com.treefinance.saas.assistant.model.TaskOperatorMonitorMessage;
 import com.treefinance.saas.grapserver.facade.model.enums.ETaskOperatorMonitorStatus;
+import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.newmonitor.operator.*;
 import org.slf4j.Logger;
@@ -21,6 +22,8 @@ import java.util.Date;
 public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<TaskOperatorMonitorMessage> {
     private final static Logger logger = LoggerFactory.getLogger(TaskOperatorMonitorMessageHandler.class);
 
+    @Autowired
+    private DiamondConfig diamondConfig;
     @Autowired
     private OperatorMonitorCreateTaskService operatorMonitorCreateTaskService;
     @Autowired
@@ -46,7 +49,7 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
         long start = System.currentTimeMillis();
         try {
             Date dataTime = message.getDataTime();
-            Date intervalTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(dataTime);//按小时统计数据的时间点,如6:00,7:00
+            Date intervalTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(dataTime, diamondConfig.getOperatorMonitorIntervalMinutes());//按小时统计数据的时间点,如6:00,7:00
             ETaskOperatorMonitorStatus status = ETaskOperatorMonitorStatus.getMonitorStats(message.getStatus());
             switch (status) {
                 case CREATE_TASK:

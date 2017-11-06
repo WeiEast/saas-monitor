@@ -6,6 +6,7 @@ import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.OperatorStatAccessUpdateService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
@@ -38,6 +39,8 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
     private RedisDao redisDao;
     @Autowired
     private OperatorStatAccessUpdateService operatorStatAccessUpdateService;
+    @Autowired
+    private DiamondConfig diamondConfig;
 
 
     @Override
@@ -69,7 +72,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
 
     private void saveAllDayData(RedisOperations redisOperations, Date jobTime) {
         try {
-            Date redisStatDataTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(jobTime);
+            Date redisStatDataTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes());
             String hashKey = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(redisStatDataTime);
             if (!redisOperations.hasKey(hashKey)) {
                 return;
@@ -116,7 +119,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                 return;
             }
             List<OperatorStatDayAccessDTO> list = Lists.newArrayList();
-            Date redisStatDataTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(jobTime);//redis中时间为redisStatDataTime的key需要刷新到db中
+            Date redisStatDataTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes());//redis中时间为redisStatDataTime的key需要刷新到db中
             for (String groupCode : groupCodeSet) {
                 String hashKey = TaskOperatorMonitorKeyHelper.keyOfGroupCodeDayStat(redisStatDataTime, groupCode);
                 if (!redisOperations.hasKey(hashKey)) {
