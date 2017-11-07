@@ -80,6 +80,24 @@ public class MonitorDateUtils {
     }
 
     /**
+     * 获取当前日期每隔intervalMinutes时间的整点时间
+     * 例如:2017-11-07 15:22:30 ,intervalMinutes = 10,则结果为:2017-11-07 15:20:00
+     *
+     * @param date
+     * @return
+     */
+    public static Date getIntervalTime(Date date, Integer intervalMinutes) {
+        Date intervalTime = DateUtils.truncate(date, Calendar.MINUTE);
+        Long currentMinute = DateUtils.getFragmentInMinutes(intervalTime, Calendar.HOUR_OF_DAY);
+        if (currentMinute % intervalMinutes == 0) {
+            return intervalTime;
+        }
+        // 切换至下一时间段
+        intervalTime = DateUtils.addMinutes(intervalTime, (-currentMinute.intValue() % intervalMinutes));
+        return intervalTime;
+    }
+
+    /**
      * 获取前n天的此此时刻date的时间列表
      * 如:date = 2017-11-06 08:00:00 ; n=3
      * 返回[2017-11-05 08:00:00,2017-11-04 08:00:00,2017-11-03 08:00:00]
@@ -111,8 +129,7 @@ public class MonitorDateUtils {
     }
 
     public static void main(String[] args) {
-        List<Date> list = getPreviousOClockTime(getOClockTime(new Date()), 7);
-        System.out.println(list);
+        System.out.println(format(getIntervalTime(new Date(), 5)));
     }
 
 
