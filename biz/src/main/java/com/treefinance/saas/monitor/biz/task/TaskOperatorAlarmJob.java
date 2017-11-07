@@ -239,8 +239,8 @@ public class TaskOperatorAlarmJob implements SimpleJob {
             BigDecimal previousProcessSuccessRateCount = BigDecimal.ZERO;
             for (OperatorStatAccessDTO dto : entryList) {
                 previousLoginConversionRateCount = previousLoginConversionRateCount.add(dto.getLoginConversionRate());
-                previousCrawlSuccessRateCount = previousCrawlSuccessRateCount.add(dto.getPreviousCrawlSuccessRate());
-                previousProcessSuccessRateCount = previousProcessSuccessRateCount.add(dto.getPreviousProcessSuccessRate());
+                previousCrawlSuccessRateCount = previousCrawlSuccessRateCount.add(dto.getCrawlSuccessRate());
+                previousProcessSuccessRateCount = previousProcessSuccessRateCount.add(dto.getProcessSuccessRate());
             }
             OperatorStatAccessDTO compareDto = new OperatorStatAccessDTO();
             compareDto.setGroupCode(entry.getKey());
