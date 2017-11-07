@@ -30,8 +30,11 @@
                 sharding-total-count="1" overwrite="true"/>
 
     <!--运营商监控,定时预警任务-->
+    <!--<job:simple id="taskOperatorAlarmJob" class="com.treefinance.saas.monitor.biz.task.TaskOperatorAlarmJob"-->
+                <!--registry-center-ref="regCenter" cron="0 0 0/1 * * ?"-->
+                <!--sharding-total-count="1" overwrite="true"/>-->
     <job:simple id="taskOperatorAlarmJob" class="com.treefinance.saas.monitor.biz.task.TaskOperatorAlarmJob"
-                registry-center-ref="regCenter" cron="0 0 0/1 * * ?"
+                registry-center-ref="regCenter" cron="0 0/10 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
     <!--
     &lt;!&ndash; 报警任务 &ndash;&gt;
