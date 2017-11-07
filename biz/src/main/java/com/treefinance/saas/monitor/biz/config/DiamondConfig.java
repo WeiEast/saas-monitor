@@ -51,13 +51,7 @@ public class DiamondConfig {
      * (运营商预警)前n天数据平均值的预警阀值百分比
      */
     @DAttribute(key = "operator.alarm.threshold.percent")
-    private Integer operatorAlarmThreshlodPercent;
-
-    /**
-     * 统计时间间隔:分钟为单位
-     */
-    @DAttribute(key = "monitor.http.interval.minutes")
-    private Integer monitorHttpIntervalMinutes;
+    private Integer operatorAlarmThresholdPercent;
 
     /**
      * 运营商预警消息,微信通知开关
@@ -69,6 +63,12 @@ public class DiamondConfig {
      */
     @DAttribute(key = "operator.alarm.mail.switch")
     private String operatorAlarmMailSwitch;
+
+    /**
+     * 统计时间间隔:分钟为单位
+     */
+    @DAttribute(key = "monitor.http.interval.minutes")
+    private Integer monitorHttpIntervalMinutes;
 
     // 预警消息，group
     @DAttribute(key = "monitor.alarm.group.name")
@@ -299,12 +299,12 @@ public class DiamondConfig {
         this.operatorAlarmPreviousDays = operatorAlarmPreviousDays;
     }
 
-    public Integer getOperatorAlarmThreshlodPercent() {
-        return operatorAlarmThreshlodPercent;
+    public Integer getOperatorAlarmThresholdPercent() {
+        return operatorAlarmThresholdPercent;
     }
 
-    public void setOperatorAlarmThreshlodPercent(Integer operatorAlarmThreshlodPercent) {
-        this.operatorAlarmThreshlodPercent = operatorAlarmThreshlodPercent;
+    public void setOperatorAlarmThresholdPercent(Integer operatorAlarmThresholdPercent) {
+        this.operatorAlarmThresholdPercent = operatorAlarmThresholdPercent;
     }
 
     public String getOperatorAlarmWechatSwitch() {

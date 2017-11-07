@@ -148,7 +148,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
                 logger.info("运营商监控,预警定时任务执行jobTime={},groupCode={}的运营商前7天未查询到统计数据", MonitorDateUtils.format(jobTime), dto.getGroupCode());
                 continue;
             }
-            Integer threshold = diamondConfig.getOperatorAlarmThreshlodPercent();
+            Integer threshold = diamondConfig.getOperatorAlarmThresholdPercent();
             Integer previousDays = diamondConfig.getOperatorAlarmPreviousDays();
             OperatorStatAccessDTO compareDTO = compareMap.get(dto.getGroupCode());
             BigDecimal loginCompareVal = compareDTO.getPreviousLoginConversionRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
