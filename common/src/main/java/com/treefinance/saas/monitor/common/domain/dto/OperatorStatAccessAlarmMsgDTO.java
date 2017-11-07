@@ -16,6 +16,8 @@ public class OperatorStatAccessAlarmMsgDTO implements Serializable {
 
     private String alarmDesc;//预警描述
 
+    private String alarmSimpleDesc;//预警简化描述,微信内容
+
     private BigDecimal value;//当前指标
 
     private BigDecimal threshold;//指标阈值
@@ -76,5 +78,13 @@ public class OperatorStatAccessAlarmMsgDTO implements Serializable {
 
     public void setOffset(BigDecimal offset) {
         this.offset = offset;
+    }
+
+    public String getAlarmSimpleDesc() {
+        return alarmSimpleDesc;
+    }
+
+    public void setAlarmSimpleDesc(String alarmSimpleDesc) {
+        this.alarmSimpleDesc = alarmSimpleDesc;
     }
 }
