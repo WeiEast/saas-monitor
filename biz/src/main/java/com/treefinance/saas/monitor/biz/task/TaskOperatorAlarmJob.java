@@ -49,7 +49,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
         logger.info("运营商监控,预警定时任务执行jobTime={}", MonitorDateUtils.format(jobTime));
         try {
             OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
-            criteria.createCriteria().andDataTimeEqualTo(MonitorDateUtils.getOClockTime(jobTime));
+            criteria.createCriteria().andDataTimeEqualTo(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes()));
             List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
             if (CollectionUtils.isEmpty(list)) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},此段时间内,未查询到运营商统计数据list={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(list));
@@ -93,7 +93,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
     private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<br>").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getOClockTime(jobTime)))
+                .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
                 .append("时发生预警").append("，监控数据如下，请及时处理：").append("</br>");
         buffer.append("<table border=\"1\">");
         buffer.append("<tr>")
@@ -122,7 +122,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
     private String generateWeChatBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getOClockTime(jobTime)))
+                .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
                 .append("时发生预警").append("，监控数据如下，请及时处理：").append("\n");
         buffer.append("运营商").append(" | ").append("预警描述").append(" | ").append("当前指标值(%)").append(" | ").append("指标阀值(%)")
                 .append(" | ").append("偏离阀值程度(%)").append("\n");
@@ -215,7 +215,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
      */
     private Map<String, OperatorStatAccessDTO> getPreviousCompareDataMap(Date jobTime, List<OperatorStatAccessDTO> dtoList) {
         List<String> groupCodeList = dtoList.stream().map(OperatorStatAccessDTO::getGroupCode).collect(Collectors.toList());
-        List<Date> previousOClockList = MonitorDateUtils.getPreviousOClockTime(MonitorDateUtils.getOClockTime(jobTime),
+        List<Date> previousOClockList = MonitorDateUtils.getPreviousOClockTime(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes()),
                 diamondConfig.getOperatorAlarmPreviousDays());
         OperatorStatAccessCriteria previousCriteria = new OperatorStatAccessCriteria();
         previousCriteria.createCriteria().andDataTimeIn(previousOClockList).andGroupCodeIn(groupCodeList);

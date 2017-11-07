@@ -57,7 +57,7 @@ public class MonitorServiceTest {
     private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<br>").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getOClockTime(jobTime)))
+                .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
                 .append("时发生预警").append("，监控数据如下，请及时处理：").append("</br>");
         buffer.append("<table border=\"1\">");
         buffer.append("<tr>")
