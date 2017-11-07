@@ -161,7 +161,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
                 OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
-                msg.setAlarmDesc("登录转化率低于前" + previousDays + "天" + threshold + "%");
+                msg.setAlarmDesc("登录转化率低于前" + previousDays + "天平均值的" + threshold + "%");
                 msg.setAlarmSimpleDesc("登录");
                 msg.setValue(dto.getLoginConversionRate());
                 msg.setThreshold(loginCompareVal);
@@ -177,7 +177,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
                 OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
-                msg.setAlarmDesc("抓取成功率低于前" + previousDays + "天" + threshold + "%");
+                msg.setAlarmDesc("抓取成功率低于前" + previousDays + "天平均值的" + threshold + "%");
                 msg.setAlarmSimpleDesc("抓取");
                 msg.setValue(dto.getCrawlSuccessRate());
                 msg.setThreshold(crawlCompareVal);
@@ -193,7 +193,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
                 OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
-                msg.setAlarmDesc("洗数成功率低于前" + previousDays + "天" + threshold + "%");
+                msg.setAlarmDesc("洗数成功率低于前" + previousDays + "天平均值的" + threshold + "%");
                 msg.setAlarmSimpleDesc("洗数");
                 msg.setValue(dto.getProcessSuccessRate());
                 msg.setThreshold(processCompareVal);
