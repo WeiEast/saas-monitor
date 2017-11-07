@@ -95,8 +95,8 @@ public class TaskOperatorAlarmJob implements SimpleJob {
         buffer.append("<br>").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
                 .append("时发生预警").append("，监控数据如下，请及时处理：").append("</br>");
-        buffer.append("<table border=\"1\">");
-        buffer.append("<tr>")
+        buffer.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\" width=\"80%\">");
+        buffer.append("<tr bgcolor=\"#C9C9C9\">")
                 .append("<th>").append("运营商").append("</th>")
                 .append("<th>").append("预警描述").append("</th>")
                 .append("<th>").append("当前指标值(%)").append("</th>")
@@ -124,11 +124,13 @@ public class TaskOperatorAlarmJob implements SimpleJob {
         buffer.append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
                 .append("时发生预警").append("，监控数据如下，请及时处理：").append("\n");
-        buffer.append("运营商").append(" | ").append("预警描述").append(" | ").append("当前指标值(%)").append(" | ").append("指标阀值(%)")
-                .append(" | ").append("偏离阀值程度(%)").append("\n");
         for (OperatorStatAccessAlarmMsgDTO msg : msgList) {
-            buffer.append(msg.getGroupName()).append(" | ").append(msg.getAlarmDesc()).append(" | ").append(msg.getValue())
-                    .append(" | ").append(msg.getThreshold()).append(" | ").append(msg.getOffset()).append("\n");
+            buffer.append("【").append(msg.getGroupName()).append("】")
+                    .append("【").append(msg.getAlarmSimpleDesc()).append("】")
+                    .append("当前指标值:").append("【").append(msg.getValue()).append("%").append("】")
+                    .append("指标阀值:").append("【").append(msg.getThreshold()).append("%").append("】")
+                    .append("偏离阀值程度:").append("【").append(msg.getOffset()).append("%").append("】")
+                    .append("\n");
         }
         return buffer.toString();
     }
@@ -160,6 +162,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
                 msg.setAlarmDesc("登录转化率低于前" + previousDays + "天" + threshold + "%");
+                msg.setAlarmSimpleDesc("登录");
                 msg.setValue(dto.getLoginConversionRate());
                 msg.setThreshold(loginCompareVal);
                 if (BigDecimal.ZERO.compareTo(loginCompareVal) == 0) {
@@ -175,6 +178,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
                 msg.setAlarmDesc("抓取成功率低于前" + previousDays + "天" + threshold + "%");
+                msg.setAlarmSimpleDesc("抓取");
                 msg.setValue(dto.getCrawlSuccessRate());
                 msg.setThreshold(crawlCompareVal);
                 if (BigDecimal.ZERO.compareTo(crawlCompareVal) == 0) {
@@ -190,6 +194,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
                 msg.setAlarmDesc("洗数成功率低于前" + previousDays + "天" + threshold + "%");
+                msg.setAlarmSimpleDesc("洗数");
                 msg.setValue(dto.getProcessSuccessRate());
                 msg.setThreshold(processCompareVal);
                 if (BigDecimal.ZERO.compareTo(processCompareVal) == 0) {
