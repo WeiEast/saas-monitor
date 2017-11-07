@@ -59,8 +59,8 @@ public class MonitorServiceTest {
         buffer.append("<br>").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
                 .append("时发生预警").append("，监控数据如下，请及时处理：").append("</br>");
-        buffer.append("<table border=\"1\">");
-        buffer.append("<tr>")
+        buffer.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\" width=\"80%\">");
+        buffer.append("<tr bgcolor=\"#C9C9C9\">")
                 .append("<th>").append("运营商").append("</th>")
                 .append("<th>").append("预警描述").append("</th>")
                 .append("<th>").append("当前指标值(%)").append("</th>")
