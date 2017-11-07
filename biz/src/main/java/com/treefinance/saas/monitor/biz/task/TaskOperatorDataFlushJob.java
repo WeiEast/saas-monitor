@@ -225,8 +225,8 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                 operatorStatAccessUpdateService.batchInsertOperatorStatAccess(list);
             }
             if (CollectionUtils.isNotEmpty(redisStatDataTimeStrSets)) {
-                logger.info("运营商监控,定时任务执行jobTime={},刷新OperatorStatAccess数据到db后,删除dayKey={}中已统计数据时间dataTimeSet={}",
-                        MonitorDateUtils.format(jobTime), dayKey, JSON.toJSONString(redisStatDataTimeSets));
+                logger.info("运营商监控,定时任务执行jobTime={},刷新OperatorStatAccess数据到db后,删除dayKey={}中已统计数据时间dataTimeSet={},dataTimeStrSets={}",
+                        MonitorDateUtils.format(jobTime), dayKey, JSON.toJSONString(redisStatDataTimeSets), JSON.toJSONString(redisStatDataTimeStrSets));
                 String[] array = new String[redisStatDataTimeStrSets.size()];
                 redisOperations.opsForSet().remove(dayKey, redisStatDataTimeStrSets.toArray(array));
             }

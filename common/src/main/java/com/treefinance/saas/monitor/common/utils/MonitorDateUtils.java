@@ -1,11 +1,13 @@
 package com.treefinance.saas.monitor.common.utils;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by haojiahong on 2017/11/3.
@@ -31,7 +33,7 @@ public class MonitorDateUtils {
     }
 
     /**
-     * 获取当前日期零点时间
+     * 获取当前日期开始时间
      *
      * @param date
      * @return
@@ -47,7 +49,7 @@ public class MonitorDateUtils {
     }
 
     /**
-     * 获取当前日期最后时间 23:59:59
+     * 获取当期日期结束时间
      *
      * @param date
      * @return
@@ -62,6 +64,41 @@ public class MonitorDateUtils {
         return calendar.getTime();
     }
 
+    /**
+     * 获取当前日期整点时间
+     *
+     * @param date
+     * @return
+     */
+    public static Date getOClockTime(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    /**
+     * 获取前n天的此此时刻date的时间列表
+     * 如:date = 2017-11-06 08:00:00 ; n=3
+     * 返回[2017-11-05 08:00:00,2017-11-04 08:00:00,2017-11-03 08:00:00]
+     *
+     * @param date
+     * @param n
+     * @return
+     */
+    public static List<Date> getPreviousOClockTime(Date date, Integer n) {
+        List<Date> result = Lists.newArrayList();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        for (int i = 0; i < n; i++) {
+            calendar.add(Calendar.DATE, -1);
+            result.add(calendar.getTime());
+        }
+        return result;
+    }
+
 
     /**
      * 获取当前日期零点时间字符串
@@ -72,5 +109,11 @@ public class MonitorDateUtils {
     public static String getDayStartTimeStr(Date date) {
         return format(getDayStartTime(date));
     }
+
+    public static void main(String[] args) {
+        List<Date> list = getPreviousOClockTime(getOClockTime(new Date()), 7);
+        System.out.println(list);
+    }
+
 
 }
