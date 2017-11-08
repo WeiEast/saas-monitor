@@ -30,7 +30,7 @@ public class AllOperatorStatDayAccessRO implements Serializable {
 
     private Integer callbackSuccessCount;
 
-    private Integer confirmMobileConversionRate;
+    private BigDecimal confirmMobileConversionRate;
 
     private BigDecimal loginConversionRate;
 
@@ -46,11 +46,11 @@ public class AllOperatorStatDayAccessRO implements Serializable {
 
     private Date lastUpdateTime;
 
-    public Integer getConfirmMobileConversionRate() {
+    public BigDecimal getConfirmMobileConversionRate() {
         return confirmMobileConversionRate;
     }
 
-    public void setConfirmMobileConversionRate(Integer confirmMobileConversionRate) {
+    public void setConfirmMobileConversionRate(BigDecimal confirmMobileConversionRate) {
         this.confirmMobileConversionRate = confirmMobileConversionRate;
     }
 
