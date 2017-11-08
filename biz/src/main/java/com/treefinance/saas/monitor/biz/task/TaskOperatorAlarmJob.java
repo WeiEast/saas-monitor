@@ -154,21 +154,38 @@ public class TaskOperatorAlarmJob implements SimpleJob {
             Integer threshold = diamondConfig.getOperatorAlarmThresholdPercent();
             Integer previousDays = diamondConfig.getOperatorAlarmPreviousDays();
             OperatorStatAccessDTO compareDTO = compareMap.get(dto.getGroupCode());
-            BigDecimal loginCompareVal = compareDTO.getPreviousLoginConversionRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal loginConversionCompareVal = compareDTO.getPreviousLoginConversionRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal loginSuccessCompareVal = compareDTO.getPreviousLoginSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
             BigDecimal crawlCompareVal = compareDTO.getPreviousCrawlSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
             BigDecimal processCompareVal = compareDTO.getPreviousProcessSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-            if (dto.getLoginConversionRate().compareTo(loginCompareVal) < 0) {//登录转化率小于前7天平均值
+            if (dto.getLoginConversionRate().compareTo(loginConversionCompareVal) < 0) {//登录转化率小于前7天平均值
                 OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
                 msg.setAlarmDesc("登录转化率低于前" + previousDays + "天平均值的" + threshold + "%");
-                msg.setAlarmSimpleDesc("登录");
+                msg.setAlarmSimpleDesc("开始登陆");
                 msg.setValue(dto.getLoginConversionRate());
-                msg.setThreshold(loginCompareVal);
-                if (BigDecimal.ZERO.compareTo(loginCompareVal) == 0) {
+                msg.setThreshold(loginConversionCompareVal);
+                if (BigDecimal.ZERO.compareTo(loginConversionCompareVal) == 0) {
                     msg.setOffset(BigDecimal.ZERO);
                 } else {
-                    BigDecimal value = BigDecimal.ONE.subtract(dto.getLoginConversionRate().divide(loginCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                    BigDecimal value = BigDecimal.ONE.subtract(dto.getLoginConversionRate().divide(loginConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                    msg.setOffset(value);
+                }
+                msgList.add(msg);
+            }
+            if (dto.getLoginSuccessRate().compareTo(loginSuccessCompareVal) < 0) {//登录成功率小于前7天平均值
+                OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
+                msg.setGroupCode(dto.getGroupCode());
+                msg.setGroupName(dto.getGroupName());
+                msg.setAlarmDesc("登录成功率低于前" + previousDays + "天平均值的" + threshold + "%");
+                msg.setAlarmSimpleDesc("登陆");
+                msg.setValue(dto.getLoginConversionRate());
+                msg.setThreshold(loginConversionCompareVal);
+                if (BigDecimal.ZERO.compareTo(loginConversionCompareVal) == 0) {
+                    msg.setOffset(BigDecimal.ZERO);
+                } else {
+                    BigDecimal value = BigDecimal.ONE.subtract(dto.getLoginConversionRate().divide(loginConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                     msg.setOffset(value);
                 }
                 msgList.add(msg);
@@ -241,16 +258,19 @@ public class TaskOperatorAlarmJob implements SimpleJob {
                 continue;
             }
             BigDecimal previousLoginConversionRateCount = BigDecimal.ZERO;
+            BigDecimal previousLoginSuccessRateCount = BigDecimal.ZERO;
             BigDecimal previousCrawlSuccessRateCount = BigDecimal.ZERO;
             BigDecimal previousProcessSuccessRateCount = BigDecimal.ZERO;
             for (OperatorStatAccessDTO dto : entryList) {
                 previousLoginConversionRateCount = previousLoginConversionRateCount.add(dto.getLoginConversionRate());
+                previousLoginSuccessRateCount = previousLoginSuccessRateCount.add(dto.getLoginSuccessRate());
                 previousCrawlSuccessRateCount = previousCrawlSuccessRateCount.add(dto.getCrawlSuccessRate());
                 previousProcessSuccessRateCount = previousProcessSuccessRateCount.add(dto.getProcessSuccessRate());
             }
             OperatorStatAccessDTO compareDto = new OperatorStatAccessDTO();
             compareDto.setGroupCode(entry.getKey());
             compareDto.setPreviousLoginConversionRate(previousLoginConversionRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
+            compareDto.setPreviousLoginSuccessRate(previousLoginSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousCrawlSuccessRate(previousCrawlSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousProcessSuccessRate(previousProcessSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareMap.put(entry.getKey(), compareDto);

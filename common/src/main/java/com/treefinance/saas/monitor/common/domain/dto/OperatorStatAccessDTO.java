@@ -16,6 +16,8 @@ public class OperatorStatAccessDTO implements Serializable {
 
     private Integer confirmMobileCount;
 
+    private Integer startLoginCount;
+
     private Integer loginSuccessCount;
 
     private Integer crawlSuccessCount;
@@ -23,6 +25,8 @@ public class OperatorStatAccessDTO implements Serializable {
     private Integer processSuccessCount;
 
     private BigDecimal loginConversionRate;
+
+    private BigDecimal loginSuccessRate;
 
     private BigDecimal crawlSuccessRate;
 
@@ -34,12 +38,17 @@ public class OperatorStatAccessDTO implements Serializable {
     private BigDecimal previousLoginConversionRate;
 
     /**
+     * 前n天的相同时刻登陆成功率平均值
+     */
+    private BigDecimal previousLoginSuccessRate;
+
+    /**
      * 前n天的相同时刻抓取成功率平均值
      */
     private BigDecimal previousCrawlSuccessRate;
 
     /**
-     *  前n天的相同时刻洗数成功率平均值
+     * 前n天的相同时刻洗数成功率平均值
      */
     private BigDecimal previousProcessSuccessRate;
 
@@ -49,6 +58,30 @@ public class OperatorStatAccessDTO implements Serializable {
     private Date lastUpdateTime;
 
     private static final long serialVersionUID = 1L;
+
+    public BigDecimal getLoginSuccessRate() {
+        return loginSuccessRate;
+    }
+
+    public void setLoginSuccessRate(BigDecimal loginSuccessRate) {
+        this.loginSuccessRate = loginSuccessRate;
+    }
+
+    public BigDecimal getPreviousLoginSuccessRate() {
+        return previousLoginSuccessRate;
+    }
+
+    public void setPreviousLoginSuccessRate(BigDecimal previousLoginSuccessRate) {
+        this.previousLoginSuccessRate = previousLoginSuccessRate;
+    }
+
+    public Integer getStartLoginCount() {
+        return startLoginCount;
+    }
+
+    public void setStartLoginCount(Integer startLoginCount) {
+        this.startLoginCount = startLoginCount;
+    }
 
     public Long getId() {
         return id;

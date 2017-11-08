@@ -162,9 +162,13 @@ public class TaskOperatorMonitorMessageProcessor {
                 Long createTaskCount = hashOperations.increment("entryCount", 1);
                 statMap.put("entryCount", createTaskCount + "");
                 break;
-            case COMFIRM_MOBILE:
+            case CONFIRM_MOBILE:
                 Long confirmMobileCount = hashOperations.increment("confirmMobileCount", 1);
                 statMap.put("confirmMobileCount", confirmMobileCount + "");
+                break;
+            case START_LOGIN:
+                Long startLoginCount = hashOperations.increment("startLoginCount", 1);
+                statMap.put("startLoginCount", startLoginCount + "");
                 break;
             case LOGIN_SUCCESS:
                 Long loginSuccessCount = hashOperations.increment("loginSuccessCount", 1);

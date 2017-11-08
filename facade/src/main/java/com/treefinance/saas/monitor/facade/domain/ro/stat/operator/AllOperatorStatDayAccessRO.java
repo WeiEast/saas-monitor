@@ -18,6 +18,10 @@ public class AllOperatorStatDayAccessRO implements Serializable {
 
     private Integer entryCount;
 
+    private Integer confirmMobileCount;
+
+    private Integer startLoginCount;
+
     private Integer loginSuccessCount;
 
     private Integer crawlSuccessCount;
@@ -26,7 +30,11 @@ public class AllOperatorStatDayAccessRO implements Serializable {
 
     private Integer callbackSuccessCount;
 
+    private Integer confirmMobileConversionRate;
+
     private BigDecimal loginConversionRate;
+
+    private BigDecimal loginSuccessRate;
 
     private BigDecimal crawlSuccessRate;
 
@@ -37,6 +45,22 @@ public class AllOperatorStatDayAccessRO implements Serializable {
     private Date createTime;
 
     private Date lastUpdateTime;
+
+    public Integer getConfirmMobileConversionRate() {
+        return confirmMobileConversionRate;
+    }
+
+    public void setConfirmMobileConversionRate(Integer confirmMobileConversionRate) {
+        this.confirmMobileConversionRate = confirmMobileConversionRate;
+    }
+
+    public BigDecimal getLoginSuccessRate() {
+        return loginSuccessRate;
+    }
+
+    public void setLoginSuccessRate(BigDecimal loginSuccessRate) {
+        this.loginSuccessRate = loginSuccessRate;
+    }
 
     public Long getId() {
         return id;
@@ -60,6 +84,22 @@ public class AllOperatorStatDayAccessRO implements Serializable {
 
     public void setEntryCount(Integer entryCount) {
         this.entryCount = entryCount;
+    }
+
+    public Integer getConfirmMobileCount() {
+        return confirmMobileCount;
+    }
+
+    public void setConfirmMobileCount(Integer confirmMobileCount) {
+        this.confirmMobileCount = confirmMobileCount;
+    }
+
+    public Integer getStartLoginCount() {
+        return startLoginCount;
+    }
+
+    public void setStartLoginCount(Integer startLoginCount) {
+        this.startLoginCount = startLoginCount;
     }
 
     public Integer getLoginSuccessCount() {
