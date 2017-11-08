@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Created by haojiahong on 2017/10/30.
  */
-public interface OperatorMonitorConfirmMobileService {
+public interface OperatorMonitorStartLoginService {
 
     void updateIntervalData(Date intervalTime, TaskOperatorMonitorMessage message);
 

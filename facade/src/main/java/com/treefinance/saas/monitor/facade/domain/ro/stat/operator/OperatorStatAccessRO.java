@@ -22,6 +22,8 @@ public class OperatorStatAccessRO implements Serializable {
 
     private Integer confirmMobileCount;
 
+    private Integer startLoginCount;
+
     private Integer loginSuccessCount;
 
     private Integer crawlSuccessCount;
@@ -30,6 +32,8 @@ public class OperatorStatAccessRO implements Serializable {
 
     private BigDecimal loginConversionRate;
 
+    private BigDecimal loginSuccessRate;
+
     private BigDecimal crawlSuccessRate;
 
     private BigDecimal processSuccessRate;
@@ -37,6 +41,14 @@ public class OperatorStatAccessRO implements Serializable {
     private Date createTime;
 
     private Date lastUpdateTime;
+
+    public BigDecimal getLoginSuccessRate() {
+        return loginSuccessRate;
+    }
+
+    public void setLoginSuccessRate(BigDecimal loginSuccessRate) {
+        this.loginSuccessRate = loginSuccessRate;
+    }
 
     public Long getId() {
         return id;
@@ -76,6 +88,14 @@ public class OperatorStatAccessRO implements Serializable {
 
     public void setConfirmMobileCount(Integer confirmMobileCount) {
         this.confirmMobileCount = confirmMobileCount;
+    }
+
+    public Integer getStartLoginCount() {
+        return startLoginCount;
+    }
+
+    public void setStartLoginCount(Integer startLoginCount) {
+        this.startLoginCount = startLoginCount;
     }
 
     public Integer getLoginSuccessCount() {

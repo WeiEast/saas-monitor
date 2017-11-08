@@ -33,13 +33,13 @@ public class MonitorServiceTest {
         List<OperatorStatAccessAlarmMsgDTO> msgList = Lists.newArrayList();
         OperatorStatAccessAlarmMsgDTO msg1 = new OperatorStatAccessAlarmMsgDTO();
         msg1.setGroupName("浙江移动");
-        msg1.setAlarmDesc("登录转化率低于前7天70%");
+        msg1.setAlarmDesc("登录转化率低于前7天平均值的70%");
         msg1.setValue(new BigDecimal(10));
         msg1.setThreshold(new BigDecimal(20));
         msgList.add(msg1);
         OperatorStatAccessAlarmMsgDTO msg2 = new OperatorStatAccessAlarmMsgDTO();
         msg2.setGroupName("浙江电信");
-        msg2.setAlarmDesc("登录转化率低于前7天70%");
+        msg2.setAlarmDesc("登录转化率低于前7天平均值的70%");
         msg2.setValue(new BigDecimal(20));
         msg2.setThreshold(new BigDecimal(30));
         msgList.add(msg2);

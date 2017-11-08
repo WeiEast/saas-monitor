@@ -36,6 +36,8 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
     private OperatorMonitorProcessSuccessService operatorMonitorProcessFailService;
     @Autowired
     private OperatorMonitorCallbackSuccessService operatorMonitorCallbackSuccessService;
+    @Autowired
+    private OperatorMonitorStartLoginService operatorMonitorStartLoginService;
 
 
     @Override
@@ -55,9 +57,15 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
                 case CREATE_TASK:
                     operatorMonitorCreateTaskService.updateAllDayData(intervalTime, message);
                     break;
-                case COMFIRM_MOBILE:
+                case CONFIRM_MOBILE:
                     operatorMonitorConfirmMobileService.updateIntervalData(intervalTime, message);
                     operatorMonitorConfirmMobileService.updateDayData(intervalTime, message);
+                    operatorMonitorConfirmMobileService.updateAllDayData(intervalTime, message);
+                    break;
+                case START_LOGIN:
+                    operatorMonitorStartLoginService.updateIntervalData(intervalTime, message);
+                    operatorMonitorStartLoginService.updateDayData(intervalTime, message);
+                    operatorMonitorStartLoginService.updateAllDayData(intervalTime, message);
                     break;
                 case LOGIN_SUCCESS:
                     operatorMonitorLoginSuccessService.updateIntervalData(intervalTime, message);

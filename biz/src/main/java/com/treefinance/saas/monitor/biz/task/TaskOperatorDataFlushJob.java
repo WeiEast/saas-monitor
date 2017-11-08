@@ -89,6 +89,12 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             if (dto.getEntryCount() == null) {
                 dto.setEntryCount(0);
             }
+            if (dto.getConfirmMobileCount() == null) {
+                dto.setConfirmMobileCount(0);
+            }
+            if (dto.getStartLoginCount() == null) {
+                dto.setStartLoginCount(0);
+            }
             if (dto.getLoginSuccessCount() == null) {
                 dto.setLoginSuccessCount(0);
             }
@@ -101,7 +107,9 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             if (dto.getCallbackSuccessCount() == null) {
                 dto.setCallbackSuccessCount(0);
             }
-            dto.setLoginConversionRate(calcRate(dto.getEntryCount(), dto.getLoginSuccessCount()));
+            dto.setConfirmMobileConversionRate(calcRate(dto.getEntryCount(), dto.getConfirmMobileCount()));
+            dto.setLoginConversionRate(calcRate(dto.getConfirmMobileCount(), dto.getStartLoginCount()));
+            dto.setLoginSuccessRate(calcRate(dto.getStartLoginCount(), dto.getLoginSuccessCount()));
             dto.setCrawlSuccessRate(calcRate(dto.getLoginSuccessCount(), dto.getCrawlSuccessCount()));
             dto.setProcessSuccessRate(calcRate(dto.getCrawlSuccessCount(), dto.getProcessSuccessCount()));
             dto.setCallbackSuccessRate(calcRate(dto.getProcessSuccessCount(), dto.getCallbackSuccessCount()));
@@ -137,6 +145,9 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                 if (dto.getConfirmMobileCount() == null) {
                     dto.setConfirmMobileCount(0);
                 }
+                if (dto.getStartLoginCount() == null) {
+                    dto.setStartLoginCount(0);
+                }
                 if (dto.getLoginSuccessCount() == null) {
                     dto.setLoginSuccessCount(0);
                 }
@@ -146,7 +157,8 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                 if (dto.getProcessSuccessCount() == null) {
                     dto.setProcessSuccessCount(0);
                 }
-                dto.setLoginConversionRate(calcRate(dto.getConfirmMobileCount(), dto.getLoginSuccessCount()));
+                dto.setLoginConversionRate(calcRate(dto.getConfirmMobileCount(), dto.getStartLoginCount()));
+                dto.setLoginSuccessRate(calcRate(dto.getStartLoginCount(), dto.getLoginSuccessCount()));
                 dto.setCrawlSuccessRate(calcRate(dto.getLoginSuccessCount(), dto.getCrawlSuccessCount()));
                 dto.setProcessSuccessRate(calcRate(dto.getCrawlSuccessCount(), dto.getProcessSuccessCount()));
                 list.add(dto);
@@ -204,6 +216,9 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                     if (dto.getConfirmMobileCount() == null) {
                         dto.setConfirmMobileCount(0);
                     }
+                    if (dto.getStartLoginCount() == null) {
+                        dto.setStartLoginCount(0);
+                    }
                     if (dto.getLoginSuccessCount() == null) {
                         dto.setLoginSuccessCount(0);
                     }
@@ -213,7 +228,8 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                     if (dto.getProcessSuccessCount() == null) {
                         dto.setProcessSuccessCount(0);
                     }
-                    dto.setLoginConversionRate(calcRate(dto.getConfirmMobileCount(), dto.getLoginSuccessCount()));
+                    dto.setLoginConversionRate(calcRate(dto.getConfirmMobileCount(), dto.getStartLoginCount()));
+                    dto.setLoginSuccessRate(calcRate(dto.getStartLoginCount(), dto.getLoginSuccessCount()));
                     dto.setCrawlSuccessRate(calcRate(dto.getLoginSuccessCount(), dto.getCrawlSuccessCount()));
                     dto.setProcessSuccessRate(calcRate(dto.getCrawlSuccessCount(), dto.getProcessSuccessCount()));
                     list.add(dto);
