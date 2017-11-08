@@ -60,13 +60,18 @@ public class TaskOperatorAlarmJob implements SimpleJob {
             //获取前7天内,相同时刻运营商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
             //<groupCode,OperatorStatAccessDTO>
             Map<String, OperatorStatAccessDTO> compareMap = getPreviousCompareDataMap(jobTime, dtoList);
+            logger.info("运营商监控,预警定时任务执行jobTime={}获取前n天内,相同时刻运营商统计的平均值compareMap={}",
+                    MonitorDateUtils.format(jobTime), JSON.toJSONString(compareMap));
             if (MapUtils.isEmpty(compareMap)) {
                 return;
             }
 
             //获取需要预警的数据信息
             List<OperatorStatAccessAlarmMsgDTO> msgList = getAlarmMsgList(jobTime, dtoList, compareMap);
-
+            logger.info("运营商监控,预警定时任务执行jobTime={}需要预警的数据信息msgList={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(msgList));
+            if (CollectionUtils.isEmpty(msgList)) {
+                return;
+            }
             //发送预警
             alarm(msgList, jobTime);
 
