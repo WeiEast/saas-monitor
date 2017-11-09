@@ -98,10 +98,14 @@ public class TaskOperatorAlarmJob implements SimpleJob {
     }
 
     private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime) {
+        Integer intervalMins = diamondConfig.getOperatorMonitorIntervalMinutes();
         StringBuffer buffer = new StringBuffer();
         buffer.append("<br>").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("运营商监控预警,在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
-                .append("时数据存在问题").append("，此时刻监控数据如下，请及时处理：").append("</br>");
+                .append("运营商监控预警,在")
+                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, intervalMins)))
+                .append("--")
+                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(DateUtils.addMinutes(jobTime, intervalMins), intervalMins)))
+                .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("</br>");
         buffer.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\" width=\"80%\">");
         buffer.append("<tr bgcolor=\"#C9C9C9\">")
                 .append("<th>").append("运营商").append("</th>")
@@ -127,10 +131,14 @@ public class TaskOperatorAlarmJob implements SimpleJob {
     }
 
     private String generateWeChatBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime) {
+        Integer intervalMins = diamondConfig.getOperatorMonitorIntervalMinutes();
         StringBuffer buffer = new StringBuffer();
         buffer.append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("运营商监控预警,在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
-                .append("时数据存在问题").append("，此时刻监控数据如下，请及时处理：").append("\n");
+                .append("运营商监控预警,在")
+                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, intervalMins)))
+                .append("--")
+                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(DateUtils.addMinutes(jobTime, intervalMins), intervalMins)))
+                .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("\n");
         for (OperatorStatAccessAlarmMsgDTO msg : msgList) {
             buffer.append("【").append(msg.getGroupName()).append("】")
                     .append("【").append(msg.getAlarmSimpleDesc()).append("】")
