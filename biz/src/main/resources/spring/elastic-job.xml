@@ -26,7 +26,7 @@
 
     <!--运营商监控-->
     <job:simple id="taskOperatorFlushJob" class="com.treefinance.saas.monitor.biz.task.TaskOperatorDataFlushJob"
-                registry-center-ref="regCenter" cron="0 1/5 * * * ?"
+                registry-center-ref="regCenter" cron="0 4/5 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
 
     <!--运营商监控,定时预警任务-->
