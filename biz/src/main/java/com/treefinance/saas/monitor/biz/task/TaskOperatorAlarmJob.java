@@ -185,12 +185,12 @@ public class TaskOperatorAlarmJob implements SimpleJob {
                 msg.setGroupName(dto.getGroupName());
                 msg.setAlarmDesc("登录成功率低于前" + previousDays + "天平均值的" + threshold + "%");
                 msg.setAlarmSimpleDesc("登陆");
-                msg.setValue(dto.getLoginConversionRate());
+                msg.setValue(dto.getLoginSuccessRate());
                 msg.setThreshold(loginConversionCompareVal);
                 if (BigDecimal.ZERO.compareTo(loginConversionCompareVal) == 0) {
                     msg.setOffset(BigDecimal.ZERO);
                 } else {
-                    BigDecimal value = BigDecimal.ONE.subtract(dto.getLoginConversionRate().divide(loginConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                    BigDecimal value = BigDecimal.ONE.subtract(dto.getLoginSuccessRate().divide(loginConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                     msg.setOffset(value);
                 }
                 msgList.add(msg);
