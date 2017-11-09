@@ -16,6 +16,7 @@ import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +46,9 @@ public class TaskOperatorAlarmJob implements SimpleJob {
     public void execute(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
         //定时任务执行时间
-        Date jobTime = new Date();
-        logger.info("运营商监控,预警定时任务执行jobTime={}", MonitorDateUtils.format(jobTime));
+        Date now = new Date();
+        Date jobTime = DateUtils.addMinutes(now, -diamondConfig.getOperatorMonitorIntervalMinutes());
+        logger.info("运营商监控,预警定时任务执行时间now={},要统计的数据时刻jobTime={}", MonitorDateUtils.format(now), MonitorDateUtils.format(jobTime));
         try {
             OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
             criteria.createCriteria().andDataTimeEqualTo(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes()));
