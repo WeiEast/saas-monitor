@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class AllOperatorStatDayAccessDTO implements Serializable {
+public class OperatorAllStatDayAccessDTO implements Serializable {
 
     private Long id;
 

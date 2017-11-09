@@ -5,13 +5,13 @@ import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
-import com.treefinance.saas.monitor.dao.mapper.AllOperatorStatDayAccessMapper;
+import com.treefinance.saas.monitor.dao.mapper.OperatorAllStatDayAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatDayAccessMapper;
 import com.treefinance.saas.monitor.facade.domain.request.OperatorStatAccessRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
-import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.AllOperatorStatDayAccessRO;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.OperatorAllStatDayAccessRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.OperatorStatAccessRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.OperatorStatDayAccessRO;
 import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
@@ -39,7 +39,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
     @Autowired
     private OperatorStatDayAccessMapper operatorStatDayAccessMapper;
     @Autowired
-    private AllOperatorStatDayAccessMapper allOperatorStatDayAccessMapper;
+    private OperatorAllStatDayAccessMapper operatorAllStatDayAccessMapper;
 
 
     @Override
@@ -130,41 +130,41 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
     }
 
     @Override
-    public MonitorResult<List<AllOperatorStatDayAccessRO>> queryAllOperatorStatDayAccessList(OperatorStatAccessRequest request) {
+    public MonitorResult<List<OperatorAllStatDayAccessRO>> queryAllOperatorStatDayAccessList(OperatorStatAccessRequest request) {
         if (request == null || request.getStartDate() == null || request.getEndDate() == null) {
             logger.error("查询所有运营商日监控统计数据,输入参数为空,request={}", JSON.toJSONString(request));
             throw new ParamCheckerException("请求参数非法");
         }
         logger.info("查询所有运营商日监控统计数据,输入参数request={}", JSON.toJSONString(request));
-        List<AllOperatorStatDayAccessRO> result = Lists.newArrayList();
-        AllOperatorStatDayAccessCriteria criteria = new AllOperatorStatDayAccessCriteria();
+        List<OperatorAllStatDayAccessRO> result = Lists.newArrayList();
+        OperatorAllStatDayAccessCriteria criteria = new OperatorAllStatDayAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
         criteria.createCriteria().andDataTimeBetween(request.getStartDate(), request.getEndDate());
-        List<AllOperatorStatDayAccess> list = allOperatorStatDayAccessMapper.selectByExample(criteria);
+        List<OperatorAllStatDayAccess> list = operatorAllStatDayAccessMapper.selectByExample(criteria);
         if (!CollectionUtils.isEmpty(list)) {
-            result = DataConverterUtils.convert(list, AllOperatorStatDayAccessRO.class);
+            result = DataConverterUtils.convert(list, OperatorAllStatDayAccessRO.class);
         }
         logger.info("查询所有运营商日监控统计数据,输出结果result={}", JSON.toJSONString(result));
         return MonitorResultBuilder.build(result);
     }
 
     @Override
-    public MonitorResult<List<AllOperatorStatDayAccessRO>> queryAllOperatorStatDayAccessListWithPage(OperatorStatAccessRequest request) {
+    public MonitorResult<List<OperatorAllStatDayAccessRO>> queryAllOperatorStatDayAccessListWithPage(OperatorStatAccessRequest request) {
         if (request == null || request.getStartDate() == null || request.getEndDate() == null) {
             logger.error("查询所有运营商日监控统计数据(分页),输入参数为空,request={}", JSON.toJSONString(request));
             throw new ParamCheckerException("请求参数非法");
         }
         logger.info("查询所有运营商日监控统计数据(分页),输入参数request={}", JSON.toJSONString(request));
-        List<AllOperatorStatDayAccessRO> result = Lists.newArrayList();
-        AllOperatorStatDayAccessCriteria criteria = new AllOperatorStatDayAccessCriteria();
+        List<OperatorAllStatDayAccessRO> result = Lists.newArrayList();
+        OperatorAllStatDayAccessCriteria criteria = new OperatorAllStatDayAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
         criteria.setLimit(request.getPageSize());
         criteria.setOffset(request.getOffset());
         criteria.createCriteria().andDataTimeBetween(request.getStartDate(), request.getEndDate());
-        long total = allOperatorStatDayAccessMapper.countByExample(criteria);
+        long total = operatorAllStatDayAccessMapper.countByExample(criteria);
         if (total > 0) {
-            List<AllOperatorStatDayAccess> list = allOperatorStatDayAccessMapper.selectPaginationByExample(criteria);
-            result = DataConverterUtils.convert(list, AllOperatorStatDayAccessRO.class);
+            List<OperatorAllStatDayAccess> list = operatorAllStatDayAccessMapper.selectPaginationByExample(criteria);
+            result = DataConverterUtils.convert(list, OperatorAllStatDayAccessRO.class);
         }
         logger.info("查询所有运营商日监控统计数据(分页),输出结果result={}", JSON.toJSONString(result));
         return MonitorResultBuilder.pageResult(request, result, total);

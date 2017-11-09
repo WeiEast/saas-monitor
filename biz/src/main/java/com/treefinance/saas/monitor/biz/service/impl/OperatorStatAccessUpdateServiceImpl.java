@@ -1,14 +1,14 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.treefinance.saas.monitor.biz.service.OperatorStatAccessUpdateService;
-import com.treefinance.saas.monitor.common.domain.dto.AllOperatorStatDayAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatDayAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatDayAccessDTO;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.dao.entity.AllOperatorStatDayAccess;
+import com.treefinance.saas.monitor.dao.entity.OperatorAllStatDayAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatDayAccess;
-import com.treefinance.saas.monitor.dao.mapper.AllOperatorStatDayAccessMapper;
+import com.treefinance.saas.monitor.dao.mapper.OperatorAllStatDayAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatDayAccessMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ import java.util.List;
 public class OperatorStatAccessUpdateServiceImpl implements OperatorStatAccessUpdateService {
 
     @Autowired
-    private AllOperatorStatDayAccessMapper allOperatorStatDayAccessMapper;
+    private OperatorAllStatDayAccessMapper operatorAllStatDayAccessMapper;
     @Autowired
     private OperatorStatDayAccessMapper operatorStatDayAccessMapper;
     @Autowired
@@ -33,9 +33,9 @@ public class OperatorStatAccessUpdateServiceImpl implements OperatorStatAccessUp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void batchInsertAllOperatorStatDayAccess(List<AllOperatorStatDayAccessDTO> list) {
-        List<AllOperatorStatDayAccess> dataList = DataConverterUtils.convert(list, AllOperatorStatDayAccess.class);
-        dataList.forEach(data -> allOperatorStatDayAccessMapper.insertOrUpdateBySelective(data));
+    public void batchInsertAllOperatorStatDayAccess(List<OperatorAllStatDayAccessDTO> list) {
+        List<OperatorAllStatDayAccess> dataList = DataConverterUtils.convert(list, OperatorAllStatDayAccess.class);
+        dataList.forEach(data -> operatorAllStatDayAccessMapper.insertOrUpdateBySelective(data));
 
     }
 

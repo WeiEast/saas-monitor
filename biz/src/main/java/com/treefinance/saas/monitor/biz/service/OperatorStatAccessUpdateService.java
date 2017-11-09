@@ -1,6 +1,6 @@
 package com.treefinance.saas.monitor.biz.service;
 
-import com.treefinance.saas.monitor.common.domain.dto.AllOperatorStatDayAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatDayAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatDayAccessDTO;
 
@@ -16,7 +16,7 @@ public interface OperatorStatAccessUpdateService {
      *
      * @param list
      */
-    void batchInsertAllOperatorStatDayAccess(List<AllOperatorStatDayAccessDTO> list);
+    void batchInsertAllOperatorStatDayAccess(List<OperatorAllStatDayAccessDTO> list);
 
     /**
      * 批量保存运营商日统计数据
