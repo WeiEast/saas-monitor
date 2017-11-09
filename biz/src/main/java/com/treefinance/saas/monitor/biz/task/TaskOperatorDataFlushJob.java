@@ -10,7 +10,7 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.OperatorStatAccessUpdateService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
-import com.treefinance.saas.monitor.common.domain.dto.AllOperatorStatDayAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatDayAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatDayAccessDTO;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -84,7 +84,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             logger.info("运营商监控,定时任务执行jobTime={},刷新所有运营商日统计数据到db中,key={},data={}",
                     MonitorDateUtils.format(jobTime), hashKey, JSON.toJSONString(dataMap));
             String json = JSON.toJSONString(dataMap);
-            AllOperatorStatDayAccessDTO dto = JSON.parseObject(json, AllOperatorStatDayAccessDTO.class);
+            OperatorAllStatDayAccessDTO dto = JSON.parseObject(json, OperatorAllStatDayAccessDTO.class);
             dto.setId(UidGenerator.getId());
             if (dto.getEntryCount() == null) {
                 dto.setEntryCount(0);

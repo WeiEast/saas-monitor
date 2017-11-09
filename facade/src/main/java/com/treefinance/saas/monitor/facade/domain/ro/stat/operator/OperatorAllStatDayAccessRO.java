@@ -8,7 +8,7 @@ import java.util.Date;
  * @author haojiahong
  * @date 2017/11/1
  */
-public class AllOperatorStatDayAccessRO implements Serializable {
+public class OperatorAllStatDayAccessRO implements Serializable {
 
     private static final long serialVersionUID = 9131776296679359695L;
 

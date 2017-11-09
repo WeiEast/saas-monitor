@@ -92,7 +92,6 @@ public class MonitorDateUtils {
         if (currentMinute % intervalMinutes == 0) {
             return intervalTime;
         }
-        // 切换至下一时间段
         intervalTime = DateUtils.addMinutes(intervalTime, (-currentMinute.intValue() % intervalMinutes));
         return intervalTime;
     }

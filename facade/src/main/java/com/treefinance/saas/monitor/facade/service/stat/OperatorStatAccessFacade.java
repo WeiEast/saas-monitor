@@ -2,7 +2,7 @@ package com.treefinance.saas.monitor.facade.service.stat;
 
 import com.treefinance.saas.monitor.facade.domain.request.OperatorStatAccessRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
-import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.AllOperatorStatDayAccessRO;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.OperatorAllStatDayAccessRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.OperatorStatAccessRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.OperatorStatDayAccessRO;
 
@@ -55,7 +55,7 @@ public interface OperatorStatAccessFacade {
      * @param request
      * @return
      */
-    MonitorResult<List<AllOperatorStatDayAccessRO>> queryAllOperatorStatDayAccessList(OperatorStatAccessRequest request);
+    MonitorResult<List<OperatorAllStatDayAccessRO>> queryAllOperatorStatDayAccessList(OperatorStatAccessRequest request);
 
     /**
      * 查询所有运营商日监控统计数据(分页)
@@ -63,7 +63,7 @@ public interface OperatorStatAccessFacade {
      * @param request
      * @return
      */
-    MonitorResult<List<AllOperatorStatDayAccessRO>> queryAllOperatorStatDayAccessListWithPage(OperatorStatAccessRequest request);
+    MonitorResult<List<OperatorAllStatDayAccessRO>> queryAllOperatorStatDayAccessListWithPage(OperatorStatAccessRequest request);
 
 
 }
