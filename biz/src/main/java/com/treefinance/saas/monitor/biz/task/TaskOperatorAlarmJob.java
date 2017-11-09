@@ -16,6 +16,7 @@ import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +46,9 @@ public class TaskOperatorAlarmJob implements SimpleJob {
     public void execute(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
         //定时任务执行时间
-        Date jobTime = new Date();
-        logger.info("运营商监控,预警定时任务执行jobTime={}", MonitorDateUtils.format(jobTime));
+        Date now = new Date();
+        Date jobTime = DateUtils.addMinutes(now, -diamondConfig.getOperatorMonitorIntervalMinutes());
+        logger.info("运营商监控,预警定时任务执行时间now={},要统计的数据时刻jobTime={}", MonitorDateUtils.format(now), MonitorDateUtils.format(jobTime));
         try {
             OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
             criteria.createCriteria().andDataTimeEqualTo(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes()));
@@ -98,8 +100,8 @@ public class TaskOperatorAlarmJob implements SimpleJob {
     private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<br>").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
-                .append("时发生预警").append("，监控数据如下，请及时处理：").append("</br>");
+                .append("运营商监控预警,在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
+                .append("时数据存在问题").append("，此时刻监控数据如下，请及时处理：").append("</br>");
         buffer.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\" width=\"80%\">");
         buffer.append("<tr bgcolor=\"#C9C9C9\">")
                 .append("<th>").append("运营商").append("</th>")
@@ -127,8 +129,8 @@ public class TaskOperatorAlarmJob implements SimpleJob {
     private String generateWeChatBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
-                .append("时发生预警").append("，监控数据如下，请及时处理：").append("\n");
+                .append("运营商监控预警,在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
+                .append("时数据存在问题").append("，此时刻监控数据如下，请及时处理：").append("\n");
         for (OperatorStatAccessAlarmMsgDTO msg : msgList) {
             buffer.append("【").append(msg.getGroupName()).append("】")
                     .append("【").append(msg.getAlarmSimpleDesc()).append("】")
