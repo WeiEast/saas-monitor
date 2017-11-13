@@ -178,7 +178,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
                 OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
-                msg.setAlarmDesc("登录转化率低于前" + previousDays + "天平均值的" + threshold + "%");
+                msg.setAlarmDesc("登陆转化率低于前" + previousDays + "天平均值的" + threshold + "%");
                 msg.setAlarmSimpleDesc("开始登陆");
                 msg.setValue(dto.getLoginConversionRate());
                 msg.setThreshold(loginConversionCompareVal);
@@ -194,14 +194,14 @@ public class TaskOperatorAlarmJob implements SimpleJob {
                 OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
-                msg.setAlarmDesc("登录成功率低于前" + previousDays + "天平均值的" + threshold + "%");
+                msg.setAlarmDesc("登陆成功率低于前" + previousDays + "天平均值的" + threshold + "%");
                 msg.setAlarmSimpleDesc("登陆");
                 msg.setValue(dto.getLoginSuccessRate());
-                msg.setThreshold(loginConversionCompareVal);
-                if (BigDecimal.ZERO.compareTo(loginConversionCompareVal) == 0) {
+                msg.setThreshold(loginSuccessCompareVal);
+                if (BigDecimal.ZERO.compareTo(loginSuccessCompareVal) == 0) {
                     msg.setOffset(BigDecimal.ZERO);
                 } else {
-                    BigDecimal value = BigDecimal.ONE.subtract(dto.getLoginSuccessRate().divide(loginConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                    BigDecimal value = BigDecimal.ONE.subtract(dto.getLoginSuccessRate().divide(loginSuccessCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                     msg.setOffset(value);
                 }
                 msgList.add(msg);
