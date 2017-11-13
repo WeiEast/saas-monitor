@@ -19,6 +19,11 @@ public class OperatorMonitorCallbackSuccessServiceImpl implements OperatorMonito
     private TaskOperatorMonitorMessageProcessor taskOperatorMonitorMessageProcessor;
 
     @Override
+    public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message) {
+        taskOperatorMonitorMessageProcessor.updateAllIntervalData(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+    }
+
+    @Override
     public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message) {
         taskOperatorMonitorMessageProcessor.updateAllDayData(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
 

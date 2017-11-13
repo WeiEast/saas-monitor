@@ -54,6 +54,8 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                 public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
                     Set<String> groupCodeSet = redisOperations.opsForSet().members(TaskOperatorMonitorKeyHelper.keyOfGroupCodes());
+                    //保存所有运营商特定统计时间统计数据
+                    saveAllIntervalData(redisOperations, jobTime);
                     //保存所有运营商日统计数据
                     saveAllDayData(redisOperations, jobTime);
                     //保存运营商日统计数据
@@ -67,6 +69,78 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             logger.error("运营商监控,定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
         } finally {
             logger.info("运营商监控,定时任务执行jobTime={}完成,耗时{}ms", MonitorDateUtils.format(jobTime), System.currentTimeMillis() - start);
+        }
+    }
+
+    private void saveAllIntervalData(RedisOperations redisOperations, Date jobTime) {
+        try {
+
+            String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnAllStat(jobTime);
+            Set<String> redisStatDataTimeStrSets = redisOperations.opsForSet().members(dayKey);
+            if (CollectionUtils.isEmpty(redisStatDataTimeStrSets)) {
+                return;
+            }
+            logger.info("运营商监控,定时任务执行jobTime={},此次任务需要统计的时间段有dataTimeStrSets={}",
+                    MonitorDateUtils.format(jobTime), JSON.toJSONString(redisStatDataTimeStrSets));
+            Set<Date> redisStatDataTimeSets = Sets.newHashSet();
+            for (String dateStr : redisStatDataTimeStrSets) {
+                Date date = MonitorDateUtils.parse(dateStr);
+                redisStatDataTimeSets.add(date);
+            }
+            if (CollectionUtils.isEmpty(redisStatDataTimeSets)) {
+                return;
+            }
+
+
+
+
+
+            Date redisStatDataTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes());
+            String hashKey = TaskOperatorMonitorKeyHelper.keyOfAllIntervalStat(redisStatDataTime);
+            if (!redisOperations.hasKey(hashKey)) {
+                return;
+            }
+            Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
+            if (MapUtils.isEmpty(dataMap)) {
+                return;
+            }
+            logger.info("运营商监控,定时任务执行jobTime={},刷新所有运营商日统计数据到db中,key={},data={}",
+                    MonitorDateUtils.format(jobTime), hashKey, JSON.toJSONString(dataMap));
+            String json = JSON.toJSONString(dataMap);
+            OperatorAllStatDayAccessDTO dto = JSON.parseObject(json, OperatorAllStatDayAccessDTO.class);
+            dto.setId(UidGenerator.getId());
+            if (dto.getEntryCount() == null) {
+                dto.setEntryCount(0);
+            }
+            if (dto.getConfirmMobileCount() == null) {
+                dto.setConfirmMobileCount(0);
+            }
+            if (dto.getStartLoginCount() == null) {
+                dto.setStartLoginCount(0);
+            }
+            if (dto.getLoginSuccessCount() == null) {
+                dto.setLoginSuccessCount(0);
+            }
+            if (dto.getCrawlSuccessCount() == null) {
+                dto.setCrawlSuccessCount(0);
+            }
+            if (dto.getProcessSuccessCount() == null) {
+                dto.setProcessSuccessCount(0);
+            }
+            if (dto.getCallbackSuccessCount() == null) {
+                dto.setCallbackSuccessCount(0);
+            }
+            dto.setConfirmMobileConversionRate(calcRate(dto.getEntryCount(), dto.getConfirmMobileCount()));
+            dto.setLoginConversionRate(calcRate(dto.getConfirmMobileCount(), dto.getStartLoginCount()));
+            dto.setLoginSuccessRate(calcRate(dto.getStartLoginCount(), dto.getLoginSuccessCount()));
+            dto.setCrawlSuccessRate(calcRate(dto.getLoginSuccessCount(), dto.getCrawlSuccessCount()));
+            dto.setProcessSuccessRate(calcRate(dto.getCrawlSuccessCount(), dto.getProcessSuccessCount()));
+            dto.setCallbackSuccessRate(calcRate(dto.getProcessSuccessCount(), dto.getCallbackSuccessCount()));
+            logger.info("运营商监控,定时任务执行jobTime={},刷新AllOperatorStatDayAccess数据到db中dto={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(dto));
+            operatorStatAccessUpdateService.batchInsertAllOperatorStatDayAccess(Lists.newArrayList(dto));
+        } catch (Exception e) {
+            logger.error("运营商监控,定时任务执行jobTime={},刷新AllOperatorStatDayAccess数据到db异常", MonitorDateUtils.format(jobTime), e);
+            e.printStackTrace();
         }
     }
 

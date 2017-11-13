@@ -9,5 +9,7 @@ import java.util.Date;
  */
 public interface OperatorMonitorCallbackSuccessService {
 
+    void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message);
+
     void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message);
 }

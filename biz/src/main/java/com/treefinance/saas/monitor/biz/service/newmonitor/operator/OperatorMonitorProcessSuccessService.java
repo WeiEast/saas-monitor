@@ -13,5 +13,7 @@ public interface OperatorMonitorProcessSuccessService {
 
     void updateDayData(Date intervalTime, TaskOperatorMonitorMessage message);
 
+    void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message);
+
     void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message);
 }

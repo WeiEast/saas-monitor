@@ -43,6 +43,11 @@ public class OperatorMonitorCrawlSuccessServiceImpl implements OperatorMonitorCr
     }
 
     @Override
+    public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message) {
+        taskOperatorMonitorMessageProcessor.updateAllIntervalData(intervalTime, message, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
+    }
+
+    @Override
     public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message) {
         taskOperatorMonitorMessageProcessor.updateAllDayData(intervalTime, message, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
     }

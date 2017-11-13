@@ -73,19 +73,23 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
                 case LOGIN_SUCCESS:
                     operatorMonitorLoginSuccessService.updateIntervalData(intervalTime, message);
                     operatorMonitorLoginSuccessService.updateDayData(intervalTime, message);
+                    operatorMonitorLoginSuccessService.updateAllIntervalData(intervalTime, message);
                     operatorMonitorLoginSuccessService.updateAllDayData(intervalTime, message);
                     break;
                 case CRAWL_SUCCESS:
                     operatorMonitorCrawlFailService.updateIntervalData(intervalTime, message);
                     operatorMonitorCrawlFailService.updateDayData(intervalTime, message);
+                    operatorMonitorCrawlFailService.updateAllIntervalData(intervalTime, message);
                     operatorMonitorCrawlFailService.updateAllDayData(intervalTime, message);
                     break;
                 case PROCESS_SUCCESS:
                     operatorMonitorProcessFailService.updateIntervalData(intervalTime, message);
                     operatorMonitorProcessFailService.updateDayData(intervalTime, message);
+                    operatorMonitorProcessFailService.updateAllIntervalData(intervalTime, message);
                     operatorMonitorProcessFailService.updateAllDayData(intervalTime, message);
                     break;
                 case CALLBACK_SUCCESS:
+                    operatorMonitorCallbackSuccessService.updateAllIntervalData(intervalTime, message);
                     operatorMonitorCallbackSuccessService.updateAllDayData(intervalTime, message);
                     break;
                 default:

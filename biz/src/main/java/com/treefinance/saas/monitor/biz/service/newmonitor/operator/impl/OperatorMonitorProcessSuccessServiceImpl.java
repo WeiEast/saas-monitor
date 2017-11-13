@@ -44,6 +44,11 @@ public class OperatorMonitorProcessSuccessServiceImpl implements OperatorMonitor
     }
 
     @Override
+    public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message) {
+        taskOperatorMonitorMessageProcessor.updateAllIntervalData(intervalTime, message, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
+    }
+
+    @Override
     public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message) {
         taskOperatorMonitorMessageProcessor.updateAllDayData(intervalTime, message, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
 
