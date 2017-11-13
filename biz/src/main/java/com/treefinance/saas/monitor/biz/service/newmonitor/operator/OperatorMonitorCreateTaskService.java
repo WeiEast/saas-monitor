@@ -10,4 +10,6 @@ import java.util.Date;
 public interface OperatorMonitorCreateTaskService {
 
     void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message);
+
+    void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message);
 }

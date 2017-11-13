@@ -13,9 +13,11 @@ import java.util.Date;
 public class TaskOperatorMonitorKeyHelper {
 
     private static final String KEY_PREFIX = "saas-monitor-task-operator-monitor";
-    private static final String KEY_DAY = "key-days";
+    private static final String KEY_DAY_ON_GROUP = "key-days-group";
+    private static final String KEY_DAY_ON_All = "key-days-all";
     private static final String GROUP_STAT_ACCESS_INTERVAL = "group-stat-interval";
     private static final String GROUP_STAT_ACCESS_DAY = "group-stat-day";
+    private static final String ALL_STAT_ACCESS_INTERVAL = "all-stat-interval";
     private static final String ALL_STAT_ACCESS_DAY = "all-stat-day";
 
     /**
@@ -46,6 +48,18 @@ public class TaskOperatorMonitorKeyHelper {
     }
 
     /**
+     * 获取所有运营商按按时间间隔统计key
+     * saas-monitor-task-operator-monitor:all-stat-interval:yyyy-MM-dd HH:mm:ss
+     *
+     * @param intervalTime
+     * @return
+     */
+    public static String keyOfAllIntervalStat(Date intervalTime) {
+        String intervalTimeStr = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, ALL_STAT_ACCESS_INTERVAL, intervalTimeStr);
+    }
+
+    /**
      * 获取所有运营商日统计key
      * saas-monitor-task-operator-monitor:all-stat-day:yyyy-MM-dd
      *
@@ -57,10 +71,26 @@ public class TaskOperatorMonitorKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, ALL_STAT_ACCESS_DAY, day);
     }
 
-
-    public static String keyOfDay(Date intervalTime) {
+    /**
+     * 记录按时间间隔统计特定运营商,定时任务刷新时,需要统计的时间段集合
+     *
+     * @param intervalTime
+     * @return
+     */
+    public static String keyOfDayOnGroupStat(Date intervalTime) {
         String day = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_DAY, day);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_DAY_ON_GROUP, day);
+    }
+
+    /**
+     * 记录按时间间隔统计所有运营商,定时任务刷新时,需要统计的时间段集合
+     *
+     * @param intervalTime
+     * @return
+     */
+    public static String keyOfDayOnAllStat(Date intervalTime) {
+        String day = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_DAY_ON_All, day);
     }
 
 

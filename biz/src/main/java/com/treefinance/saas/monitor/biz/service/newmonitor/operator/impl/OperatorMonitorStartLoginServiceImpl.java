@@ -45,6 +45,11 @@ public class OperatorMonitorStartLoginServiceImpl implements OperatorMonitorStar
     }
 
     @Override
+    public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message) {
+        taskOperatorMonitorMessageProcessor.updateAllIntervalData(intervalTime, message, ETaskOperatorMonitorStatus.START_LOGIN);
+    }
+
+    @Override
     public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message) {
         taskOperatorMonitorMessageProcessor.updateAllDayData(intervalTime, message, ETaskOperatorMonitorStatus.START_LOGIN);
 

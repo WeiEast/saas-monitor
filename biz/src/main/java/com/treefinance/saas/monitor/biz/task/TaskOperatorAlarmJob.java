@@ -47,6 +47,7 @@ public class TaskOperatorAlarmJob implements SimpleJob {
         long start = System.currentTimeMillis();
         //定时任务执行时间
         Date now = new Date();
+        //如果定时任务是11:00执行,则要统计的数据应该是10:00
         Date jobTime = DateUtils.addMinutes(now, -diamondConfig.getOperatorMonitorIntervalMinutes());
         logger.info("运营商监控,预警定时任务执行时间now={},要统计的数据时刻jobTime={}", MonitorDateUtils.format(now), MonitorDateUtils.format(jobTime));
         try {

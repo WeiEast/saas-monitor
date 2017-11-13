@@ -50,7 +50,7 @@ public class TaskOperatorMonitorMessageProcessor {
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
                 // 需统计的当日特定时间列表
-                String dayKey = TaskOperatorMonitorKeyHelper.keyOfDay(intervalTime);
+                String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnGroupStat(intervalTime);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
@@ -122,6 +122,44 @@ public class TaskOperatorMonitorMessageProcessor {
         });
         logger.info("运营商监控,消息处理,key={},value={}", key, JSON.toJSONString(statMap));
 
+    }
+
+    /**
+     * 按配置的时间间隔更新所有运营商数据
+     *
+     * @param intervalTime
+     * @param message
+     * @param status
+     */
+    public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status) {
+        Map<String, String> statMap = Maps.newHashMap();
+        statMap.put("dataType", status + "");
+        String key = TaskOperatorMonitorKeyHelper.keyOfAllIntervalStat(intervalTime);
+        redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
+            @Override
+            public Object execute(RedisOperations redisOperations) throws DataAccessException {
+
+                // 需统计的当日特定时间列表
+                String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnAllStat(intervalTime);
+                BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
+                if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
+                    setOperations.expire(2, TimeUnit.DAYS);
+                }
+                setOperations.add(MonitorDateUtils.format(intervalTime));
+
+                // 判断是否有key
+                BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
+                if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
+                    hashOperations.put("dataTime", MonitorDateUtils.format(intervalTime));
+                    statMap.put("dataTime", MonitorDateUtils.format(intervalTime));
+                    // 设定超时时间默认为2天
+                    hashOperations.expire(2, TimeUnit.DAYS);
+                }
+                updateRedisData(hashOperations, message, statMap, intervalTime);
+                return null;
+            }
+        });
+        logger.info("运营商监控,消息处理,key={},value={}", key, JSON.toJSONString(statMap));
     }
 
     /**

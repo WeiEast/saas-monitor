@@ -133,7 +133,7 @@
             <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
         <!--</table>-->
 
-        <table tableName="operator_all_stat_day_access" domainObjectName="OperatorAllStatDayAccess"
+        <table tableName="operator_all_stat_access" domainObjectName="OperatorAllStatAccess"
                enableSelectPaginationByExample="true"
                enableInsertOrUpdateBySelective="true"
                enableBatchInsert="true"

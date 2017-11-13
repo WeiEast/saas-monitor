@@ -22,4 +22,9 @@ public class OperatorMonitorCreateTaskServiceImpl implements OperatorMonitorCrea
     public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message) {
         taskOperatorMonitorMessageProcessor.updateAllDayData(intervalTime, message, ETaskOperatorMonitorStatus.CREATE_TASK);
     }
+
+    @Override
+    public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message) {
+        taskOperatorMonitorMessageProcessor.updateAllIntervalData(intervalTime, message, ETaskOperatorMonitorStatus.CREATE_TASK);
+    }
 }

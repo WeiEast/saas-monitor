@@ -44,6 +44,11 @@ public class OperatorMonitorConfirmMobileServiceImpl implements OperatorMonitorC
     }
 
     @Override
+    public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message) {
+        taskOperatorMonitorMessageProcessor.updateAllIntervalData(intervalTime, message, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
+    }
+
+    @Override
     public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message) {
         taskOperatorMonitorMessageProcessor.updateAllDayData(intervalTime, message, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
 

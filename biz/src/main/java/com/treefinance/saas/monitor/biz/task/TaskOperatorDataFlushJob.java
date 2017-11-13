@@ -182,7 +182,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             if (CollectionUtils.isEmpty(groupCodeSet)) {
                 return;
             }
-            String dayKey = TaskOperatorMonitorKeyHelper.keyOfDay(jobTime);
+            String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnGroupStat(jobTime);
             Set<String> redisStatDataTimeStrSets = redisOperations.opsForSet().members(dayKey);
             if (CollectionUtils.isEmpty(redisStatDataTimeStrSets)) {
                 return;

@@ -55,16 +55,19 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
             ETaskOperatorMonitorStatus status = ETaskOperatorMonitorStatus.getMonitorStats(message.getStatus());
             switch (status) {
                 case CREATE_TASK:
+                    operatorMonitorCreateTaskService.updateAllIntervalData(intervalTime, message);
                     operatorMonitorCreateTaskService.updateAllDayData(intervalTime, message);
                     break;
                 case CONFIRM_MOBILE:
                     operatorMonitorConfirmMobileService.updateIntervalData(intervalTime, message);
                     operatorMonitorConfirmMobileService.updateDayData(intervalTime, message);
+                    operatorMonitorConfirmMobileService.updateAllIntervalData(intervalTime, message);
                     operatorMonitorConfirmMobileService.updateAllDayData(intervalTime, message);
                     break;
                 case START_LOGIN:
                     operatorMonitorStartLoginService.updateIntervalData(intervalTime, message);
                     operatorMonitorStartLoginService.updateDayData(intervalTime, message);
+                    operatorMonitorStartLoginService.updateAllIntervalData(intervalTime, message);
                     operatorMonitorStartLoginService.updateAllDayData(intervalTime, message);
                     break;
                 case LOGIN_SUCCESS:
