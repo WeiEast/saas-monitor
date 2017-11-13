@@ -6,6 +6,7 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,25 +51,28 @@ public class MonitorServiceTest {
     }
 
     private String generateTitle() {
-        return "saas-" + diamondConfig.getMonitorEnvironment() + "运营商监控发生预警";
+        return "saas-" + diamondConfig.getMonitorEnvironment() + "总运营商监控发生预警";
     }
 
 
-    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime) {
+    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date dataTime) {
+        Integer intervalMins = diamondConfig.getOperatorMonitorIntervalMinutes();
         StringBuffer buffer = new StringBuffer();
         buffer.append("<br>").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("运营商监控在").append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes())))
-                .append("时发生预警").append("，监控数据如下，请及时处理：").append("</br>");
+                .append("总运营商监控预警,在")
+                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(dataTime, intervalMins)))
+                .append("--")
+                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(DateUtils.addMinutes(dataTime, intervalMins), intervalMins)))
+                .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("</br>");
         buffer.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\" width=\"80%\">");
         buffer.append("<tr bgcolor=\"#C9C9C9\">")
-                .append("<th>").append("运营商").append("</th>")
                 .append("<th>").append("预警描述").append("</th>")
                 .append("<th>").append("当前指标值(%)").append("</th>")
                 .append("<th>").append("指标阀值(%)").append("</th>")
                 .append("<th>").append("偏离阀值程度(%)").append("</th>")
                 .append("</tr>");
         for (OperatorStatAccessAlarmMsgDTO msg : msgList) {
-            buffer.append("<tr>").append("<td>").append(msg.getGroupName()).append("</td>")
+            buffer.append("<tr>")
                     .append("<td>").append(msg.getAlarmDesc()).append("</td>")
                     .append("<td>").append(msg.getValue()).append("</td>")
                     .append("<td>").append(msg.getThreshold()).append("</td>")
