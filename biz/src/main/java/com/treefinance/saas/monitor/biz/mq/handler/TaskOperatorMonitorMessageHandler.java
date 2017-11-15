@@ -11,9 +11,12 @@ import com.treefinance.saas.monitor.biz.service.newmonitor.operator.OperatorMoni
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.BoundSetOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by haojiahong on 2017/10/30.
@@ -26,6 +29,8 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
     private DiamondConfig diamondConfig;
     @Autowired
     private OperatorMonitorActionStatService operatorMonitorActionStatService;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
 
     @Override
@@ -35,12 +40,23 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
 
     @Override
     public void handleMessage(TaskOperatorMonitorMessage message) {
-        // todo 消息重复消费的问题
         logger.info("运营商监控,消息处理,message={}", JSON.toJSONString(message));
         long start = System.currentTimeMillis();
         try {
             Date dataTime = message.getDataTime();
             Date intervalTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(dataTime, diamondConfig.getOperatorMonitorIntervalMinutes());//按小时统计数据的时间点,如6:00,7:00
+            String messageLogKey = TaskOperatorMonitorKeyHelper.keyOfMessageLog(intervalTime);
+            BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(messageLogKey);
+            if (!Boolean.TRUE.equals(redisTemplate.hasKey(messageLogKey))) {
+                setOperations.expire(2, TimeUnit.HOURS);
+            }
+            StringBuilder sb = new StringBuilder();
+            String value = sb.append(message.getTaskId()).append("-").append(message.getStatus()).toString();
+            if (setOperations.isMember(value)) {
+                logger.info("运营商监控,消息处理,message={}重复发送不再统计.message={}", JSON.toJSONString(message));
+                return;
+            }
+
             ETaskOperatorMonitorStatus status = ETaskOperatorMonitorStatus.getMonitorStats(message.getStatus());
             switch (status) {
                 case CREATE_TASK:
