@@ -23,6 +23,10 @@ public class OperatorStatAccessRequest extends PageRequest implements Serializab
 
     private String groupCode;
 
+    private String groupName;
+
+    private Byte statType;
+
     public Date getDataDate() {
         return dataDate;
     }
@@ -53,5 +57,21 @@ public class OperatorStatAccessRequest extends PageRequest implements Serializab
 
     public void setGroupCode(String groupCode) {
         this.groupCode = groupCode;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+    public Byte getStatType() {
+        return statType;
+    }
+
+    public void setStatType(Byte statType) {
+        this.statType = statType;
     }
 }

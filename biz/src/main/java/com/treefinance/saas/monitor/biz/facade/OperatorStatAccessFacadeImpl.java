@@ -44,8 +44,8 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     @Override
     public MonitorResult<List<OperatorStatDayAccessRO>> queryOperatorStatDayAccessList(OperatorStatAccessRequest request) {
-        if (request == null || request.getDataDate() == null) {
-            logger.error("查询各个运营商日监控统计数据,输入参数为空或者dataDate为空,request={}", JSON.toJSONString(request));
+        if (request == null || request.getDataDate() == null || request.getStatType() == null) {
+            logger.error("查询各个运营商日监控统计数据,输入参数为空或者dataDate,statType为空,request={}", JSON.toJSONString(request));
             throw new ParamCheckerException("请求参数非法");
         }
         logger.info("查询各个运营商日监控统计数据,输入参数request={}", JSON.toJSONString(request));
@@ -53,7 +53,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
         OperatorStatDayAccessCriteria criteria = new OperatorStatDayAccessCriteria();
         criteria.setOrderByClause("confirmMobileCount desc");
-        criteria.createCriteria().andDataTimeEqualTo(request.getDataDate());
+        criteria.createCriteria().andDataTimeEqualTo(request.getDataDate()).andDataTypeEqualTo(request.getStatType());
         List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectByExample(criteria);
         if (!CollectionUtils.isEmpty(list)) {
             result = DataConverterUtils.convert(list, OperatorStatDayAccessRO.class);
@@ -64,7 +64,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     @Override
     public MonitorResult<List<OperatorStatDayAccessRO>> queryOperatorStatDayAccessListWithPage(OperatorStatAccessRequest request) {
-        if (request == null || request.getDataDate() == null) {
+        if (request == null || request.getDataDate() == null || request.getStatType() == null) {
             logger.error("查询各个运营商日监控统计数据(分页),输入参数为空,request={}", JSON.toJSONString(request));
             throw new ParamCheckerException("请求参数非法");
         }
@@ -75,7 +75,11 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.setOrderByClause("confirmMobileCount desc");
         criteria.setLimit(request.getPageSize());
         criteria.setOffset(request.getOffset());
-        criteria.createCriteria().andDataTimeEqualTo(request.getDataDate());
+        OperatorStatDayAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andDataTimeEqualTo(request.getDataDate()).andDataTypeEqualTo(request.getStatType());
+        if (StringUtils.isNotBlank(request.getGroupName())) {
+            innerCriteria.andGroupNameLike(request.getGroupName() + "%");
+        }
         long total = operatorStatDayAccessMapper.countByExample(criteria);
         if (total > 0) {
             List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectPaginationByExample(criteria);
@@ -87,7 +91,8 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     @Override
     public MonitorResult<List<OperatorStatDayAccessRO>> queryOneOperatorStatDayAccessListWithPage(OperatorStatAccessRequest request) {
-        if (request == null || request.getStartDate() == null || request.getEndDate() == null || StringUtils.isBlank(request.getGroupCode())) {
+        if (request == null || request.getStartDate() == null || request.getEndDate() == null || request.getStatType() == null
+                || StringUtils.isBlank(request.getGroupCode())) {
             logger.error("查询某一个运营商日监控统计数据(分页),输入参数为空,request={}", JSON.toJSONString(request));
             throw new ParamCheckerException("请求参数非法");
         }
@@ -99,6 +104,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.setLimit(request.getPageSize());
         criteria.setOffset(request.getOffset());
         criteria.createCriteria().andGroupCodeEqualTo(request.getGroupCode())
+                .andDataTypeEqualTo(request.getStatType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         long total = operatorStatDayAccessMapper.countByExample(criteria);
         if (total > 0) {
@@ -111,7 +117,8 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     @Override
     public MonitorResult<List<OperatorStatAccessRO>> queryOperatorStatAccessList(OperatorStatAccessRequest request) {
-        if (request == null || request.getStartDate() == null || request.getEndDate() == null || StringUtils.isBlank(request.getGroupCode())) {
+        if (request == null || request.getStartDate() == null || request.getEndDate() == null || request.getStatType() == null
+                || StringUtils.isBlank(request.getGroupCode())) {
             logger.error("查询各个运营商小时监控统计数据,输入参数为空,request={}", JSON.toJSONString(request));
             throw new ParamCheckerException("请求参数非法");
         }
@@ -120,6 +127,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
         criteria.createCriteria().andGroupCodeEqualTo(request.getGroupCode())
+                .andDataTypeEqualTo(request.getStatType())
                 .andDataTimeBetween(MonitorDateUtils.getDayStartTime(request.getStartDate()), MonitorDateUtils.getDayEndTime(request.getEndDate()));
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
         if (!CollectionUtils.isEmpty(list)) {
@@ -131,7 +139,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     @Override
     public MonitorResult<List<OperatorAllStatDayAccessRO>> queryAllOperatorStatDayAccessList(OperatorStatAccessRequest request) {
-        if (request == null || request.getStartDate() == null || request.getEndDate() == null) {
+        if (request == null || request.getStartDate() == null || request.getEndDate() == null || request.getStatType() == null) {
             logger.error("查询所有运营商日监控统计数据,输入参数为空,request={}", JSON.toJSONString(request));
             throw new ParamCheckerException("请求参数非法");
         }
@@ -139,7 +147,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         List<OperatorAllStatDayAccessRO> result = Lists.newArrayList();
         OperatorAllStatDayAccessCriteria criteria = new OperatorAllStatDayAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
-        criteria.createCriteria().andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        criteria.createCriteria().andDataTypeEqualTo(request.getStatType()).andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<OperatorAllStatDayAccess> list = operatorAllStatDayAccessMapper.selectByExample(criteria);
         if (!CollectionUtils.isEmpty(list)) {
             result = DataConverterUtils.convert(list, OperatorAllStatDayAccessRO.class);
@@ -150,7 +158,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     @Override
     public MonitorResult<List<OperatorAllStatDayAccessRO>> queryAllOperatorStatDayAccessListWithPage(OperatorStatAccessRequest request) {
-        if (request == null || request.getStartDate() == null || request.getEndDate() == null) {
+        if (request == null || request.getStartDate() == null || request.getEndDate() == null || request.getStatType() == null) {
             logger.error("查询所有运营商日监控统计数据(分页),输入参数为空,request={}", JSON.toJSONString(request));
             throw new ParamCheckerException("请求参数非法");
         }
@@ -160,7 +168,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.setOrderByClause("dataTime desc");
         criteria.setLimit(request.getPageSize());
         criteria.setOffset(request.getOffset());
-        criteria.createCriteria().andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        criteria.createCriteria().andDataTypeEqualTo(request.getStatType()).andDataTimeBetween(request.getStartDate(), request.getEndDate());
         long total = operatorAllStatDayAccessMapper.countByExample(criteria);
         if (total > 0) {
             List<OperatorAllStatDayAccess> list = operatorAllStatDayAccessMapper.selectPaginationByExample(criteria);
