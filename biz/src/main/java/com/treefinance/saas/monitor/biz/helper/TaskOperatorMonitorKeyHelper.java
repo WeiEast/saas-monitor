@@ -15,6 +15,7 @@ import java.util.Date;
 public class TaskOperatorMonitorKeyHelper {
 
     private static final String KEY_PREFIX = "saas-monitor-task-operator-monitor";
+    private static final String KEY_MESSAGE_LOG = "key-message-log";
     private static final String KEY_DAY_ON_GROUP = "key-days-group";
     private static final String KEY_DAY_ON_All = "key-days-all";
     private static final String GROUP_STAT_ACCESS_INTERVAL = "group-stat-interval";
@@ -146,6 +147,11 @@ public class TaskOperatorMonitorKeyHelper {
     public static String keyOfUsersAllOnIntervalStat(Date intervalTime, ETaskOperatorMonitorStatus statusType) {
         String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_ALL_ON_ACTION, interval, statusType);
+    }
+
+    public static String keyOfMessageLog(Date intervalTime) {
+        String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_MESSAGE_LOG, interval);
     }
 
 
