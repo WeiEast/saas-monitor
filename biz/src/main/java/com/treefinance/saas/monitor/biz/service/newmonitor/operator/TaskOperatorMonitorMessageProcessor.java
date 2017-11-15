@@ -6,6 +6,7 @@ import com.treefinance.saas.assistant.model.TaskOperatorMonitorMessage;
 import com.treefinance.saas.grapserver.facade.model.enums.ETaskOperatorMonitorStatus;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
+import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -41,16 +42,16 @@ public class TaskOperatorMonitorMessageProcessor {
      * @param message
      * @param status
      */
-    public void updateIntervalData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status) {
+    public void updateIntervalData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
         Map<String, String> statMap = Maps.newHashMap();
-        statMap.put("dataType", status + "");
-        String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeIntervalStat(intervalTime, message.getGroupCode());
+        statMap.put("statusType", status + "");
+        String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeIntervalStat(intervalTime, message.getGroupCode(), statType);
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
                 // 需统计的当日特定时间列表
-                String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnGroupStat(intervalTime);
+                String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnGroupStat(intervalTime, statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
@@ -67,9 +68,11 @@ public class TaskOperatorMonitorMessageProcessor {
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
                     hashOperations.put("dataTime", MonitorDateUtils.format(intervalTime));
+                    hashOperations.put("dataType", statType.getCode().toString());
                     hashOperations.put("groupCode", message.getGroupCode());
                     hashOperations.put("groupName", message.getGroupName());
                     statMap.put("dataTime", MonitorDateUtils.format(intervalTime));
+                    statMap.put("dataType", statType + "");
                     statMap.put("groupCode", message.getGroupCode());
                     statMap.put("groupName", message.getGroupName());
                     // 设定超时时间默认为2天
@@ -89,10 +92,10 @@ public class TaskOperatorMonitorMessageProcessor {
      * @param message
      * @param status
      */
-    public void updateDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status) {
+    public void updateDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
         Map<String, String> statMap = Maps.newHashMap();
-        statMap.put("dataType", status + "");
-        String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeDayStat(intervalTime, message.getGroupCode());
+        statMap.put("statusType", status + "");
+        String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeDayStat(intervalTime, message.getGroupCode(), statType);
 
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
@@ -108,9 +111,11 @@ public class TaskOperatorMonitorMessageProcessor {
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
                     hashOperations.put("dataTime", MonitorDateUtils.getDayStartTimeStr(intervalTime));
+                    hashOperations.put("dataType", statType.getCode().toString());
                     hashOperations.put("groupCode", message.getGroupCode());
                     hashOperations.put("groupName", message.getGroupName());
                     statMap.put("dataTime", MonitorDateUtils.getDayStartTimeStr(intervalTime));
+                    statMap.put("dataType", statType + "");
                     statMap.put("groupCode", message.getGroupCode());
                     statMap.put("groupName", message.getGroupName());
                     // 设定超时时间默认为2天
@@ -131,16 +136,16 @@ public class TaskOperatorMonitorMessageProcessor {
      * @param message
      * @param status
      */
-    public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status) {
+    public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
         Map<String, String> statMap = Maps.newHashMap();
-        statMap.put("dataType", status + "");
-        String key = TaskOperatorMonitorKeyHelper.keyOfAllIntervalStat(intervalTime);
+        statMap.put("statusType", status + "");
+        String key = TaskOperatorMonitorKeyHelper.keyOfAllIntervalStat(intervalTime, statType);
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
                 // 需统计的当日特定时间列表
-                String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnAllStat(intervalTime);
+                String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnAllStat(intervalTime, statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
@@ -151,6 +156,8 @@ public class TaskOperatorMonitorMessageProcessor {
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
                     hashOperations.put("dataTime", MonitorDateUtils.format(intervalTime));
+                    hashOperations.put("dataType", statType.getCode().toString());
+                    statMap.put("dataType", statType + "");
                     statMap.put("dataTime", MonitorDateUtils.format(intervalTime));
                     // 设定超时时间默认为2天
                     hashOperations.expire(2, TimeUnit.DAYS);
@@ -169,10 +176,10 @@ public class TaskOperatorMonitorMessageProcessor {
      * @param message
      * @param status
      */
-    public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status) {
+    public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
         Map<String, String> statMap = Maps.newHashMap();
-        statMap.put("dataType", status + "");
-        String key = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(intervalTime);
+        statMap.put("statusType", status + "");
+        String key = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(intervalTime, statType);
 
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
@@ -182,6 +189,8 @@ public class TaskOperatorMonitorMessageProcessor {
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
                     hashOperations.put("dataTime", MonitorDateUtils.getDayStartTimeStr(intervalTime));
+                    hashOperations.put("dataType", statType.getCode().toString());
+                    statMap.put("dataType", statType + "");
                     statMap.put("dataTime", MonitorDateUtils.getDayStartTimeStr(intervalTime));
                     // 设定超时时间默认为2天
                     hashOperations.expire(2, TimeUnit.DAYS);

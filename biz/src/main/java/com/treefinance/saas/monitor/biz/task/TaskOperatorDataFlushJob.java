@@ -14,6 +14,7 @@ import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatDayAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatDayAccessDTO;
+import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -55,14 +56,24 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                 public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
                     Set<String> groupCodeSet = redisOperations.opsForSet().members(TaskOperatorMonitorKeyHelper.keyOfGroupCodes());
+
                     //保存所有运营商特定统计时间统计数据
-                    saveAllIntervalData(redisOperations, jobTime);
+                    saveAllIntervalData(redisOperations, jobTime, ETaskOperatorStatType.TASK);
                     //保存所有运营商日统计数据
-                    saveAllDayData(redisOperations, jobTime);
-                    //保存运营商日统计数据
-                    saveDayData(redisOperations, jobTime, groupCodeSet);
+                    saveAllDayData(redisOperations, jobTime, ETaskOperatorStatType.TASK);
                     //保存运营商特定统计时间统计数据
-                    saveIntervalData(redisOperations, jobTime, groupCodeSet);
+                    saveIntervalData(redisOperations, jobTime, groupCodeSet, ETaskOperatorStatType.TASK);
+                    //保存运营商日统计数据
+                    saveDayData(redisOperations, jobTime, groupCodeSet, ETaskOperatorStatType.TASK);
+
+                    //保存所有运营商特定统计时间统计数据
+                    saveAllIntervalData(redisOperations, jobTime, ETaskOperatorStatType.USER);
+                    //保存所有运营商日统计数据
+                    saveAllDayData(redisOperations, jobTime, ETaskOperatorStatType.USER);
+                    //保存运营商特定统计时间统计数据
+                    saveIntervalData(redisOperations, jobTime, groupCodeSet, ETaskOperatorStatType.USER);
+                    //保存运营商日统计数据
+                    saveDayData(redisOperations, jobTime, groupCodeSet, ETaskOperatorStatType.USER);
                     return null;
                 }
             });
@@ -73,9 +84,9 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
         }
     }
 
-    private void saveAllIntervalData(RedisOperations redisOperations, Date jobTime) {
+    private void saveAllIntervalData(RedisOperations redisOperations, Date jobTime, ETaskOperatorStatType statType) {
         try {
-            String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnAllStat(jobTime);
+            String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnAllStat(jobTime, statType);
             Set<String> redisStatDataTimeStrSets = redisOperations.opsForSet().members(dayKey);
             if (CollectionUtils.isEmpty(redisStatDataTimeStrSets)) {
                 return;
@@ -92,7 +103,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             }
             List<OperatorAllStatAccessDTO> list = Lists.newArrayList();
             for (Date redisStatDataTime : redisStatDataTimeSets) {
-                String hashKey = TaskOperatorMonitorKeyHelper.keyOfAllIntervalStat(redisStatDataTime);
+                String hashKey = TaskOperatorMonitorKeyHelper.keyOfAllIntervalStat(redisStatDataTime, statType);
                 if (!redisOperations.hasKey(hashKey)) {
                     return;
                 }
@@ -152,10 +163,10 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
         }
     }
 
-    private void saveAllDayData(RedisOperations redisOperations, Date jobTime) {
+    private void saveAllDayData(RedisOperations redisOperations, Date jobTime, ETaskOperatorStatType statType) {
         try {
             Date redisStatDataTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes());
-            String hashKey = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(redisStatDataTime);
+            String hashKey = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(redisStatDataTime, statType);
             if (!redisOperations.hasKey(hashKey)) {
                 return;
             }
@@ -203,7 +214,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
         }
     }
 
-    private void saveDayData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet) {
+    private void saveDayData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet, ETaskOperatorStatType statType) {
         try {
             if (CollectionUtils.isEmpty(groupCodeSet)) {
                 return;
@@ -211,7 +222,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             List<OperatorStatDayAccessDTO> list = Lists.newArrayList();
             Date redisStatDataTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes());//redis中时间为redisStatDataTime的key需要刷新到db中
             for (String groupCode : groupCodeSet) {
-                String hashKey = TaskOperatorMonitorKeyHelper.keyOfGroupCodeDayStat(redisStatDataTime, groupCode);
+                String hashKey = TaskOperatorMonitorKeyHelper.keyOfGroupCodeDayStat(redisStatDataTime, groupCode, statType);
                 if (!redisOperations.hasKey(hashKey)) {
                     continue;
                 }
@@ -259,12 +270,12 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
 
     }
 
-    private void saveIntervalData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet) {
+    private void saveIntervalData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet, ETaskOperatorStatType statType) {
         try {
             if (CollectionUtils.isEmpty(groupCodeSet)) {
                 return;
             }
-            String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnGroupStat(jobTime);
+            String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnGroupStat(jobTime, statType);
             Set<String> redisStatDataTimeStrSets = redisOperations.opsForSet().members(dayKey);
             if (CollectionUtils.isEmpty(redisStatDataTimeStrSets)) {
                 return;
@@ -282,7 +293,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             List<OperatorStatAccessDTO> list = Lists.newArrayList();
             for (Date redisStatDataTime : redisStatDataTimeSets) {
                 for (String groupCode : groupCodeSet) {
-                    String hashKey = TaskOperatorMonitorKeyHelper.keyOfGroupCodeIntervalStat(redisStatDataTime, groupCode);
+                    String hashKey = TaskOperatorMonitorKeyHelper.keyOfGroupCodeIntervalStat(redisStatDataTime, groupCode, statType);
                     if (!redisOperations.hasKey(hashKey)) {
                         continue;
                     }

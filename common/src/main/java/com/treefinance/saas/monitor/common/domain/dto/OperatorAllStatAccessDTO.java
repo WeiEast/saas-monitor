@@ -14,6 +14,9 @@ public class OperatorAllStatAccessDTO implements Serializable {
     private Date dataTime;
 
 
+    private Byte dataType;
+
+
     private Integer entryCount;
 
 
@@ -270,5 +273,13 @@ public class OperatorAllStatAccessDTO implements Serializable {
 
     public void setPreviousCallbackSuccessRate(BigDecimal previousCallbackSuccessRate) {
         this.previousCallbackSuccessRate = previousCallbackSuccessRate;
+    }
+
+    public Byte getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(Byte dataType) {
+        this.dataType = dataType;
     }
 }

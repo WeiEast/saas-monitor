@@ -14,6 +14,8 @@ public class OperatorStatAccessDTO implements Serializable {
 
     private Date dataTime;
 
+    private Byte dataType;
+
     private Integer confirmMobileCount;
 
     private Integer startLoginCount;
@@ -209,5 +211,13 @@ public class OperatorStatAccessDTO implements Serializable {
 
     public void setPreviousProcessSuccessRate(BigDecimal previousProcessSuccessRate) {
         this.previousProcessSuccessRate = previousProcessSuccessRate;
+    }
+
+    public Byte getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(Byte dataType) {
+        this.dataType = dataType;
     }
 }
