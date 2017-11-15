@@ -10,6 +10,8 @@ public class OperatorAllStatDayAccessDTO implements Serializable {
 
     private Date dataTime;
 
+    private Byte dataType;
+
     private Integer entryCount;
 
     private Integer confirmMobileCount;
@@ -176,5 +178,13 @@ public class OperatorAllStatDayAccessDTO implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Byte getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(Byte dataType) {
+        this.dataType = dataType;
     }
 }

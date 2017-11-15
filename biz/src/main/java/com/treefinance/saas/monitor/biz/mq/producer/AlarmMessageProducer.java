@@ -255,10 +255,6 @@ public class AlarmMessageProducer {
      * @param dataBody
      */
     public void sendMail4OperatorMonitor(String title, String dataBody, Date jobTime) {
-        if (diamondConfig.getOperatorAlarmMailSwitch().equals("off")) {
-            logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
-            return;
-        }
         try {
             String mails = diamondConfig.getMonitorAlarmMails();
             if (StringUtils.isEmpty(mails)) {
@@ -297,11 +293,6 @@ public class AlarmMessageProducer {
      * @param jobTime
      */
     public void sendWebChart4OperatorMonitor(String dataBody, Date jobTime) {
-
-        if (diamondConfig.getOperatorAlarmWechatSwitch().equals("off")) {
-            logger.info("运营商监控,预警定时任务执行jobTime={},发送微信开关已关闭", MonitorDateUtils.format(jobTime));
-            return;
-        }
         try {
             String topic = diamondConfig.getMonitorAlarmTopic();
             String tag = diamondConfig.getMonitorAlarmWebchartTag();

@@ -1,14 +1,14 @@
-package com.treefinance.saas.monitor.biz.task;
+package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
+import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
+import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
@@ -16,10 +16,12 @@ import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -28,59 +30,55 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Created by haojiahong on 2017/11/6.
+ * Created by haojiahong on 2017/11/13.
  */
-public class TaskOperatorAlarmJob implements SimpleJob {
+@Service
+public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGroupAlarmService {
 
-    private static final Logger logger = LoggerFactory.getLogger(TaskOperatorAlarmJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(OperatorMonitorGroupAlarmService.class);
 
+    @Autowired
+    private DiamondConfig diamondConfig;
     @Autowired
     private OperatorStatAccessMapper operatorStatAccessMapper;
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
-    @Autowired
-    private DiamondConfig diamondConfig;
-
 
     @Override
-    public void execute(ShardingContext shardingContext) {
-        long start = System.currentTimeMillis();
-        //定时任务执行时间
-        Date now = new Date();
-        Date jobTime = DateUtils.addMinutes(now, -diamondConfig.getOperatorMonitorIntervalMinutes());
-        logger.info("运营商监控,预警定时任务执行时间now={},要统计的数据时刻jobTime={}", MonitorDateUtils.format(now), MonitorDateUtils.format(jobTime));
+    public void alarm(Date now, Date dataTime, ETaskOperatorStatType statType) {
         try {
             OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
-            criteria.createCriteria().andDataTimeEqualTo(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes()));
+            criteria.createCriteria()
+                    .andDataTypeEqualTo(statType.getCode())
+                    .andDataTimeEqualTo(MonitorDateUtils.getIntervalTime(dataTime, diamondConfig.getOperatorMonitorIntervalMinutes()));
             List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
             if (CollectionUtils.isEmpty(list)) {
-                logger.info("运营商监控,预警定时任务执行jobTime={},此段时间内,未查询到运营商统计数据list={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(list));
+                logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},此段时间内,未查询到区分运营商的统计数据list={}",
+                        MonitorDateUtils.format(now), MonitorDateUtils.format(dataTime), JSON.toJSONString(list));
                 return;
             }
             List<OperatorStatAccessDTO> dtoList = DataConverterUtils.convert(list, OperatorStatAccessDTO.class);
 
             //获取前7天内,相同时刻运营商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
             //<groupCode,OperatorStatAccessDTO>
-            Map<String, OperatorStatAccessDTO> compareMap = getPreviousCompareDataMap(jobTime, dtoList);
-            logger.info("运营商监控,预警定时任务执行jobTime={}获取前n天内,相同时刻运营商统计的平均值compareMap={}",
-                    MonitorDateUtils.format(jobTime), JSON.toJSONString(compareMap));
+            Map<String, OperatorStatAccessDTO> compareMap = getPreviousCompareDataMap(now, dataTime, dtoList, statType);
+            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},获取前n天内,相同时刻区分运营商统计的平均值compareMap={}",
+                    MonitorDateUtils.format(now), MonitorDateUtils.format(dataTime), JSON.toJSONString(compareMap));
             if (MapUtils.isEmpty(compareMap)) {
                 return;
             }
 
             //获取需要预警的数据信息
-            List<OperatorStatAccessAlarmMsgDTO> msgList = getAlarmMsgList(jobTime, dtoList, compareMap);
-            logger.info("运营商监控,预警定时任务执行jobTime={}需要预警的数据信息msgList={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(msgList));
+            List<OperatorStatAccessAlarmMsgDTO> msgList = getAlarmMsgList(now, dataTime, dtoList, compareMap, statType);
+            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},区分运营商统计需要预警的数据信息msgList={}",
+                    MonitorDateUtils.format(now), MonitorDateUtils.format(dataTime), JSON.toJSONString(msgList));
             if (CollectionUtils.isEmpty(msgList)) {
                 return;
             }
             //发送预警
-            alarm(msgList, jobTime);
-
+            alarmMsg(msgList, now, dataTime, statType);
         } catch (Exception e) {
-            logger.error("运营商监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
-        } finally {
-            logger.info("运营商监控,预警定时任务执行jobTime={}完成,耗时{}ms", MonitorDateUtils.format(jobTime), System.currentTimeMillis() - start);
+            logger.error("运营商监控,预警定时任务执行jobTime={},statType={}异常", MonitorDateUtils.format(now), statType, e);
         }
     }
 
@@ -88,20 +86,43 @@ public class TaskOperatorAlarmJob implements SimpleJob {
      * 发送预警
      *
      * @param msgList
+     * @param jobTime
+     * @param dataTime
+     * @param statType
      */
-    private void alarm(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime) {
-        String mailDataBody = generateMailDataBody(msgList, jobTime);
-        String title = generateTitle();
-        alarmMessageProducer.sendMail4OperatorMonitor(title, mailDataBody, jobTime);
-        String weChatBody = generateWeChatBody(msgList, jobTime);
-        alarmMessageProducer.sendWebChart4OperatorMonitor(weChatBody, jobTime);
+    private void alarmMsg(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date dataTime, ETaskOperatorStatType statType) {
+        String mailSwitch, weChatSwitch, baseTitle;
+        if (ETaskOperatorStatType.TASK.equals(statType)) {
+            mailSwitch = diamondConfig.getOperatorAlarmMailSwitch();
+            weChatSwitch = diamondConfig.getOperatorAlarmWechatSwitch();
+            baseTitle = "运营商监控(按任务数统计)";
+        } else {
+            mailSwitch = diamondConfig.getOperatorAlarmUserMailSwitch();
+            weChatSwitch = diamondConfig.getOperatorAlarmUserWechatSwitch();
+            baseTitle = "运营商监控(按人数统计)";
+        }
+        if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
+            String mailDataBody = generateMailDataBody(msgList, dataTime, baseTitle);
+            String title = generateTitle(baseTitle);
+            alarmMessageProducer.sendMail4OperatorMonitor(title, mailDataBody, jobTime);
+        } else {
+            logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
+
+        }
+        if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
+            String weChatBody = generateWeChatBody(msgList, dataTime, baseTitle);
+            alarmMessageProducer.sendWebChart4OperatorMonitor(weChatBody, jobTime);
+        } else {
+            logger.info("运营商监控,预警定时任务执行jobTime={},发送微信开关已关闭", MonitorDateUtils.format(jobTime));
+        }
     }
 
-    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime) {
+    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, String baseTitle) {
         Integer intervalMins = diamondConfig.getOperatorMonitorIntervalMinutes();
         StringBuffer buffer = new StringBuffer();
         buffer.append("<br>").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("运营商监控预警,在")
+                .append(baseTitle)
+                .append("预警,在")
                 .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, intervalMins)))
                 .append("--")
                 .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(DateUtils.addMinutes(jobTime, intervalMins), intervalMins)))
@@ -126,18 +147,19 @@ public class TaskOperatorAlarmJob implements SimpleJob {
         return buffer.toString();
     }
 
-    private String generateTitle() {
-        return "saas-" + diamondConfig.getMonitorEnvironment() + "运营商监控发生预警";
+    private String generateTitle(String baseTitle) {
+        return "saas-" + diamondConfig.getMonitorEnvironment() + baseTitle + "发生预警";
     }
 
-    private String generateWeChatBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime) {
+    private String generateWeChatBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date dataTime, String baseTitle) {
         Integer intervalMins = diamondConfig.getOperatorMonitorIntervalMinutes();
         StringBuffer buffer = new StringBuffer();
         buffer.append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("运营商监控预警,在")
-                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(jobTime, intervalMins)))
+                .append(baseTitle)
+                .append("预警,在")
+                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(dataTime, intervalMins)))
                 .append("--")
-                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(DateUtils.addMinutes(jobTime, intervalMins), intervalMins)))
+                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(DateUtils.addMinutes(dataTime, intervalMins), intervalMins)))
                 .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("\n");
         for (OperatorStatAccessAlarmMsgDTO msg : msgList) {
             buffer.append("【").append(msg.getGroupName()).append("】")
@@ -150,24 +172,94 @@ public class TaskOperatorAlarmJob implements SimpleJob {
         return buffer.toString();
     }
 
+
+    /**
+     * 获取前7天内,相同时刻运营商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
+     *
+     * @param now
+     * @param dataTime
+     * @param dtoList
+     * @return
+     */
+    private Map<String, OperatorStatAccessDTO> getPreviousCompareDataMap(Date now, Date dataTime, List<OperatorStatAccessDTO> dtoList, ETaskOperatorStatType statType) {
+        List<String> groupCodeList = dtoList.stream().map(OperatorStatAccessDTO::getGroupCode).collect(Collectors.toList());
+        Integer previousDays;
+        if (ETaskOperatorStatType.TASK.equals(statType)) {
+            previousDays = diamondConfig.getOperatorAlarmPreviousDays();
+        } else {
+            previousDays = diamondConfig.getOperatorAlarmUserPreviousDays();
+        }
+        List<Date> previousOClockList = MonitorDateUtils.getPreviousOClockTime(MonitorDateUtils.getIntervalTime(dataTime, diamondConfig.getOperatorMonitorIntervalMinutes()), previousDays);
+        OperatorStatAccessCriteria previousCriteria = new OperatorStatAccessCriteria();
+        previousCriteria.createCriteria().andDataTypeEqualTo(statType.getCode())
+                .andDataTimeIn(previousOClockList)
+                .andGroupCodeIn(groupCodeList);
+        List<OperatorStatAccess> previousList = operatorStatAccessMapper.selectByExample(previousCriteria);
+        if (CollectionUtils.isEmpty(previousList)) {
+            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},在此时间前{}天内,未查询到区分运营商统计数据groupCodeList={},previousOClockList={},list={}",
+                    MonitorDateUtils.format(now), MonitorDateUtils.format(dataTime), previousDays, JSON.toJSONString(groupCodeList),
+                    JSON.toJSONString(previousOClockList), JSON.toJSONString(previousList));
+            return Maps.newHashMap();
+        }
+        List<OperatorStatAccessDTO> previousDTOList = DataConverterUtils.convert(previousList, OperatorStatAccessDTO.class);
+        //<groupCode,List<OperatorStatAccessDTO>>
+        Map<String, List<OperatorStatAccessDTO>> previousMap = previousDTOList.stream().collect(Collectors.groupingBy(OperatorStatAccessDTO::getGroupCode));
+        Map<String, OperatorStatAccessDTO> compareMap = Maps.newHashMap();
+        for (Map.Entry<String, List<OperatorStatAccessDTO>> entry : previousMap.entrySet()) {
+            List<OperatorStatAccessDTO> entryList = entry.getValue();
+            if (CollectionUtils.isEmpty(entryList)) {
+                continue;
+            }
+            BigDecimal previousLoginConversionRateCount = BigDecimal.ZERO;
+            BigDecimal previousLoginSuccessRateCount = BigDecimal.ZERO;
+            BigDecimal previousCrawlSuccessRateCount = BigDecimal.ZERO;
+            BigDecimal previousProcessSuccessRateCount = BigDecimal.ZERO;
+            for (OperatorStatAccessDTO dto : entryList) {
+                previousLoginConversionRateCount = previousLoginConversionRateCount.add(dto.getLoginConversionRate());
+                previousLoginSuccessRateCount = previousLoginSuccessRateCount.add(dto.getLoginSuccessRate());
+                previousCrawlSuccessRateCount = previousCrawlSuccessRateCount.add(dto.getCrawlSuccessRate());
+                previousProcessSuccessRateCount = previousProcessSuccessRateCount.add(dto.getProcessSuccessRate());
+            }
+            OperatorStatAccessDTO compareDto = new OperatorStatAccessDTO();
+            compareDto.setGroupCode(entry.getKey());
+            compareDto.setPreviousLoginConversionRate(previousLoginConversionRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
+            compareDto.setPreviousLoginSuccessRate(previousLoginSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
+            compareDto.setPreviousCrawlSuccessRate(previousCrawlSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
+            compareDto.setPreviousProcessSuccessRate(previousProcessSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
+            compareMap.put(entry.getKey(), compareDto);
+        }
+        return compareMap;
+    }
+
     /**
      * 获取需要预警的数据信息
      *
-     * @param jobTime
+     * @param now
+     * @param dataTime
      * @param dtoList
      * @param compareMap
      * @return
      */
-    private List<OperatorStatAccessAlarmMsgDTO> getAlarmMsgList(Date jobTime, List<OperatorStatAccessDTO> dtoList, Map<String, OperatorStatAccessDTO> compareMap) {
+    private List<OperatorStatAccessAlarmMsgDTO> getAlarmMsgList(Date now, Date dataTime,
+                                                                List<OperatorStatAccessDTO> dtoList,
+                                                                Map<String, OperatorStatAccessDTO> compareMap,
+                                                                ETaskOperatorStatType statType) {
         List<OperatorStatAccessAlarmMsgDTO> msgList = Lists.newArrayList();
+        Integer previousDays;
+        Integer threshold;
+        if (ETaskOperatorStatType.TASK.equals(statType)) {
+            previousDays = diamondConfig.getOperatorAlarmPreviousDays();
+            threshold = diamondConfig.getOperatorAlarmThresholdPercent();
+        } else {
+            previousDays = diamondConfig.getOperatorAlarmUserPreviousDays();
+            threshold = diamondConfig.getOperatorAlarmUserThresholdPercent();
+        }
         for (OperatorStatAccessDTO dto : dtoList) {
             if (compareMap.get(dto.getGroupCode()) == null) {
-                logger.info("运营商监控,预警定时任务执行jobTime={},groupCode={}的运营商前{}天未查询到统计数据",
-                        MonitorDateUtils.format(jobTime), dto.getGroupCode(), diamondConfig.getOperatorAlarmPreviousDays());
+                logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},groupCode={}的运营商前{}天未查询到统计数据",
+                        MonitorDateUtils.format(now), MonitorDateUtils.format(dataTime), dto.getGroupCode(), previousDays);
                 continue;
             }
-            Integer threshold = diamondConfig.getOperatorAlarmThresholdPercent();
-            Integer previousDays = diamondConfig.getOperatorAlarmPreviousDays();
             OperatorStatAccessDTO compareDTO = compareMap.get(dto.getGroupCode());
             BigDecimal loginConversionCompareVal = compareDTO.getPreviousLoginConversionRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
             BigDecimal loginSuccessCompareVal = compareDTO.getPreviousLoginSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
@@ -241,55 +333,5 @@ public class TaskOperatorAlarmJob implements SimpleJob {
         }
         msgList = msgList.stream().sorted((o1, o2) -> o1.getGroupName().compareTo(o2.getGroupName())).collect(Collectors.toList());
         return msgList;
-    }
-
-    /**
-     * 获取前7天内,相同时刻运营商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
-     *
-     * @param jobTime
-     * @param dtoList
-     * @return
-     */
-    private Map<String, OperatorStatAccessDTO> getPreviousCompareDataMap(Date jobTime, List<OperatorStatAccessDTO> dtoList) {
-        List<String> groupCodeList = dtoList.stream().map(OperatorStatAccessDTO::getGroupCode).collect(Collectors.toList());
-        List<Date> previousOClockList = MonitorDateUtils.getPreviousOClockTime(MonitorDateUtils.getIntervalTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes()),
-                diamondConfig.getOperatorAlarmPreviousDays());
-        OperatorStatAccessCriteria previousCriteria = new OperatorStatAccessCriteria();
-        previousCriteria.createCriteria().andDataTimeIn(previousOClockList).andGroupCodeIn(groupCodeList);
-        List<OperatorStatAccess> previousList = operatorStatAccessMapper.selectByExample(previousCriteria);
-        if (CollectionUtils.isEmpty(previousList)) {
-            logger.info("运营商监控,预警定时任务执行jobTime={}, 在此时间前{}天内,未查询到运营商统计数据groupCodeList={},previousOClockList={},list={}",
-                    MonitorDateUtils.format(jobTime), diamondConfig.getOperatorAlarmPreviousDays(), JSON.toJSONString(groupCodeList),
-                    JSON.toJSONString(previousOClockList), JSON.toJSONString(previousList));
-            return Maps.newHashMap();
-        }
-        List<OperatorStatAccessDTO> previousDTOList = DataConverterUtils.convert(previousList, OperatorStatAccessDTO.class);
-        //<groupCode,List<OperatorStatAccessDTO>>
-        Map<String, List<OperatorStatAccessDTO>> previousMap = previousDTOList.stream().collect(Collectors.groupingBy(OperatorStatAccessDTO::getGroupCode));
-        Map<String, OperatorStatAccessDTO> compareMap = Maps.newHashMap();
-        for (Map.Entry<String, List<OperatorStatAccessDTO>> entry : previousMap.entrySet()) {
-            List<OperatorStatAccessDTO> entryList = entry.getValue();
-            if (CollectionUtils.isEmpty(entryList)) {
-                continue;
-            }
-            BigDecimal previousLoginConversionRateCount = BigDecimal.ZERO;
-            BigDecimal previousLoginSuccessRateCount = BigDecimal.ZERO;
-            BigDecimal previousCrawlSuccessRateCount = BigDecimal.ZERO;
-            BigDecimal previousProcessSuccessRateCount = BigDecimal.ZERO;
-            for (OperatorStatAccessDTO dto : entryList) {
-                previousLoginConversionRateCount = previousLoginConversionRateCount.add(dto.getLoginConversionRate());
-                previousLoginSuccessRateCount = previousLoginSuccessRateCount.add(dto.getLoginSuccessRate());
-                previousCrawlSuccessRateCount = previousCrawlSuccessRateCount.add(dto.getCrawlSuccessRate());
-                previousProcessSuccessRateCount = previousProcessSuccessRateCount.add(dto.getProcessSuccessRate());
-            }
-            OperatorStatAccessDTO compareDto = new OperatorStatAccessDTO();
-            compareDto.setGroupCode(entry.getKey());
-            compareDto.setPreviousLoginConversionRate(previousLoginConversionRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
-            compareDto.setPreviousLoginSuccessRate(previousLoginSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
-            compareDto.setPreviousCrawlSuccessRate(previousCrawlSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
-            compareDto.setPreviousProcessSuccessRate(previousProcessSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
-            compareMap.put(entry.getKey(), compareDto);
-        }
-        return compareMap;
     }
 }

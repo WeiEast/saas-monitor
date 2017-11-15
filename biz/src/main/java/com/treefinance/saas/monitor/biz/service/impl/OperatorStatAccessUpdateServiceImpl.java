@@ -1,13 +1,16 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.treefinance.saas.monitor.biz.service.OperatorStatAccessUpdateService;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatDayAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatDayAccessDTO;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorAllStatDayAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatDayAccess;
+import com.treefinance.saas.monitor.dao.mapper.OperatorAllStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorAllStatDayAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatDayAccessMapper;
@@ -26,6 +29,8 @@ public class OperatorStatAccessUpdateServiceImpl implements OperatorStatAccessUp
     @Autowired
     private OperatorAllStatDayAccessMapper operatorAllStatDayAccessMapper;
     @Autowired
+    private OperatorAllStatAccessMapper operatorAllStatAccessMapper;
+    @Autowired
     private OperatorStatDayAccessMapper operatorStatDayAccessMapper;
     @Autowired
     private OperatorStatAccessMapper operatorStatAccessMapper;
@@ -38,6 +43,14 @@ public class OperatorStatAccessUpdateServiceImpl implements OperatorStatAccessUp
         dataList.forEach(data -> operatorAllStatDayAccessMapper.insertOrUpdateBySelective(data));
 
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchInsertAllOperatorStatAccess(List<OperatorAllStatAccessDTO> list) {
+        List<OperatorAllStatAccess> dataList = DataConverterUtils.convert(list, OperatorAllStatAccess.class);
+        dataList.forEach(data -> operatorAllStatAccessMapper.insertOrUpdateBySelective(data));
+    }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -54,4 +67,6 @@ public class OperatorStatAccessUpdateServiceImpl implements OperatorStatAccessUp
         dataList.forEach(data -> operatorStatAccessMapper.insertOrUpdateBySelective(data));
 
     }
+
+
 }

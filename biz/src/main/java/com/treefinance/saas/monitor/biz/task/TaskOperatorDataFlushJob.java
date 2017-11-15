@@ -10,9 +10,11 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.OperatorStatAccessUpdateService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatDayAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatDayAccessDTO;
+import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -54,12 +56,24 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                 public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
                     Set<String> groupCodeSet = redisOperations.opsForSet().members(TaskOperatorMonitorKeyHelper.keyOfGroupCodes());
+
+                    //保存所有运营商特定统计时间统计数据
+                    saveAllIntervalData(redisOperations, jobTime, ETaskOperatorStatType.TASK);
                     //保存所有运营商日统计数据
-                    saveAllDayData(redisOperations, jobTime);
-                    //保存运营商日统计数据
-                    saveDayData(redisOperations, jobTime, groupCodeSet);
+                    saveAllDayData(redisOperations, jobTime, ETaskOperatorStatType.TASK);
                     //保存运营商特定统计时间统计数据
-                    saveIntervalData(redisOperations, jobTime, groupCodeSet);
+                    saveIntervalData(redisOperations, jobTime, groupCodeSet, ETaskOperatorStatType.TASK);
+                    //保存运营商日统计数据
+                    saveDayData(redisOperations, jobTime, groupCodeSet, ETaskOperatorStatType.TASK);
+
+                    //保存所有运营商特定统计时间统计数据
+                    saveAllIntervalData(redisOperations, jobTime, ETaskOperatorStatType.USER);
+                    //保存所有运营商日统计数据
+                    saveAllDayData(redisOperations, jobTime, ETaskOperatorStatType.USER);
+                    //保存运营商特定统计时间统计数据
+                    saveIntervalData(redisOperations, jobTime, groupCodeSet, ETaskOperatorStatType.USER);
+                    //保存运营商日统计数据
+                    saveDayData(redisOperations, jobTime, groupCodeSet, ETaskOperatorStatType.USER);
                     return null;
                 }
             });
@@ -70,10 +84,89 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
         }
     }
 
-    private void saveAllDayData(RedisOperations redisOperations, Date jobTime) {
+    private void saveAllIntervalData(RedisOperations redisOperations, Date jobTime, ETaskOperatorStatType statType) {
+        try {
+            String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnAllStat(jobTime, statType);
+            Set<String> redisStatDataTimeStrSets = redisOperations.opsForSet().members(dayKey);
+            if (CollectionUtils.isEmpty(redisStatDataTimeStrSets)) {
+                return;
+            }
+            logger.info("运营商监控,定时任务执行jobTime={},保存所有运营商特定统计时间统计数据,此次任务需要统计的时间段有dataTimeStrSets={}",
+                    MonitorDateUtils.format(jobTime), JSON.toJSONString(redisStatDataTimeStrSets));
+            Set<Date> redisStatDataTimeSets = Sets.newHashSet();
+            for (String dateStr : redisStatDataTimeStrSets) {
+                Date date = MonitorDateUtils.parse(dateStr);
+                redisStatDataTimeSets.add(date);
+            }
+            if (CollectionUtils.isEmpty(redisStatDataTimeSets)) {
+                return;
+            }
+            List<OperatorAllStatAccessDTO> list = Lists.newArrayList();
+            for (Date redisStatDataTime : redisStatDataTimeSets) {
+                String hashKey = TaskOperatorMonitorKeyHelper.keyOfAllIntervalStat(redisStatDataTime, statType);
+                if (!redisOperations.hasKey(hashKey)) {
+                    return;
+                }
+                Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
+                if (MapUtils.isEmpty(dataMap)) {
+                    return;
+                }
+                logger.info("运营商监控,定时任务执行jobTime={},刷新所有运营商按时间段统计数据到db中,key={},data={}",
+                        MonitorDateUtils.format(jobTime), hashKey, JSON.toJSONString(dataMap));
+                String json = JSON.toJSONString(dataMap);
+                OperatorAllStatAccessDTO dto = JSON.parseObject(json, OperatorAllStatAccessDTO.class);
+                dto.setId(UidGenerator.getId());
+                if (dto.getEntryCount() == null) {
+                    dto.setEntryCount(0);
+                }
+                if (dto.getConfirmMobileCount() == null) {
+                    dto.setConfirmMobileCount(0);
+                }
+                if (dto.getStartLoginCount() == null) {
+                    dto.setStartLoginCount(0);
+                }
+                if (dto.getLoginSuccessCount() == null) {
+                    dto.setLoginSuccessCount(0);
+                }
+                if (dto.getCrawlSuccessCount() == null) {
+                    dto.setCrawlSuccessCount(0);
+                }
+                if (dto.getProcessSuccessCount() == null) {
+                    dto.setProcessSuccessCount(0);
+                }
+                if (dto.getCallbackSuccessCount() == null) {
+                    dto.setCallbackSuccessCount(0);
+                }
+                dto.setConfirmMobileConversionRate(calcRate(dto.getEntryCount(), dto.getConfirmMobileCount()));
+                dto.setLoginConversionRate(calcRate(dto.getConfirmMobileCount(), dto.getStartLoginCount()));
+                dto.setLoginSuccessRate(calcRate(dto.getStartLoginCount(), dto.getLoginSuccessCount()));
+                dto.setCrawlSuccessRate(calcRate(dto.getLoginSuccessCount(), dto.getCrawlSuccessCount()));
+                dto.setProcessSuccessRate(calcRate(dto.getCrawlSuccessCount(), dto.getProcessSuccessCount()));
+                dto.setCallbackSuccessRate(calcRate(dto.getProcessSuccessCount(), dto.getCallbackSuccessCount()));
+                list.add(dto);
+            }
+
+            if (CollectionUtils.isNotEmpty(list)) {
+                logger.info("运营商监控,定时任务执行jobTime={},刷新OperatorAllStatAccess数据到db中list={}",
+                        MonitorDateUtils.format(jobTime), JSON.toJSONString(list));
+                operatorStatAccessUpdateService.batchInsertAllOperatorStatAccess(list);
+            }
+            if (CollectionUtils.isNotEmpty(redisStatDataTimeStrSets)) {
+                logger.info("运营商监控,定时任务执行jobTime={},刷新OperatorStatAccess数据到db后,删除dayKey={}中已统计数据时间dataTimeSet={},dataTimeStrSets={}",
+                        MonitorDateUtils.format(jobTime), dayKey, JSON.toJSONString(redisStatDataTimeSets), JSON.toJSONString(redisStatDataTimeStrSets));
+                String[] array = new String[redisStatDataTimeStrSets.size()];
+                redisOperations.opsForSet().remove(dayKey, redisStatDataTimeStrSets.toArray(array));
+            }
+        } catch (Exception e) {
+            logger.error("运营商监控,定时任务执行jobTime={},刷新OperatorAllStatAccess数据到db异常", MonitorDateUtils.format(jobTime), e);
+            e.printStackTrace();
+        }
+    }
+
+    private void saveAllDayData(RedisOperations redisOperations, Date jobTime, ETaskOperatorStatType statType) {
         try {
             Date redisStatDataTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes());
-            String hashKey = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(redisStatDataTime);
+            String hashKey = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(redisStatDataTime, statType);
             if (!redisOperations.hasKey(hashKey)) {
                 return;
             }
@@ -121,7 +214,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
         }
     }
 
-    private void saveDayData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet) {
+    private void saveDayData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet, ETaskOperatorStatType statType) {
         try {
             if (CollectionUtils.isEmpty(groupCodeSet)) {
                 return;
@@ -129,7 +222,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             List<OperatorStatDayAccessDTO> list = Lists.newArrayList();
             Date redisStatDataTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes());//redis中时间为redisStatDataTime的key需要刷新到db中
             for (String groupCode : groupCodeSet) {
-                String hashKey = TaskOperatorMonitorKeyHelper.keyOfGroupCodeDayStat(redisStatDataTime, groupCode);
+                String hashKey = TaskOperatorMonitorKeyHelper.keyOfGroupCodeDayStat(redisStatDataTime, groupCode, statType);
                 if (!redisOperations.hasKey(hashKey)) {
                     continue;
                 }
@@ -177,17 +270,17 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
 
     }
 
-    private void saveIntervalData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet) {
+    private void saveIntervalData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet, ETaskOperatorStatType statType) {
         try {
             if (CollectionUtils.isEmpty(groupCodeSet)) {
                 return;
             }
-            String dayKey = TaskOperatorMonitorKeyHelper.keyOfDay(jobTime);
+            String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnGroupStat(jobTime, statType);
             Set<String> redisStatDataTimeStrSets = redisOperations.opsForSet().members(dayKey);
             if (CollectionUtils.isEmpty(redisStatDataTimeStrSets)) {
                 return;
             }
-            logger.info("运营商监控,定时任务执行jobTime={},此次任务需要统计的时间段有dataTimeStrSets={}",
+            logger.info("运营商监控,定时任务执行jobTime={},保存运营商特定统计时间统计数据,此次任务需要统计的时间段有dataTimeStrSets={}",
                     MonitorDateUtils.format(jobTime), JSON.toJSONString(redisStatDataTimeStrSets));
             Set<Date> redisStatDataTimeSets = Sets.newHashSet();
             for (String dateStr : redisStatDataTimeStrSets) {
@@ -200,7 +293,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             List<OperatorStatAccessDTO> list = Lists.newArrayList();
             for (Date redisStatDataTime : redisStatDataTimeSets) {
                 for (String groupCode : groupCodeSet) {
-                    String hashKey = TaskOperatorMonitorKeyHelper.keyOfGroupCodeIntervalStat(redisStatDataTime, groupCode);
+                    String hashKey = TaskOperatorMonitorKeyHelper.keyOfGroupCodeIntervalStat(redisStatDataTime, groupCode, statType);
                     if (!redisOperations.hasKey(hashKey)) {
                         continue;
                     }

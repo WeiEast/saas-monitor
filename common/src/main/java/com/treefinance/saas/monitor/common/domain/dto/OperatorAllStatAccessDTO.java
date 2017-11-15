@@ -4,35 +4,61 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class OperatorStatAccessDTO implements Serializable {
+public class OperatorAllStatAccessDTO implements Serializable {
+
+    private static final long serialVersionUID = -5390308997672442434L;
 
     private Long id;
 
-    private String groupCode;
-
-    private String groupName;
 
     private Date dataTime;
 
+
     private Byte dataType;
+
+
+    private Integer entryCount;
+
 
     private Integer confirmMobileCount;
 
+
     private Integer startLoginCount;
+
 
     private Integer loginSuccessCount;
 
+
     private Integer crawlSuccessCount;
+
 
     private Integer processSuccessCount;
 
+
+    private Integer callbackSuccessCount;
+
+
+    private BigDecimal confirmMobileConversionRate;
+
+
     private BigDecimal loginConversionRate;
+
 
     private BigDecimal loginSuccessRate;
 
+
     private BigDecimal crawlSuccessRate;
 
+
     private BigDecimal processSuccessRate;
+
+
+    private BigDecimal callbackSuccessRate;
+
+    /**
+     * 前n天的相同时刻确认手机转化率平均值
+     */
+    private BigDecimal previousConfirmMobileConversionRate;
 
     /**
      * 前n天的相同时刻登录转化率平均值
@@ -54,36 +80,16 @@ public class OperatorStatAccessDTO implements Serializable {
      */
     private BigDecimal previousProcessSuccessRate;
 
+    /**
+     * 前n天相同时刻回调成功率平均值
+     */
+    private BigDecimal previousCallbackSuccessRate;
+
 
     private Date createTime;
 
+
     private Date lastUpdateTime;
-
-    private static final long serialVersionUID = 1L;
-
-    public BigDecimal getLoginSuccessRate() {
-        return loginSuccessRate;
-    }
-
-    public void setLoginSuccessRate(BigDecimal loginSuccessRate) {
-        this.loginSuccessRate = loginSuccessRate;
-    }
-
-    public BigDecimal getPreviousLoginSuccessRate() {
-        return previousLoginSuccessRate;
-    }
-
-    public void setPreviousLoginSuccessRate(BigDecimal previousLoginSuccessRate) {
-        this.previousLoginSuccessRate = previousLoginSuccessRate;
-    }
-
-    public Integer getStartLoginCount() {
-        return startLoginCount;
-    }
-
-    public void setStartLoginCount(Integer startLoginCount) {
-        this.startLoginCount = startLoginCount;
-    }
 
     public Long getId() {
         return id;
@@ -91,22 +97,6 @@ public class OperatorStatAccessDTO implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getGroupCode() {
-        return groupCode;
-    }
-
-    public void setGroupCode(String groupCode) {
-        this.groupCode = groupCode;
-    }
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
     }
 
     public Date getDataTime() {
@@ -117,12 +107,28 @@ public class OperatorStatAccessDTO implements Serializable {
         this.dataTime = dataTime;
     }
 
+    public Integer getEntryCount() {
+        return entryCount;
+    }
+
+    public void setEntryCount(Integer entryCount) {
+        this.entryCount = entryCount;
+    }
+
     public Integer getConfirmMobileCount() {
         return confirmMobileCount;
     }
 
     public void setConfirmMobileCount(Integer confirmMobileCount) {
         this.confirmMobileCount = confirmMobileCount;
+    }
+
+    public Integer getStartLoginCount() {
+        return startLoginCount;
+    }
+
+    public void setStartLoginCount(Integer startLoginCount) {
+        this.startLoginCount = startLoginCount;
     }
 
     public Integer getLoginSuccessCount() {
@@ -149,12 +155,36 @@ public class OperatorStatAccessDTO implements Serializable {
         this.processSuccessCount = processSuccessCount;
     }
 
+    public Integer getCallbackSuccessCount() {
+        return callbackSuccessCount;
+    }
+
+    public void setCallbackSuccessCount(Integer callbackSuccessCount) {
+        this.callbackSuccessCount = callbackSuccessCount;
+    }
+
+    public BigDecimal getConfirmMobileConversionRate() {
+        return confirmMobileConversionRate;
+    }
+
+    public void setConfirmMobileConversionRate(BigDecimal confirmMobileConversionRate) {
+        this.confirmMobileConversionRate = confirmMobileConversionRate;
+    }
+
     public BigDecimal getLoginConversionRate() {
         return loginConversionRate;
     }
 
     public void setLoginConversionRate(BigDecimal loginConversionRate) {
         this.loginConversionRate = loginConversionRate;
+    }
+
+    public BigDecimal getLoginSuccessRate() {
+        return loginSuccessRate;
+    }
+
+    public void setLoginSuccessRate(BigDecimal loginSuccessRate) {
+        this.loginSuccessRate = loginSuccessRate;
     }
 
     public BigDecimal getCrawlSuccessRate() {
@@ -173,6 +203,14 @@ public class OperatorStatAccessDTO implements Serializable {
         this.processSuccessRate = processSuccessRate;
     }
 
+    public BigDecimal getCallbackSuccessRate() {
+        return callbackSuccessRate;
+    }
+
+    public void setCallbackSuccessRate(BigDecimal callbackSuccessRate) {
+        this.callbackSuccessRate = callbackSuccessRate;
+    }
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -189,12 +227,28 @@ public class OperatorStatAccessDTO implements Serializable {
         this.lastUpdateTime = lastUpdateTime;
     }
 
+    public BigDecimal getPreviousConfirmMobileConversionRate() {
+        return previousConfirmMobileConversionRate;
+    }
+
+    public void setPreviousConfirmMobileConversionRate(BigDecimal previousConfirmMobileConversionRate) {
+        this.previousConfirmMobileConversionRate = previousConfirmMobileConversionRate;
+    }
+
     public BigDecimal getPreviousLoginConversionRate() {
         return previousLoginConversionRate;
     }
 
     public void setPreviousLoginConversionRate(BigDecimal previousLoginConversionRate) {
         this.previousLoginConversionRate = previousLoginConversionRate;
+    }
+
+    public BigDecimal getPreviousLoginSuccessRate() {
+        return previousLoginSuccessRate;
+    }
+
+    public void setPreviousLoginSuccessRate(BigDecimal previousLoginSuccessRate) {
+        this.previousLoginSuccessRate = previousLoginSuccessRate;
     }
 
     public BigDecimal getPreviousCrawlSuccessRate() {
@@ -211,6 +265,14 @@ public class OperatorStatAccessDTO implements Serializable {
 
     public void setPreviousProcessSuccessRate(BigDecimal previousProcessSuccessRate) {
         this.previousProcessSuccessRate = previousProcessSuccessRate;
+    }
+
+    public BigDecimal getPreviousCallbackSuccessRate() {
+        return previousCallbackSuccessRate;
+    }
+
+    public void setPreviousCallbackSuccessRate(BigDecimal previousCallbackSuccessRate) {
+        this.previousCallbackSuccessRate = previousCallbackSuccessRate;
     }
 
     public Byte getDataType() {

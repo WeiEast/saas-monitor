@@ -64,6 +64,30 @@ public class DiamondConfig {
     @DAttribute(key = "operator.alarm.mail.switch")
     private String operatorAlarmMailSwitch;
 
+
+    /**
+     * (运营商按人数预警)统计前n天的数据,进行预警
+     */
+    @DAttribute(key = "operator.alarm.user.previous.days")
+    private Integer operatorAlarmUserPreviousDays;
+
+    /**
+     * (运营商按人数预警)前n天数据平均值的预警阀值百分比
+     */
+    @DAttribute(key = "operator.alarm.user.threshold.percent")
+    private Integer operatorAlarmUserThresholdPercent;
+
+    /**
+     * 运营商按人数预警消息,微信通知开关
+     */
+    @DAttribute(key = "operator.alarm.user.wechat.switch")
+    private String operatorAlarmUserWechatSwitch;
+    /**
+     * 运营商按人数预警消息,邮箱通知开关
+     */
+    @DAttribute(key = "operator.alarm.user.mail.switch")
+    private String operatorAlarmUserMailSwitch;
+
     /**
      * 统计时间间隔:分钟为单位
      */
@@ -321,5 +345,37 @@ public class DiamondConfig {
 
     public void setOperatorAlarmMailSwitch(String operatorAlarmMailSwitch) {
         this.operatorAlarmMailSwitch = operatorAlarmMailSwitch;
+    }
+
+    public Integer getOperatorAlarmUserPreviousDays() {
+        return operatorAlarmUserPreviousDays;
+    }
+
+    public void setOperatorAlarmUserPreviousDays(Integer operatorAlarmUserPreviousDays) {
+        this.operatorAlarmUserPreviousDays = operatorAlarmUserPreviousDays;
+    }
+
+    public Integer getOperatorAlarmUserThresholdPercent() {
+        return operatorAlarmUserThresholdPercent;
+    }
+
+    public void setOperatorAlarmUserThresholdPercent(Integer operatorAlarmUserThresholdPercent) {
+        this.operatorAlarmUserThresholdPercent = operatorAlarmUserThresholdPercent;
+    }
+
+    public String getOperatorAlarmUserWechatSwitch() {
+        return operatorAlarmUserWechatSwitch;
+    }
+
+    public void setOperatorAlarmUserWechatSwitch(String operatorAlarmUserWechatSwitch) {
+        this.operatorAlarmUserWechatSwitch = operatorAlarmUserWechatSwitch;
+    }
+
+    public String getOperatorAlarmUserMailSwitch() {
+        return operatorAlarmUserMailSwitch;
+    }
+
+    public void setOperatorAlarmUserMailSwitch(String operatorAlarmUserMailSwitch) {
+        this.operatorAlarmUserMailSwitch = operatorAlarmUserMailSwitch;
     }
 }

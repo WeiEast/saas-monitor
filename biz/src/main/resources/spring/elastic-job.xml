@@ -29,6 +29,16 @@
                 registry-center-ref="regCenter" cron="0 4/5 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
 
+    <!--运营商监控,定时预警任务(按任务统计预警)-->
+    <job:simple id="operatorMonitorByTaskAlarmJob"
+                class="com.treefinance.saas.monitor.biz.task.OperatorMonitorByTaskAlarmJob"
+                registry-center-ref="regCenter" cron="0 0 0/1 * * ?"
+                sharding-total-count="1" overwrite="true"/>
+
+    <!--运营商监控,定时预警任务(按人数统计预警)-->
+    <job:simple id="operatorMonitorByUserAlarmJob"
+                class="com.treefinance.saas.monitor.biz.task.OperatorMonitorByTaskAlarmJob"
+                registry-center-ref="regCenter" cron="0 0 0/1 * * ?"
     <!--运营商监控,定时预警任务-->
     <!--<job:simple id="taskOperatorAlarmJob" class="com.treefinance.saas.monitor.biz.task.TaskOperatorAlarmJob"-->
                 <!--registry-center-ref="regCenter" cron="0 0 0/1 * * ?"-->
