@@ -78,7 +78,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         OperatorStatDayAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
         innerCriteria.andDataTimeEqualTo(request.getDataDate()).andDataTypeEqualTo(request.getStatType());
         if (StringUtils.isNotBlank(request.getGroupName())) {
-            innerCriteria.andGroupNameLike(request.getGroupName() + "%");
+            innerCriteria.andGroupNameLike("%" + request.getGroupName() + "%");
         }
         long total = operatorStatDayAccessMapper.countByExample(criteria);
         if (total > 0) {
