@@ -56,7 +56,7 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
                 logger.info("运营商监控,消息处理,message={}重复发送不再统计.message={}", JSON.toJSONString(message));
                 return;
             }
-
+            setOperations.add(value);
             ETaskOperatorMonitorStatus status = ETaskOperatorMonitorStatus.getMonitorStats(message.getStatus());
             switch (status) {
                 case CREATE_TASK:
