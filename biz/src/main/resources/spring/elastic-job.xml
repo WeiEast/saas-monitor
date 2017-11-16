@@ -29,32 +29,17 @@
                 registry-center-ref="regCenter" cron="0 4/5 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
 
-    <!--&lt;!&ndash;运营商监控,定时预警任务(按任务统计预警)&ndash;&gt;-->
-    <!--<job:simple id="operatorMonitorByTaskAlarmJob"-->
-                <!--class="com.treefinance.saas.monitor.biz.task.OperatorMonitorByTaskAlarmJob"-->
-                <!--registry-center-ref="regCenter" cron="0 0 0/1 * * ?"-->
-                <!--sharding-total-count="1" overwrite="true"/>-->
-
-    <!--&lt;!&ndash;运营商监控,定时预警任务(按人数统计预警)&ndash;&gt;-->
-    <!--<job:simple id="operatorMonitorByUserAlarmJob"-->
-                <!--class="com.treefinance.saas.monitor.biz.task.OperatorMonitorByTaskAlarmJob"-->
-                <!--registry-center-ref="regCenter" cron="0 0 0/1 * * ?"-->
-                <!--sharding-total-count="1" overwrite="true"/>-->
-
-
     <!--运营商监控,定时预警任务(按任务统计预警)-->
     <job:simple id="operatorMonitorByTaskAlarmJob"
                 class="com.treefinance.saas.monitor.biz.task.OperatorMonitorByTaskAlarmJob"
-                registry-center-ref="regCenter" cron="0 0/10 * * * ?"
+                registry-center-ref="regCenter" cron="0 0 0/1 * * ?"
                 sharding-total-count="1" overwrite="true"/>
 
     <!--运营商监控,定时预警任务(按人数统计预警)-->
     <job:simple id="operatorMonitorByUserAlarmJob"
-                class="com.treefinance.saas.monitor.biz.task.OperatorMonitorByTaskAlarmJob"
-                registry-center-ref="regCenter" cron="0 0/10 * * * ?"
+                class="com.treefinance.saas.monitor.biz.task.OperatorMonitorByUserAlarmJob"
+                registry-center-ref="regCenter" cron="0 0 0/1 * * ?"
                 sharding-total-count="1" overwrite="true"/>
-
-
     <!--
     &lt;!&ndash; 报警任务 &ndash;&gt;
     <job:simple id="alarmJob" class="com.treefinance.saas.monitor.biz.task.AlarmJob" registry-center-ref="regCenter"

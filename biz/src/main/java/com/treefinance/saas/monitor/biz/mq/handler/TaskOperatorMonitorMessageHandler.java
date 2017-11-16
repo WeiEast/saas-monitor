@@ -45,6 +45,7 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
         try {
             Date dataTime = message.getDataTime();
             Date intervalTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(dataTime, diamondConfig.getOperatorMonitorIntervalMinutes());//按小时统计数据的时间点,如6:00,7:00
+            //任务重复消息不处理
             String messageLogKey = TaskOperatorMonitorKeyHelper.keyOfMessageLog(intervalTime);
             BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(messageLogKey);
             if (!Boolean.TRUE.equals(redisTemplate.hasKey(messageLogKey))) {
@@ -57,6 +58,7 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
                 return;
             }
             setOperations.add(value);
+
             ETaskOperatorMonitorStatus status = ETaskOperatorMonitorStatus.getMonitorStats(message.getStatus());
             switch (status) {
                 case CREATE_TASK:
