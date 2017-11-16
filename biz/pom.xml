@@ -1,75 +1,74 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.treefinance.saas.monitor</groupId>
-		<artifactId>saas-monitor</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.treefinance.saas.monitor</groupId>
+        <artifactId>saas-monitor</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<artifactId>monitor-biz</artifactId>
+    <artifactId>monitor-biz</artifactId>
 
-	<dependencies>
-		<dependency>
-			<artifactId>gateway-facade</artifactId>
-			<groupId>com.treefinance.saas.gateway</groupId>
-		</dependency>
-		<dependency>
-			<groupId>com.treefinance.saas.monitor</groupId>
-			<artifactId>monitor-facade</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.treefinance.saas.monitor</groupId>
-			<artifactId>monitor-dao</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.treefinance.saas.monitor</groupId>
-			<artifactId>monitor-common</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <artifactId>gateway-facade</artifactId>
+            <groupId>com.treefinance.saas.gateway</groupId>
+        </dependency>
+        <dependency>
+            <groupId>com.treefinance.saas.monitor</groupId>
+            <artifactId>monitor-facade</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.treefinance.saas.monitor</groupId>
+            <artifactId>monitor-dao</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.treefinance.saas.monitor</groupId>
+            <artifactId>monitor-common</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>com.treefinance.saas</groupId>
-			<artifactId>grap-server-facade</artifactId>
-			<version>1.0.1-SNAPSHOT</version>
-		</dependency>
+        <dependency>
+            <groupId>com.treefinance.saas</groupId>
+            <artifactId>grap-server-facade</artifactId>
+            <version>1.0.1-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
 
+        <dependency>
+            <groupId>com.datatrees.common</groupId>
+            <artifactId>common-util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.dangdang</groupId>
+            <artifactId>elastic-job-lite-spring</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-aop</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>com.datatrees.common</groupId>
+            <artifactId>notify-common-facade</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>com.datatrees.common</groupId>
-			<artifactId>common-util</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.dangdang</groupId>
-			<artifactId>elastic-job-lite-spring</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>com.treefinance.saas</groupId>
+            <artifactId>assistant-monitor</artifactId>
+        </dependency>
+    </dependencies>
 
-		<dependency>
-			<groupId>com.datatrees.common</groupId>
-			<artifactId>notify-common-facade</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.treefinance.saas</groupId>
-			<artifactId>assistant-monitor</artifactId>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>aspectj-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

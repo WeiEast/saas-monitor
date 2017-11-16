@@ -16,6 +16,8 @@ public class TaskOperatorMonitorKeyHelper {
 
     private static final String KEY_PREFIX = "saas-monitor-task-operator-monitor";
     private static final String KEY_MESSAGE_LOG = "key-message-log";
+    private static final String KEY_DAY_USER_MOBILE_LOG = "key-day-user-mobile-log";
+    private static final String KEY_INTERVAL_USER_MOBILE_LOG = "key-interval-user-mobile-log";
     private static final String KEY_DAY_ON_GROUP = "key-days-group";
     private static final String KEY_DAY_ON_All = "key-days-all";
     private static final String GROUP_STAT_ACCESS_INTERVAL = "group-stat-interval";
@@ -149,9 +151,37 @@ public class TaskOperatorMonitorKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_ALL_ON_ACTION, interval, statusType);
     }
 
+    /**
+     * 任务消息记录
+     *
+     * @param intervalTime
+     * @return
+     */
     public static String keyOfMessageLog(Date intervalTime) {
         String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_MESSAGE_LOG, interval);
+    }
+
+    /**
+     * 用户一天内对应的手机号记录
+     *
+     * @param intervalTime
+     * @return
+     */
+    public static String keyOfDayUsersMobileLog(Date intervalTime) {
+        String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_DAY_USER_MOBILE_LOG, interval);
+    }
+
+    /**
+     * 用户统计时段内对应的手机号记录
+     *
+     * @param intervalTime
+     * @return
+     */
+    public static String keyOfIntervalUsersMobileLog(Date intervalTime) {
+        String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_INTERVAL_USER_MOBILE_LOG, interval);
     }
 
 

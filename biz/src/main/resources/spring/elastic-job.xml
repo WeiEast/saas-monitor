@@ -37,7 +37,7 @@
 
     <!--运营商监控,定时预警任务(按人数统计预警)-->
     <job:simple id="operatorMonitorByUserAlarmJob"
-                class="com.treefinance.saas.monitor.biz.task.OperatorMonitorByTaskAlarmJob"
+                class="com.treefinance.saas.monitor.biz.task.OperatorMonitorByUserAlarmJob"
                 registry-center-ref="regCenter" cron="0 0 0/1 * * ?"
                 sharding-total-count="1" overwrite="true"/>
     <!--
