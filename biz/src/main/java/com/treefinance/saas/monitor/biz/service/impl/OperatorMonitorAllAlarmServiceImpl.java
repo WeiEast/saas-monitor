@@ -55,6 +55,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             }
 
             OperatorAllStatAccess operatorAllStatAccess = list.get(0);
+            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},此段时间内,所有运营商的统计数据data={}", JSON.toJSONString(operatorAllStatAccess));
             OperatorAllStatAccessDTO dataDTO = DataConverterUtils.convert(operatorAllStatAccess, OperatorAllStatAccessDTO.class);
             //获取前7天内,相同时刻运营商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
             OperatorAllStatAccessDTO compareDTO = getPreviousCompareData(now, dataTime, dataDTO, statType);
@@ -66,7 +67,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
 
             //获取需要预警的数据信息
             List<OperatorStatAccessAlarmMsgDTO> msgList = getAlarmMsgList(now, dataTime, dataDTO, compareDTO, statType);
-            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},区分运营商统计需要预警的数据信息msgList={}",
+            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},所有运营商统计需要预警的数据信息msgList={}",
                     MonitorDateUtils.format(now), MonitorDateUtils.format(dataTime), JSON.toJSONString(msgList));
             if (CollectionUtils.isEmpty(msgList)) {
                 return;
@@ -276,7 +277,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
 
         }
 
-        return null;
+        return msgList;
     }
 
     /**
