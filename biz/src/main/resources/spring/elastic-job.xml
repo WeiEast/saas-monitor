@@ -48,7 +48,7 @@
                 sharding-total-count="1" overwrite="true"/>
 
     <!--运营商监控,定时预警任务(按人数统计预警)-->
-    <job:simple id="operatorMonitorByUserAlarmJob"
+    <job:simple id="operatorMonitorByUserAlarmJob1"
                 class="com.treefinance.saas.monitor.biz.task.OperatorMonitorByUserAlarmJob"
                 registry-center-ref="regCenter" cron="0 0/10 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
