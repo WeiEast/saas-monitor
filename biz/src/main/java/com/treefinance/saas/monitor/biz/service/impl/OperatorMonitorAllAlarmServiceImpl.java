@@ -85,12 +85,12 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         if (ETaskOperatorStatType.TASK.equals(statType)) {
             mailSwitch = diamondConfig.getOperatorAlarmMailSwitch();
             weChatSwitch = diamondConfig.getOperatorAlarmWechatSwitch();
-            baseTile = "总运营商监控(按任务数统计)";
+            baseTile = "【总】运营商监控(按任务数统计)";
 
         } else {
             mailSwitch = diamondConfig.getOperatorAlarmUserMailSwitch();
             weChatSwitch = diamondConfig.getOperatorAlarmUserWechatSwitch();
-            baseTile = "总运营商监控(按人数统计)";
+            baseTile = "【总】运营商监控(按人数统计)";
 
         }
         if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
