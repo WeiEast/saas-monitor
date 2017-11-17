@@ -11,6 +11,7 @@ import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.service.EcommerceService;
 import com.treefinance.saas.monitor.biz.service.OperatorService;
 import com.treefinance.saas.monitor.biz.service.WebsiteService;
+import com.treefinance.saas.monitor.biz.service.newmonitor.TaskExistMonitorService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorDTO;
@@ -52,6 +53,8 @@ public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMoni
     private OperatorService operatorService;
     @Autowired
     private EcommerceService ecommerceService;
+    @Autowired
+    private TaskExistMonitorService taskExistMonitorService;
 
     @Override
     public MonitorTagEnum getMonitorType() {
@@ -64,6 +67,7 @@ public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMoni
         try {
             Date completeTime = message.getCompleteTime();
             Date intervalTime = StatHelper.calculateIntervalTime(completeTime, diamondConfig.getMonitorIntervalMinutes());
+            taskExistMonitorService.doService(message);
             // 1.总数统计
             statTotal(message, intervalTime);
             // 合计所有商户的总数统计
