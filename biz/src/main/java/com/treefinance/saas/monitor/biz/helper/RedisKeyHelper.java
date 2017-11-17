@@ -24,6 +24,18 @@ public class RedisKeyHelper {
     public static final String ALARM_ACCESS_DAY_ALL = "alarm-flag-all";
     public static final String ALARM_ACCESS_DAY_TIMES_ALL = "alarm-flag-times-all";
     public static final String HTTP_STAT = "stat-http";
+    public static final String TASK_EXIST = "saas-monitor-task-exist-monitor";
+
+    /**
+     * 任务存在数
+     *
+     * @param date
+     * @return
+     */
+    public static String keyOfTaskExist(Date date) {
+        String timeStr = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(TASK_EXIST, timeStr);
+    }
 
     /**
      * http 请求总

@@ -3,7 +3,9 @@ package com.treefinance.saas.monitor.biz.task;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
+import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
+import com.treefinance.saas.monitor.biz.service.TaskExistMonitorAlarmService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
@@ -27,12 +29,15 @@ public class NoTaskAlarmJob implements SimpleJob {
     @Autowired
     private RedisDao redisDao;
 
+    @Autowired
+    private TaskExistMonitorAlarmService taskExistMonitorAlarmService;
+
     @Override
     public void execute(ShardingContext shardingContext) {
 
         int intervalMinutes = 5;
         final Date now = new Date();
-        final Date intervalTime = StatHelper.calculateIntervalTime(now, intervalMinutes);
+        final Date intervalTime = StatHelper.getRedisStatDateTime(now, intervalMinutes);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(now);
         final int hour = calendar.get(Calendar.HOUR_OF_DAY);
@@ -69,7 +74,7 @@ public class NoTaskAlarmJob implements SimpleJob {
                     List<Boolean> noTaskList = Lists.newArrayList();
                     for (int i = 0; i < noTaskCount; i++) {
                         Date keyDate = DateUtils.addMinutes(intervalTime, -intervalMinutes * i);
-                        String dataKey = "" + keyDate;
+                        String dataKey = RedisKeyHelper.keyOfTaskExist(keyDate);
                         Map<String, String> data = redisOperations.opsForHash().entries(dataKey);
                         if (data != null && data.get("totalCount") != null && Integer.valueOf(data.get("totalCount").toString()) > 0) {
                             continue;
@@ -77,7 +82,7 @@ public class NoTaskAlarmJob implements SimpleJob {
                         noTaskList.add(true);
                     }
                     if (noTaskList.size() == noTaskCount) {
-                        alarmNoTask(startTime, endTime);
+                        taskExistMonitorAlarmService.alarmNoTask(startTime, endTime);
                     }
                     return null;
                 }
@@ -117,7 +122,7 @@ public class NoTaskAlarmJob implements SimpleJob {
                     List<Boolean> noTaskList = Lists.newArrayList();
                     for (int i = 0; i < noSuccessTaskCount; i++) {
                         Date keyDate = DateUtils.addMinutes(intervalTime, -intervalMinutes * i);
-                        String dataKey = "" + keyDate;
+                        String dataKey = RedisKeyHelper.keyOfTaskExist(keyDate);
                         Map<String, String> data = redisOperations.opsForHash().entries(dataKey);
                         if (data != null && data.get("successCount") != null && Integer.valueOf(data.get("successCount").toString()) > 0) {
                             continue;
@@ -125,7 +130,7 @@ public class NoTaskAlarmJob implements SimpleJob {
                         noTaskList.add(true);
                     }
                     if (noTaskList.size() == noSuccessTaskCount) {
-                        alarmNoSuccessTask(startTime, endTime);
+                        taskExistMonitorAlarmService.alarmNoSuccessTask(startTime, endTime);
                     }
                     return null;
                 }
@@ -135,14 +140,5 @@ public class NoTaskAlarmJob implements SimpleJob {
         } finally {
             logger.info("NoTaskAlarmJob:noSuccessTaskAlarmCheck 耗时time={}ms", System.currentTimeMillis() - start);
         }
-    }
-
-    private void alarmNoTask(Date startTime, Date endTime) {
-
-    }
-
-
-    private void alarmNoSuccessTask(Date startTime, Date endTime) {
-
     }
 }
