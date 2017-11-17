@@ -73,7 +73,7 @@ public class NoTaskAlarmJob implements SimpleJob {
                     Date endTime = intervalTime;
 
                     List<Boolean> noTaskList = Lists.newArrayList();
-                    for (int i = 0; i < noTaskCount; i++) {
+                    for (int i = 1; i <= noTaskCount; i++) {
                         Date keyDate = DateUtils.addMinutes(intervalTime, -intervalMinutes * i);
                         String dataKey = RedisKeyHelper.keyOfTaskExist(keyDate);
                         Map<String, String> data = redisOperations.opsForHash().entries(dataKey);
@@ -122,7 +122,7 @@ public class NoTaskAlarmJob implements SimpleJob {
                     Date endTime = intervalTime;
 
                     List<Boolean> noTaskList = Lists.newArrayList();
-                    for (int i = 0; i < noSuccessTaskCount; i++) {
+                    for (int i = 1; i <= noSuccessTaskCount; i++) {
                         Date keyDate = DateUtils.addMinutes(intervalTime, -intervalMinutes * i);
                         String dataKey = RedisKeyHelper.keyOfTaskExist(keyDate);
                         Map<String, String> data = redisOperations.opsForHash().entries(dataKey);
