@@ -104,12 +104,12 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
 
     private String generateNoTaskMailDataBody(Date startTime, Date endTime) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("<br>").append("您好,").append("saas-").append(diamondConfig.getMonitorEnvironment())
+        buffer.append("您好,").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append("发生任务预警,在")
                 .append(MonitorDateUtils.format(startTime))
                 .append("--")
                 .append(MonitorDateUtils.format(endTime))
-                .append("时段内没有任务创建,").append("请及时处理!").append("</br>");
+                .append("时段内没有任务创建,").append("请及时处理!");
         return buffer.toString();
     }
 
