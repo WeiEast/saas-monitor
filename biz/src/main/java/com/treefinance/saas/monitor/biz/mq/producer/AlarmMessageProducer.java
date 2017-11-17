@@ -347,6 +347,68 @@ public class AlarmMessageProducer {
 
 
     /**
+     * 任务监控预警(邮件)
+     *
+     * @param title
+     * @param dataBody
+     */
+    public void sendMail4TaskExistMonitor(String title, String dataBody) {
+        try {
+            String mails = diamondConfig.getMonitorAlarmMails();
+            if (StringUtils.isEmpty(mails)) {
+                logger.info("任务监控,未配置邮件接收人,邮件发送失败,title={},dataBody={}", title, dataBody);
+                return;
+            }
+            logger.info("任务监控,预警定时任务执行,发送邮件到mails={}", mails);
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmMailTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
+            List<String> tolist = Splitter.on(",").splitToList(mails);
+
+            MailBody body = new MailBody();
+            //设置邮件方式，具体看枚举值
+            body.setMailEnum(MailEnum.SIMPLE_MAIL);
+            //设置业务线，预警设置为alarm
+            body.setBusiness("alarm");
+            //设置发送给谁
+            body.setToList(tolist);
+            body.setSubject(title);
+            body.setBody(dataBody);
+            logger.info("任务监控,预警定时任务执行,发送邮件message={}", JSON.toJSONString(body));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+        } catch (Exception e) {
+            logger.error("任务监控,预警定时任务执行,,发送邮件异常", e);
+        }
+    }
+
+    /**
+     * 任务监控预警(微信)
+     *
+     * @param dataBody
+     */
+    public void sendWebChart4TaskExistMonitor(String dataBody) {
+        try {
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmWebchartTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
+
+            WeChatBody body = new WeChatBody();
+            body.setAgentId(AGENT_ID);
+            TXTMessage msg = new TXTMessage();
+            msg.setMessage(dataBody);
+            body.setMessage(msg);
+            body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
+            body.setNotifyEnum(NotifyEnum.WECHAT);
+            logger.info("任务监控,预警定时任务执行,发送微信message={}", JSON.toJSONString(body));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+        } catch (Exception e) {
+            logger.error("任务监控,预警定时任务执行,发送微信异常", e);
+        }
+
+    }
+
+
+    /**
      * 计算比率
      *
      * @param totalCount 总数
