@@ -88,6 +88,18 @@ public class DiamondConfig {
     @DAttribute(key = "operator.alarm.user.mail.switch")
     private String operatorAlarmUserMailSwitch;
 
+
+    /**
+     * 任务是否存在,微信通知开关
+     */
+    @DAttribute(key = "task.exist.wechat.switch")
+    private String taskExistAlarmWechatSwitch;
+    /**
+     * 任务是否存在,邮箱通知开关
+     */
+    @DAttribute(key = "task.exist.alarm.mail.switch")
+    private String taskExistAlarmMailSwitch;
+
     /**
      * 统计时间间隔:分钟为单位
      */
@@ -377,5 +389,21 @@ public class DiamondConfig {
 
     public void setOperatorAlarmUserMailSwitch(String operatorAlarmUserMailSwitch) {
         this.operatorAlarmUserMailSwitch = operatorAlarmUserMailSwitch;
+    }
+
+    public String getTaskExistAlarmWechatSwitch() {
+        return taskExistAlarmWechatSwitch;
+    }
+
+    public void setTaskExistAlarmWechatSwitch(String taskExistAlarmWechatSwitch) {
+        this.taskExistAlarmWechatSwitch = taskExistAlarmWechatSwitch;
+    }
+
+    public String getTaskExistAlarmMailSwitch() {
+        return taskExistAlarmMailSwitch;
+    }
+
+    public void setTaskExistAlarmMailSwitch(String taskExistAlarmMailSwitch) {
+        this.taskExistAlarmMailSwitch = taskExistAlarmMailSwitch;
     }
 }

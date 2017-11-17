@@ -1,14 +1,11 @@
 package com.treefinance.saas.monitor.biz.service.newmonitor.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskMonitorMessage;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.service.newmonitor.TaskExistMonitorService;
-import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +13,6 @@ import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +47,7 @@ public class TaskExistMonitorServiceImpl implements TaskExistMonitorService {
                 Long successCount = hashOperations.increment("successCount", 1);
                 map.put("successCount", successCount + "");
             }
-            logger.info("任务预警,任务预警完成,预警处理的任务消息message={},map={}", JSON.toJSONString(message), JSON.toJSONString(map));
+            logger.info("任务预警,任务预警消息处理完成,预警处理的任务消息message={},map={}", JSON.toJSONString(message), JSON.toJSONString(map));
         } catch (Exception e) {
             logger.error("任务预警,异常", e);
         }

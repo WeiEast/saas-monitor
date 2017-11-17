@@ -4,6 +4,9 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.biz.service.TaskExistMonitorAlarmService;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +18,8 @@ import java.util.Date;
 @Service
 public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmService {
 
+    private static final Logger logger = LoggerFactory.getLogger(TaskExistMonitorAlarmService.class);
+
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
@@ -22,22 +27,45 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
 
     @Override
     public void alarmNoTask(Date startTime, Date endTime) {
-        String mailDataBody = generateNoTaskMailDataBody(startTime, endTime);
-        String title = generateTitle();
-        alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
-        String weChatBody = generateNoTaskWeChatBody(startTime, endTime);
-        alarmMessageProducer.sendWebChart4TaskExistMonitor(weChatBody);
+
+        String mailSwitch = diamondConfig.getTaskExistAlarmMailSwitch();
+        String weChatSwitch = diamondConfig.getTaskExistAlarmWechatSwitch();
+        if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
+            String mailDataBody = generateNoTaskMailDataBody(startTime, endTime);
+            String title = generateNoTaskTitle();
+            alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
+        } else {
+            logger.info("任务预警,发送邮件开关已关闭");
+        }
+
+        if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
+            String weChatBody = generateNoTaskWeChatBody(startTime, endTime);
+            alarmMessageProducer.sendWebChart4TaskExistMonitor(weChatBody);
+        } else {
+            logger.info("任务预警,发送微信开关已关闭");
+        }
 
 
     }
 
     @Override
     public void alarmNoSuccessTask(Date startTime, Date endTime) {
-        String mailDataBody = generateNoSuccessTaskMailDataBody(startTime, endTime);
-        String title = generateTitle();
-        alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
-        String weChatBody = generateNoSuccessWeChatBody(startTime, endTime);
-        alarmMessageProducer.sendWebChart4TaskExistMonitor(weChatBody);
+        String mailSwitch = diamondConfig.getTaskExistAlarmMailSwitch();
+        String weChatSwitch = diamondConfig.getTaskExistAlarmWechatSwitch();
+        if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
+            String mailDataBody = generateNoSuccessTaskMailDataBody(startTime, endTime);
+            String title = generateNoSuccessTaskTitle();
+            alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
+        } else {
+            logger.info("任务预警,发送邮件开关已关闭");
+        }
+
+        if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
+            String weChatBody = generateNoSuccessWeChatBody(startTime, endTime);
+            alarmMessageProducer.sendWebChart4TaskExistMonitor(weChatBody);
+        } else {
+            logger.info("任务预警,发送微信开关已关闭");
+        }
     }
 
     private String generateNoSuccessWeChatBody(Date startTime, Date endTime) {
@@ -53,12 +81,12 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
 
     private String generateNoSuccessTaskMailDataBody(Date startTime, Date endTime) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("<br>").append("您好,").append("saas-").append(diamondConfig.getMonitorEnvironment())
+        buffer.append("您好,").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append("发生任务预警,在")
                 .append(MonitorDateUtils.format(startTime))
                 .append("--")
                 .append(MonitorDateUtils.format(endTime))
-                .append("时段内没有任务成功,").append("请及时处理!").append("</br>");
+                .append("时段内没有任务成功,").append("请及时处理!");
         return buffer.toString();
     }
 
@@ -85,7 +113,12 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
         return buffer.toString();
     }
 
-    private String generateTitle() {
-        return "saas-" + diamondConfig.getMonitorEnvironment() + "任务预警";
+    private String generateNoTaskTitle() {
+        return "saas-" + diamondConfig.getMonitorEnvironment() + "无任务预警";
     }
+
+    private String generateNoSuccessTaskTitle() {
+        return "saas-" + diamondConfig.getMonitorEnvironment() + "无成功任务预警";
+    }
+
 }

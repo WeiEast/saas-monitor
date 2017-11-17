@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.task;
 
+import com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
@@ -76,6 +77,7 @@ public class NoTaskAlarmJob implements SimpleJob {
                         Date keyDate = DateUtils.addMinutes(intervalTime, -intervalMinutes * i);
                         String dataKey = RedisKeyHelper.keyOfTaskExist(keyDate);
                         Map<String, String> data = redisOperations.opsForHash().entries(dataKey);
+                        logger.info("任务预警,定时任务执行,无任务校验,dataKey={},data={}", dataKey, JSON.toJSONString(data));
                         if (data != null && data.get("totalCount") != null && Integer.valueOf(data.get("totalCount").toString()) > 0) {
                             continue;
                         }
@@ -124,6 +126,7 @@ public class NoTaskAlarmJob implements SimpleJob {
                         Date keyDate = DateUtils.addMinutes(intervalTime, -intervalMinutes * i);
                         String dataKey = RedisKeyHelper.keyOfTaskExist(keyDate);
                         Map<String, String> data = redisOperations.opsForHash().entries(dataKey);
+                        logger.info("任务预警,定时任务执行,无成功任务校验,dataKey={},data={}", dataKey, JSON.toJSONString(data));
                         if (data != null && data.get("successCount") != null && Integer.valueOf(data.get("successCount").toString()) > 0) {
                             continue;
                         }
