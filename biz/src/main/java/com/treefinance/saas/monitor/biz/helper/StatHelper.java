@@ -42,6 +42,29 @@ public abstract class StatHelper {
         return DateUtils.truncate(date, Calendar.DAY_OF_MONTH);
     }
 
+
+    /**
+     * redis中存入的时间段key,如设置60为:7:00,8:00,9:00
+     * 若dataTime=2017-11-06 07:05:55 ,intervalMinutes = 60 则返回 2017-11-06 07:00:00
+     *
+     * @param dataTime
+     * @return
+     */
+    public static Date getRedisStatDateTime(Date dataTime, Integer intervalMinutes) {
+        if (intervalMinutes == null) {
+            intervalMinutes = 5;
+        }
+        Date intervalTime = DateUtils.truncate(dataTime, Calendar.MINUTE);
+        Long currentMinute = DateUtils.getFragmentInMinutes(intervalTime, Calendar.HOUR_OF_DAY);
+        if (currentMinute % intervalMinutes == 0) {
+            return intervalTime;
+        }
+        intervalTime = DateUtils.addMinutes(intervalTime, (-currentMinute.intValue() % intervalMinutes));
+        return intervalTime;
+    }
+
+
+
     public static void main(String[] args) {
         System.out.println(StatHelper.calculateIntervalTime(new Date(), 60));
     }
