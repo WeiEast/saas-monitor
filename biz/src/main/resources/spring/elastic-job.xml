@@ -45,4 +45,10 @@
     <job:simple id="alarmJob" class="com.treefinance.saas.monitor.biz.task.AlarmJob" registry-center-ref="regCenter"
                 cron="0 1/2 * * * ?"
                 sharding-total-count="1" overwrite="true"/>-->
+
+    <!-- 无任务预警 -->
+    <job:simple id="noTaskAlarmJob"
+                class="com.treefinance.saas.monitor.biz.task.NoTaskAlarmJob"
+                registry-center-ref="regCenter" cron="0 0/5 * * * ?"
+                sharding-total-count="1" overwrite="true"/>
 </beans>
