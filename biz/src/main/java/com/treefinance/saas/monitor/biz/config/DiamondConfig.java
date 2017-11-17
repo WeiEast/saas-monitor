@@ -92,7 +92,7 @@ public class DiamondConfig {
     /**
      * 任务是否存在,微信通知开关
      */
-    @DAttribute(key = "task.exist.wechat.switch")
+    @DAttribute(key = "task.exist.alarm.wechat.switch")
     private String taskExistAlarmWechatSwitch;
     /**
      * 任务是否存在,邮箱通知开关
