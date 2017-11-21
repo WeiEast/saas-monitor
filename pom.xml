@@ -101,7 +101,7 @@
 			<dependency>
 				<groupId>com.treefinance.commonservice</groupId>
 				<artifactId>uid-worker</artifactId>
-				<version>2.2.2</version>
+				<version>1.7.0</version>
 			</dependency>
 			<dependency>
 				<artifactId>gateway-facade</artifactId>
