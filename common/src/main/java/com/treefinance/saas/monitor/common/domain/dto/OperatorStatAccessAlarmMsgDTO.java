@@ -20,7 +20,11 @@ public class OperatorStatAccessAlarmMsgDTO implements Serializable {
 
     private BigDecimal value;//当前指标
 
+    private String valueDesc;//当前指标描述
+
     private BigDecimal threshold;//指标阈值
+
+    private String thresholdDesc;//指标阈值描述
 
     private BigDecimal offset;//偏离阈值程度
 
@@ -86,5 +90,21 @@ public class OperatorStatAccessAlarmMsgDTO implements Serializable {
 
     public void setAlarmSimpleDesc(String alarmSimpleDesc) {
         this.alarmSimpleDesc = alarmSimpleDesc;
+    }
+
+    public String getValueDesc() {
+        return valueDesc;
+    }
+
+    public void setValueDesc(String valueDesc) {
+        this.valueDesc = valueDesc;
+    }
+
+    public String getThresholdDesc() {
+        return thresholdDesc;
+    }
+
+    public void setThresholdDesc(String thresholdDesc) {
+        this.thresholdDesc = thresholdDesc;
     }
 }

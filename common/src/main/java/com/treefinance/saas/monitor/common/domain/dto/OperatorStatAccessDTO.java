@@ -35,6 +35,31 @@ public class OperatorStatAccessDTO implements Serializable {
     private BigDecimal processSuccessRate;
 
     /**
+     * 前n天的相同时刻确认手机号数平均值
+     */
+    private Integer previousConfirmMobileAvgCount;
+
+    /**
+     * 前n天的相同时刻开始登陆数平均值
+     */
+    private Integer previousStartLoginAvgCount;
+
+    /**
+     * 前n天的相同时刻登陆成功数平均值
+     */
+    private Integer previousLoginSuccessAvgCount;
+
+    /**
+     * 前n天的相同时刻抓取成功数平均值
+     */
+    private Integer previousCrawlSuccessAvgCount;
+
+    /**
+     * 前n天的相同时刻洗数成功数平均值
+     */
+    private Integer previousProcessSuccessAvgCount;
+
+    /**
      * 前n天的相同时刻登录转化率平均值
      */
     private BigDecimal previousLoginConversionRate;
@@ -219,5 +244,45 @@ public class OperatorStatAccessDTO implements Serializable {
 
     public void setDataType(Byte dataType) {
         this.dataType = dataType;
+    }
+
+    public Integer getPreviousConfirmMobileAvgCount() {
+        return previousConfirmMobileAvgCount;
+    }
+
+    public void setPreviousConfirmMobileAvgCount(Integer previousConfirmMobileAvgCount) {
+        this.previousConfirmMobileAvgCount = previousConfirmMobileAvgCount;
+    }
+
+    public Integer getPreviousStartLoginAvgCount() {
+        return previousStartLoginAvgCount;
+    }
+
+    public void setPreviousStartLoginAvgCount(Integer previousStartLoginAvgCount) {
+        this.previousStartLoginAvgCount = previousStartLoginAvgCount;
+    }
+
+    public Integer getPreviousCrawlSuccessAvgCount() {
+        return previousCrawlSuccessAvgCount;
+    }
+
+    public void setPreviousCrawlSuccessAvgCount(Integer previousCrawlSuccessAvgCount) {
+        this.previousCrawlSuccessAvgCount = previousCrawlSuccessAvgCount;
+    }
+
+    public Integer getPreviousProcessSuccessAvgCount() {
+        return previousProcessSuccessAvgCount;
+    }
+
+    public void setPreviousProcessSuccessAvgCount(Integer previousProcessSuccessAvgCount) {
+        this.previousProcessSuccessAvgCount = previousProcessSuccessAvgCount;
+    }
+
+    public Integer getPreviousLoginSuccessAvgCount() {
+        return previousLoginSuccessAvgCount;
+    }
+
+    public void setPreviousLoginSuccessAvgCount(Integer previousLoginSuccessAvgCount) {
+        this.previousLoginSuccessAvgCount = previousLoginSuccessAvgCount;
     }
 }

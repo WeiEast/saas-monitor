@@ -110,9 +110,9 @@ public class TaskOperatorMonitorKeyHelper {
      * @param intervalTime
      * @return
      */
-    public static String keyOfUsersGroupOnDayStat(Date intervalTime, ETaskOperatorMonitorStatus statusType) {
+    public static String keyOfUsersGroupOnDayStat(Date intervalTime, String groupCode, ETaskOperatorMonitorStatus statusType) {
         String day = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_GROUP_ON_ACTION, day, statusType);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_GROUP_ON_ACTION, day, groupCode, statusType);
     }
 
     /**
@@ -122,9 +122,9 @@ public class TaskOperatorMonitorKeyHelper {
      * @param statusType
      * @return
      */
-    public static String keyOfUsersGroupOnIntervalStat(Date intervalTime, ETaskOperatorMonitorStatus statusType) {
+    public static String keyOfUsersGroupOnIntervalStat(Date intervalTime, String groupCode, ETaskOperatorMonitorStatus statusType) {
         String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_GROUP_ON_ACTION, interval, statusType);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_GROUP_ON_ACTION, interval, groupCode, statusType);
     }
 
 
