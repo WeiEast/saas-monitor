@@ -317,7 +317,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 if (BigDecimal.ZERO.compareTo(loginConversionCompareVal) == 0) {
                     msg.setOffset(BigDecimal.ZERO);
                 } else {
-                    BigDecimal value = BigDecimal.ONE.subtract(dto.getLoginConversionRate().divide(loginConversionCompareVal, 1, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                    BigDecimal value = BigDecimal.ONE.subtract(dto.getLoginConversionRate().divide(loginConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                     msg.setOffset(value);
                 }
                 msgList.add(msg);
@@ -344,7 +344,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 if (BigDecimal.ZERO.compareTo(loginSuccessCompareVal) == 0) {
                     msg.setOffset(BigDecimal.ZERO);
                 } else {
-                    BigDecimal value = BigDecimal.ONE.subtract(dto.getLoginSuccessRate().divide(loginSuccessCompareVal, 1, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                    BigDecimal value = BigDecimal.ONE.subtract(dto.getLoginSuccessRate().divide(loginSuccessCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                     msg.setOffset(value);
                 }
                 msgList.add(msg);
@@ -372,7 +372,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 if (BigDecimal.ZERO.compareTo(crawlCompareVal) == 0) {
                     msg.setOffset(BigDecimal.ZERO);
                 } else {
-                    BigDecimal value = BigDecimal.ONE.subtract(dto.getCrawlSuccessRate().divide(crawlCompareVal, 1, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                    BigDecimal value = BigDecimal.ONE.subtract(dto.getCrawlSuccessRate().divide(crawlCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                     msg.setOffset(value);
                 }
                 msgList.add(msg);
@@ -400,7 +400,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 if (BigDecimal.ZERO.compareTo(processCompareVal) == 0) {
                     msg.setOffset(BigDecimal.ZERO);
                 } else {
-                    BigDecimal value = BigDecimal.ONE.subtract(dto.getProcessSuccessRate().divide(processCompareVal, 1, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                    BigDecimal value = BigDecimal.ONE.subtract(dto.getProcessSuccessRate().divide(processCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                     msg.setOffset(value);
                 }
                 msgList.add(msg);
