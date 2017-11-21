@@ -211,7 +211,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             if (BigDecimal.ZERO.compareTo(confirmMobileCompareVal) == 0) {
                 msg.setOffset(BigDecimal.ZERO);
             } else {
-                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getConfirmMobileConversionRate().divide(confirmMobileCompareVal, 1, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getConfirmMobileConversionRate().divide(confirmMobileCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
             }
             msgList.add(msg);
@@ -238,7 +238,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             if (BigDecimal.ZERO.compareTo(loginConversionCompareVal) == 0) {
                 msg.setOffset(BigDecimal.ZERO);
             } else {
-                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getLoginConversionRate().divide(loginConversionCompareVal, 1, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getLoginConversionRate().divide(loginConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
             }
             msgList.add(msg);
@@ -263,7 +263,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             if (BigDecimal.ZERO.compareTo(loginSuccessCompareVal) == 0) {
                 msg.setOffset(BigDecimal.ZERO);
             } else {
-                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getLoginSuccessRate().divide(loginSuccessCompareVal, 1, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getLoginSuccessRate().divide(loginSuccessCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
             }
             msgList.add(msg);
@@ -288,7 +288,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             if (BigDecimal.ZERO.compareTo(crawlCompareVal) == 0) {
                 msg.setOffset(BigDecimal.ZERO);
             } else {
-                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getCrawlSuccessRate().divide(crawlCompareVal, 1, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getCrawlSuccessRate().divide(crawlCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
             }
             msgList.add(msg);
@@ -313,7 +313,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             if (BigDecimal.ZERO.compareTo(processCompareVal) == 0) {
                 msg.setOffset(BigDecimal.ZERO);
             } else {
-                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getProcessSuccessRate().divide(processCompareVal, 1, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getProcessSuccessRate().divide(processCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
             }
             msgList.add(msg);
@@ -338,7 +338,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             if (BigDecimal.ZERO.compareTo(callbackCompareVal) == 0) {
                 msg.setOffset(BigDecimal.ZERO);
             } else {
-                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getCallbackSuccessRate().divide(callbackCompareVal, 1, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getCallbackSuccessRate().divide(callbackCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
             }
             msgList.add(msg);
