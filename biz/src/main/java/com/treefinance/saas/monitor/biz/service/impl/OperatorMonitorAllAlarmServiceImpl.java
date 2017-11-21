@@ -198,12 +198,12 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             msg.setValue(dataDTO.getConfirmMobileConversionRate());
             msg.setThreshold(confirmMobileCompareVal);
             String valueDesc = new StringBuilder()
-                    .append(dataDTO.getConfirmMobileConversionRate()).append("%").append("(")
+                    .append(dataDTO.getConfirmMobileConversionRate()).append("%").append(" ").append("(")
                     .append(dataDTO.getConfirmMobileCount()).append("/")
                     .append(dataDTO.getEntryCount()).append(")").toString();
             msg.setValueDesc(valueDesc);
             String thresholdDesc = new StringBuilder()
-                    .append(confirmMobileCompareVal).append("%").append("(")
+                    .append(confirmMobileCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousConfirmMobileAvgCount()).append("/")
                     .append(compareDTO.getPreviousEntryAvgCount()).append("*")
                     .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
@@ -224,12 +224,12 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             msg.setValue(dataDTO.getLoginConversionRate());
             msg.setThreshold(loginConversionCompareVal);
             String valueDesc = new StringBuilder()
-                    .append(dataDTO.getLoginConversionRate()).append("%").append("(")
+                    .append(dataDTO.getLoginConversionRate()).append("%").append(" ").append("(")
                     .append(dataDTO.getLoginSuccessCount()).append("/")
                     .append(dataDTO.getConfirmMobileCount()).append(")").toString();
             msg.setValueDesc(valueDesc);
             String thresholdDesc = new StringBuilder()
-                    .append(loginConversionCompareVal).append("%").append("(")
+                    .append(loginConversionCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousStartLoginAvgCount()).append("/")
                     .append(compareDTO.getPreviousConfirmMobileAvgCount()).append("*")
                     .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
@@ -250,12 +250,12 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             msg.setValue(dataDTO.getLoginSuccessRate());
             msg.setThreshold(loginSuccessCompareVal);
             String valueDesc = new StringBuilder()
-                    .append(dataDTO.getLoginSuccessRate()).append("%").append("(")
+                    .append(dataDTO.getLoginSuccessRate()).append("%").append(" ").append("(")
                     .append(dataDTO.getLoginSuccessCount()).append("/")
                     .append(dataDTO.getStartLoginCount()).append(")").toString();
             msg.setValueDesc(valueDesc);
             String thresholdDesc = new StringBuilder()
-                    .append(loginSuccessCompareVal).append("%").append("(")
+                    .append(loginSuccessCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousLoginSuccessAvgCount()).append("/")
                     .append(compareDTO.getPreviousStartLoginAvgCount()).append("*")
                     .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
@@ -275,12 +275,12 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             msg.setValue(dataDTO.getCrawlSuccessRate());
             msg.setThreshold(crawlCompareVal);
             String valueDesc = new StringBuilder()
-                    .append(dataDTO.getCrawlSuccessRate()).append("%").append("(")
+                    .append(dataDTO.getCrawlSuccessRate()).append("%").append(" ").append("(")
                     .append(dataDTO.getCrawlSuccessCount()).append("/")
                     .append(dataDTO.getLoginSuccessCount()).append(")").toString();
             msg.setValueDesc(valueDesc);
             String thresholdDesc = new StringBuilder()
-                    .append(crawlCompareVal).append("%").append("(")
+                    .append(crawlCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousCrawlSuccessAvgCount()).append("/")
                     .append(compareDTO.getPreviousLoginSuccessAvgCount()).append("*")
                     .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
@@ -300,12 +300,12 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             msg.setValue(dataDTO.getProcessSuccessRate());
             msg.setThreshold(processCompareVal);
             String valueDesc = new StringBuilder()
-                    .append(dataDTO.getProcessSuccessRate()).append("%").append("(")
+                    .append(dataDTO.getProcessSuccessRate()).append("%").append(" ").append("(")
                     .append(dataDTO.getProcessSuccessCount()).append("/")
                     .append(dataDTO.getCrawlSuccessCount()).append(")").toString();
             msg.setValueDesc(valueDesc);
             String thresholdDesc = new StringBuilder()
-                    .append(processCompareVal).append("%").append("(")
+                    .append(processCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousProcessSuccessAvgCount()).append("/")
                     .append(compareDTO.getPreviousCrawlSuccessAvgCount()).append("*")
                     .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
@@ -325,12 +325,12 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             msg.setValue(dataDTO.getCallbackSuccessRate());
             msg.setThreshold(callbackCompareVal);
             String valueDesc = new StringBuilder()
-                    .append(dataDTO.getCallbackSuccessRate()).append("%").append("(")
+                    .append(dataDTO.getCallbackSuccessRate()).append("%").append(" ").append("(")
                     .append(dataDTO.getCallbackSuccessCount()).append("/")
                     .append(dataDTO.getProcessSuccessCount()).append(")").toString();
             msg.setValueDesc(valueDesc);
             String thresholdDesc = new StringBuilder()
-                    .append(callbackCompareVal).append("%").append("(")
+                    .append(callbackCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousCallbackSuccessAvgCount()).append("/")
                     .append(compareDTO.getPreviousProcessSuccessAvgCount()).append("*")
                     .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
