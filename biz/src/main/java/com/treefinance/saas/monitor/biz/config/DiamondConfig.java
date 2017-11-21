@@ -88,6 +88,11 @@ public class DiamondConfig {
     @DAttribute(key = "operator.alarm.user.mail.switch")
     private String operatorAlarmUserMailSwitch;
 
+    /**
+     * 运营商预警,需要预警的运营商列表
+     */
+    @DAttribute(key = "operator.alarm.operator.name.list")
+    private String operatorAlarmOperatorNameList;
 
     /**
      * 任务是否存在,微信通知开关
@@ -405,5 +410,13 @@ public class DiamondConfig {
 
     public void setTaskExistAlarmMailSwitch(String taskExistAlarmMailSwitch) {
         this.taskExistAlarmMailSwitch = taskExistAlarmMailSwitch;
+    }
+
+    public String getOperatorAlarmOperatorNameList() {
+        return operatorAlarmOperatorNameList;
+    }
+
+    public void setOperatorAlarmOperatorNameList(String operatorAlarmOperatorNameList) {
+        this.operatorAlarmOperatorNameList = operatorAlarmOperatorNameList;
     }
 }
