@@ -37,27 +37,27 @@ public class OperatorStatAccessDTO implements Serializable {
     /**
      * 前n天的相同时刻确认手机号数平均值
      */
-    private Integer previousConfirmMobileAvgCount;
+    private BigDecimal previousConfirmMobileAvgCount;
 
     /**
      * 前n天的相同时刻开始登陆数平均值
      */
-    private Integer previousStartLoginAvgCount;
+    private BigDecimal previousStartLoginAvgCount;
 
     /**
      * 前n天的相同时刻登陆成功数平均值
      */
-    private Integer previousLoginSuccessAvgCount;
+    private BigDecimal previousLoginSuccessAvgCount;
 
     /**
      * 前n天的相同时刻抓取成功数平均值
      */
-    private Integer previousCrawlSuccessAvgCount;
+    private BigDecimal previousCrawlSuccessAvgCount;
 
     /**
      * 前n天的相同时刻洗数成功数平均值
      */
-    private Integer previousProcessSuccessAvgCount;
+    private BigDecimal previousProcessSuccessAvgCount;
 
     /**
      * 前n天的相同时刻登录转化率平均值
@@ -246,43 +246,43 @@ public class OperatorStatAccessDTO implements Serializable {
         this.dataType = dataType;
     }
 
-    public Integer getPreviousConfirmMobileAvgCount() {
+    public BigDecimal getPreviousConfirmMobileAvgCount() {
         return previousConfirmMobileAvgCount;
     }
 
-    public void setPreviousConfirmMobileAvgCount(Integer previousConfirmMobileAvgCount) {
+    public void setPreviousConfirmMobileAvgCount(BigDecimal previousConfirmMobileAvgCount) {
         this.previousConfirmMobileAvgCount = previousConfirmMobileAvgCount;
     }
 
-    public Integer getPreviousStartLoginAvgCount() {
+    public BigDecimal getPreviousStartLoginAvgCount() {
         return previousStartLoginAvgCount;
     }
 
-    public void setPreviousStartLoginAvgCount(Integer previousStartLoginAvgCount) {
+    public void setPreviousStartLoginAvgCount(BigDecimal previousStartLoginAvgCount) {
         this.previousStartLoginAvgCount = previousStartLoginAvgCount;
     }
 
-    public Integer getPreviousCrawlSuccessAvgCount() {
-        return previousCrawlSuccessAvgCount;
-    }
-
-    public void setPreviousCrawlSuccessAvgCount(Integer previousCrawlSuccessAvgCount) {
-        this.previousCrawlSuccessAvgCount = previousCrawlSuccessAvgCount;
-    }
-
-    public Integer getPreviousProcessSuccessAvgCount() {
-        return previousProcessSuccessAvgCount;
-    }
-
-    public void setPreviousProcessSuccessAvgCount(Integer previousProcessSuccessAvgCount) {
-        this.previousProcessSuccessAvgCount = previousProcessSuccessAvgCount;
-    }
-
-    public Integer getPreviousLoginSuccessAvgCount() {
+    public BigDecimal getPreviousLoginSuccessAvgCount() {
         return previousLoginSuccessAvgCount;
     }
 
-    public void setPreviousLoginSuccessAvgCount(Integer previousLoginSuccessAvgCount) {
+    public void setPreviousLoginSuccessAvgCount(BigDecimal previousLoginSuccessAvgCount) {
         this.previousLoginSuccessAvgCount = previousLoginSuccessAvgCount;
+    }
+
+    public BigDecimal getPreviousCrawlSuccessAvgCount() {
+        return previousCrawlSuccessAvgCount;
+    }
+
+    public void setPreviousCrawlSuccessAvgCount(BigDecimal previousCrawlSuccessAvgCount) {
+        this.previousCrawlSuccessAvgCount = previousCrawlSuccessAvgCount;
+    }
+
+    public BigDecimal getPreviousProcessSuccessAvgCount() {
+        return previousProcessSuccessAvgCount;
+    }
+
+    public void setPreviousProcessSuccessAvgCount(BigDecimal previousProcessSuccessAvgCount) {
+        this.previousProcessSuccessAvgCount = previousProcessSuccessAvgCount;
     }
 }

@@ -251,11 +251,11 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             compareDto.setPreviousLoginSuccessRate(previousLoginSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousCrawlSuccessRate(previousCrawlSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousProcessSuccessRate(previousProcessSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
-            compareDto.setPreviousConfirmMobileAvgCount(previousConfirmMobileCount / entryList.size());
-            compareDto.setPreviousStartLoginAvgCount(previousStartLoginCount / entryList.size());
-            compareDto.setPreviousLoginSuccessAvgCount(previousLoginSuccessCount / entryList.size());
-            compareDto.setPreviousCrawlSuccessAvgCount(previousCrawlSuccessCount / entryList.size());
-            compareDto.setPreviousProcessSuccessAvgCount(previousProcessSuccessCount / entryList.size());
+            compareDto.setPreviousConfirmMobileAvgCount(BigDecimal.valueOf(previousConfirmMobileCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
+            compareDto.setPreviousConfirmMobileAvgCount(BigDecimal.valueOf(previousStartLoginCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
+            compareDto.setPreviousConfirmMobileAvgCount(BigDecimal.valueOf(previousLoginSuccessCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
+            compareDto.setPreviousConfirmMobileAvgCount(BigDecimal.valueOf(previousCrawlSuccessCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
+            compareDto.setPreviousConfirmMobileAvgCount(BigDecimal.valueOf(previousProcessSuccessCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
             compareMap.put(entry.getKey(), compareDto);
         }
         return compareMap;

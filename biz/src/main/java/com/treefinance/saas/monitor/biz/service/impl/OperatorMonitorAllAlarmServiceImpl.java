@@ -415,13 +415,14 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         compareDto.setPreviousProcessSuccessRate(previousProcessSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
         compareDto.setPreviousCallbackSuccessRate(previousCallbackSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
 
-        compareDto.setPreviousEntryAvgCount(previousEntryCount / previousDTOList.size());
-        compareDto.setPreviousConfirmMobileAvgCount(previousConfirmMobileCount / previousDTOList.size());
-        compareDto.setPreviousStartLoginAvgCount(previousStartLoginCount / previousDTOList.size());
-        compareDto.setPreviousLoginSuccessAvgCount(previousLoginSuccessCount / previousDTOList.size());
-        compareDto.setPreviousCrawlSuccessAvgCount(previousCrawlSuccessCount / previousDTOList.size());
-        compareDto.setPreviousProcessSuccessAvgCount(previousCrawlSuccessCount / previousDTOList.size());
-        compareDto.setPreviousCallbackSuccessAvgCount(previousCallbackSuccessCount / previousDTOList.size());
+        compareDto.setPreviousEntryAvgCount(BigDecimal.valueOf(previousEntryCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousEntryAvgCount(BigDecimal.valueOf(previousConfirmMobileCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousEntryAvgCount(BigDecimal.valueOf(previousStartLoginCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousEntryAvgCount(BigDecimal.valueOf(previousLoginSuccessCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousEntryAvgCount(BigDecimal.valueOf(previousCrawlSuccessCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousEntryAvgCount(BigDecimal.valueOf(previousProcessSuccessCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousEntryAvgCount(BigDecimal.valueOf(previousCallbackSuccessCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
+
         return compareDto;
     }
 }
