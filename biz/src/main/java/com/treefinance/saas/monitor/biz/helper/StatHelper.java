@@ -2,6 +2,8 @@ package com.treefinance.saas.monitor.biz.helper;
 
 import org.apache.commons.lang.time.DateUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -18,19 +20,20 @@ public abstract class StatHelper {
      * @return
      */
     public static Date calculateIntervalTime(Date date, int intervalMinutes) {
-        Date intervalTime = DateUtils.truncate(date, Calendar.MINUTE);
-        // 12:00:32 -> 12:01:00
-        if (date.after(intervalTime)) {
-            intervalTime = DateUtils.addMinutes(intervalTime, 1);
+        Date hourTime = DateUtils.truncate(date, Calendar.HOUR_OF_DAY);
+        // 當前分鐘
+        Long currentMinute = DateUtils.getFragmentInMinutes(date, Calendar.HOUR_OF_DAY);
+
+        Date intervalStartTime = DateUtils.addMinutes(hourTime,
+                (currentMinute.intValue() / intervalMinutes) * intervalMinutes);
+        Date intervalEndTime = DateUtils.addMinutes(hourTime,
+                (currentMinute.intValue() / intervalMinutes + 1) * intervalMinutes);
+        if ((date.after(intervalStartTime) || date.equals(intervalStartTime)) && date.before(intervalEndTime)) {
+            return intervalStartTime;
         }
-        Long currentMinute = DateUtils.getFragmentInMinutes(intervalTime, Calendar.HOUR_OF_DAY);
-        if (currentMinute % intervalMinutes == 0) {
-            return intervalTime;
-        }
-        // 切换至下一时间段
-        intervalTime = DateUtils.addMinutes(intervalTime, (intervalMinutes - currentMinute.intValue() % intervalMinutes));
-        return intervalTime;
+        return intervalEndTime;
     }
+
 
     /**
      * 计算日期
@@ -64,8 +67,13 @@ public abstract class StatHelper {
     }
 
 
-
-    public static void main(String[] args) {
-        System.out.println(StatHelper.calculateIntervalTime(new Date(), 60));
+    public static void main(String[] args) throws ParseException {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = fmt.parse("2017-11-22 19:59:59");
+        System.out.println(fmt.format(StatHelper.calculateIntervalTime(date, 10)));
+        date = fmt.parse("2017-11-22 20:00:00");
+        System.out.println(fmt.format(StatHelper.calculateIntervalTime(date, 10)));
+        date = fmt.parse("2017-11-22 20:10:59");
+        System.out.println(fmt.format(StatHelper.calculateIntervalTime(date, 10)));
     }
 }
