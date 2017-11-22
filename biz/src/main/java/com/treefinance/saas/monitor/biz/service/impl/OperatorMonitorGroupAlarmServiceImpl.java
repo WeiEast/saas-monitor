@@ -313,7 +313,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                         .append(loginConversionCompareVal).append("%").append(" ").append("(")
                         .append(compareDTO.getPreviousStartLoginAvgCount()).append("/")
                         .append(compareDTO.getPreviousConfirmMobileAvgCount()).append("*")
-                        .append(new BigDecimal(threshold).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                        .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
                 msg.setThresholdDesc(thresholdDesc);
                 if (BigDecimal.ZERO.compareTo(loginConversionCompareVal) == 0) {
                     msg.setOffset(BigDecimal.ZERO);
@@ -340,7 +340,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                         .append(loginSuccessCompareVal).append("%").append(" ").append("(")
                         .append(compareDTO.getPreviousLoginSuccessAvgCount()).append("/")
                         .append(compareDTO.getPreviousStartLoginAvgCount()).append("*")
-                        .append(new BigDecimal(threshold).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                        .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
                 msg.setThresholdDesc(thresholdDesc);
                 if (BigDecimal.ZERO.compareTo(loginSuccessCompareVal) == 0) {
                     msg.setOffset(BigDecimal.ZERO);
@@ -367,7 +367,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                         .append(crawlCompareVal).append("%").append(" ").append("(")
                         .append(compareDTO.getPreviousCrawlSuccessAvgCount()).append("/")
                         .append(compareDTO.getPreviousLoginSuccessAvgCount()).append("*")
-                        .append(new BigDecimal(threshold).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                        .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
                 msg.setThresholdDesc(thresholdDesc);
 
                 if (BigDecimal.ZERO.compareTo(crawlCompareVal) == 0) {
@@ -395,7 +395,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                         .append(processCompareVal).append("%").append(" ").append("(")
                         .append(compareDTO.getPreviousProcessSuccessAvgCount()).append("/")
                         .append(compareDTO.getPreviousCrawlSuccessAvgCount()).append("*")
-                        .append(new BigDecimal(threshold).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                        .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
                 msg.setThresholdDesc(thresholdDesc);
 
                 if (BigDecimal.ZERO.compareTo(processCompareVal) == 0) {
