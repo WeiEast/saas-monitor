@@ -95,6 +95,24 @@ public class DiamondConfig {
     private String operatorAlarmOperatorNameList;
 
     /**
+     * 运营商预警,统计数量低于此值时,取特殊阀值处理
+     */
+    @DAttribute(key = "operator.alarm.few.num")
+    private Integer operatorAlarmFewNum;
+
+    /**
+     * 运营商预警,统计数量低于一定值时,设置的特殊处理阀值
+     */
+    @DAttribute(key = "operator.alarm.few.threshold.percent")
+    private Integer operatorAlarmFewThresholdPercent;
+
+    /**
+     * 任务预警,一定时间内无成功任务预警,json字符串格式
+     */
+    @DAttribute(key = "task.exist.alarm.no.success.mins.config")
+    private String taskExistAlarmNoSuccessMinsConfig;
+
+    /**
      * 任务是否存在,微信通知开关
      */
     @DAttribute(key = "task.exist.alarm.wechat.switch")
@@ -418,5 +436,29 @@ public class DiamondConfig {
 
     public void setOperatorAlarmOperatorNameList(String operatorAlarmOperatorNameList) {
         this.operatorAlarmOperatorNameList = operatorAlarmOperatorNameList;
+    }
+
+    public Integer getOperatorAlarmFewNum() {
+        return operatorAlarmFewNum;
+    }
+
+    public void setOperatorAlarmFewNum(Integer operatorAlarmFewNum) {
+        this.operatorAlarmFewNum = operatorAlarmFewNum;
+    }
+
+    public Integer getOperatorAlarmFewThresholdPercent() {
+        return operatorAlarmFewThresholdPercent;
+    }
+
+    public void setOperatorAlarmFewThresholdPercent(Integer operatorAlarmFewThresholdPercent) {
+        this.operatorAlarmFewThresholdPercent = operatorAlarmFewThresholdPercent;
+    }
+
+    public String getTaskExistAlarmNoSuccessMinsConfig() {
+        return taskExistAlarmNoSuccessMinsConfig;
+    }
+
+    public void setTaskExistAlarmNoSuccessMinsConfig(String taskExistAlarmNoSuccessMinsConfig) {
+        this.taskExistAlarmNoSuccessMinsConfig = taskExistAlarmNoSuccessMinsConfig;
     }
 }

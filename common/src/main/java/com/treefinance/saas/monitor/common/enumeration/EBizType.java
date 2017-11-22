@@ -6,17 +6,19 @@ import org.apache.commons.lang3.StringUtils;
  * Created by luoyihua on 2017/4/27.
  */
 public enum EBizType {
-    EMAIL("EMAIL", (byte) 1),
-    ECOMMERCE("ECOMMERCE", (byte) 2),
-    OPERATOR("OPERATOR", (byte) 3),
-    FUND("FUND", (byte) 4);
+    EMAIL("EMAIL", (byte) 1, "邮箱账单"),
+    ECOMMERCE("ECOMMERCE", (byte) 2, "电商"),
+    OPERATOR("OPERATOR", (byte) 3, "运营商"),
+    FUND("FUND", (byte) 4, "公积金");
 
     private Byte code;
     private String text;
+    private String desc;
 
-    private EBizType(String text, Byte code) {
+    private EBizType(String text, Byte code, String desc) {
         this.code = code;
         this.text = text;
+        this.desc = desc;
     }
 
     public Byte getCode() {
@@ -33,6 +35,14 @@ public enum EBizType {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
     }
 
     public static Byte getCode(String text) {

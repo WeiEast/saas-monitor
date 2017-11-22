@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.helper;
 
 import com.google.common.base.Joiner;
+import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import org.apache.commons.lang.time.DateFormatUtils;
 
@@ -35,6 +36,17 @@ public class RedisKeyHelper {
     public static String keyOfTaskExist(Date date) {
         String timeStr = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
         return Joiner.on(":").useForNull("null").join(TASK_EXIST, timeStr);
+    }
+
+    /**
+     * 任务存在数,区分业务类型
+     *
+     * @param date
+     * @return
+     */
+    public static String keyOfTaskExistWithType(Date date, EBizType bizType) {
+        String timeStr = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(TASK_EXIST, bizType, timeStr);
     }
 
     /**

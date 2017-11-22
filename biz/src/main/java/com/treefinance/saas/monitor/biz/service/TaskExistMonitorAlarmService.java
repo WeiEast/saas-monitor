@@ -1,5 +1,7 @@
 package com.treefinance.saas.monitor.biz.service;
 
+import com.treefinance.saas.monitor.common.enumeration.EBizType;
+
 import java.util.Date;
 
 /**
@@ -11,4 +13,5 @@ public interface TaskExistMonitorAlarmService {
 
     void alarmNoSuccessTask(Date startTime, Date endTime);
 
+    void alarmNoSuccessTaskWithType(Date startTime, Date endTime, EBizType bizType);
 }

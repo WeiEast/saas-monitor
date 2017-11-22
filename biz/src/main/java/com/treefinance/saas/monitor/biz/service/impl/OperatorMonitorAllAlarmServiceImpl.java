@@ -184,12 +184,12 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             previousDays = diamondConfig.getOperatorAlarmUserPreviousDays();
         }
 
-        BigDecimal confirmMobileCompareVal = compareDTO.getPreviousConfirmMobileConversionRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP);
-        BigDecimal loginConversionCompareVal = compareDTO.getPreviousLoginConversionRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP);
-        BigDecimal loginSuccessCompareVal = compareDTO.getPreviousLoginSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP);
-        BigDecimal crawlCompareVal = compareDTO.getPreviousCrawlSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP);
-        BigDecimal processCompareVal = compareDTO.getPreviousProcessSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP);
-        BigDecimal callbackCompareVal = compareDTO.getPreviousCallbackSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP);
+        BigDecimal confirmMobileCompareVal = compareDTO.getPreviousConfirmMobileConversionRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal loginConversionCompareVal = compareDTO.getPreviousLoginConversionRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal loginSuccessCompareVal = compareDTO.getPreviousLoginSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal crawlCompareVal = compareDTO.getPreviousCrawlSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal processCompareVal = compareDTO.getPreviousProcessSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal callbackCompareVal = compareDTO.getPreviousCallbackSuccessRate().multiply(new BigDecimal(threshold)).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
 
         if (dataDTO.getConfirmMobileConversionRate().compareTo(confirmMobileCompareVal) < 0) {//确认手机转化率小于前7天平均值
             OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
@@ -206,7 +206,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                     .append(confirmMobileCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousConfirmMobileAvgCount()).append("/")
                     .append(compareDTO.getPreviousEntryAvgCount()).append("*")
-                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)).append(")").toString();
             msg.setThresholdDesc(thresholdDesc);
             if (BigDecimal.ZERO.compareTo(confirmMobileCompareVal) == 0) {
                 msg.setOffset(BigDecimal.ZERO);
@@ -232,7 +232,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                     .append(loginConversionCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousStartLoginAvgCount()).append("/")
                     .append(compareDTO.getPreviousConfirmMobileAvgCount()).append("*")
-                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)).append(")").toString();
             msg.setThresholdDesc(thresholdDesc);
 
             if (BigDecimal.ZERO.compareTo(loginConversionCompareVal) == 0) {
@@ -258,7 +258,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                     .append(loginSuccessCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousLoginSuccessAvgCount()).append("/")
                     .append(compareDTO.getPreviousStartLoginAvgCount()).append("*")
-                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)).append(")").toString();
             msg.setThresholdDesc(thresholdDesc);
             if (BigDecimal.ZERO.compareTo(loginSuccessCompareVal) == 0) {
                 msg.setOffset(BigDecimal.ZERO);
@@ -283,7 +283,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                     .append(crawlCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousCrawlSuccessAvgCount()).append("/")
                     .append(compareDTO.getPreviousLoginSuccessAvgCount()).append("*")
-                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)).append(")").toString();
             msg.setThresholdDesc(thresholdDesc);
             if (BigDecimal.ZERO.compareTo(crawlCompareVal) == 0) {
                 msg.setOffset(BigDecimal.ZERO);
@@ -308,7 +308,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                     .append(processCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousProcessSuccessAvgCount()).append("/")
                     .append(compareDTO.getPreviousCrawlSuccessAvgCount()).append("*")
-                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)).append(")").toString();
             msg.setThresholdDesc(thresholdDesc);
             if (BigDecimal.ZERO.compareTo(processCompareVal) == 0) {
                 msg.setOffset(BigDecimal.ZERO);
@@ -333,7 +333,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                     .append(callbackCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousCallbackSuccessAvgCount()).append("/")
                     .append(compareDTO.getPreviousProcessSuccessAvgCount()).append("*")
-                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                    .append(new BigDecimal(threshold).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)).append(")").toString();
             msg.setThresholdDesc(thresholdDesc);
             if (BigDecimal.ZERO.compareTo(callbackCompareVal) == 0) {
                 msg.setOffset(BigDecimal.ZERO);
@@ -408,12 +408,12 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             previousCallbackSuccessCount = previousCallbackSuccessCount + previousDTO.getCallbackSuccessCount();
         }
         OperatorAllStatAccessDTO compareDto = new OperatorAllStatAccessDTO();
-        compareDto.setPreviousConfirmMobileConversionRate(previousConfirmMobileConversionRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousLoginConversionRate(previousLoginConversionRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousLoginSuccessRate(previousLoginSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousCrawlSuccessRate(previousCrawlSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousProcessSuccessRate(previousProcessSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousCallbackSuccessRate(previousCallbackSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousConfirmMobileConversionRate(previousConfirmMobileConversionRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousLoginConversionRate(previousLoginConversionRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousLoginSuccessRate(previousLoginSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousCrawlSuccessRate(previousCrawlSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousProcessSuccessRate(previousProcessSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousCallbackSuccessRate(previousCallbackSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
 
         compareDto.setPreviousEntryAvgCount(previousEntryCount / previousDTOList.size());
         compareDto.setPreviousConfirmMobileAvgCount(previousConfirmMobileCount / previousDTOList.size());

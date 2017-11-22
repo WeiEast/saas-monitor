@@ -360,7 +360,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
         }
         BigDecimal rate = BigDecimal.valueOf(b, 2)
                 .multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(a, 2), 1, BigDecimal.ROUND_HALF_UP);
+                .divide(BigDecimal.valueOf(a, 2), 2, BigDecimal.ROUND_HALF_UP);
         return rate;
     }
 

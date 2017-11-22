@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.service.impl;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.biz.service.TaskExistMonitorAlarmService;
+import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -66,6 +67,61 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
         } else {
             logger.info("任务预警,发送微信开关已关闭");
         }
+    }
+
+    @Override
+    public void alarmNoSuccessTaskWithType(Date startTime, Date endTime, EBizType bizType) {
+        String mailSwitch = diamondConfig.getTaskExistAlarmMailSwitch();
+        String weChatSwitch = diamondConfig.getTaskExistAlarmWechatSwitch();
+        if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
+            String mailDataBody = generateNoSuccessTaskWithTypeMailDataBody(startTime, endTime, bizType);
+            String title = generateNoSuccessTaskWithTypeTitle(bizType);
+            alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
+        } else {
+            logger.info("任务预警,发送邮件开关已关闭");
+        }
+
+        if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
+            String weChatBody = generateNoSuccessWithTypeWeChatBody(startTime, endTime, bizType);
+            alarmMessageProducer.sendWebChart4TaskExistMonitor(weChatBody);
+        } else {
+            logger.info("任务预警,发送微信开关已关闭");
+        }
+    }
+
+    private String generateNoSuccessWithTypeWeChatBody(Date startTime, Date endTime, EBizType bizType) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("您好,").append("saas-").append(diamondConfig.getMonitorEnvironment())
+                .append("发生任务预警,在")
+                .append(MonitorDateUtils.format(startTime))
+                .append("--")
+                .append(MonitorDateUtils.format(endTime))
+                .append("时段内")
+                .append("【")
+                .append(bizType.getDesc())
+                .append("】")
+                .append("没有任务成功,").append("请及时处理!");
+        return buffer.toString();
+    }
+
+    private String generateNoSuccessTaskWithTypeTitle(EBizType bizType) {
+        return "saas-" + diamondConfig.getMonitorEnvironment() + "【" + bizType.getDesc() + "】" + "无成功任务预警";
+    }
+
+    private String generateNoSuccessTaskWithTypeMailDataBody(Date startTime, Date endTime, EBizType bizType) {
+
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("您好,").append("saas-").append(diamondConfig.getMonitorEnvironment())
+                .append("发生任务预警,在")
+                .append(MonitorDateUtils.format(startTime))
+                .append("--")
+                .append(MonitorDateUtils.format(endTime))
+                .append("时段内")
+                .append("【")
+                .append(bizType.getDesc())
+                .append("】")
+                .append("没有任务成功,").append("请及时处理!");
+        return buffer.toString();
     }
 
     private String generateNoSuccessWeChatBody(Date startTime, Date endTime) {
