@@ -21,4 +21,13 @@ public enum ETaskStatus {
     public String getName() {
         return name;
     }
+
+    public static ETaskStatus getTaskStatusByStatus(Byte status) {
+        for (ETaskStatus taskStatus : ETaskStatus.values()) {
+            if (taskStatus.getStatus().equals(status)) {
+                return taskStatus;
+            }
+        }
+        return null;
+    }
 }

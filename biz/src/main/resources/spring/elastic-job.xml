@@ -17,7 +17,7 @@
 
     <!-- 配置作业-->
     <job:simple id="taskDataFlushJob" class="com.treefinance.saas.monitor.biz.task.TaskDataFlushJob"
-                registry-center-ref="regCenter" cron="0 0/10 * * * ?"
+                registry-center-ref="regCenter" cron="0 0/2 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
 
     <job:simple id="httpDataFlushJob" class="com.treefinance.saas.monitor.biz.task.HttpDataFlushJob"
