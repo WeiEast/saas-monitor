@@ -20,12 +20,15 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.BoundSetOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by haojiahong on 2017/11/24.
@@ -40,15 +43,17 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     private DiamondConfig diamondConfig;
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public void alarm(EBizType bizType, TaskSuccessRateAlarmConfigDTO config, Date jobTime) {
         Integer intervalMins = config.getIntervalMins();
         //由于任务执行需要时间,保证预警的精确,预警统计向前一段时间(各业务任务的超时时间),此时此段时间的任务可以保证都已统计完毕.
         //好处:预警时间即使每隔1分钟预警,依然可以保证预警的准确.坏处:收到预警消息时间向后延迟了相应时间.
-        //如:jobTime=14:18,但是运营商超时时间为600s,则statTime=14:08
+        //如:jobTime=14:11,但是运营商超时时间为600s,则statTime=14:01
         Date statTime = DateUtils.addSeconds(jobTime, -config.getTaskTimeoutSecs());
-        //取得预警原点时间,如:statTime=14:08分,10分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
+        //取得预警原点时间,如:statTime=14:01分,10分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
         Date beginTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(statTime, intervalMins);
         int times = config.getTimes();
         EStatType statType = null;
@@ -60,6 +65,18 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         if (statType == null) {
             return;
         }
+
+        String alarmTimeKey = TaskMonitorPerMinKeyHelper.keyOfAlarmTimeLog(beginTime, statType);
+        BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
+        if (!Boolean.TRUE.equals(redisTemplate.hasKey(alarmTimeKey))) {
+            setOperations.expire(2, TimeUnit.DAYS);
+        }
+        if (setOperations.isMember(beginTime)) {
+            logger.info("任务成功率预警,beginTime={},statType={}已预警,不再预警", MonitorDateUtils.format(beginTime), JSON.toJSONString(statType));
+            return;
+        }
+        setOperations.add(beginTime);
+
         List<SaasStatAccessDTO> list = getNeedAlarmDataList(beginTime, times, intervalMins, statType);
         logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},config={}",
                 MonitorDateUtils.format(jobTime), JSON.toJSONString(list), JSON.toJSONString(config));

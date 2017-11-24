@@ -7,7 +7,6 @@ import com.treefinance.saas.assistant.model.MonitorTagEnum;
 import com.treefinance.saas.assistant.model.TaskMonitorMessage;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
-import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.service.EcommerceService;
 import com.treefinance.saas.monitor.biz.service.OperatorService;
 import com.treefinance.saas.monitor.biz.service.WebsiteService;
@@ -19,7 +18,6 @@ import com.treefinance.saas.monitor.common.domain.dto.WebsiteDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatus;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,38 +61,38 @@ public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMoni
 
     @Override
     public void handleMessage(TaskMonitorMessage message) {
-        long start = System.currentTimeMillis();
-        try {
-            Date completeTime = message.getCompleteTime();
-            Date intervalTime = StatHelper.calculateIntervalTime(completeTime, diamondConfig.getMonitorIntervalMinutes());
-            taskExistMonitorService.doService(message);
-            // 1.总数统计
-            statTotal(message, intervalTime);
-            // 合计所有商户的总数统计
-            statAllTotal(message, intervalTime);
-            if (StringUtils.isNotBlank(message.getStepCode())) {
-                //任务失败环节统计
-                statAllError(message, intervalTime);
-            }
-            // 2.电商、银行、邮箱、运营商维度统计
-            EBizType bizType = EBizType.getBizType(message.getBizType());
-            switch (bizType) {
-                case EMAIL:
-                    updateEmailData(intervalTime, message);
-                    break;
-                case OPERATOR:
-                    updateOperatorData(intervalTime, message);
-                    break;
-                case ECOMMERCE:
-                    updateEcommerceData(intervalTime, message);
-                    break;
-            }
-//            // 插入历史记录
-//            MerchantAccessHistoryDTO historyDTO = DataConverterUtils.convert(message, MerchantAccessHistoryDTO.class);
-//            accessHistoryService.insertAccessHistory(historyDTO);
-        } finally {
-            logger.info("TaskMonitorAlarm:handleMessage cost {} ms , message={}", System.currentTimeMillis() - start, JSON.toJSONString(message));
-        }
+//        long start = System.currentTimeMillis();
+//        try {
+//            Date completeTime = message.getCompleteTime();
+//            Date intervalTime = StatHelper.calculateIntervalTime(completeTime, diamondConfig.getMonitorIntervalMinutes());
+//            taskExistMonitorService.doService(message);
+//            // 1.总数统计
+//            statTotal(message, intervalTime);
+//            // 合计所有商户的总数统计
+//            statAllTotal(message, intervalTime);
+//            if (StringUtils.isNotBlank(message.getStepCode())) {
+//                //任务失败环节统计
+//                statAllError(message, intervalTime);
+//            }
+//            // 2.电商、银行、邮箱、运营商维度统计
+//            EBizType bizType = EBizType.getBizType(message.getBizType());
+//            switch (bizType) {
+//                case EMAIL:
+//                    updateEmailData(intervalTime, message);
+//                    break;
+//                case OPERATOR:
+//                    updateOperatorData(intervalTime, message);
+//                    break;
+//                case ECOMMERCE:
+//                    updateEcommerceData(intervalTime, message);
+//                    break;
+//            }
+////            // 插入历史记录
+////            MerchantAccessHistoryDTO historyDTO = DataConverterUtils.convert(message, MerchantAccessHistoryDTO.class);
+////            accessHistoryService.insertAccessHistory(historyDTO);
+//        } finally {
+//            logger.info("TaskMonitorAlarm:handleMessage cost {} ms , message={}", System.currentTimeMillis() - start, JSON.toJSONString(message));
+//        }
     }
 
     /**

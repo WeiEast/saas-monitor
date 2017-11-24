@@ -36,6 +36,7 @@ public class TaskMonitorPerMinKeyHelper {
 
     private static final String KEY_MERCHANTS = "key-merchants";
     private static final String KEY_TASKS = "key-task-ids";
+    private static final String KEY_ALARM_TIMES = "key-alarm-times";
 
 
     /**
@@ -183,5 +184,17 @@ public class TaskMonitorPerMinKeyHelper {
     public static String keyOfTaskLog(Date redisKeyTime) {
         String intervalDateStr = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd HH:mm:ss");
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_TASKS, intervalDateStr);
+    }
+
+    /**
+     * 记录任务成功率预警,今天已已经预警的时刻
+     *
+     * @param redisKeyTime
+     * @param statType
+     * @return
+     */
+    public static String keyOfAlarmTimeLog(Date redisKeyTime, EStatType statType) {
+        String intervalDateStr = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, statType);
     }
 }
