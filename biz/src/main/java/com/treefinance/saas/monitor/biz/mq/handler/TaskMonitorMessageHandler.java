@@ -116,7 +116,7 @@ public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMoni
         }
         // 运营商
         else if (bizType == EBizType.OPERATOR) {
-            updateAllErrorDayData(intervalTime, message, EStatType.OPERATER);
+            updateAllErrorDayData(intervalTime, message, EStatType.OPERATOR);
         }
         //公积金
         else if (bizType == EBizType.FUND) {
@@ -154,8 +154,8 @@ public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMoni
         }
         // 运营商
         else if (bizType == EBizType.OPERATOR) {
-            updateAllTotalData(intervalTime, message, EStatType.OPERATER);
-            updateAllTotalDayData(intervalTime, message, EStatType.OPERATER);
+            updateAllTotalData(intervalTime, message, EStatType.OPERATOR);
+            updateAllTotalDayData(intervalTime, message, EStatType.OPERATOR);
         }
         //公积金
         else if (bizType == EBizType.FUND) {
@@ -200,8 +200,8 @@ public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMoni
         }
         // 运营商
         else if (bizType == EBizType.OPERATOR) {
-            updateTotalData(intervalTime, message, EStatType.OPERATER);
-            updateTotalDayData(intervalTime, message, EStatType.OPERATER);
+            updateTotalData(intervalTime, message, EStatType.OPERATOR);
+            updateTotalDayData(intervalTime, message, EStatType.OPERATOR);
         }
         //公积金
         else if (bizType == EBizType.FUND) {

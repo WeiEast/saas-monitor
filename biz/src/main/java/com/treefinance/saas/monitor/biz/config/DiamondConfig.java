@@ -36,6 +36,12 @@ public class DiamondConfig {
     private Integer monitorIntervalMinutes;
 
     /**
+     * 任务成功率预警配置(json字符串)
+     */
+    @DAttribute(key = "task.success.rate.alarm.config")
+    private String taskSuccessRateAlarmConfig;
+
+    /**
      * (运营商监控)统计时间间隔:分钟为单位
      */
     @DAttribute(key = "operator.monitor.interval.minutes")
@@ -460,5 +466,13 @@ public class DiamondConfig {
 
     public void setTaskExistAlarmNoSuccessMinsConfig(String taskExistAlarmNoSuccessMinsConfig) {
         this.taskExistAlarmNoSuccessMinsConfig = taskExistAlarmNoSuccessMinsConfig;
+    }
+
+    public String getTaskSuccessRateAlarmConfig() {
+        return taskSuccessRateAlarmConfig;
+    }
+
+    public void setTaskSuccessRateAlarmConfig(String taskSuccessRateAlarmConfig) {
+        this.taskSuccessRateAlarmConfig = taskSuccessRateAlarmConfig;
     }
 }

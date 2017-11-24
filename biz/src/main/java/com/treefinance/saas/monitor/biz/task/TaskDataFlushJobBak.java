@@ -36,8 +36,8 @@ import java.util.stream.Collectors;
  * 数据统计Job
  * Created by yh-treefinance on 2017/5/25.
  */
-public class TaskDataFlushJob implements SimpleJob {
-    private static final Logger logger = LoggerFactory.getLogger(TaskDataFlushJob.class);
+public class TaskDataFlushJobBak implements SimpleJob {
+    private static final Logger logger = LoggerFactory.getLogger(TaskDataFlushJobBak.class);
     @Autowired
     private RedisDao redisDao;
     @Autowired

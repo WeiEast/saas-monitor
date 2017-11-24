@@ -56,6 +56,11 @@ public class SaasStatAccessDTO extends BaseDTO {
      */
     private BigDecimal failRate;
 
+    /**
+     * 转化率
+     */
+    private BigDecimal conversionRate;
+
     public Long getId() {
         return id;
     }
@@ -134,5 +139,13 @@ public class SaasStatAccessDTO extends BaseDTO {
 
     public void setFailRate(BigDecimal failRate) {
         this.failRate = failRate;
+    }
+
+    public BigDecimal getConversionRate() {
+        return conversionRate;
+    }
+
+    public void setConversionRate(BigDecimal conversionRate) {
+        this.conversionRate = conversionRate;
     }
 }

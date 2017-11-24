@@ -1,12 +1,21 @@
 package com.treefinance.saas.monitor.biz.mq.handler;
 
+import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.assistant.listener.TagBaseMessageHandler;
 import com.treefinance.saas.assistant.model.MonitorTagEnum;
 import com.treefinance.saas.assistant.model.TaskMonitorMessage;
+import com.treefinance.saas.monitor.biz.helper.TaskMonitorPerMinKeyHelper;
 import com.treefinance.saas.monitor.biz.service.newmonitor.TaskExistMonitorService;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskMonitorPerMinService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.BoundSetOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by haojiahong on 2017/11/23.
@@ -14,10 +23,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class TaskMonitorPerMinMessageHandler implements TagBaseMessageHandler<TaskMonitorMessage> {
 
+    private static final Logger logger = LoggerFactory.getLogger(TaskMonitorPerMinMessageHandler.class);
+
     @Autowired
     private TaskExistMonitorService taskExistMonitorService;
     @Autowired
     private TaskMonitorPerMinService taskMonitorPerMinService;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public MonitorTagEnum getMonitorType() {
@@ -26,7 +39,19 @@ public class TaskMonitorPerMinMessageHandler implements TagBaseMessageHandler<Ta
 
     @Override
     public void handleMessage(TaskMonitorMessage message) {
-        //todo 搞个任务消息去重
+
+        //任务重复消息不处理
+        Date redisTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(message.getCompleteTime(), 10);
+        String taskLogKey = TaskMonitorPerMinKeyHelper.keyOfTaskLog(redisTime);
+        BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(taskLogKey);
+        if (!Boolean.TRUE.equals(redisTemplate.hasKey(taskLogKey))) {
+            setOperations.expire(1, TimeUnit.HOURS);
+        }
+        if (setOperations.isMember(message.getTaskId())) {
+            logger.info("任务监控,消息处理,message={}重复发送不再统计.message={}", JSON.toJSONString(message));
+            return;
+        }
+        setOperations.add(message.getTaskId());
 
         //任务是否存在处理
         taskExistMonitorService.doService(message);

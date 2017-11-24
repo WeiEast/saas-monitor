@@ -63,6 +63,56 @@ public class AlarmMessageProducer {
         producer.shutdown();
     }
 
+
+    public void sendMailAlarm(String title, String body) {
+        try {
+            String mails = diamondConfig.getMonitorAlarmMails();
+            if (StringUtils.isEmpty(mails)) {
+                logger.info("No mail list are configured，do not alarm : title={},body={} ", JSON.toJSONString(title), JSON.toJSONString(body));
+                return;
+            }
+            logger.info("send alarm mail to {} ", mails);
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmMailTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
+            List<String> tolist = Splitter.on(",").splitToList(mails);
+
+            MailBody mailBody = new MailBody();
+            //设置邮件方式，具体看枚举值
+            mailBody.setMailEnum(MailEnum.SIMPLE_MAIL);
+            //设置业务线，预警设置为alarm
+            mailBody.setBusiness("alarm");
+            //设置发送给谁
+            mailBody.setToList(tolist);
+            mailBody.setSubject(title);
+            mailBody.setBody(body);
+            logger.info("send alarm mail message : message={}", JSON.toJSONString(mailBody));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(mailBody));
+        } catch (Exception e) {
+            logger.error("sendMail failed :", e);
+        }
+    }
+
+    public void sendWechantAlarm(String bodyData) {
+        try {
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmWebchartTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
+
+            WeChatBody body = new WeChatBody();
+            body.setAgentId(AGENT_ID);
+            TXTMessage msg = new TXTMessage();
+            msg.setMessage(bodyData);
+            body.setMessage(msg);
+            body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
+            body.setNotifyEnum(NotifyEnum.WECHAT);
+            logger.info("TaskMonitorAlarm:send alarm webchat message : message={}", JSON.toJSONString(body));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+        } catch (Exception e) {
+            logger.error("sendWechat failed :", e);
+        }
+    }
+
     /**
      * 发送邮箱预警消息
      *

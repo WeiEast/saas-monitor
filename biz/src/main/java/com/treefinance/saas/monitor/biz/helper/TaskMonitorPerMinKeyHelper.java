@@ -35,6 +35,7 @@ public class TaskMonitorPerMinKeyHelper {
 
 
     private static final String KEY_MERCHANTS = "key-merchants";
+    private static final String KEY_TASKS = "key-task-ids";
 
 
     /**
@@ -76,9 +77,9 @@ public class TaskMonitorPerMinKeyHelper {
      * @param statType
      * @return
      */
-    public static String keyOfDayOnMerchantIntervalStat(Date redisKeyTime, EStatType statType) {
+    public static String keyOfDayOnMerchantIntervalStat(Date redisKeyTime, String appId, EStatType statType) {
         String day = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_DAY_ON_MERCHANT_INTERVAL, statType, day);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_DAY_ON_MERCHANT_INTERVAL, appId, statType, day);
     }
 
 
@@ -143,9 +144,9 @@ public class TaskMonitorPerMinKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, MERCHANT_WITH_TYPE_INTERVAL_STAT, statType, appId, account, intervalDateStr);
     }
 
-    public static String keyOfDayOnMerchantWithTypeIntervalStat(Date redisKeyTime, EStatType statType) {
+    public static String keyOfDayOnMerchantWithTypeIntervalStat(Date redisKeyTime, String appId, String account, EStatType statType) {
         String day = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_DAY_ON_MERCHANT_WITH_TYPE_INTERVAL, statType, day);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_DAY_ON_MERCHANT_WITH_TYPE_INTERVAL, appId, account, statType, day);
     }
 
     public static String keyOfUsersOnMerchantWithTypeIntervalStat(Date redisKeyTime, String appId, EStatType statType, String account) {
@@ -173,4 +174,14 @@ public class TaskMonitorPerMinKeyHelper {
     }
 
 
+    /**
+     * 记录一段时间内的任务id
+     *
+     * @param redisKeyTime
+     * @return
+     */
+    public static String keyOfTaskLog(Date redisKeyTime) {
+        String intervalDateStr = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_TASKS, intervalDateStr);
+    }
 }

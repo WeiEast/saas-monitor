@@ -60,7 +60,7 @@ public class TaskMonitorPerMinServiceImpl implements TaskMonitorPerMinService {
                     taskMonitorPerMinRedisProcessor.updateMerchantIntervalAccess(redisKeyTime, message, EStatType.EMAIL);
                     break;
                 case OPERATOR:
-                    taskMonitorPerMinRedisProcessor.updateMerchantIntervalAccess(redisKeyTime, message, EStatType.OPERATER);
+                    taskMonitorPerMinRedisProcessor.updateMerchantIntervalAccess(redisKeyTime, message, EStatType.OPERATOR);
                     break;
                 case FUND:
                     taskMonitorPerMinRedisProcessor.updateMerchantIntervalAccess(redisKeyTime, message, EStatType.FUND);
@@ -94,7 +94,7 @@ public class TaskMonitorPerMinServiceImpl implements TaskMonitorPerMinService {
                     taskMonitorPerMinRedisProcessor.updateMerchantDayAccess(redisKeyTime, message, EStatType.EMAIL);
                     break;
                 case OPERATOR:
-                    taskMonitorPerMinRedisProcessor.updateMerchantDayAccess(redisKeyTime, message, EStatType.OPERATER);
+                    taskMonitorPerMinRedisProcessor.updateMerchantDayAccess(redisKeyTime, message, EStatType.OPERATOR);
                     break;
                 case FUND:
                     taskMonitorPerMinRedisProcessor.updateMerchantDayAccess(redisKeyTime, message, EStatType.FUND);
@@ -129,7 +129,7 @@ public class TaskMonitorPerMinServiceImpl implements TaskMonitorPerMinService {
                     taskMonitorPerMinRedisProcessor.updateSaasIntervalAccess(redisKeyTime, message, EStatType.EMAIL);
                     break;
                 case OPERATOR:
-                    taskMonitorPerMinRedisProcessor.updateSaasIntervalAccess(redisKeyTime, message, EStatType.OPERATER);
+                    taskMonitorPerMinRedisProcessor.updateSaasIntervalAccess(redisKeyTime, message, EStatType.OPERATOR);
                     break;
                 case FUND:
                     taskMonitorPerMinRedisProcessor.updateSaasIntervalAccess(redisKeyTime, message, EStatType.FUND);
@@ -163,7 +163,7 @@ public class TaskMonitorPerMinServiceImpl implements TaskMonitorPerMinService {
                     taskMonitorPerMinRedisProcessor.updateSaasDayAccess(redisKeyTime, message, EStatType.EMAIL);
                     break;
                 case OPERATOR:
-                    taskMonitorPerMinRedisProcessor.updateSaasDayAccess(redisKeyTime, message, EStatType.OPERATER);
+                    taskMonitorPerMinRedisProcessor.updateSaasDayAccess(redisKeyTime, message, EStatType.OPERATOR);
                     break;
                 case FUND:
                     taskMonitorPerMinRedisProcessor.updateSaasDayAccess(redisKeyTime, message, EStatType.FUND);
@@ -204,7 +204,7 @@ public class TaskMonitorPerMinServiceImpl implements TaskMonitorPerMinService {
                 case OPERATOR:
                     OperatorDTO operatorDTO = operatorService.getOperatorByWebsite(website);
                     String operatorId = operatorDTO != null ? operatorDTO.getId().toString() : null;
-                    taskMonitorPerMinRedisProcessor.updateMerchantAccessWithType(redisKeyTime, message, EStatType.OPERATER, operatorId + "");
+                    taskMonitorPerMinRedisProcessor.updateMerchantAccessWithType(redisKeyTime, message, EStatType.OPERATOR, operatorId + "");
                     break;
                 case FUND:
                     //公积金暂时没有建表
@@ -244,7 +244,7 @@ public class TaskMonitorPerMinServiceImpl implements TaskMonitorPerMinService {
                 taskMonitorPerMinRedisProcessor.updateSaasErrorStepDay(redisKeyTime, message, EStatType.EMAIL);
                 break;
             case OPERATOR:
-                taskMonitorPerMinRedisProcessor.updateSaasErrorStepDay(redisKeyTime, message, EStatType.OPERATER);
+                taskMonitorPerMinRedisProcessor.updateSaasErrorStepDay(redisKeyTime, message, EStatType.OPERATOR);
                 break;
             case FUND:
                 taskMonitorPerMinRedisProcessor.updateSaasErrorStepDay(redisKeyTime, message, EStatType.FUND);

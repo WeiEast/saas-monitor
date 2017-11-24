@@ -43,7 +43,7 @@ public class TaskMonitorPerMinRedisProcessor {
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
                 // 需统计的当日特定时间列表
-                String dayKey = TaskMonitorPerMinKeyHelper.keyOfDayOnMerchantIntervalStat(redisKeyTime, statType);
+                String dayKey = TaskMonitorPerMinKeyHelper.keyOfDayOnMerchantIntervalStat(redisKeyTime, message.getAppId(), statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
@@ -223,7 +223,7 @@ public class TaskMonitorPerMinRedisProcessor {
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
                 // 需统计的当日特定时间列表
-                String dayKey = TaskMonitorPerMinKeyHelper.keyOfDayOnMerchantWithTypeIntervalStat(redisKeyTime, statType);
+                String dayKey = TaskMonitorPerMinKeyHelper.keyOfDayOnMerchantWithTypeIntervalStat(redisKeyTime, message.getAppId(), account, statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
@@ -242,9 +242,11 @@ public class TaskMonitorPerMinRedisProcessor {
                     hashOperations.put("dataTime", MonitorDateUtils.format(redisKeyTime));
                     hashOperations.put("dataType", statType.getType().toString());
                     hashOperations.put("appId", message.getAppId());
+                    hashOperations.put("account", account);
                     statMap.put("dataTime", MonitorDateUtils.format(redisKeyTime));
                     statMap.put("dataType", statType + "");
                     statMap.put("appId", message.getAppId());
+                    statMap.put("account", account);
                     // 设定超时时间默认为2天
                     hashOperations.expire(1, TimeUnit.HOURS);
                 }
