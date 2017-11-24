@@ -78,10 +78,12 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         setOperations.add(MonitorDateUtils.format(beginTime));
 
         List<SaasStatAccessDTO> list = getNeedAlarmDataList(beginTime, times, intervalMins, statType);
-        logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},config={}",
-                MonitorDateUtils.format(jobTime), JSON.toJSONString(list), JSON.toJSONString(config));
+        logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},beginTime={},statType={},config={}",
+                MonitorDateUtils.format(jobTime), JSON.toJSONString(list), MonitorDateUtils.format(beginTime), JSON.toJSONString(statType), JSON.toJSONString(config));
         boolean isAlarm = isAlarm(list, config);
         if (!isAlarm) {
+            logger.info("任务成功率预警,定时任务执行jobTime={},判断所得数据不需要预警,list={},config={}",
+                    MonitorDateUtils.format(jobTime), JSON.toJSONString(list), JSON.toJSONString(config));
             return;
         }
         if (StringUtils.equalsIgnoreCase(config.getMailAlarmSwitch(), "on")) {
@@ -92,55 +94,12 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         }
     }
 
-    private void sendWechatAlarm(List<SaasStatAccessDTO> list, EStatType type) {
-        String body = this.generateMessageBody(list, type);
-        alarmMessageProducer.sendWechantAlarm(body);
-    }
-
-    private void sendMailAlarm(List<SaasStatAccessDTO> list, EStatType statType) {
-        String title = this.generateTitle(statType);
-        String body = this.generateMessageBody(list, statType);
-        alarmMessageProducer.sendMailAlarm(title, body);
-    }
-
-    private String generateTitle(EStatType type) {
-        return "saas-" + diamondConfig.getMonitorEnvironment() + "[" + type.getName() + "]任务成功率预警";
-    }
-
-    private String generateMessageBody(List<SaasStatAccessDTO> list, EStatType type) {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("您好，").append(generateTitle(type)).append("，监控数据如下，请及时处理：").append("\n");
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        List<String> dataTimeList = Lists.newArrayList();
-        List<Integer> totalCountList = Lists.newArrayList();
-        List<BigDecimal> successRateList = Lists.newArrayList();
-        List<Integer> successCountList = Lists.newArrayList();
-        List<BigDecimal> failRateList = Lists.newArrayList();
-        List<Integer> failCountList = Lists.newArrayList();
-        List<Integer> cancelCountList = Lists.newArrayList();
-        list.forEach(access -> {
-            dataTimeList.add(fmt.format(access.getDataTime()));
-            totalCountList.add(access.getTotalCount());
-            successRateList.add(access.getConversionRate());
-            successCountList.add(access.getSuccessCount());
-            failRateList.add(access.getFailRate());
-            failCountList.add(access.getFailCount());
-            cancelCountList.add(access.getCancelCount());
-        });
-
-        buffer.append(" 数据时间: " + Joiner.on(" | ").useForNull(" ").join(dataTimeList) + " \n");
-        buffer.append(" 任务总数: " + Joiner.on(" | ").useForNull(" ").join(totalCountList) + " \n");
-        buffer.append(" 转化率(%): " + Joiner.on(" | ").useForNull(" ").join(successRateList) + " \n");
-        buffer.append(" 成功数: " + Joiner.on(" | ").useForNull(" ").join(successCountList) + " \n");
-        buffer.append(" 失败率(%): " + Joiner.on(" | ").useForNull(" ").join(failRateList) + " \n");
-        buffer.append(" 失败数: " + Joiner.on(" | ").useForNull(" ").join(failCountList) + " \n");
-        buffer.append(" 取消数: " + Joiner.on(" | ").useForNull(" ").join(cancelCountList) + " \n");
-        return buffer.toString();
-    }
-
     private boolean isAlarm(List<SaasStatAccessDTO> list, TaskSuccessRateAlarmConfigDTO config) {
         Integer threshold = config.getSuccesThreshold();
         for (SaasStatAccessDTO data : list) {
+            if (data.getTotalCount() == 0) {
+                return false;
+            }
             if (data.getConversionRate().compareTo(BigDecimal.valueOf(threshold)) > 0) {
                 return false;
             }
@@ -196,5 +155,51 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 .multiply(BigDecimal.valueOf(100))
                 .divide(BigDecimal.valueOf(totalCount, 2), 2, BigDecimal.ROUND_HALF_UP);
         return rate;
+    }
+
+    private void sendWechatAlarm(List<SaasStatAccessDTO> list, EStatType type) {
+        String body = this.generateMessageBody(list, type);
+        alarmMessageProducer.sendWechantAlarm(body);
+    }
+
+    private void sendMailAlarm(List<SaasStatAccessDTO> list, EStatType statType) {
+        String title = this.generateTitle(statType);
+        String body = this.generateMessageBody(list, statType);
+        alarmMessageProducer.sendMailAlarm(title, body);
+    }
+
+    private String generateTitle(EStatType type) {
+        return "saas-" + diamondConfig.getMonitorEnvironment() + "[" + type.getName() + "]任务成功率预警";
+    }
+
+    private String generateMessageBody(List<SaasStatAccessDTO> list, EStatType type) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("您好，").append(generateTitle(type)).append("，监控数据如下，请及时处理：").append("\n");
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        List<String> dataTimeList = Lists.newArrayList();
+        List<Integer> totalCountList = Lists.newArrayList();
+        List<BigDecimal> successRateList = Lists.newArrayList();
+        List<Integer> successCountList = Lists.newArrayList();
+        List<BigDecimal> failRateList = Lists.newArrayList();
+        List<Integer> failCountList = Lists.newArrayList();
+        List<Integer> cancelCountList = Lists.newArrayList();
+        list.forEach(access -> {
+            dataTimeList.add(fmt.format(access.getDataTime()));
+            totalCountList.add(access.getTotalCount());
+            successRateList.add(access.getConversionRate());
+            successCountList.add(access.getSuccessCount());
+            failRateList.add(access.getFailRate());
+            failCountList.add(access.getFailCount());
+            cancelCountList.add(access.getCancelCount());
+        });
+
+        buffer.append(" 数据时间: " + Joiner.on(" | ").useForNull(" ").join(dataTimeList) + " \n");
+        buffer.append(" 任务总数: " + Joiner.on(" | ").useForNull(" ").join(totalCountList) + " \n");
+        buffer.append(" 转化率(%): " + Joiner.on(" | ").useForNull(" ").join(successRateList) + " \n");
+        buffer.append(" 成功数: " + Joiner.on(" | ").useForNull(" ").join(successCountList) + " \n");
+        buffer.append(" 失败率(%): " + Joiner.on(" | ").useForNull(" ").join(failRateList) + " \n");
+        buffer.append(" 失败数: " + Joiner.on(" | ").useForNull(" ").join(failCountList) + " \n");
+        buffer.append(" 取消数: " + Joiner.on(" | ").useForNull(" ").join(cancelCountList) + " \n");
+        return buffer.toString();
     }
 }
