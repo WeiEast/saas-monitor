@@ -190,7 +190,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
      */
     private BigDecimal calcRate(Integer totalCount, Integer rateCount) {
         if (totalCount == 0) {
-            return BigDecimal.ZERO;
+            return BigDecimal.valueOf(0, 2);
         }
         BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
                 .multiply(BigDecimal.valueOf(100))

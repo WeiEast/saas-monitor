@@ -194,17 +194,23 @@ public class TaskMonitorPerMinServiceImpl implements TaskMonitorPerMinService {
                 case ECOMMERCE:
                     EcommerceDTO ecommerceDTO = ecommerceService.getEcommerceByWebsite(website);
                     Short ecommerceId = ecommerceDTO != null ? ecommerceDTO.getId() : null;
-                    taskMonitorPerMinRedisProcessor.updateMerchantAccessWithType(redisKeyTime, message, EStatType.ECOMMERCE, ecommerceId + "");
+                    if (ecommerceId != null) {
+                        taskMonitorPerMinRedisProcessor.updateMerchantAccessWithType(redisKeyTime, message, EStatType.ECOMMERCE, ecommerceId + "");
+                    }
                     break;
                 case EMAIL:
                     WebsiteDTO websiteDTO = websiteService.getWebsiteByName(website);
                     String mailCode = websiteDTO != null ? websiteDTO.getWebsiteName() : null;
-                    taskMonitorPerMinRedisProcessor.updateMerchantAccessWithType(redisKeyTime, message, EStatType.EMAIL, mailCode);
+                    if (StringUtils.isNotBlank(mailCode)) {
+                        taskMonitorPerMinRedisProcessor.updateMerchantAccessWithType(redisKeyTime, message, EStatType.EMAIL, mailCode);
+                    }
                     break;
                 case OPERATOR:
                     OperatorDTO operatorDTO = operatorService.getOperatorByWebsite(website);
                     String operatorId = operatorDTO != null ? operatorDTO.getId().toString() : null;
-                    taskMonitorPerMinRedisProcessor.updateMerchantAccessWithType(redisKeyTime, message, EStatType.OPERATOR, operatorId + "");
+                    if (operatorId != null) {
+                        taskMonitorPerMinRedisProcessor.updateMerchantAccessWithType(redisKeyTime, message, EStatType.OPERATOR, operatorId + "");
+                    }
                     break;
                 case FUND:
                     //公积金暂时没有建表
