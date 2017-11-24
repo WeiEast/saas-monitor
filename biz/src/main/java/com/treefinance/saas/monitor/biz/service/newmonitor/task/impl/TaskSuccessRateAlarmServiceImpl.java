@@ -71,11 +71,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         if (!Boolean.TRUE.equals(redisTemplate.hasKey(alarmTimeKey))) {
             setOperations.expire(2, TimeUnit.DAYS);
         }
-        if (setOperations.isMember(beginTime)) {
+        if (setOperations.isMember(MonitorDateUtils.format(beginTime))) {
             logger.info("任务成功率预警,beginTime={},statType={}已预警,不再预警", MonitorDateUtils.format(beginTime), JSON.toJSONString(statType));
             return;
         }
-        setOperations.add(beginTime);
+        setOperations.add(MonitorDateUtils.format(beginTime));
 
         List<SaasStatAccessDTO> list = getNeedAlarmDataList(beginTime, times, intervalMins, statType);
         logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},config={}",
