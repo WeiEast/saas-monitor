@@ -47,11 +47,11 @@ public class TaskMonitorPerMinMessageHandler implements TagBaseMessageHandler<Ta
         if (!Boolean.TRUE.equals(redisTemplate.hasKey(taskLogKey))) {
             setOperations.expire(1, TimeUnit.HOURS);
         }
-        if (setOperations.isMember(message.getTaskId())) {
+        if (setOperations.isMember(message.getTaskId().toString())) {
             logger.info("任务监控,消息处理,message={}重复发送不再统计.message={}", JSON.toJSONString(message));
             return;
         }
-        setOperations.add(message.getTaskId());
+        setOperations.add(message.getTaskId().toString());
 
         //任务是否存在处理
         taskExistMonitorService.doService(message);
