@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.service.newmonitor.task.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskMonitorPerMinKeyHelper;
@@ -12,8 +13,11 @@ import com.treefinance.saas.monitor.common.domain.dto.TaskSuccessRateAlarmConfig
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatAccess;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.entity.SaasStatAccess;
 import com.treefinance.saas.monitor.dao.entity.SaasStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.mapper.MerchantStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.SaasStatAccessMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -23,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -45,6 +50,8 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private MerchantStatAccessMapper merchantStatAccessMapper;
 
     @Override
     public void alarm(EBizType bizType, TaskSuccessRateAlarmConfigDTO config, Date jobTime) {
@@ -126,6 +133,16 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 failCount = failCount + data.getFailCount();
                 cancelCount = cancelCount + data.getCancelCount();
             }
+
+            SaasStatAccessDTO excludeData = getExcludeAlarmList(statType, startTime, endTime);
+            if (excludeData != null) {
+                totalCount = totalCount - excludeData.getTotalCount();
+                successCount = successCount - excludeData.getSuccessCount();
+                failCount = failCount - excludeData.getFailCount();
+                cancelCount = cancelCount - excludeData.getCancelCount();
+                logger.info("任务成功率预警,排除数据data={}", JSON.toJSONString(excludeData));
+            }
+
             SaasStatAccessDTO saasStatAccessDTO = new SaasStatAccessDTO();
             saasStatAccessDTO.setDataTime(startTime);
             saasStatAccessDTO.setDataType(statType.getType());
@@ -140,6 +157,38 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         return list;
     }
 
+    private SaasStatAccessDTO getExcludeAlarmList(EStatType statType, Date startTime, Date endTime) {
+        List<String> excludeAppIds = Lists.newArrayList();
+        if (StringUtils.isNotBlank(diamondConfig.getMonitorAlarmExcludeAppIdsAll())) {
+            excludeAppIds = Splitter.on(",").trimResults().splitToList(diamondConfig.getMonitorAlarmExcludeAppIdsAll());
+        }
+        logger.info("任务成功率预警,排除预警商户appIds={}", JSON.toJSONString(excludeAppIds));
+        if (!CollectionUtils.isEmpty(excludeAppIds)) {
+            MerchantStatAccessCriteria merchantCriteria = new MerchantStatAccessCriteria();
+            merchantCriteria.createCriteria().andAppIdIn(excludeAppIds)
+                    .andDataTypeEqualTo(statType.getType())
+                    .andDataTimeGreaterThanOrEqualTo(startTime)
+                    .andDataTimeLessThan(endTime);
+            List<MerchantStatAccess> merchantStatAccessList = merchantStatAccessMapper.selectByExample(merchantCriteria);
+            int totalCount = 0, successCount = 0, failCount = 0, cancelCount = 0;
+            for (MerchantStatAccess data : merchantStatAccessList) {
+                totalCount = totalCount + data.getTotalCount();
+                successCount = successCount + data.getSuccessCount();
+                failCount = failCount + data.getFailCount();
+                cancelCount = cancelCount + data.getCancelCount();
+            }
+            SaasStatAccessDTO excludeData = new SaasStatAccessDTO();
+            excludeData.setDataTime(startTime);
+            excludeData.setDataType(statType.getType());
+            excludeData.setTotalCount(totalCount);
+            excludeData.setSuccessCount(successCount);
+            excludeData.setFailCount(failCount);
+            excludeData.setCancelCount(cancelCount);
+            return excludeData;
+        }
+        return null;
+    }
+
     /**
      * 计算比率
      *
@@ -148,7 +197,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
      * @return
      */
     private BigDecimal calcRate(Integer totalCount, Integer rateCount) {
-        if (totalCount == 0) {
+        if (totalCount <= 0) {
             return BigDecimal.valueOf(0, 2);
         }
         BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
