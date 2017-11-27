@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.service.newmonitor.task;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskMonitorMessage;
 import com.treefinance.saas.monitor.biz.helper.TaskMonitorPerMinKeyHelper;
@@ -48,7 +49,8 @@ public class TaskMonitorPerMinRedisProcessor {
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
-                setOperations.add(MonitorDateUtils.format(redisKeyTime));
+                //加入一个毫秒级的时间戳,防止刷新db数据时,将之后的再加入的时刻误删.
+                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(redisKeyTime), System.currentTimeMillis()));
 
                 //需统计的商户
                 if (StringUtils.isNotBlank(message.getAppId())) {
@@ -146,7 +148,7 @@ public class TaskMonitorPerMinRedisProcessor {
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
-                setOperations.add(MonitorDateUtils.format(redisKeyTime));
+                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(redisKeyTime), System.currentTimeMillis()));
 
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
@@ -228,7 +230,7 @@ public class TaskMonitorPerMinRedisProcessor {
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
-                setOperations.add(MonitorDateUtils.format(redisKeyTime));
+                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(redisKeyTime), System.currentTimeMillis()));
 
                 //需统计的商户
                 if (StringUtils.isNotBlank(message.getAppId())) {
