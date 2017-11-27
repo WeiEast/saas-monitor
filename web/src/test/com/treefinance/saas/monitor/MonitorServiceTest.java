@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
+import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -11,11 +12,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.BoundSetOperations;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by haojiahong on 2017/11/6.
@@ -24,10 +31,17 @@ import java.util.List;
 @SpringBootTest(classes = SaasMonitorApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class MonitorServiceTest {
 
+    private static final String KEY_PREFIX = "saas-monitor-task-test";
+
+
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
     private DiamondConfig diamondConfig;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private RedisDao redisDao;
 
     @Test
     public void testMail() {
@@ -83,5 +97,73 @@ public class MonitorServiceTest {
         return buffer.toString();
     }
 
+
+    @Test
+    public void testRedis() throws InterruptedException {
+        Thread thread1 = new Thread(new AddTask());
+        thread1.start();
+        Thread.sleep(3000);
+        Thread thread2 = new Thread(new RemoveTask());
+        thread2.start();
+        thread1.join();
+        thread2.join();
+        System.out.println(redisDao.getRedisTemplate().opsForSet().members(KEY_PREFIX));
+        System.out.println("结束");
+    }
+
+    private class AddTask implements Runnable {
+
+        @Override
+        public void run() {
+            System.out.println("线程1开始执行...");
+            redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
+
+                @Override
+                public Object execute(RedisOperations redisOperations) throws DataAccessException {
+                    System.out.println("线程1获取redis连接...");
+
+                    redisOperations.watch(KEY_PREFIX);
+                    redisOperations.multi();
+                    BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(KEY_PREFIX);
+                    if (!Boolean.TRUE.equals(redisOperations.hasKey(KEY_PREFIX))) {
+                        setOperations.expire(2, TimeUnit.HOURS);
+                    }
+                    for (int i = 0; i < 5; i++) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        setOperations.add(String.valueOf(i));
+                        System.out.println("线程1..." + setOperations.members());
+                    }
+                    redisOperations.exec();
+                    System.out.println("线程1..." + setOperations.members());
+                    return null;
+                }
+            });
+        }
+    }
+
+    private class RemoveTask implements Runnable {
+
+        @Override
+        public void run() {
+            System.out.println("线程2开始执行...");
+            redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
+
+                @Override
+                public Object execute(RedisOperations redisOperations) throws DataAccessException {
+                    System.out.println("线程2获取redis连接...");
+                    redisOperations.watch(KEY_PREFIX);
+                    redisOperations.multi();
+                    String[] array = new String[]{String.valueOf(0), String.valueOf(1), String.valueOf(2)};
+                    redisOperations.opsForSet().remove(KEY_PREFIX, array);
+                    redisOperations.exec();
+                    return null;
+                }
+            });
+        }
+    }
 
 }

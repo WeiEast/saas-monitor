@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.service.newmonitor.operator;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskOperatorMonitorMessage;
 import com.treefinance.saas.grapserver.facade.model.enums.ETaskOperatorMonitorStatus;
@@ -56,7 +57,7 @@ public class TaskOperatorMonitorMessageProcessor {
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
-                setOperations.add(MonitorDateUtils.format(intervalTime));
+                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(intervalTime), System.currentTimeMillis()));
 
                 //需统计的运营商GroupCode
                 if (StringUtils.isNotBlank(message.getGroupCode())) {
@@ -150,7 +151,7 @@ public class TaskOperatorMonitorMessageProcessor {
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
-                setOperations.add(MonitorDateUtils.format(intervalTime));
+                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(intervalTime), System.currentTimeMillis()));
 
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
