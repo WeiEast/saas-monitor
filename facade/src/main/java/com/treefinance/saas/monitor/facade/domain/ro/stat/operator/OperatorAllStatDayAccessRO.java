@@ -14,7 +14,15 @@ public class OperatorAllStatDayAccessRO implements Serializable {
 
     private Long id;
 
+    private String appId;
+
     private Date dataTime;
+
+    private Byte dataType;
+
+    private Integer userCount;
+
+    private Integer taskCount;
 
     private Integer entryCount;
 
@@ -45,6 +53,17 @@ public class OperatorAllStatDayAccessRO implements Serializable {
     private Date createTime;
 
     private Date lastUpdateTime;
+
+    /**
+     * 任务人数比
+     */
+    private BigDecimal taskUserRatio;
+
+    /**
+     * 总转化率
+     */
+    private BigDecimal wholeConversionRate;
+
 
     public BigDecimal getConfirmMobileConversionRate() {
         return confirmMobileConversionRate;
@@ -180,5 +199,53 @@ public class OperatorAllStatDayAccessRO implements Serializable {
 
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    public Byte getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(Byte dataType) {
+        this.dataType = dataType;
+    }
+
+    public Integer getUserCount() {
+        return userCount;
+    }
+
+    public void setUserCount(Integer userCount) {
+        this.userCount = userCount;
+    }
+
+    public Integer getTaskCount() {
+        return taskCount;
+    }
+
+    public void setTaskCount(Integer taskCount) {
+        this.taskCount = taskCount;
+    }
+
+    public BigDecimal getTaskUserRatio() {
+        return taskUserRatio;
+    }
+
+    public void setTaskUserRatio(BigDecimal taskUserRatio) {
+        this.taskUserRatio = taskUserRatio;
+    }
+
+    public BigDecimal getWholeConversionRate() {
+        return wholeConversionRate;
+    }
+
+    public void setWholeConversionRate(BigDecimal wholeConversionRate) {
+        this.wholeConversionRate = wholeConversionRate;
     }
 }
