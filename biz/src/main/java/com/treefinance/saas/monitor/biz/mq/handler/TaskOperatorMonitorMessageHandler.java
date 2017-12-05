@@ -123,8 +123,13 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
                     operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
                     break;
                 case CALLBACK_SUCCESS:
+                    operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+                    operatorMonitorActionStatService.updateDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
                     operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
                     operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+
+                    operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+                    operatorMonitorActionStatService.updateDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
                     operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
                     operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
                     break;
