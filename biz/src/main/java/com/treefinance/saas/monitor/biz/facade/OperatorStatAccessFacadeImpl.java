@@ -116,7 +116,8 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.setOrderByClause("dataTime desc");
         criteria.setLimit(request.getPageSize());
         criteria.setOffset(request.getOffset());
-        criteria.createCriteria().andGroupCodeEqualTo(request.getGroupCode())
+        criteria.createCriteria().andAppIdEqualTo(request.getAppId())
+                .andGroupCodeEqualTo(request.getGroupCode())
                 .andDataTypeEqualTo(request.getStatType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         long total = operatorStatDayAccessMapper.countByExample(criteria);
@@ -143,7 +144,9 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         List<OperatorStatAccessRO> result = Lists.newArrayList();
         OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
-        criteria.createCriteria().andGroupCodeEqualTo(request.getGroupCode())
+        criteria.createCriteria()
+                .andAppIdEqualTo(request.getAppId())
+                .andGroupCodeEqualTo(request.getGroupCode())
                 .andDataTypeEqualTo(request.getStatType())
                 .andDataTimeBetween(MonitorDateUtils.getDayStartTime(request.getStartDate()), MonitorDateUtils.getDayEndTime(request.getEndDate()));
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
