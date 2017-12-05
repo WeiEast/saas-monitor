@@ -14,9 +14,15 @@ public class OperatorStatAccessRO implements Serializable {
 
     private Long id;
 
+    private String appId;
+
     private String groupCode;
 
     private String groupName;
+
+    private Integer userCount;
+
+    private Integer taskCount;
 
     private Date dataTime;
 
@@ -30,6 +36,8 @@ public class OperatorStatAccessRO implements Serializable {
 
     private Integer processSuccessCount;
 
+    private Integer callbackSuccessCount;
+
     private BigDecimal loginConversionRate;
 
     private BigDecimal loginSuccessRate;
@@ -37,6 +45,10 @@ public class OperatorStatAccessRO implements Serializable {
     private BigDecimal crawlSuccessRate;
 
     private BigDecimal processSuccessRate;
+
+    private BigDecimal callbackSuccessRate;
+
+    private BigDecimal taskUserRatio;
 
     private Date createTime;
 
@@ -160,5 +172,53 @@ public class OperatorStatAccessRO implements Serializable {
 
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    public Integer getUserCount() {
+        return userCount;
+    }
+
+    public void setUserCount(Integer userCount) {
+        this.userCount = userCount;
+    }
+
+    public Integer getTaskCount() {
+        return taskCount;
+    }
+
+    public void setTaskCount(Integer taskCount) {
+        this.taskCount = taskCount;
+    }
+
+    public BigDecimal getTaskUserRatio() {
+        return taskUserRatio;
+    }
+
+    public void setTaskUserRatio(BigDecimal taskUserRatio) {
+        this.taskUserRatio = taskUserRatio;
+    }
+
+    public Integer getCallbackSuccessCount() {
+        return callbackSuccessCount;
+    }
+
+    public void setCallbackSuccessCount(Integer callbackSuccessCount) {
+        this.callbackSuccessCount = callbackSuccessCount;
+    }
+
+    public BigDecimal getCallbackSuccessRate() {
+        return callbackSuccessRate;
+    }
+
+    public void setCallbackSuccessRate(BigDecimal callbackSuccessRate) {
+        this.callbackSuccessRate = callbackSuccessRate;
     }
 }

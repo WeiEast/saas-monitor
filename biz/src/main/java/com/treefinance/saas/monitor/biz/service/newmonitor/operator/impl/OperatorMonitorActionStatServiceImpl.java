@@ -86,7 +86,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         //统计时段内只统计用户一个手机号的数据
         String accountNo = message.getAccountNo();
         if (StringUtils.isNotBlank(accountNo)) {
-            String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfIntervalUsersMobileLog(intervalTime);
+            String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfIntervalUsersMobileLog(intervalTime, message.getAppId());
             BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
             if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
                 setOperations.expire(2, TimeUnit.HOURS);
@@ -132,7 +132,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         //统计时段内只统计用户一个手机号的数据
         String accountNo = message.getAccountNo();
         if (StringUtils.isNotBlank(accountNo)) {
-            String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfDayUsersMobileLog(intervalTime);
+            String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfDayUsersMobileLog(intervalTime, message.getAppId());
             BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
             if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
                 setOperations.expire(2, TimeUnit.DAYS);
@@ -175,7 +175,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         //统计时段内只统计用户一个手机号的数据
         String accountNo = message.getAccountNo();
         if (StringUtils.isNotBlank(accountNo)) {
-            String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfIntervalUsersMobileLog(intervalTime);
+            String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfIntervalUsersMobileLog(intervalTime, message.getAppId());
             BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
             if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
                 setOperations.expire(2, TimeUnit.HOURS);
@@ -219,7 +219,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         //统计时段内只统计用户一个手机号的数据
         String accountNo = message.getAccountNo();
         if (StringUtils.isNotBlank(accountNo)) {
-            String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfDayUsersMobileLog(intervalTime);
+            String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfDayUsersMobileLog(intervalTime, message.getAppId());
             BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
             if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
                 setOperations.expire(2, TimeUnit.HOURS);

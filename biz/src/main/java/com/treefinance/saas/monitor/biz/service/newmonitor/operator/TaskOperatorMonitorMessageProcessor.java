@@ -46,18 +46,24 @@ public class TaskOperatorMonitorMessageProcessor {
     public void updateIntervalData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
         Map<String, String> statMap = Maps.newHashMap();
         statMap.put("statusType", status + "");
-        String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeIntervalStat(intervalTime, message.getGroupCode(), statType);
+        String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeIntervalStat(intervalTime, message.getGroupCode(), message.getAppId(), statType);
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
                 // 需统计的当日特定时间列表
-                String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnGroupStat(intervalTime, statType);
+                String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnGroupStat(intervalTime, message.getAppId(), statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
                 setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(intervalTime), System.currentTimeMillis()));
+
+                //需统计的appIds
+                if (StringUtils.isNotBlank(message.getAppId())) {
+                    String appIdsKey = TaskOperatorMonitorKeyHelper.keyOfAppIds();
+                    redisOperations.opsForSet().add(appIdsKey, message.getAppId());
+                }
 
                 //需统计的运营商GroupCode
                 if (StringUtils.isNotBlank(message.getGroupCode())) {
@@ -72,10 +78,12 @@ public class TaskOperatorMonitorMessageProcessor {
                     hashOperations.put("dataType", statType.getCode().toString());
                     hashOperations.put("groupCode", message.getGroupCode());
                     hashOperations.put("groupName", message.getGroupName());
+                    hashOperations.put("appId", message.getAppId());
                     statMap.put("dataTime", MonitorDateUtils.format(intervalTime));
                     statMap.put("dataType", statType + "");
                     statMap.put("groupCode", message.getGroupCode());
                     statMap.put("groupName", message.getGroupName());
+                    statMap.put("appId", message.getAppId());
                     // 设定超时时间默认为2天
                     hashOperations.expire(2, TimeUnit.DAYS);
                 }
@@ -96,11 +104,17 @@ public class TaskOperatorMonitorMessageProcessor {
     public void updateDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
         Map<String, String> statMap = Maps.newHashMap();
         statMap.put("statusType", status + "");
-        String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeDayStat(intervalTime, message.getGroupCode(), statType);
+        String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeDayStat(intervalTime, message.getGroupCode(), message.getAppId(), statType);
 
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
+
+                //需统计的appIds
+                if (StringUtils.isNotBlank(message.getAppId())) {
+                    String appIdsKey = TaskOperatorMonitorKeyHelper.keyOfAppIds();
+                    redisOperations.opsForSet().add(appIdsKey, message.getAppId());
+                }
 
                 //需统计的运营商GroupCode
                 if (StringUtils.isNotBlank(message.getGroupCode())) {
@@ -115,10 +129,12 @@ public class TaskOperatorMonitorMessageProcessor {
                     hashOperations.put("dataType", statType.getCode().toString());
                     hashOperations.put("groupCode", message.getGroupCode());
                     hashOperations.put("groupName", message.getGroupName());
+                    hashOperations.put("appId", message.getAppId());
                     statMap.put("dataTime", MonitorDateUtils.getDayStartTimeStr(intervalTime));
                     statMap.put("dataType", statType + "");
                     statMap.put("groupCode", message.getGroupCode());
                     statMap.put("groupName", message.getGroupName());
+                    statMap.put("appId", message.getAppId());
                     // 设定超时时间默认为2天
                     hashOperations.expire(2, TimeUnit.DAYS);
                 }
@@ -140,26 +156,34 @@ public class TaskOperatorMonitorMessageProcessor {
     public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
         Map<String, String> statMap = Maps.newHashMap();
         statMap.put("statusType", status + "");
-        String key = TaskOperatorMonitorKeyHelper.keyOfAllIntervalStat(intervalTime, statType);
+        String key = TaskOperatorMonitorKeyHelper.keyOfAllIntervalStat(intervalTime, message.getAppId(), statType);
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
                 // 需统计的当日特定时间列表
-                String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnAllStat(intervalTime, statType);
+                String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnAllStat(intervalTime, message.getAppId(), statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
                 setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(intervalTime), System.currentTimeMillis()));
 
+                //需统计的appIds
+                if (StringUtils.isNotBlank(message.getAppId())) {
+                    String appIdsKey = TaskOperatorMonitorKeyHelper.keyOfAppIds();
+                    redisOperations.opsForSet().add(appIdsKey, message.getAppId());
+                }
+
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
                     hashOperations.put("dataTime", MonitorDateUtils.format(intervalTime));
                     hashOperations.put("dataType", statType.getCode().toString());
+                    hashOperations.put("appId", message.getAppId());
                     statMap.put("dataType", statType + "");
                     statMap.put("dataTime", MonitorDateUtils.format(intervalTime));
+                    statMap.put("appId", message.getAppId());
                     // 设定超时时间默认为2天
                     hashOperations.expire(2, TimeUnit.DAYS);
                 }
@@ -180,19 +204,27 @@ public class TaskOperatorMonitorMessageProcessor {
     public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
         Map<String, String> statMap = Maps.newHashMap();
         statMap.put("statusType", status + "");
-        String key = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(intervalTime, statType);
+        String key = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(intervalTime, message.getAppId(), statType);
 
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
+
+                //需统计的appIds
+                if (StringUtils.isNotBlank(message.getAppId())) {
+                    String appIdsKey = TaskOperatorMonitorKeyHelper.keyOfAppIds();
+                    redisOperations.opsForSet().add(appIdsKey, message.getAppId());
+                }
 
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
                     hashOperations.put("dataTime", MonitorDateUtils.getDayStartTimeStr(intervalTime));
                     hashOperations.put("dataType", statType.getCode().toString());
+                    hashOperations.put("appId", message.getAppId());
                     statMap.put("dataType", statType + "");
                     statMap.put("dataTime", MonitorDateUtils.getDayStartTimeStr(intervalTime));
+                    statMap.put("appId", message.getAppId());
                     // 设定超时时间默认为2天
                     hashOperations.expire(2, TimeUnit.DAYS);
                 }

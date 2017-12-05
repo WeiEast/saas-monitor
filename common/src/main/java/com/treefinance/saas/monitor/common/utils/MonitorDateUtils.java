@@ -14,6 +14,22 @@ import java.util.List;
  */
 public class MonitorDateUtils {
 
+    /**
+     * 获取dataTime在间隔时间内的开始时间,如dataTime=19:41,intervalMinutes=5,则19:40
+     *
+     * @param dataTime
+     * @return
+     */
+    public static Date getIntervalDateTime(Date dataTime, Integer intervalMinutes) {
+        Date intervalTime = org.apache.commons.lang.time.DateUtils.truncate(dataTime, Calendar.MINUTE);
+        Long currentMinute = org.apache.commons.lang.time.DateUtils.getFragmentInMinutes(intervalTime, Calendar.HOUR_OF_DAY);
+        if (currentMinute % intervalMinutes == 0) {
+            return intervalTime;
+        }
+        intervalTime = org.apache.commons.lang.time.DateUtils.addMinutes(intervalTime, (-currentMinute.intValue() % intervalMinutes));
+        return intervalTime;
+    }
+
     public static String format(Date date) {
         return DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
     }

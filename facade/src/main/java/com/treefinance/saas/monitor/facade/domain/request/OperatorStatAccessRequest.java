@@ -27,6 +27,14 @@ public class OperatorStatAccessRequest extends PageRequest implements Serializab
 
     private Byte statType;
 
+    private String appId;
+
+    /**
+     * 分时时段(分钟)
+     */
+    private Integer intervalMins;
+
+
     public Date getDataDate() {
         return dataDate;
     }
@@ -73,5 +81,21 @@ public class OperatorStatAccessRequest extends PageRequest implements Serializab
 
     public void setStatType(Byte statType) {
         this.statType = statType;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    public Integer getIntervalMins() {
+        return intervalMins;
+    }
+
+    public void setIntervalMins(Integer intervalMins) {
+        this.intervalMins = intervalMins;
     }
 }
