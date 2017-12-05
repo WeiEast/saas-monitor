@@ -8,6 +8,8 @@ public class OperatorStatAccessDTO implements Serializable {
 
     private Long id;
 
+    private String appId;
+
     private String groupCode;
 
     private String groupName;
@@ -26,6 +28,8 @@ public class OperatorStatAccessDTO implements Serializable {
 
     private Integer processSuccessCount;
 
+    private Integer callbackSuccessCount;
+
     private BigDecimal loginConversionRate;
 
     private BigDecimal loginSuccessRate;
@@ -33,6 +37,8 @@ public class OperatorStatAccessDTO implements Serializable {
     private BigDecimal crawlSuccessRate;
 
     private BigDecimal processSuccessRate;
+
+    private BigDecimal callbackSuccessRate;
 
     /**
      * 前n天的相同时刻确认手机号数平均值
@@ -59,6 +65,8 @@ public class OperatorStatAccessDTO implements Serializable {
      */
     private BigDecimal previousProcessSuccessAvgCount;
 
+    private BigDecimal previousCallbackSuccessAvgCount;
+
     /**
      * 前n天的相同时刻登录转化率平均值
      */
@@ -78,6 +86,8 @@ public class OperatorStatAccessDTO implements Serializable {
      * 前n天的相同时刻洗数成功率平均值
      */
     private BigDecimal previousProcessSuccessRate;
+
+    private BigDecimal previousCallbackSuccessRateRate;
 
 
     private Date createTime;
@@ -284,5 +294,45 @@ public class OperatorStatAccessDTO implements Serializable {
 
     public void setPreviousProcessSuccessAvgCount(BigDecimal previousProcessSuccessAvgCount) {
         this.previousProcessSuccessAvgCount = previousProcessSuccessAvgCount;
+    }
+
+    public Integer getCallbackSuccessCount() {
+        return callbackSuccessCount;
+    }
+
+    public void setCallbackSuccessCount(Integer callbackSuccessCount) {
+        this.callbackSuccessCount = callbackSuccessCount;
+    }
+
+    public BigDecimal getCallbackSuccessRate() {
+        return callbackSuccessRate;
+    }
+
+    public void setCallbackSuccessRate(BigDecimal callbackSuccessRate) {
+        this.callbackSuccessRate = callbackSuccessRate;
+    }
+
+    public BigDecimal getPreviousCallbackSuccessAvgCount() {
+        return previousCallbackSuccessAvgCount;
+    }
+
+    public void setPreviousCallbackSuccessAvgCount(BigDecimal previousCallbackSuccessAvgCount) {
+        this.previousCallbackSuccessAvgCount = previousCallbackSuccessAvgCount;
+    }
+
+    public BigDecimal getPreviousCallbackSuccessRateRate() {
+        return previousCallbackSuccessRateRate;
+    }
+
+    public void setPreviousCallbackSuccessRateRate(BigDecimal previousCallbackSuccessRateRate) {
+        this.previousCallbackSuccessRateRate = previousCallbackSuccessRateRate;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 }

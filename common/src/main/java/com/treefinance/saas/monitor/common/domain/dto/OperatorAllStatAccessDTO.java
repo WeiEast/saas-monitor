@@ -10,6 +10,7 @@ public class OperatorAllStatAccessDTO implements Serializable {
 
     private Long id;
 
+    private String appId;
 
     private Date dataTime;
 
@@ -372,5 +373,13 @@ public class OperatorAllStatAccessDTO implements Serializable {
 
     public void setPreviousCallbackSuccessAvgCount(BigDecimal previousCallbackSuccessAvgCount) {
         this.previousCallbackSuccessAvgCount = previousCallbackSuccessAvgCount;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 }

@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.mq.handler;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.treefinance.saas.assistant.listener.TagBaseMessageHandler;
 import com.treefinance.saas.assistant.model.MonitorTagEnum;
 import com.treefinance.saas.assistant.model.TaskOperatorMonitorMessage;
@@ -8,6 +9,7 @@ import com.treefinance.saas.grapserver.facade.model.enums.ETaskOperatorMonitorSt
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.newmonitor.operator.OperatorMonitorActionStatService;
+import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -60,83 +63,89 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
             setOperations.add(value);
 
             ETaskOperatorMonitorStatus status = ETaskOperatorMonitorStatus.getMonitorStats(message.getStatus());
-            switch (status) {
-                case CREATE_TASK:
-                    operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CREATE_TASK);
-                    operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CREATE_TASK);
-                    operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CREATE_TASK);
-                    operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CREATE_TASK);
-                    break;
-                case CONFIRM_MOBILE:
-                    operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
-                    operatorMonitorActionStatService.updateDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
-                    operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
-                    operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
+            TaskOperatorMonitorMessage virtualTotalMessage = DataConverterUtils.convert(message, TaskOperatorMonitorMessage.class);
+            virtualTotalMessage.setAppId("virtual_total_stat_appId");
+            List<TaskOperatorMonitorMessage> list = Lists.newArrayList(message, virtualTotalMessage);
+            for (TaskOperatorMonitorMessage msg : list) {
+                switch (status) {
+                    case CREATE_TASK:
+                        operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CREATE_TASK);
+                        operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CREATE_TASK);
+                        operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CREATE_TASK);
+                        operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CREATE_TASK);
+                        break;
+                    case CONFIRM_MOBILE:
+                        operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
+                        operatorMonitorActionStatService.updateDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
+                        operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
+                        operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
 
-                    operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
-                    operatorMonitorActionStatService.updateDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
-                    operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
-                    operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
-                    break;
-                case START_LOGIN:
-                    operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.START_LOGIN);
-                    operatorMonitorActionStatService.updateDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.START_LOGIN);
-                    operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.START_LOGIN);
-                    operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.START_LOGIN);
+                        operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
+                        operatorMonitorActionStatService.updateDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
+                        operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
+                        operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
+                        break;
+                    case START_LOGIN:
+                        operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.START_LOGIN);
+                        operatorMonitorActionStatService.updateDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.START_LOGIN);
+                        operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.START_LOGIN);
+                        operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.START_LOGIN);
 
-                    operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.START_LOGIN);
-                    operatorMonitorActionStatService.updateDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.START_LOGIN);
-                    operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.START_LOGIN);
-                    operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.START_LOGIN);
-                    break;
-                case LOGIN_SUCCESS:
-                    operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
-                    operatorMonitorActionStatService.updateDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
-                    operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
-                    operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
+                        operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.START_LOGIN);
+                        operatorMonitorActionStatService.updateDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.START_LOGIN);
+                        operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.START_LOGIN);
+                        operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.START_LOGIN);
+                        break;
+                    case LOGIN_SUCCESS:
+                        operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
+                        operatorMonitorActionStatService.updateDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
+                        operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
+                        operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
 
-                    operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
-                    operatorMonitorActionStatService.updateDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
-                    operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
-                    operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
-                    break;
-                case CRAWL_SUCCESS:
-                    operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
-                    operatorMonitorActionStatService.updateDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
-                    operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
-                    operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
+                        operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
+                        operatorMonitorActionStatService.updateDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
+                        operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
+                        operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.LOGIN_SUCCESS);
+                        break;
+                    case CRAWL_SUCCESS:
+                        operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
+                        operatorMonitorActionStatService.updateDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
+                        operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
+                        operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
 
-                    operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
-                    operatorMonitorActionStatService.updateDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
-                    operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
-                    operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
-                    break;
-                case PROCESS_SUCCESS:
-                    operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
-                    operatorMonitorActionStatService.updateDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
-                    operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
-                    operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
+                        operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
+                        operatorMonitorActionStatService.updateDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
+                        operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
+                        operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CRAWL_SUCCESS);
+                        break;
+                    case PROCESS_SUCCESS:
+                        operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
+                        operatorMonitorActionStatService.updateDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
+                        operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
+                        operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
 
-                    operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
-                    operatorMonitorActionStatService.updateDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
-                    operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
-                    operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
-                    break;
-                case CALLBACK_SUCCESS:
-                    operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
-                    operatorMonitorActionStatService.updateDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
-                    operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
-                    operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+                        operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
+                        operatorMonitorActionStatService.updateDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
+                        operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
+                        operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.PROCESS_SUCCESS);
+                        break;
+                    case CALLBACK_SUCCESS:
+                        operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+                        operatorMonitorActionStatService.updateDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+                        operatorMonitorActionStatService.updateAllIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+                        operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
 
-                    operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
-                    operatorMonitorActionStatService.updateDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
-                    operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
-                    operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, message, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
-                    break;
-                default:
-                    logger.error("运营商监控,消息处理,更新数据时,数据类型有误,message={}", JSON.toJSONString(message));
-                    break;
+                        operatorMonitorActionStatService.updateIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+                        operatorMonitorActionStatService.updateDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+                        operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+                        operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CALLBACK_SUCCESS);
+                        break;
+                    default:
+                        logger.error("运营商监控,消息处理,更新数据时,数据类型有误,msg={}", JSON.toJSONString(msg));
+                        break;
+                }
             }
+
         } finally {
             logger.info("运营商监控,消息处理,耗时{}ms,message={}", System.currentTimeMillis() - start, JSON.toJSONString(message));
         }

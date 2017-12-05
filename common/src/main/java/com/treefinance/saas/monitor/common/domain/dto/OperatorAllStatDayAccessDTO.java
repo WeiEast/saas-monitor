@@ -8,6 +8,8 @@ public class OperatorAllStatDayAccessDTO implements Serializable {
 
     private Long id;
 
+    private String appId;
+
     private Date dataTime;
 
     private Byte dataType;
@@ -186,5 +188,13 @@ public class OperatorAllStatDayAccessDTO implements Serializable {
 
     public void setDataType(Byte dataType) {
         this.dataType = dataType;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 }

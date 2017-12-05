@@ -10,6 +10,8 @@ public class OperatorStatDayAccessDTO implements Serializable {
 
     private Long id;
 
+    private String appId;
+
     private String groupCode;
 
     private String groupName;
@@ -39,6 +41,10 @@ public class OperatorStatDayAccessDTO implements Serializable {
     private Date createTime;
 
     private Date lastUpdateTime;
+
+    private Integer callbackSuccessCount;
+    private BigDecimal callbackSuccessRate;
+
 
     public Long getId() {
         return id;
@@ -166,5 +172,29 @@ public class OperatorStatDayAccessDTO implements Serializable {
 
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public Integer getCallbackSuccessCount() {
+        return callbackSuccessCount;
+    }
+
+    public void setCallbackSuccessCount(Integer callbackSuccessCount) {
+        this.callbackSuccessCount = callbackSuccessCount;
+    }
+
+    public BigDecimal getCallbackSuccessRate() {
+        return callbackSuccessRate;
+    }
+
+    public void setCallbackSuccessRate(BigDecimal callbackSuccessRate) {
+        this.callbackSuccessRate = callbackSuccessRate;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 }
