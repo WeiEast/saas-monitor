@@ -72,7 +72,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         StringBuilder sb = new StringBuilder();
         String uniqueValue = sb.append(message.getAppId()).append("-").append(message.getUniqueId()).toString();//区分用户的唯一键值
         //判断此用户此操作是否已经统计过
-        String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersGroupOnIntervalStat(intervalTime, message.getGroupCode(), status);
+        String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersGroupOnIntervalStat(intervalTime, message.getGroupCode(), status, message.getAppId());
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(usersKey);
         if (!Boolean.TRUE.equals(redisTemplate.hasKey(usersKey))) {
             setOperations.expire(2, TimeUnit.HOURS);
@@ -117,7 +117,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         String uniqueValue = sb.append(message.getAppId()).append("-").append(message.getUniqueId()).toString();
 
         //判断此用户此操作是否已经统计过
-        String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersGroupOnDayStat(intervalTime, message.getGroupCode(), status);
+        String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersGroupOnDayStat(intervalTime, message.getGroupCode(), status, message.getAppId());
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(usersKey);
         if (!Boolean.TRUE.equals(redisTemplate.hasKey(usersKey))) {
             setOperations.expire(2, TimeUnit.HOURS);
@@ -160,7 +160,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         String uniqueValue = sb.append(message.getAppId()).append("-").append(message.getUniqueId()).toString();
 
         //判断此用户此操作是否已经统计过
-        String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersAllOnIntervalStat(intervalTime, status);
+        String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersAllOnIntervalStat(intervalTime, status, message.getAppId());
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(usersKey);
         if (!Boolean.TRUE.equals(redisTemplate.hasKey(usersKey))) {
             setOperations.expire(2, TimeUnit.HOURS);
@@ -203,7 +203,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         String uniqueValue = sb.append(message.getAppId()).append("-").append(message.getUniqueId()).toString();
 
         //判断此用户此操作是否已经统计过
-        String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersAllOnDayStat(intervalTime, status);
+        String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersAllOnDayStat(intervalTime, status, message.getAppId());
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(usersKey);
         if (!Boolean.TRUE.equals(redisTemplate.hasKey(usersKey))) {
             setOperations.expire(2, TimeUnit.HOURS);

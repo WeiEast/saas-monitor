@@ -118,9 +118,9 @@ public class TaskOperatorMonitorKeyHelper {
      * @param intervalTime
      * @return
      */
-    public static String keyOfUsersGroupOnDayStat(Date intervalTime, String groupCode, ETaskOperatorMonitorStatus statusType) {
+    public static String keyOfUsersGroupOnDayStat(Date intervalTime, String groupCode, ETaskOperatorMonitorStatus statusType, String appId) {
         String day = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_GROUP_ON_ACTION, day, groupCode, statusType);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_GROUP_ON_ACTION, day, groupCode, appId, statusType);
     }
 
     /**
@@ -130,9 +130,9 @@ public class TaskOperatorMonitorKeyHelper {
      * @param statusType
      * @return
      */
-    public static String keyOfUsersGroupOnIntervalStat(Date intervalTime, String groupCode, ETaskOperatorMonitorStatus statusType) {
+    public static String keyOfUsersGroupOnIntervalStat(Date intervalTime, String groupCode, ETaskOperatorMonitorStatus statusType, String appId) {
         String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_GROUP_ON_ACTION, interval, groupCode, statusType);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_GROUP_ON_ACTION, interval, groupCode, appId, statusType);
     }
 
 
@@ -142,9 +142,9 @@ public class TaskOperatorMonitorKeyHelper {
      * @param intervalTime
      * @return
      */
-    public static String keyOfUsersAllOnDayStat(Date intervalTime, ETaskOperatorMonitorStatus statusType) {
+    public static String keyOfUsersAllOnDayStat(Date intervalTime, ETaskOperatorMonitorStatus statusType, String appId) {
         String day = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_ALL_ON_ACTION, day, statusType);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_ALL_ON_ACTION, day, statusType, appId);
     }
 
     /**
@@ -152,11 +152,12 @@ public class TaskOperatorMonitorKeyHelper {
      *
      * @param intervalTime
      * @param statusType
+     * @param appId
      * @return
      */
-    public static String keyOfUsersAllOnIntervalStat(Date intervalTime, ETaskOperatorMonitorStatus statusType) {
+    public static String keyOfUsersAllOnIntervalStat(Date intervalTime, ETaskOperatorMonitorStatus statusType, String appId) {
         String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_ALL_ON_ACTION, interval, statusType);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_USERS_ALL_ON_ACTION, interval, appId, statusType);
     }
 
     /**
