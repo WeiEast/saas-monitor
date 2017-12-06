@@ -6,9 +6,11 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.common.domain.dto.IvrContactsDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.utils.AESUtils;
 import com.treefinance.saas.monitor.common.utils.HttpClientUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -40,11 +42,24 @@ public class IvrNotifyService {
     /**
      * 通知ivr
      */
-    public void notifyIvr(EAlarmLevel alarmLevel, String alarmRule) {
+    public void notifyIvr(EAlarmLevel alarmLevel, EAlarmType type, String alarmRule) {
         if (!"on".equalsIgnoreCase(ivrConfig.getIvrSwitch())) {
             logger.info("ivr 服务开关关闭...{}", JSON.toJSONString(ivrConfig));
             return;
         }
+        // 验证此类预警是否需要通知
+        String alarmTypeCron = ivrConfig.getAlarmTypeCron();
+        Map<String, Object> cronMap = JSON.parseObject(alarmTypeCron);
+        if (MapUtils.isNotEmpty(cronMap) && cronMap.get(type.getCode()) != null) {
+            String typeCron = cronMap.get(type.getCode()).toString();
+            // 根据cron表达式来判断此人是否负责当前时间点
+            if (!isSatisfiedBy(new Date(), typeCron)) {
+                logger.info("告警类型不在指定时段：alarmLevel={},type={},alarmRule={}," +
+                        "alarmTypeCron={}", alarmLevel, type, alarmRule, alarmTypeCron);
+                return;
+            }
+        }
+
         // 1.取得联系人
         List<IvrContactsDTO> contactsDTOS = getDutyContacts();
         if (CollectionUtils.isEmpty(contactsDTOS)) {
@@ -89,18 +104,34 @@ public class IvrNotifyService {
                 if (ivrContactsDTOList.contains(contactsDTO)) {
                     break;
                 }
-                try {
-                    // 根据cron表达式来判断此人是否负责当前时间点
-                    if (new CronExpression(cron).isSatisfiedBy(currentTime)) {
-                        ivrContactsDTOList.add(contactsDTO);
-                    }
-                } catch (ParseException e) {
-                    logger.error(" duty time cron error : contactsDTO={}", JSON.toJSONString(contactsDTO), e);
+
+                // 根据cron表达式来判断此人是否负责当前时间点
+                if (isSatisfiedBy(currentTime, cron)) {
+                    ivrContactsDTOList.add(contactsDTO);
+                } else {
+                    logger.info(" duty time cron error : contactsDTO={}", JSON.toJSONString(contactsDTO));
                 }
             }
         }
         return ivrContactsDTOList;
     }
+
+    /**
+     * 是否在cron时段内
+     *
+     * @param currentTime
+     * @param cron
+     * @return
+     */
+    private boolean isSatisfiedBy(Date currentTime, String cron) {
+        try {
+            return new CronExpression(cron).isSatisfiedBy(currentTime);
+        } catch (ParseException e) {
+            logger.error(" duty time cron error : contactsDTO={}", JSON.toJSONString(cron), e);
+        }
+        return false;
+    }
+
 
     /**
      * 加密参数
