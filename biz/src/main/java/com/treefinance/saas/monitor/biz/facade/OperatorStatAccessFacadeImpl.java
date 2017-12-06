@@ -265,7 +265,6 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         logger.info("查询所有运营商分时监控统计数据,输入参数request={}", JSON.toJSONString(request));
         List<OperatorAllStatAccessRO> result = Lists.newArrayList();
         OperatorAllStatAccessCriteria criteria = new OperatorAllStatAccessCriteria();
-        criteria.setOrderByClause("dataTime desc");
         criteria.createCriteria().andAppIdEqualTo(request.getAppId()).andDataTypeEqualTo(request.getStatType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<OperatorAllStatAccess> list = operatorAllStatAccessMapper.selectByExample(criteria);
@@ -273,6 +272,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
             return MonitorResultBuilder.build(result);
         }
         List<OperatorAllStatAccess> changeList = this.changeIntervalDataTimeOperatorAllStatAccess(list, request.getIntervalMins());
+        changeList = changeList.stream().sorted((o1, o2) -> o2.getDataTime().compareTo(o1.getDataTime())).collect(Collectors.toList());
         for (OperatorAllStatAccess data : changeList) {
             OperatorAllStatAccessRO ro = DataConverterUtils.convert(data, OperatorAllStatAccessRO.class);
             ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
