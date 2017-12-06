@@ -138,20 +138,13 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         dataDTO.setCrawlSuccessCount(crawlSuccessCount);
         dataDTO.setProcessSuccessCount(processSuccessCount);
         dataDTO.setCallbackSuccessCount(callbackSuccessCount);
-        dataDTO.setConfirmMobileConversionRate(BigDecimal.valueOf(confirmMobileCount).multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(entryCount), 2, BigDecimal.ROUND_HALF_UP));
-        dataDTO.setLoginConversionRate(BigDecimal.valueOf(startLoginCount).multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(confirmMobileCount), 2, BigDecimal.ROUND_HALF_UP));
-        dataDTO.setLoginSuccessRate(BigDecimal.valueOf(loginSuccessCount).multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(startLoginCount), 2, BigDecimal.ROUND_HALF_UP));
-        dataDTO.setCrawlSuccessRate(BigDecimal.valueOf(crawlSuccessCount).multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(loginSuccessCount), 2, BigDecimal.ROUND_HALF_UP));
-        dataDTO.setProcessSuccessRate(BigDecimal.valueOf(processSuccessCount).multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(crawlSuccessCount), 2, BigDecimal.ROUND_HALF_UP));
-        dataDTO.setCallbackSuccessRate(BigDecimal.valueOf(callbackSuccessCount).multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(processSuccessCount), 2, BigDecimal.ROUND_HALF_UP));
-        dataDTO.setWholeConversionRate(BigDecimal.valueOf(callbackSuccessCount).multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(entryCount), 2, BigDecimal.ROUND_HALF_UP));
+        dataDTO.setConfirmMobileConversionRate(calcRate(confirmMobileCount, entryCount));
+        dataDTO.setLoginConversionRate(calcRate(startLoginCount, confirmMobileCount));
+        dataDTO.setLoginSuccessRate(calcRate(loginSuccessCount, startLoginCount));
+        dataDTO.setCrawlSuccessRate(calcRate(crawlSuccessCount, loginSuccessCount));
+        dataDTO.setProcessSuccessRate(calcRate(processSuccessCount, crawlSuccessCount));
+        dataDTO.setCallbackSuccessRate(calcRate(callbackSuccessCount, processSuccessCount));
+        dataDTO.setWholeConversionRate(calcRate(callbackSuccessCount, entryCount));
         return dataDTO;
     }
 
@@ -239,7 +232,6 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
      * @param dataDTO
      * @param compareDTO
      * @param config
-     * @param statType   @return
      * @return
      */
     private List<OperatorStatAccessAlarmMsgDTO> getAlarmMsgList(OperatorAllStatAccessDTO dataDTO,
@@ -522,5 +514,22 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         compareDto.setPreviousCallbackSuccessAvgCount(BigDecimal.valueOf(previousCallbackSuccessCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
 
         return compareDto;
+    }
+
+    /**
+     * 计算比率
+     *
+     * @param a 分子
+     * @param b 分母
+     * @return
+     */
+    private BigDecimal calcRate(Integer a, Integer b) {
+        if (Integer.valueOf(0).compareTo(b) == 0) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal rate = BigDecimal.valueOf(a, 2)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(b, 2), 2, BigDecimal.ROUND_HALF_UP);
+        return rate;
     }
 }

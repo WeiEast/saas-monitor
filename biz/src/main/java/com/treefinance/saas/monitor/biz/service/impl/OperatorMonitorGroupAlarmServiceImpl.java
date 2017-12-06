@@ -152,16 +152,11 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             data.setCrawlSuccessCount(crawlSuccessCount);
             data.setProcessSuccessCount(processSuccessCount);
             data.setCallbackSuccessCount(callbackSuccessCount);
-            data.setLoginConversionRate(BigDecimal.valueOf(startLoginCount).multiply(BigDecimal.valueOf(100))
-                    .divide(BigDecimal.valueOf(confirmMobileCount), 2, BigDecimal.ROUND_HALF_UP));
-            data.setLoginSuccessRate(BigDecimal.valueOf(loginSuccessCount).multiply(BigDecimal.valueOf(100))
-                    .divide(BigDecimal.valueOf(startLoginCount), 2, BigDecimal.ROUND_HALF_UP));
-            data.setCrawlSuccessRate(BigDecimal.valueOf(crawlSuccessCount).multiply(BigDecimal.valueOf(100))
-                    .divide(BigDecimal.valueOf(loginSuccessCount), 2, BigDecimal.ROUND_HALF_UP));
-            data.setProcessSuccessRate(BigDecimal.valueOf(processSuccessCount).multiply(BigDecimal.valueOf(100))
-                    .divide(BigDecimal.valueOf(crawlSuccessCount), 2, BigDecimal.ROUND_HALF_UP));
-            data.setCallbackSuccessRate(BigDecimal.valueOf(callbackSuccessCount).multiply(BigDecimal.valueOf(100))
-                    .divide(BigDecimal.valueOf(processSuccessCount), 2, BigDecimal.ROUND_HALF_UP));
+            data.setLoginConversionRate(calcRate(startLoginCount, confirmMobileCount));
+            data.setLoginSuccessRate(calcRate(loginSuccessCount, startLoginCount));
+            data.setCrawlSuccessRate(calcRate(crawlSuccessCount, loginSuccessCount));
+            data.setProcessSuccessRate(calcRate(processSuccessCount, crawlSuccessCount));
+            data.setCallbackSuccessRate(calcRate(callbackSuccessCount, processSuccessCount));
             dataList.add(data);
         }
         List<OperatorStatAccessDTO> dtoList = DataConverterUtils.convert(dataList, OperatorStatAccessDTO.class);
@@ -550,5 +545,22 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             }
         }
         return true;
+    }
+
+    /**
+     * 计算比率
+     *
+     * @param a 分子
+     * @param b 分母
+     * @return
+     */
+    private BigDecimal calcRate(Integer a, Integer b) {
+        if (Integer.valueOf(0).compareTo(b) == 0) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal rate = BigDecimal.valueOf(a, 2)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(b, 2), 2, BigDecimal.ROUND_HALF_UP);
+        return rate;
     }
 }
