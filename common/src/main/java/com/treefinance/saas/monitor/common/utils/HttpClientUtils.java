@@ -9,6 +9,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -16,10 +17,13 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -27,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -234,7 +240,7 @@ public class HttpClientUtils {
      *
      * @param response
      */
-    private static void closeResponse(CloseableHttpResponse response) {
+    public static void closeResponse(CloseableHttpResponse response) {
         if (response != null) {
             try {
                 EntityUtils.consume(response.getEntity());
@@ -242,6 +248,47 @@ public class HttpClientUtils {
                 logger.error(" closeResponse failed", e);
             }
         }
+    }
+
+
+    /**
+     * 发送 POST 请求（HTTP），JSON形式
+     *
+     * @param url
+     * @param params json对象
+     * @return
+     */
+    public static CloseableHttpResponse fullyPost(String url, Map<String, String> params, Map<String, String> headers, Map<String, String> cookieMap) throws IOException {
+        URI uri = URI.create(url);
+        // 设置cookie
+        CookieStore cookieStore = new BasicCookieStore();
+        if (cookieMap != null) {
+            for (Map.Entry<String, String> entry : cookieMap.entrySet()) {
+                BasicClientCookie basicClientCookie = new BasicClientCookie(entry.getKey(), entry.getValue());
+                basicClientCookie.setDomain(uri.getHost());
+                basicClientCookie.setPath("/");
+                cookieStore.addCookie(basicClientCookie);
+            }
+        }
+        // 构建client
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setDefaultCookieStore(cookieStore)
+                .setConnectionManager(connMgr)
+                .build();
+        HttpPost httpPost = new HttpPost(uri);
+        httpPost.setConfig(getConfig());
+        // 设置header
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                httpPost.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+        // 设置params
+        String json = JSON.toJSONString(params);
+        StringEntity entity = new StringEntity(json, ContentType.APPLICATION_JSON);
+        entity.setContentEncoding("UTF-8");
+        httpPost.setEntity(entity);
+        return httpClient.execute(httpPost);
     }
 
     public static void main(String[] args) {
