@@ -260,7 +260,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
 
     @Override
     public void updateallDayTaskUserCountByUser(Date intervalTime, TaskOperatorMonitorMessage msg) {
-        taskOperatorMonitorMessageProcessor.updateAllDayTaskUserCount(intervalTime, msg, ETaskOperatorStatType.TASK);
+        taskOperatorMonitorMessageProcessor.updateAllDayTaskUserCount(intervalTime, msg, ETaskOperatorStatType.USER);
 
     }
 }
