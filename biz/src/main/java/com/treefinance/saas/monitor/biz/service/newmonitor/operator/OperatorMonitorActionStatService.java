@@ -83,4 +83,18 @@ public interface OperatorMonitorActionStatService {
      */
     void updateAllDayDataByUser(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status);
 
+
+    /**
+     * 统计任务人数比
+     *
+     * @param intervalTime
+     * @param msg
+     */
+    void updateAllIntervalTaskUserCountByTask(Date intervalTime, TaskOperatorMonitorMessage msg);
+
+    void updateAllIntervalTaskUserCountByUser(Date intervalTime, TaskOperatorMonitorMessage msg);
+
+    void updateAllDayTaskUserCountByTask(Date intervalTime, TaskOperatorMonitorMessage msg);
+
+    void updateallDayTaskUserCountByUser(Date intervalTime, TaskOperatorMonitorMessage msg);
 }

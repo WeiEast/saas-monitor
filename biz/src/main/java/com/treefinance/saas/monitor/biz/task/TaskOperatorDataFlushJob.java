@@ -153,6 +153,17 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                 dto.setCrawlSuccessRate(calcRate(dto.getLoginSuccessCount(), dto.getCrawlSuccessCount()));
                 dto.setProcessSuccessRate(calcRate(dto.getCrawlSuccessCount(), dto.getProcessSuccessCount()));
                 dto.setCallbackSuccessRate(calcRate(dto.getProcessSuccessCount(), dto.getCallbackSuccessCount()));
+
+                String taskUserCountKey = TaskOperatorMonitorKeyHelper.keyOfTaskUserCountAllIntervalStat(redisStatDataTime, appId, statType);
+                if (redisOperations.hasKey(taskUserCountKey)) {
+                    Map<String, Object> taskUserCountMap = redisOperations.opsForHash().entries(taskUserCountKey);
+                    if (taskUserCountMap.get("taskCount") != null) {
+                        dto.setTaskCount(Integer.valueOf(taskUserCountMap.get("taskCount").toString()));
+                    }
+                    if (taskUserCountMap.get("userCount") != null) {
+                        dto.setUserCount(Integer.valueOf(taskUserCountMap.get("userCount").toString()));
+                    }
+                }
                 list.add(dto);
             }
 
@@ -216,6 +227,18 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
             dto.setCrawlSuccessRate(calcRate(dto.getLoginSuccessCount(), dto.getCrawlSuccessCount()));
             dto.setProcessSuccessRate(calcRate(dto.getCrawlSuccessCount(), dto.getProcessSuccessCount()));
             dto.setCallbackSuccessRate(calcRate(dto.getProcessSuccessCount(), dto.getCallbackSuccessCount()));
+
+            String taskUserCountKey = TaskOperatorMonitorKeyHelper.keyOfTaskUserCountAllDayStat(redisStatDataTime, appId, statType);
+            if (redisOperations.hasKey(taskUserCountKey)) {
+                Map<String, Object> taskUserCountMap = redisOperations.opsForHash().entries(taskUserCountKey);
+                if (taskUserCountMap.get("taskCount") != null) {
+                    dto.setTaskCount(Integer.valueOf(taskUserCountMap.get("taskCount").toString()));
+                }
+                if (taskUserCountMap.get("userCount") != null) {
+                    dto.setUserCount(Integer.valueOf(taskUserCountMap.get("userCount").toString()));
+                }
+            }
+
             logger.info("运营商监控,定时任务执行jobTime={},刷新AllOperatorStatDayAccess数据到db中dto={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(dto));
             operatorStatAccessUpdateService.batchInsertAllOperatorStatDayAccess(Lists.newArrayList(dto));
         } catch (Exception e) {

@@ -14,10 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.core.BoundHashOperations;
-import org.springframework.data.redis.core.BoundSetOperations;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -273,4 +270,118 @@ public class TaskOperatorMonitorMessageProcessor {
         }
     }
 
+    public void updateAllIntervalTaskUserCount(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorStatType statType) {
+        String key = TaskOperatorMonitorKeyHelper.keyOfTaskUserCountAllIntervalStat(intervalTime, message.getAppId(), statType);
+        redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
+            @Override
+            public Object execute(RedisOperations redisOperations) throws DataAccessException {
+                BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
+                if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
+                    // 设定超时时间默认为2天
+                    hashOperations.expire(2, TimeUnit.HOURS);
+                }
+                Long taskCount = hashOperations.increment("taskCount", 1);
+                if (isStatUserCountAllInterval(intervalTime, message, statType)) {
+                    Long userCount = hashOperations.increment("userCount", 1);
+                }
+                return null;
+            }
+        });
+    }
+
+    public void updateAllDayTaskUserCount(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorStatType statType) {
+        String key = TaskOperatorMonitorKeyHelper.keyOfTaskUserCountAllDayStat(intervalTime, message.getAppId(), statType);
+        redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
+            @Override
+            public Object execute(RedisOperations redisOperations) throws DataAccessException {
+                BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
+                if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
+                    // 设定超时时间默认为2天
+                    hashOperations.expire(2, TimeUnit.DAYS);
+                }
+                Long taskCount = hashOperations.increment("taskCount", 1);
+                if (isStatUserCountAllDay(intervalTime, message, statType)) {
+                    Long userCount = hashOperations.increment("userCount", 1);
+                }
+                return null;
+            }
+        });
+    }
+
+    /**
+     * userCount是否增加
+     *
+     * @return
+     */
+    private Boolean isStatUserCountAllInterval(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorStatType statType) {
+        RedisTemplate<String, String> redisTemplate = redisDao.getRedisTemplate();
+        StringBuilder sb = new StringBuilder();
+        String uniqueValue = sb.append(message.getAppId()).append("-").append(message.getUniqueId()).toString();
+
+        //判断此用户此操作是否已经统计过
+        String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersCountAllIntervalStat(intervalTime, message.getAppId(), statType);
+        BoundSetOperations<String, String> setOperations = redisTemplate.boundSetOps(usersKey);
+        if (!Boolean.TRUE.equals(redisTemplate.hasKey(usersKey))) {
+            setOperations.expire(2, TimeUnit.HOURS);
+        }
+        if (setOperations.isMember(uniqueValue)) {
+            return false;
+        }
+        setOperations.add(uniqueValue);
+
+        //统计时段内只统计用户一个手机号的数据
+        String accountNo = message.getAccountNo();
+        if (StringUtils.isNotBlank(accountNo)) {
+            String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfUserCountAllIntervalUsersMobileLog(intervalTime, message.getAppId(), statType);
+            BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
+            if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
+                setOperations.expire(2, TimeUnit.HOURS);
+            }
+            String oldAccountNo = hashOperations.get(uniqueValue);
+            if (StringUtils.isNotBlank(oldAccountNo)) {
+                if (!StringUtils.equals(oldAccountNo, accountNo)) {
+                    return false;
+                }
+            } else {
+                hashOperations.put(uniqueValue, accountNo);
+            }
+        }
+        return true;
+    }
+
+    private Boolean isStatUserCountAllDay(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorStatType statType) {
+        RedisTemplate<String, String> redisTemplate = redisDao.getRedisTemplate();
+        StringBuilder sb = new StringBuilder();
+        String uniqueValue = sb.append(message.getAppId()).append("-").append(message.getUniqueId()).toString();
+
+        //判断此用户此操作是否已经统计过
+        String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersCountAllDayStat(intervalTime, message.getAppId(), statType);
+        BoundSetOperations<String, String> setOperations = redisTemplate.boundSetOps(usersKey);
+        if (!Boolean.TRUE.equals(redisTemplate.hasKey(usersKey))) {
+            setOperations.expire(2, TimeUnit.DAYS);
+        }
+        if (setOperations.isMember(uniqueValue)) {
+            return false;
+        }
+        setOperations.add(uniqueValue);
+
+        //统计时段内只统计用户一个手机号的数据
+        String accountNo = message.getAccountNo();
+        if (StringUtils.isNotBlank(accountNo)) {
+            String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfUserCountAllDayUsersMobileLog(intervalTime, message.getAppId(), statType);
+            BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
+            if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
+                setOperations.expire(2, TimeUnit.DAYS);
+            }
+            String oldAccountNo = hashOperations.get(uniqueValue);
+            if (StringUtils.isNotBlank(oldAccountNo)) {
+                if (!StringUtils.equals(oldAccountNo, accountNo)) {
+                    return false;
+                }
+            } else {
+                hashOperations.put(uniqueValue, accountNo);
+            }
+        }
+        return true;
+    }
 }

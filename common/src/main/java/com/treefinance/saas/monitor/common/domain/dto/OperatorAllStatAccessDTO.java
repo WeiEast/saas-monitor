@@ -17,6 +17,10 @@ public class OperatorAllStatAccessDTO implements Serializable {
 
     private Byte dataType;
 
+    private Integer userCount;
+
+    private Integer taskCount;
+
 
     private Integer entryCount;
 
@@ -411,5 +415,21 @@ public class OperatorAllStatAccessDTO implements Serializable {
 
     public void setPreviousWholeConversionAvgCount(BigDecimal previousWholeConversionAvgCount) {
         this.previousWholeConversionAvgCount = previousWholeConversionAvgCount;
+    }
+
+    public Integer getUserCount() {
+        return userCount;
+    }
+
+    public void setUserCount(Integer userCount) {
+        this.userCount = userCount;
+    }
+
+    public Integer getTaskCount() {
+        return taskCount;
+    }
+
+    public void setTaskCount(Integer taskCount) {
+        this.taskCount = taskCount;
     }
 }

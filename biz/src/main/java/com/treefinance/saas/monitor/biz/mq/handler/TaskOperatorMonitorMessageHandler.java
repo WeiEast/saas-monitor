@@ -73,6 +73,11 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
                         operatorMonitorActionStatService.updateAllDayDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CREATE_TASK);
                         operatorMonitorActionStatService.updateAllIntervalDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CREATE_TASK);
                         operatorMonitorActionStatService.updateAllDayDataByUser(intervalTime, msg, ETaskOperatorMonitorStatus.CREATE_TASK);
+
+                        operatorMonitorActionStatService.updateAllIntervalTaskUserCountByTask(intervalTime, msg);
+                        operatorMonitorActionStatService.updateAllIntervalTaskUserCountByUser(intervalTime, msg);
+                        operatorMonitorActionStatService.updateAllDayTaskUserCountByTask(intervalTime, msg);
+                        operatorMonitorActionStatService.updateallDayTaskUserCountByUser(intervalTime, msg);
                         break;
                     case CONFIRM_MOBILE:
                         operatorMonitorActionStatService.updateIntervalDataByTask(intervalTime, msg, ETaskOperatorMonitorStatus.CONFIRM_MOBILE);
