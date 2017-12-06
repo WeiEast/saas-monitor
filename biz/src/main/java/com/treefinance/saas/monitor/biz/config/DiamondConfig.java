@@ -42,6 +42,12 @@ public class DiamondConfig {
     private String taskSuccessRateAlarmConfig;
 
     /**
+     * 运营商按人数预警配置
+     */
+    @DAttribute(key = "operator.monitor.alarm.config")
+    private String operatorMonitorAlarmConfig;
+
+    /**
      * (运营商监控)统计时间间隔:分钟为单位
      */
     @DAttribute(key = "operator.monitor.interval.minutes")
@@ -474,5 +480,13 @@ public class DiamondConfig {
 
     public void setTaskSuccessRateAlarmConfig(String taskSuccessRateAlarmConfig) {
         this.taskSuccessRateAlarmConfig = taskSuccessRateAlarmConfig;
+    }
+
+    public String getOperatorMonitorAlarmConfig() {
+        return operatorMonitorAlarmConfig;
+    }
+
+    public void setOperatorMonitorAlarmConfig(String operatorMonitorAlarmConfig) {
+        this.operatorMonitorAlarmConfig = operatorMonitorAlarmConfig;
     }
 }

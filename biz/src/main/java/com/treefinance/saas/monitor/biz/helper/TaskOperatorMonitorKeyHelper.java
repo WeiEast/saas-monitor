@@ -27,6 +27,7 @@ public class TaskOperatorMonitorKeyHelper {
 
     private static final String KEY_USERS_GROUP_ON_ACTION = "key-users-group-on-action";
     private static final String KEY_USERS_ALL_ON_ACTION = "key-users-all-on-action";
+    private static final String KEY_ALARM_TIMES = "key-alarm-times";
 
 
     /**
@@ -213,4 +214,8 @@ public class TaskOperatorMonitorKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "stat-appIds");
     }
 
+    public static String keyOfAlarmTimeLog(Date baseTime, Integer alarmType, ETaskOperatorStatType statType) {
+        String intervalDateStr = DateFormatUtils.format(baseTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, alarmType, statType);
+    }
 }
