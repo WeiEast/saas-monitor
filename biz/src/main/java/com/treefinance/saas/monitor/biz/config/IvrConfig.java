@@ -26,6 +26,9 @@ public class IvrConfig {
     @DAttribute(key = "ivr.base.config")
     private String ivrBaseConfig;
 
+    @DAttribute(key = "ivr.alarm.type.cron")
+    private String alarmTypeCron;
+
     @DAttribute(key = "monitor.environment")
     private String environment;
 
@@ -89,5 +92,13 @@ public class IvrConfig {
 
     public void setIvrBaseConfig(String ivrBaseConfig) {
         this.ivrBaseConfig = ivrBaseConfig;
+    }
+
+    public String getAlarmTypeCron() {
+        return alarmTypeCron;
+    }
+
+    public void setAlarmTypeCron(String alarmTypeCron) {
+        this.alarmTypeCron = alarmTypeCron;
     }
 }

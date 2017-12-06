@@ -5,6 +5,7 @@ import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.TaskExistMonitorAlarmService;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,7 +52,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
         }
 
         // 增加ivr服务通知
-        ivrNotifyService.notifyIvr(EAlarmLevel.error, "大盘无任务");
+        ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.no_task, "大盘无任务");
 
     }
 
@@ -74,7 +75,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
             logger.info("任务预警,发送微信开关已关闭");
         }
         // 增加ivr服务通知
-        ivrNotifyService.notifyIvr(EAlarmLevel.error, "大盘无成功任务");
+        ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.no_success_task, "大盘无成功任务");
     }
 
     @Override
@@ -98,7 +99,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
 
         // 增加ivr服务通知
         if (EBizType.OPERATOR == bizType) {
-            ivrNotifyService.notifyIvr(EAlarmLevel.error, "运营商无成功任务");
+            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.no_success_task, "运营商无成功任务");
         }
     }
 
