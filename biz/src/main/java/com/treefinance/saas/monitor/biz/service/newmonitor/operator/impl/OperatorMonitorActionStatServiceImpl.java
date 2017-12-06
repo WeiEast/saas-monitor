@@ -135,7 +135,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
             String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfDayUsersMobileLog(intervalTime, message.getAppId());
             BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
             if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
-                setOperations.expire(2, TimeUnit.DAYS);
+                hashOperations.expire(2, TimeUnit.DAYS);
             }
             String oldAccountNo = hashOperations.get(uniqueValue);
             if (StringUtils.isNotBlank(oldAccountNo)) {
@@ -178,7 +178,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
             String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfIntervalUsersMobileLog(intervalTime, message.getAppId());
             BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
             if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
-                setOperations.expire(2, TimeUnit.HOURS);
+                hashOperations.expire(2, TimeUnit.HOURS);
             }
             String oldAccountNo = hashOperations.get(uniqueValue);
             if (StringUtils.isNotBlank(oldAccountNo)) {
