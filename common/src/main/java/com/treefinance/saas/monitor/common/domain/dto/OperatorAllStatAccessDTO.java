@@ -17,6 +17,10 @@ public class OperatorAllStatAccessDTO implements Serializable {
 
     private Byte dataType;
 
+    private Integer userCount;
+
+    private Integer taskCount;
+
 
     private Integer entryCount;
 
@@ -91,6 +95,8 @@ public class OperatorAllStatAccessDTO implements Serializable {
      */
     private BigDecimal previousCallbackSuccessAvgCount;
 
+    private BigDecimal previousWholeConversionAvgCount;
+
     /**
      * 前n天的相同时刻确认手机转化率平均值
      */
@@ -126,6 +132,10 @@ public class OperatorAllStatAccessDTO implements Serializable {
 
 
     private Date lastUpdateTime;
+
+    private BigDecimal wholeConversionRate;
+
+    private BigDecimal previousWholeConversionRate;
 
     public Long getId() {
         return id;
@@ -381,5 +391,45 @@ public class OperatorAllStatAccessDTO implements Serializable {
 
     public void setAppId(String appId) {
         this.appId = appId;
+    }
+
+    public BigDecimal getWholeConversionRate() {
+        return wholeConversionRate;
+    }
+
+    public void setWholeConversionRate(BigDecimal wholeConversionRate) {
+        this.wholeConversionRate = wholeConversionRate;
+    }
+
+    public BigDecimal getPreviousWholeConversionRate() {
+        return previousWholeConversionRate;
+    }
+
+    public void setPreviousWholeConversionRate(BigDecimal previousWholeConversionRate) {
+        this.previousWholeConversionRate = previousWholeConversionRate;
+    }
+
+    public BigDecimal getPreviousWholeConversionAvgCount() {
+        return previousWholeConversionAvgCount;
+    }
+
+    public void setPreviousWholeConversionAvgCount(BigDecimal previousWholeConversionAvgCount) {
+        this.previousWholeConversionAvgCount = previousWholeConversionAvgCount;
+    }
+
+    public Integer getUserCount() {
+        return userCount;
+    }
+
+    public void setUserCount(Integer userCount) {
+        this.userCount = userCount;
+    }
+
+    public Integer getTaskCount() {
+        return taskCount;
+    }
+
+    public void setTaskCount(Integer taskCount) {
+        this.taskCount = taskCount;
     }
 }

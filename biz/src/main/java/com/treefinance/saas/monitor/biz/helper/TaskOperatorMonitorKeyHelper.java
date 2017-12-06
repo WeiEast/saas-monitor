@@ -27,6 +27,14 @@ public class TaskOperatorMonitorKeyHelper {
 
     private static final String KEY_USERS_GROUP_ON_ACTION = "key-users-group-on-action";
     private static final String KEY_USERS_ALL_ON_ACTION = "key-users-all-on-action";
+    private static final String KEY_ALARM_TIMES = "key-alarm-times";
+
+    private static final String KEY_ALL_INTERVAL_TASK_USER_COUNT = "key-all-interval-task-user-count";
+    private static final String KEY_ALL_DAY_TASK_USER_COUNT = "key-all-day-task-user-count";
+    private static final String KEY_ALL_INTERVAL_TASK_USER_COUNT_UNIQUE = "key-all-interval-task-user-count-unique";
+    private static final String KEY_ALL_INTERVAL_TASK_USER_COUNT_UNIQUE_MOBILE = "key-all-interval-task-user-count-unique-mobile";
+    private static final String KEY_ALL_DAY_TASK_USER_COUNT_UNIQUE = "key-all-day-task-user-count-unique";
+    private static final String KEY_ALL_DAY_TASK_USER_COUNT_UNIQUE_MOBILE = "key-all-day-task-user-count-unique-mobile";
 
 
     /**
@@ -213,4 +221,38 @@ public class TaskOperatorMonitorKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "stat-appIds");
     }
 
+    public static String keyOfAlarmTimeLog(Date baseTime, Integer alarmType, ETaskOperatorStatType statType) {
+        String intervalDateStr = DateFormatUtils.format(baseTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, alarmType, statType);
+    }
+
+    public static String keyOfTaskUserCountAllIntervalStat(Date intervalTime, String appId, ETaskOperatorStatType statType) {
+        String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALL_INTERVAL_TASK_USER_COUNT, interval, appId, statType);
+    }
+
+    public static String keyOfTaskUserCountAllDayStat(Date intervalTime, String appId, ETaskOperatorStatType statType) {
+        String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALL_DAY_TASK_USER_COUNT, interval, appId, statType);
+    }
+
+    public static String keyOfUsersCountAllIntervalStat(Date intervalTime, String appId, ETaskOperatorStatType statType) {
+        String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALL_INTERVAL_TASK_USER_COUNT_UNIQUE, interval, appId, statType);
+    }
+
+    public static String keyOfUserCountAllIntervalUsersMobileLog(Date intervalTime, String appId, ETaskOperatorStatType statType) {
+        String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALL_INTERVAL_TASK_USER_COUNT_UNIQUE_MOBILE, interval, appId, statType);
+    }
+
+    public static String keyOfUsersCountAllDayStat(Date intervalTime, String appId, ETaskOperatorStatType statType) {
+        String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALL_DAY_TASK_USER_COUNT_UNIQUE, interval, appId, statType);
+    }
+
+    public static String keyOfUserCountAllDayUsersMobileLog(Date intervalTime, String appId, ETaskOperatorStatType statType) {
+        String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALL_DAY_TASK_USER_COUNT_UNIQUE_MOBILE, interval, appId, statType);
+    }
 }

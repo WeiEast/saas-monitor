@@ -240,4 +240,27 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         taskOperatorMonitorMessageProcessor.updateAllDayData(intervalTime, message, status, ETaskOperatorStatType.USER);
 
     }
+
+    @Override
+    public void updateAllIntervalTaskUserCountByTask(Date intervalTime, TaskOperatorMonitorMessage msg) {
+        taskOperatorMonitorMessageProcessor.updateAllIntervalTaskUserCount(intervalTime, msg, ETaskOperatorStatType.TASK);
+    }
+
+    @Override
+    public void updateAllIntervalTaskUserCountByUser(Date intervalTime, TaskOperatorMonitorMessage msg) {
+        taskOperatorMonitorMessageProcessor.updateAllIntervalTaskUserCount(intervalTime, msg, ETaskOperatorStatType.USER);
+
+    }
+
+    @Override
+    public void updateAllDayTaskUserCountByTask(Date intervalTime, TaskOperatorMonitorMessage msg) {
+        taskOperatorMonitorMessageProcessor.updateAllDayTaskUserCount(intervalTime, msg, ETaskOperatorStatType.TASK);
+
+    }
+
+    @Override
+    public void updateallDayTaskUserCountByUser(Date intervalTime, TaskOperatorMonitorMessage msg) {
+        taskOperatorMonitorMessageProcessor.updateAllDayTaskUserCount(intervalTime, msg, ETaskOperatorStatType.TASK);
+
+    }
 }

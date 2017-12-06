@@ -14,6 +14,10 @@ public class OperatorAllStatDayAccessDTO implements Serializable {
 
     private Byte dataType;
 
+    private Integer taskCount;
+
+    private Integer userCount;
+
     private Integer entryCount;
 
     private Integer confirmMobileCount;
@@ -196,5 +200,21 @@ public class OperatorAllStatDayAccessDTO implements Serializable {
 
     public void setAppId(String appId) {
         this.appId = appId;
+    }
+
+    public Integer getTaskCount() {
+        return taskCount;
+    }
+
+    public void setTaskCount(Integer taskCount) {
+        this.taskCount = taskCount;
+    }
+
+    public Integer getUserCount() {
+        return userCount;
+    }
+
+    public void setUserCount(Integer userCount) {
+        this.userCount = userCount;
     }
 }
