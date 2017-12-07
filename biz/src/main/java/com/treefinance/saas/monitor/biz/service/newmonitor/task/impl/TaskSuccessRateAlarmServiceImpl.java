@@ -7,9 +7,12 @@ import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskMonitorPerMinKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
+import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskSuccessRateAlarmService;
 import com.treefinance.saas.monitor.common.domain.dto.SaasStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskSuccessRateAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -52,6 +55,8 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private MerchantStatAccessMapper merchantStatAccessMapper;
+    @Autowired
+    private IvrNotifyService ivrNotifyService;
 
     @Override
     public void alarm(EBizType bizType, TaskSuccessRateAlarmConfigDTO config, Date jobTime) {
@@ -98,6 +103,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         }
         if (StringUtils.equalsIgnoreCase(config.getWeChatAlarmSwitch(), "on")) {
             sendWechatAlarm(list, statType);
+        }
+
+        // 增加ivr服务通知
+        if (EBizType.OPERATOR == bizType) {
+            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.conversion_rate_low, "运营商转化率低于阀值");
         }
     }
 
@@ -223,6 +233,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
     private String generateMessageBody(List<SaasStatAccessDTO> list, EStatType type) {
         StringBuffer buffer = new StringBuffer();
+        if (EStatType.OPERATOR.equals(type)) {
+            buffer.append("【").append(EAlarmLevel.error).append("】");
+        } else {
+            buffer.append("【").append(EAlarmLevel.warning).append("】");
+        }
         buffer.append("您好，").append(generateTitle(type)).append("，监控数据如下，请及时处理：").append("\n");
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         List<String> dataTimeList = Lists.newArrayList();

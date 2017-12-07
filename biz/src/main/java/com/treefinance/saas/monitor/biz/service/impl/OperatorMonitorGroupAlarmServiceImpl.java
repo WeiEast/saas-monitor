@@ -11,6 +11,7 @@ import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -205,7 +206,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
     private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTitle) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("<br>").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
+        buffer.append("<br>").append("【").append(EAlarmLevel.info).append("】").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(baseTitle)
                 .append("预警,在")
                 .append(MonitorDateUtils.format(startTime))
@@ -238,7 +239,8 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
     private String generateWeChatBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTitle) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
+        buffer.append("【").append(EAlarmLevel.info).append("】")
+                .append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(baseTitle)
                 .append("预警,在")
                 .append(MonitorDateUtils.format(startTime))

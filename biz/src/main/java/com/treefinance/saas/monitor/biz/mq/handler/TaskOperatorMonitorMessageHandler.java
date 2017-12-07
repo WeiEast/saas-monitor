@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.mq.handler;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.assistant.listener.TagBaseMessageHandler;
 import com.treefinance.saas.assistant.model.MonitorTagEnum;
@@ -65,6 +66,7 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
             ETaskOperatorMonitorStatus status = ETaskOperatorMonitorStatus.getMonitorStats(message.getStatus());
             TaskOperatorMonitorMessage virtualTotalMessage = DataConverterUtils.convert(message, TaskOperatorMonitorMessage.class);
             virtualTotalMessage.setAppId("virtual_total_stat_appId");
+            virtualTotalMessage.setUniqueId(Joiner.on(":").join(message.getAppId(), message.getUniqueId()));
             List<TaskOperatorMonitorMessage> list = Lists.newArrayList(message, virtualTotalMessage);
             for (TaskOperatorMonitorMessage msg : list) {
                 switch (status) {
