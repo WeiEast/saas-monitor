@@ -51,10 +51,10 @@ public class TaskOperatorMonitorMessageProcessor {
                 // 需统计的当日特定时间列表
                 String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnGroupStat(intervalTime, message.getAppId(), statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
+                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(intervalTime), System.currentTimeMillis()));
+                if (setOperations.getExpire() == -1) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
-                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(intervalTime), System.currentTimeMillis()));
 
                 //需统计的appIds
                 if (StringUtils.isNotBlank(message.getAppId())) {
@@ -161,11 +161,10 @@ public class TaskOperatorMonitorMessageProcessor {
                 // 需统计的当日特定时间列表
                 String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnAllStat(intervalTime, message.getAppId(), statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
+                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(intervalTime), System.currentTimeMillis()));
+                if (setOperations.getExpire() == -1) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
-                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(intervalTime), System.currentTimeMillis()));
-
                 //需统计的appIds
                 if (StringUtils.isNotBlank(message.getAppId())) {
                     String appIdsKey = TaskOperatorMonitorKeyHelper.keyOfAppIds();
@@ -276,13 +275,12 @@ public class TaskOperatorMonitorMessageProcessor {
             @Override
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
-                    // 设定超时时间默认为2天
-                    hashOperations.expire(2, TimeUnit.HOURS);
-                }
                 Long taskCount = hashOperations.increment("taskCount", 1);
                 if (isStatUserCountAllInterval(intervalTime, message, statType)) {
                     Long userCount = hashOperations.increment("userCount", 1);
+                }
+                if (hashOperations.getExpire() == -1) {
+                    hashOperations.expire(2, TimeUnit.HOURS);
                 }
                 return null;
             }
@@ -295,13 +293,12 @@ public class TaskOperatorMonitorMessageProcessor {
             @Override
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
-                    // 设定超时时间默认为2天
-                    hashOperations.expire(2, TimeUnit.DAYS);
-                }
                 Long taskCount = hashOperations.increment("taskCount", 1);
                 if (isStatUserCountAllDay(intervalTime, message, statType)) {
                     Long userCount = hashOperations.increment("userCount", 1);
+                }
+                if (hashOperations.getExpire() == -1) {
+                    hashOperations.expire(2, TimeUnit.DAYS);
                 }
                 return null;
             }
@@ -343,7 +340,7 @@ public class TaskOperatorMonitorMessageProcessor {
                 hashOperations.put(uniqueValue, accountNo);
             }
             if (hashOperations.getExpire() == -1) {
-                setOperations.expire(2, TimeUnit.HOURS);
+                hashOperations.expire(2, TimeUnit.HOURS);
             }
         }
         return true;
@@ -379,7 +376,7 @@ public class TaskOperatorMonitorMessageProcessor {
                 hashOperations.put(uniqueValue, accountNo);
             }
             if (hashOperations.getExpire() == -1) {
-                setOperations.expire(2, TimeUnit.DAYS);
+                hashOperations.expire(2, TimeUnit.DAYS);
             }
         }
         return true;
