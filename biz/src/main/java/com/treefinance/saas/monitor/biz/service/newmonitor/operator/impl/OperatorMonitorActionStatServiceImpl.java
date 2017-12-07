@@ -74,23 +74,20 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         //判断此用户此操作是否已经统计过
         String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersGroupOnIntervalStat(intervalTime, message.getGroupCode(), status, message.getAppId());
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(usersKey);
-        if (!Boolean.TRUE.equals(redisTemplate.hasKey(usersKey))) {
-            setOperations.expire(2, TimeUnit.HOURS);
-        }
         if (setOperations.isMember(uniqueValue)) {
             logger.info("运营商监控,消息处理,uniqueValue={}在时刻点intervalTime={}时,操作状态status={}已经统计过了,不再统计.message={}",
                     uniqueValue, MonitorDateUtils.format(intervalTime), status, JSON.toJSONString(message));
             return;
         }
         setOperations.add(uniqueValue);
+        if (setOperations.getExpire() == -1) {
+            setOperations.expire(2, TimeUnit.HOURS);
+        }
         //统计时段内只统计用户一个手机号的数据
         String accountNo = message.getAccountNo();
         if (StringUtils.isNotBlank(accountNo)) {
             String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfIntervalUsersMobileLog(intervalTime, message.getAppId());
             BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
-            if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
-                setOperations.expire(2, TimeUnit.HOURS);
-            }
             String oldAccountNo = hashOperations.get(uniqueValue);
             if (StringUtils.isNotBlank(oldAccountNo)) {
                 if (!StringUtils.equals(oldAccountNo, accountNo)) {
@@ -100,6 +97,9 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
                 }
             } else {
                 hashOperations.put(uniqueValue, accountNo);
+            }
+            if (hashOperations.getExpire() == -1) {
+                setOperations.expire(2, TimeUnit.HOURS);
             }
 
         }
@@ -119,24 +119,21 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         //判断此用户此操作是否已经统计过
         String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersGroupOnDayStat(intervalTime, message.getGroupCode(), status, message.getAppId());
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(usersKey);
-        if (!Boolean.TRUE.equals(redisTemplate.hasKey(usersKey))) {
-            setOperations.expire(2, TimeUnit.HOURS);
-        }
         if (setOperations.isMember(uniqueValue)) {
             logger.info("运营商监控,消息处理,uniqueValue={}在时刻点intervalTime={}时,操作状态status={}已经统计过了,不再统计.message={}",
                     uniqueValue, MonitorDateUtils.format(intervalTime), status, JSON.toJSONString(message));
             return;
         }
         setOperations.add(uniqueValue);
+        if (setOperations.getExpire() == -1) {
+            setOperations.expire(2, TimeUnit.HOURS);
+        }
 
         //统计时段内只统计用户一个手机号的数据
         String accountNo = message.getAccountNo();
         if (StringUtils.isNotBlank(accountNo)) {
             String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfDayUsersMobileLog(intervalTime, message.getAppId());
             BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
-            if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
-                hashOperations.expire(2, TimeUnit.DAYS);
-            }
             String oldAccountNo = hashOperations.get(uniqueValue);
             if (StringUtils.isNotBlank(oldAccountNo)) {
                 if (!StringUtils.equals(oldAccountNo, accountNo)) {
@@ -146,6 +143,9 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
                 }
             } else {
                 hashOperations.put(uniqueValue, accountNo);
+            }
+            if (hashOperations.getExpire() == -1) {
+                hashOperations.expire(2, TimeUnit.DAYS);
             }
 
         }
@@ -162,24 +162,21 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         //判断此用户此操作是否已经统计过
         String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersAllOnIntervalStat(intervalTime, status, message.getAppId());
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(usersKey);
-        if (!Boolean.TRUE.equals(redisTemplate.hasKey(usersKey))) {
-            setOperations.expire(2, TimeUnit.HOURS);
-        }
         if (setOperations.isMember(uniqueValue)) {
             logger.info("运营商监控,消息处理,uniqueValue={}在时刻点intervalTime={}时,操作状态status={}已经统计过了,不再统计.message={}",
                     uniqueValue, MonitorDateUtils.format(intervalTime), status, JSON.toJSONString(message));
             return;
         }
         setOperations.add(uniqueValue);
+        if (setOperations.getExpire() == -1) {
+            setOperations.expire(2, TimeUnit.HOURS);
+        }
 
         //统计时段内只统计用户一个手机号的数据
         String accountNo = message.getAccountNo();
         if (StringUtils.isNotBlank(accountNo)) {
             String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfIntervalUsersMobileLog(intervalTime, message.getAppId());
             BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
-            if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
-                hashOperations.expire(2, TimeUnit.HOURS);
-            }
             String oldAccountNo = hashOperations.get(uniqueValue);
             if (StringUtils.isNotBlank(oldAccountNo)) {
                 if (!StringUtils.equals(oldAccountNo, accountNo)) {
@@ -189,6 +186,9 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
                 }
             } else {
                 hashOperations.put(uniqueValue, accountNo);
+            }
+            if (hashOperations.getExpire() == -1) {
+                hashOperations.expire(2, TimeUnit.HOURS);
             }
 
         }
@@ -205,25 +205,21 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         //判断此用户此操作是否已经统计过
         String usersKey = TaskOperatorMonitorKeyHelper.keyOfUsersAllOnDayStat(intervalTime, status, message.getAppId());
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(usersKey);
-        if (!Boolean.TRUE.equals(redisTemplate.hasKey(usersKey))) {
-            setOperations.expire(2, TimeUnit.HOURS);
-        }
-
         if (setOperations.isMember(uniqueValue)) {
             logger.info("运营商监控,消息处理,uniqueId={}在时刻点intervalTime={}时,操作状态status={}已经统计过了,不再统计.message={}",
                     message.getUniqueId(), MonitorDateUtils.format(intervalTime), status, JSON.toJSONString(message));
             return;
         }
         setOperations.add(uniqueValue);
+        if (setOperations.getExpire() == -1) {
+            setOperations.expire(2, TimeUnit.HOURS);
+        }
 
         //统计时段内只统计用户一个手机号的数据
         String accountNo = message.getAccountNo();
         if (StringUtils.isNotBlank(accountNo)) {
             String userMobileKey = TaskOperatorMonitorKeyHelper.keyOfDayUsersMobileLog(intervalTime, message.getAppId());
             BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(userMobileKey);
-            if (!Boolean.TRUE.equals(redisTemplate.hasKey(userMobileKey))) {
-                setOperations.expire(2, TimeUnit.HOURS);
-            }
             String oldAccountNo = hashOperations.get(uniqueValue);
             if (StringUtils.isNotBlank(oldAccountNo)) {
                 if (!StringUtils.equals(oldAccountNo, accountNo)) {
@@ -233,6 +229,9 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
                 }
             } else {
                 hashOperations.put(uniqueValue, accountNo);
+            }
+            if (hashOperations.getExpire() == -1) {
+                setOperations.expire(2, TimeUnit.HOURS);
             }
 
         }

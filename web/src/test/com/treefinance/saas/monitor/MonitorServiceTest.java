@@ -166,4 +166,35 @@ public class MonitorServiceTest {
         }
     }
 
+    @Test
+    public void testRedisExpire() {
+        String key = "saas-monitor-test-redisTemplatee";
+        String setKey = "saas-monitor-test-setOperatione";
+        BoundSetOperations<String, String> setOperations = redisTemplate.boundSetOps(setKey);
+        if (setOperations.isMember(String.valueOf(1))) {
+            System.out.println("aaaa");
+            return;
+        }
+        setOperations.add(String.valueOf(1));
+        if (setOperations.getExpire() < 0) {
+            setOperations.expire(2, TimeUnit.MINUTES);
+        }
+        redisTemplate.opsForSet().add(key, String.valueOf(1));
+        redisTemplate.expire(key, 2, TimeUnit.MINUTES);
+        for (int i = 0; i < 5; i++) {
+            System.out.println(setKey + redisTemplate.getExpire(setKey));
+            System.out.println(key + redisTemplate.getExpire(key));
+            if (i == 2) {
+                setOperations.expire(2, TimeUnit.MINUTES);
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }
+
 }

@@ -46,11 +46,11 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 需统计的当日特定时间列表
                 String dayKey = TaskMonitorPerMinKeyHelper.keyOfDayOnMerchantIntervalStat(redisKeyTime, message.getAppId(), statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
-                    setOperations.expire(2, TimeUnit.DAYS);
-                }
                 //加入一个毫秒级的时间戳,防止刷新db数据时,将之后的再加入的时刻误删.
                 setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(redisKeyTime), System.currentTimeMillis()));
+                if (setOperations.getExpire() == -1) {
+                    setOperations.expire(2, TimeUnit.DAYS);
+                }
 
                 //需统计的商户
                 if (StringUtils.isNotBlank(message.getAppId())) {
@@ -75,12 +75,12 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 统计用户数: 未存在用户+1
                 String userKey = TaskMonitorPerMinKeyHelper.keyOfUsersOnMerchantIntervalStat(redisKeyTime, message.getAppId(), statType);
                 BoundSetOperations<String, String> userSetOperations = redisOperations.boundSetOps(userKey);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(userKey))) {
-                    userSetOperations.expire(1, TimeUnit.HOURS);
-                }
                 if (!userSetOperations.isMember(message.getUniqueId())) {
                     Long userCount = hashOperations.increment("userCount", 1);
                     statMap.put("userCount", userCount + "");
+                    if (userSetOperations.getExpire() == -1) {
+                        userSetOperations.expire(1, TimeUnit.HOURS);
+                    }
                 }
                 updateMerchantStatRedisData(hashOperations, message, statMap, redisKeyTime);
                 return null;
@@ -120,12 +120,12 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 统计用户数: 未存在用户+1
                 String userKey = TaskMonitorPerMinKeyHelper.keyOfUsersOnMerchantDayStat(redisKeyTime, message.getAppId(), statType);
                 BoundSetOperations<String, String> userSetOperations = redisOperations.boundSetOps(userKey);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(userKey))) {
-                    userSetOperations.expire(2, TimeUnit.DAYS);
-                }
                 if (!userSetOperations.isMember(message.getUniqueId())) {
                     Long userCount = hashOperations.increment("userCount", 1);
                     statMap.put("userCount", userCount + "");
+                    if (userSetOperations.getExpire() == -1) {
+                        userSetOperations.expire(2, TimeUnit.DAYS);
+                    }
                 }
                 updateMerchantStatRedisData(hashOperations, message, statMap, redisKeyTime);
                 return null;
@@ -145,10 +145,10 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 需统计的当日特定时间列表
                 String dayKey = TaskMonitorPerMinKeyHelper.keyOfDayOnSaasIntervalStat(redisKeyTime, statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
+                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(redisKeyTime), System.currentTimeMillis()));
+                if (setOperations.getExpire() == -1) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
-                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(redisKeyTime), System.currentTimeMillis()));
 
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
@@ -165,12 +165,12 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 统计用户数: 未存在用户+1
                 String userKey = TaskMonitorPerMinKeyHelper.keyOfUsersOnSaasIntervalStat(redisKeyTime, statType);
                 BoundSetOperations<String, String> userSetOperations = redisOperations.boundSetOps(userKey);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(userKey))) {
-                    userSetOperations.expire(1, TimeUnit.HOURS);
-                }
                 if (!userSetOperations.isMember(message.getUniqueId())) {
                     Long userCount = hashOperations.increment("userCount", 1);
                     statMap.put("userCount", userCount + "");
+                    if (userSetOperations.getExpire() == -1) {
+                        userSetOperations.expire(1, TimeUnit.HOURS);
+                    }
                 }
                 updateMerchantStatRedisData(hashOperations, message, statMap, redisKeyTime);
                 return null;
@@ -202,12 +202,12 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 统计用户数: 未存在用户+1
                 String userKey = TaskMonitorPerMinKeyHelper.keyOfUsersOnSaasDayStat(redisKeyTime, statType);
                 BoundSetOperations<String, String> userSetOperations = redisOperations.boundSetOps(userKey);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(userKey))) {
-                    userSetOperations.expire(2, TimeUnit.DAYS);
-                }
                 if (!userSetOperations.isMember(message.getUniqueId())) {
                     Long userCount = hashOperations.increment("userCount", 1);
                     statMap.put("userCount", userCount + "");
+                    if (userSetOperations.getExpire() == -1) {
+                        userSetOperations.expire(2, TimeUnit.DAYS);
+                    }
                 }
                 updateMerchantStatRedisData(hashOperations, message, statMap, redisKeyTime);
                 return null;
@@ -227,11 +227,10 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 需统计的当日特定时间列表
                 String dayKey = TaskMonitorPerMinKeyHelper.keyOfDayOnMerchantWithTypeIntervalStat(redisKeyTime, message.getAppId(), account, statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(dayKey))) {
+                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(redisKeyTime), System.currentTimeMillis()));
+                if (setOperations.getExpire() == -1) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
-                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(redisKeyTime), System.currentTimeMillis()));
-
                 //需统计的商户
                 if (StringUtils.isNotBlank(message.getAppId())) {
                     String merchantsKey = TaskMonitorPerMinKeyHelper.keyOfAppIds();
@@ -257,12 +256,12 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 统计用户数: 未存在用户+1
                 String userKey = TaskMonitorPerMinKeyHelper.keyOfUsersOnMerchantWithTypeIntervalStat(redisKeyTime, message.getAppId(), statType, account);
                 BoundSetOperations<String, String> userSetOperations = redisOperations.boundSetOps(userKey);
-                if (!Boolean.TRUE.equals(redisOperations.hasKey(userKey))) {
-                    userSetOperations.expire(1, TimeUnit.HOURS);
-                }
                 if (!userSetOperations.isMember(message.getUniqueId())) {
                     Long userCount = hashOperations.increment("userCount", 1);
                     statMap.put("userCount", userCount + "");
+                    if (userSetOperations.getExpire() == -1) {
+                        userSetOperations.expire(1, TimeUnit.HOURS);
+                    }
                 }
                 updateMerchantStatRedisData(hashOperations, message, statMap, redisKeyTime);
                 return null;

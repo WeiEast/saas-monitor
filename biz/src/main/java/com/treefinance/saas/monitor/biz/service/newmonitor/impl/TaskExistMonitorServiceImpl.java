@@ -54,14 +54,14 @@ public class TaskExistMonitorServiceImpl implements TaskExistMonitorService {
         String redisKey = RedisKeyHelper.keyOfTaskExistWithType(redisKeyTime, type);
         map.put("key", redisKey);
         BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(redisKey);
-        if (!Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
-            hashOperations.expire(1, TimeUnit.HOURS);
-        }
         Long totalCount = hashOperations.increment("totalCount", 1);
         map.put("totalCount", totalCount + "");
         if (message.getStatus() != null && message.getStatus() == 2) {//成功的任务
             Long successCount = hashOperations.increment("successCount", 1);
             map.put("successCount", successCount + "");
+        }
+        if (hashOperations.getExpire() == -1) {
+            hashOperations.expire(1, TimeUnit.HOURS);
         }
         logger.info("任务预警,任务预警消息处理完成,预警处理的任务消息message={},map={}", JSON.toJSONString(message), JSON.toJSONString(map));
     }
@@ -71,14 +71,14 @@ public class TaskExistMonitorServiceImpl implements TaskExistMonitorService {
         String redisKey = RedisKeyHelper.keyOfTaskExist(redisKeyTime);
         map.put("key", redisKey);
         BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(redisKey);
-        if (!Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
-            hashOperations.expire(1, TimeUnit.HOURS);
-        }
         Long totalCount = hashOperations.increment("totalCount", 1);
         map.put("totalCount", totalCount + "");
         if (message.getStatus() != null && message.getStatus() == 2) {//成功的任务
             Long successCount = hashOperations.increment("successCount", 1);
             map.put("successCount", successCount + "");
+        }
+        if (hashOperations.getExpire() == -1) {
+            hashOperations.expire(1, TimeUnit.HOURS);
         }
         logger.info("任务预警,任务预警消息处理完成,预警处理的任务消息message={},map={}", JSON.toJSONString(message), JSON.toJSONString(map));
     }

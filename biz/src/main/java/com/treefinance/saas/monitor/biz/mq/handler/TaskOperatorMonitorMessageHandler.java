@@ -52,9 +52,6 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
             //任务重复消息不处理
             String messageLogKey = TaskOperatorMonitorKeyHelper.keyOfMessageLog(intervalTime);
             BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(messageLogKey);
-            if (!Boolean.TRUE.equals(redisTemplate.hasKey(messageLogKey))) {
-                setOperations.expire(2, TimeUnit.HOURS);
-            }
             StringBuilder sb = new StringBuilder();
             String value = sb.append(message.getTaskId()).append("-").append(message.getStatus()).toString();
             if (setOperations.isMember(value)) {
@@ -62,6 +59,9 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
                 return;
             }
             setOperations.add(value);
+            if (setOperations.getExpire() == -1) {
+                setOperations.expire(2, TimeUnit.HOURS);
+            }
 
             ETaskOperatorMonitorStatus status = ETaskOperatorMonitorStatus.getMonitorStats(message.getStatus());
             TaskOperatorMonitorMessage virtualTotalMessage = DataConverterUtils.convert(message, TaskOperatorMonitorMessage.class);
