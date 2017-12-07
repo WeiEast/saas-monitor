@@ -99,7 +99,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
                 hashOperations.put(uniqueValue, accountNo);
             }
             if (hashOperations.getExpire() == -1) {
-                setOperations.expire(2, TimeUnit.HOURS);
+                hashOperations.expire(2, TimeUnit.HOURS);
             }
 
         }
