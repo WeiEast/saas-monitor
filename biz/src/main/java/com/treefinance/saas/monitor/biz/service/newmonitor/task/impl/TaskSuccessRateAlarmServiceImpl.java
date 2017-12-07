@@ -233,6 +233,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
     private String generateMessageBody(List<SaasStatAccessDTO> list, EStatType type) {
         StringBuffer buffer = new StringBuffer();
+        if (EStatType.OPERATOR.equals(type)) {
+            buffer.append("【").append(EAlarmLevel.error).append("】");
+        } else {
+            buffer.append("【").append(EAlarmLevel.warning).append("】");
+        }
         buffer.append("您好，").append(generateTitle(type)).append("，监控数据如下，请及时处理：").append("\n");
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         List<String> dataTimeList = Lists.newArrayList();
