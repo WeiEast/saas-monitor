@@ -80,15 +80,14 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
         String alarmTimeKey = TaskMonitorPerMinKeyHelper.keyOfAlarmTimeLog(beginTime, statType);
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
-        if (!Boolean.TRUE.equals(redisTemplate.hasKey(alarmTimeKey))) {
-            setOperations.expire(2, TimeUnit.DAYS);
-        }
         if (setOperations.isMember(MonitorDateUtils.format(beginTime))) {
             logger.info("任务成功率预警,beginTime={},statType={}已预警,不再预警", MonitorDateUtils.format(beginTime), JSON.toJSONString(statType));
             return;
         }
         setOperations.add(MonitorDateUtils.format(beginTime));
-
+        if (setOperations.getExpire() == -1) {
+            setOperations.expire(2, TimeUnit.DAYS);
+        }
         List<SaasStatAccessDTO> list = getNeedAlarmDataList(beginTime, times, intervalMins, statType);
         logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},beginTime={},statType={},config={}",
                 MonitorDateUtils.format(jobTime), JSON.toJSONString(list), MonitorDateUtils.format(beginTime), JSON.toJSONString(statType), JSON.toJSONString(config));

@@ -68,15 +68,15 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             //判断此时刻是否预警预警过
             String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config.getAlarmType(), statType);
             BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
-            if (!Boolean.TRUE.equals(redisTemplate.hasKey(alarmTimeKey))) {
-                setOperations.expire(2, TimeUnit.DAYS);
-            }
             if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},statType={},alarmType={}已预警,不再预警",
                         MonitorDateUtils.format(baseTime), JSON.toJSONString(statType), config.getAlarmType());
                 return;
             }
             setOperations.add(MonitorDateUtils.format(baseTime));
+            if (setOperations.getExpire() == -1) {
+                setOperations.expire(2, TimeUnit.DAYS);
+            }
 
             //获取基础数据
             Date startTime = DateUtils.addMinutes(baseTime, -intervalMins);
