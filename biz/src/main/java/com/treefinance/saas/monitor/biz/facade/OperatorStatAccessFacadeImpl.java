@@ -305,8 +305,10 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         if (CollectionUtils.isEmpty(list)) {
             return MonitorResultBuilder.build(result);
         }
-        List<OperatorStatAccess> changeList = this.changeIntervalDataTimeOperatorStatAccess(list, request.getIntervalMins());
-        for (OperatorStatAccess data : changeList) {
+        for (OperatorStatAccess data : list) {
+            data.setDataTime(MonitorDateUtils.getIntervalDateTime(data.getDataTime(), request.getIntervalMins()));
+        }
+        for (OperatorStatAccess data : list) {
             OperatorStatAccessRO ro = DataConverterUtils.convert(data, OperatorStatAccessRO.class);
             ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
             result.add(ro);
