@@ -41,6 +41,11 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
      */
     private String weChatAlarmSwitch;
 
+    /**
+     * 短信预警开关
+     */
+    private String smsAlarmSwitch;
+
 
     public String getType() {
         return type;
@@ -96,5 +101,13 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
 
     public void setWeChatAlarmSwitch(String weChatAlarmSwitch) {
         this.weChatAlarmSwitch = weChatAlarmSwitch;
+    }
+
+    public String getSmsAlarmSwitch() {
+        return smsAlarmSwitch;
+    }
+
+    public void setSmsAlarmSwitch(String smsAlarmSwitch) {
+        this.smsAlarmSwitch = smsAlarmSwitch;
     }
 }

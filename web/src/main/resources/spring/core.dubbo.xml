@@ -33,6 +33,9 @@
     <dubbo:service ref="websiteFacade" interface="com.treefinance.saas.monitor.facade.service.WebsiteFacade"
                    version="1.0.0"/>
 
+    <!--消费者-->
+    <dubbo:reference interface="com.datatrees.notify.sms.newservice.SmsNewService" id="smsNewService"/>
+
 </beans>
 
 
