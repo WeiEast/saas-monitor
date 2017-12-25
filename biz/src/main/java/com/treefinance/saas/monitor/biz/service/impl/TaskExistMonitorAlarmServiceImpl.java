@@ -89,8 +89,8 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
         }
 
         if (StringUtils.equalsIgnoreCase(smsSwitch, "on")) {
-            String weChatBody = generateNoSuccessSmsBody(startTime, endTime);
-            alarmMessageProducer.sendWebChart4TaskExistMonitor(weChatBody);
+            String smsBody = generateNoSuccessSmsBody(startTime, endTime);
+            smsNotifyService.send(smsBody);
         } else {
             logger.info("任务预警,发送短信开关已关闭");
         }
