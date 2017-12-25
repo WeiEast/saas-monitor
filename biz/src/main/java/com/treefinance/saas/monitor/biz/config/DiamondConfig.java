@@ -89,6 +89,12 @@ public class DiamondConfig {
     private String taskExistAlarmMailSwitch;
 
     /**
+     * 任务是否存在,短信通知开关
+     */
+    @DAttribute(key = "task.exist.alarm.sms.switch")
+    private String taskExistAlarmSmsSwitch;
+
+    /**
      * 统计时间间隔:分钟为单位
      */
     @DAttribute(key = "monitor.http.interval.minutes")
@@ -106,6 +112,9 @@ public class DiamondConfig {
     // 预警消息，邮件列表
     @DAttribute(key = "monitor.alarm.mail")
     private String monitorAlarmMails;
+    //预警消息,手机列表
+    @DAttribute(key = "monitor.alarm.mobile")
+    private String monitorAlarmMobiles;
     // 预警消息，微信tag
     @DAttribute(key = "monitor.alarm.tag.webchart")
     private String monitorAlarmWebchartTag;
@@ -378,5 +387,21 @@ public class DiamondConfig {
 
     public void setOperatorMonitorAlarmConfig(String operatorMonitorAlarmConfig) {
         this.operatorMonitorAlarmConfig = operatorMonitorAlarmConfig;
+    }
+
+    public String getMonitorAlarmMobiles() {
+        return monitorAlarmMobiles;
+    }
+
+    public void setMonitorAlarmMobiles(String monitorAlarmMobiles) {
+        this.monitorAlarmMobiles = monitorAlarmMobiles;
+    }
+
+    public String getTaskExistAlarmSmsSwitch() {
+        return taskExistAlarmSmsSwitch;
+    }
+
+    public void setTaskExistAlarmSmsSwitch(String taskExistAlarmSmsSwitch) {
+        this.taskExistAlarmSmsSwitch = taskExistAlarmSmsSwitch;
     }
 }
