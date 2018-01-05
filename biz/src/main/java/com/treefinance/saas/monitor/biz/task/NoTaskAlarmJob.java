@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
+import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
@@ -12,6 +13,7 @@ import com.treefinance.saas.monitor.biz.service.TaskExistMonitorAlarmService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoSuccessMinsConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +45,10 @@ public class NoTaskAlarmJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-
+        String saasEnv = Constants.SAAS_ENV;
+        if (StringUtils.isNotBlank(saasEnv) && StringUtils.equalsIgnoreCase(saasEnv, "pre-product")) {
+            return;
+        }
         int intervalMinutes = 5;
         final Date now = new Date();
         final Date redisKeyTime = StatHelper.getRedisStatDateTime(now, intervalMinutes);

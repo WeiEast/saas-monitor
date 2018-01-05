@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorAllAlarmService;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService;
@@ -35,6 +36,10 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
+        String saasEnv = Constants.SAAS_ENV;
+        if (StringUtils.isNotBlank(saasEnv) && StringUtils.equalsIgnoreCase(saasEnv, "pre-product")) {
+            return;
+        }
         long start = System.currentTimeMillis();
         //定时任务执行时间,每5分钟执行一次
         Date jobTime = new Date();
