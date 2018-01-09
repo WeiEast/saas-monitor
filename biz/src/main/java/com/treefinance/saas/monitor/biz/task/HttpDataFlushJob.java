@@ -5,6 +5,7 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
@@ -15,6 +16,7 @@ import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiStatAccessRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiStatDayAccessRO;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,12 @@ public class HttpDataFlushJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
+        String saasEnv = Constants.SAAS_ENV;
+        logger.info("定时任务执行,当前环境SAAS-ENV={}", saasEnv);
+        if (StringUtils.isNotBlank(saasEnv) && StringUtils.equalsIgnoreCase(saasEnv, "pre-product")) {
+            logger.info("定时任务,预发布环境暂不执行");
+            return;
+        }
         long start = System.currentTimeMillis();
         try {
             int intervalMinutes = diamondConfig.getMonitorIntervalMinutes();
