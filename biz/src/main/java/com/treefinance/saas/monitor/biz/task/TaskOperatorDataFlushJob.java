@@ -51,7 +51,9 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
     @Override
     public void execute(ShardingContext shardingContext) {
         String saasEnv = Constants.SAAS_ENV;
+        logger.info("定时任务执行,当前环境SAAS-ENV={}", saasEnv);
         if (StringUtils.isNotBlank(saasEnv) && StringUtils.equalsIgnoreCase(saasEnv, "pre-product")) {
+            logger.info("定时任务,预发布环境暂不执行");
             return;
         }
         long start = System.currentTimeMillis();
