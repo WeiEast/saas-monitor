@@ -36,7 +36,8 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
     public void execute(ShardingContext shardingContext) {
         String saasEnv = Constants.SAAS_ENV;
         logger.info("定时任务执行,当前环境SAAS-ENV={}", saasEnv);
-        if (StringUtils.isNotBlank(saasEnv) && StringUtils.equalsIgnoreCase(saasEnv, "pre-product")) {
+        if (StringUtils.isNotBlank(saasEnv)
+                && StringUtils.equalsIgnoreCase(saasEnv, com.treefinance.saas.monitor.common.domain.Constants.SAAS_ENV_PRE_PRODUCT)) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
         }
