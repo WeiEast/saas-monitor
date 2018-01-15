@@ -1,6 +1,6 @@
 package com.treefinance.saas.monitor.biz.facade;
 
-import com.treefinance.saas.monitor.facade.service.stat.EcommerceStatAccessFacade;
+import com.treefinance.saas.monitor.facade.service.stat.EcommerceDayStatAccessFacade;
 import org.springframework.stereotype.Service;
 
 /**
@@ -8,6 +8,6 @@ import org.springframework.stereotype.Service;
  * Created by haojiahong on 2018/1/15.
  */
 @Service("ecommerceStatAccessFacade")
-public class EcommerceStatAccessFacadeImpl implements EcommerceStatAccessFacade {
+public class EcommerceStatAccessFacadeImpl implements EcommerceDayStatAccessFacade {
 
 }

@@ -25,7 +25,7 @@
                    interface="com.treefinance.saas.monitor.facade.service.stat.OperatorStatAccessFacade"
                    version="1.0.0"/>
     <dubbo:service ref="ecommerceStatAccessFacade"
-                   interface="com.treefinance.saas.monitor.facade.service.stat.EcommerceStatAccessFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.stat.EcommerceDayStatAccessFacade"
                    version="1.0.0"/>
     <dubbo:service ref="mailFacade" interface="com.treefinance.saas.monitor.facade.service.MailFacade" version="1.0.0"/>
     <dubbo:service ref="ecommerceFacade" interface="com.treefinance.saas.monitor.facade.service.EcommerceFacade"
