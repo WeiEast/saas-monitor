@@ -12,6 +12,7 @@ import java.util.Date;
  */
 public class EcommerceAllDetailRO implements Serializable {
 
+    private static final long serialVersionUID = 5060857382565181030L;
     private Long id;
 
     private Integer entryCount;

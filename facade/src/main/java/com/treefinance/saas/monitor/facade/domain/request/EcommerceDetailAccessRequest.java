@@ -12,6 +12,7 @@ import java.util.Date;
  */
 public class EcommerceDetailAccessRequest extends PageRequest implements Serializable {
 
+    private static final long serialVersionUID = 2524208745510448161L;
     private Date dataDate;
 
     private Date startDate;
