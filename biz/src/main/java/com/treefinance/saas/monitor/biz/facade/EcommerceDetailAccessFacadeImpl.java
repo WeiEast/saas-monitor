@@ -26,7 +26,8 @@ import java.util.List;
  * @date:Created in 2018/1/15上午11:16
  */
 
-@Service
+
+@Service("ecommerceDetailAccessFacade")
 public class EcommerceDetailAccessFacadeImpl implements EcommerceDetailAccessFacade {
 
     private final static Logger logger = LoggerFactory.getLogger(EcommerceDetailAccessFacadeImpl.class);
@@ -60,12 +61,13 @@ public class EcommerceDetailAccessFacadeImpl implements EcommerceDetailAccessFac
 
             EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatAccess,EcommerceAllDetailRO.class);
             ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatAccess.getEntryCount(),ecommerceAllStatAccess.getStartLoginCount()));
-            ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatAccess.getStartLoginCount(),ecommerceAllStatAccess.getLoginSuccessCount()));
+            ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatAccess.getEntryCount(),ecommerceAllStatAccess.getLoginSuccessCount()));
             ecommerceAllDetailRO.setCrawlSuccessRate(calcRate(ecommerceAllStatAccess.getLoginSuccessCount(),ecommerceAllStatAccess.getCrawlSuccessCount()));
             ecommerceAllDetailRO.setProcessSuccessRate(calcRate(ecommerceAllStatAccess.getCrawlSuccessCount(),ecommerceAllStatAccess.getProcessSuccessCount()));
             ecommerceAllDetailRO.setCallbackSuccessRate(calcRate(ecommerceAllStatAccess.getProcessSuccessCount(),ecommerceAllStatAccess.getCallbackSuccessCount()));
             ecommerceAllDetailRO.setTaskUserRatio(calcRatio(ecommerceAllStatAccess.getUserCount(),ecommerceAllStatAccess.getTaskCount()));
             ecommerceAllDetailRO.setWholeConversionRate(calcRate(ecommerceAllStatAccess.getEntryCount(),ecommerceAllStatAccess.getCallbackSuccessCount()));
+            result.add(ecommerceAllDetailRO);
 
 
         }
