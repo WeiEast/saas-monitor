@@ -36,6 +36,10 @@
     <dubbo:service ref="websiteFacade" interface="com.treefinance.saas.monitor.facade.service.WebsiteFacade"
                    version="1.0.0"/>
 
+    <dubbo:service ref="ecommerceDetailAccessFacade" interface="com.treefinance.saas.monitor.facade.service.stat.EcommerceDetailAccessFacade"
+                     version="1.0.0"/>
+
+
 </beans>
 
 

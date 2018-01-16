@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -52,10 +53,23 @@ public class EcommerceDetailAccessFacadeImpl implements EcommerceDetailAccessFac
         String appId = request.getAppId();
         List<EcommerceAllDetailRO> result = new ArrayList<>();
         List<EcommerceAllStatAccess> allStatAccessList = ecommerceDetailAccessDao.getEcommerceAllDetailList(dataDate, statType, appId);
-        if (!CollectionUtils.isEmpty(allStatAccessList)) {
-            result = DataConverterUtils.convert(allStatAccessList, EcommerceAllDetailRO.class);
+        if (CollectionUtils.isEmpty(allStatAccessList)) {
+           return  MonitorResultBuilder.build(result);
         }
-        logger.info("查询电商日监控分时统计数据(分页),返回结果result={}", JSON.toJSONString(result));
+        for(EcommerceAllStatAccess ecommerceAllStatAccess:allStatAccessList){
+
+            EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatAccess,EcommerceAllDetailRO.class);
+            ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatAccess.getEntryCount(),ecommerceAllStatAccess.getStartLoginCount()));
+            ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatAccess.getStartLoginCount(),ecommerceAllStatAccess.getLoginSuccessCount()));
+            ecommerceAllDetailRO.setCrawlSuccessRate(calcRate(ecommerceAllStatAccess.getLoginSuccessCount(),ecommerceAllStatAccess.getCrawlSuccessCount()));
+            ecommerceAllDetailRO.setProcessSuccessRate(calcRate(ecommerceAllStatAccess.getCrawlSuccessCount(),ecommerceAllStatAccess.getProcessSuccessCount()));
+            ecommerceAllDetailRO.setCallbackSuccessRate(calcRate(ecommerceAllStatAccess.getProcessSuccessCount(),ecommerceAllStatAccess.getCallbackSuccessCount()));
+            ecommerceAllDetailRO.setTaskUserRatio(calcRatio(ecommerceAllStatAccess.getUserCount(),ecommerceAllStatAccess.getTaskCount()));
+            ecommerceAllDetailRO.setWholeConversionRate(calcRate(ecommerceAllStatAccess.getEntryCount(),ecommerceAllStatAccess.getCallbackSuccessCount()));
+
+
+        }
+        logger.info("查询电商日监控分时统计数据,返回结果result={}", JSON.toJSONString(result));
 
         return MonitorResultBuilder.build(result);
     }
@@ -89,6 +103,39 @@ public class EcommerceDetailAccessFacadeImpl implements EcommerceDetailAccessFac
 //        return MonitorResultBuilder.build(result);
 //
 //    }
+
+    /**
+     * 计算比率
+     *
+     * @param a 分母
+     * @param b 分子
+     * @return
+     */
+    private BigDecimal calcRate(Integer a, Integer b) {
+        if (Integer.valueOf(0).compareTo(a) == 0) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal rate = BigDecimal.valueOf(b, 2)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(a, 2), 2, BigDecimal.ROUND_HALF_UP);
+        return rate;
+    }
+
+    /**
+     * 计算比例
+     *
+     * @param a 分母
+     * @param b 分子
+     * @return
+     */
+    private BigDecimal calcRatio(Integer a, Integer b) {
+        if (Integer.valueOf(0).compareTo(a) == 0) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal rate = BigDecimal.valueOf(b, 1)
+                .divide(BigDecimal.valueOf(a, 1), 1, BigDecimal.ROUND_HALF_UP);
+        return rate;
+    }
 
 
 }
