@@ -10,7 +10,7 @@ import java.util.List;
  * @author:guoguoyun
  * @date:Created in 2018/1/15上午10:50
  */
-public interface EcommerceDetailAccessFacade {
+public interface EcommerceStatDivisionAccessFacade {
 
 
     /**
