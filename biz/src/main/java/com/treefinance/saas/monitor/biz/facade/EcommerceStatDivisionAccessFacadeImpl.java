@@ -2,15 +2,14 @@ package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceTimeShareDTO;
-import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.dao.ecommerce.EcommerceDetailAccessDao;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
+import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatDayAccess;
 import com.treefinance.saas.monitor.facade.domain.request.EcommerceDetailAccessRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.ecommerce.EcommerceAllDetailRO;
-import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
 import com.treefinance.saas.monitor.facade.service.stat.EcommerceStatDivisionAccessFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +74,52 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
 
         return MonitorResultBuilder.build(result);
     }
+
+
+    /**
+     * 查询电商整体监控统计数据(分页)
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    public MonitorResult<List<EcommerceAllDetailRO>> queryEcommerceAllAccessList(EcommerceDetailAccessRequest request) {
+        if (request == null || request.getStartDate() == null ||request.getEndDate() == null || request.getStatType() == null) {
+            logger.error("查询电商日监控整体统计数据,输入参数为空或者startDate,endDate,statType,request={}", JSON.toJSONString(request));
+            return new MonitorResult("传入参数为空");
+        }
+        logger.info("查询电商日监控整体统计数据,输入参数request={}", JSON.toJSONString(request));
+
+        List<EcommerceAllDetailRO> result = new ArrayList<>();
+        EcommerceTimeShareDTO ecommerceTimeShareDTO = DataConverterUtils.convert(request, EcommerceTimeShareDTO.class);
+        List<EcommerceAllStatDayAccess> allStatAccessList = ecommerceDetailAccessDao.getEcommerceAllList(ecommerceTimeShareDTO);
+        if (CollectionUtils.isEmpty(allStatAccessList)) {
+            return MonitorResultBuilder.build(result);
+        }
+        for (EcommerceAllStatDayAccess ecommerceAllStatDayAccess : allStatAccessList) {
+
+            EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatDayAccess, EcommerceAllDetailRO.class);
+            ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getStartLoginCount()));
+            ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getLoginSuccessCount()));
+            ecommerceAllDetailRO.setCrawlSuccessRate(calcRate(ecommerceAllStatDayAccess.getLoginSuccessCount(), ecommerceAllStatDayAccess.getCrawlSuccessCount()));
+            ecommerceAllDetailRO.setProcessSuccessRate(calcRate(ecommerceAllStatDayAccess.getCrawlSuccessCount(), ecommerceAllStatDayAccess.getProcessSuccessCount()));
+            ecommerceAllDetailRO.setCallbackSuccessRate(calcRate(ecommerceAllStatDayAccess.getProcessSuccessCount(), ecommerceAllStatDayAccess.getCallbackSuccessCount()));
+            ecommerceAllDetailRO.setTaskUserRatio(calcRatio(ecommerceAllStatDayAccess.getUserCount(), ecommerceAllStatDayAccess.getTaskCount()));
+            ecommerceAllDetailRO.setWholeConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getCallbackSuccessCount()));
+            result.add(ecommerceAllDetailRO);
+
+
+        }
+
+
+        return MonitorResultBuilder.build(result);
+
+
+
+
+    }
+
+
 
 //    /**
 //     * 查询电商详细分时监控统计数据
