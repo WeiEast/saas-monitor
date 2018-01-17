@@ -4,7 +4,10 @@ import com.treefinance.saas.monitor.common.domain.dto.EcommerceTimeShareDTO;
 import com.treefinance.saas.monitor.dao.ecommerce.EcommerceDetailAccessDao;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatDayAccess;
+import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatDayAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.EcommerceAllStatAccessMapper;
+import com.treefinance.saas.monitor.dao.mapper.EcommerceAllStatDayAccessMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,8 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
 
     @Autowired
     EcommerceAllStatAccessMapper ecommerceAllStatAccessMapper;
+    @Autowired
+    EcommerceAllStatDayAccessMapper ecommerceAllStatDayAccessMapper;
 
     @Override
     public List<EcommerceAllStatAccess> getEcommerceAllDetailList(EcommerceTimeShareDTO request) {
@@ -34,6 +39,7 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         Date dataDate = request.getDataDate();
         Byte statType = request.getStatType();
         String appId = request.getAppId();
+
 
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -47,6 +53,30 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         EcommerceAllStatAccessCriteria ecommerceAllStatAccessCriteria = new EcommerceAllStatAccessCriteria();
         ecommerceAllStatAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
         List<EcommerceAllStatAccess> allStatAccessList = ecommerceAllStatAccessMapper.selectByExample(ecommerceAllStatAccessCriteria);
+
+        return allStatAccessList;
+
+
+    }
+
+    @Override
+    public List<EcommerceAllStatDayAccess> getEcommerceAllList(EcommerceTimeShareDTO request) {
+
+        Date dataDate = request.getStartDate();
+        Date dataDate2 = request.getEndDate();
+        Byte statType = request.getStatType();
+        String appId = request.getAppId();
+
+
+
+        logger.info("查询电商日监控整体统计数据 dao层,传入的参数为{}", request.toString());
+        EcommerceAllStatDayAccessCriteria ecommerceAllStatDayAccessCriteria = new EcommerceAllStatDayAccessCriteria();
+
+        ecommerceAllStatDayAccessCriteria.setOrderByClause("dataTime desc");
+        ecommerceAllStatDayAccessCriteria.setLimit(request.getPageSize());
+        ecommerceAllStatDayAccessCriteria.setOffset(request.getOffset());
+        ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+        List<EcommerceAllStatDayAccess> allStatAccessList = ecommerceAllStatDayAccessMapper.selectByExample(ecommerceAllStatDayAccessCriteria);
 
         return allStatAccessList;
 

@@ -22,6 +22,43 @@ public class EcommerceTimeShareDTO {
 
     private String appId;
 
+    /**
+     * 当前页
+     */
+    private int pageNumber;
+    /**
+     * 每页显示数
+     */
+    private int pageSize;
+    /**
+     * 偏移量
+     */
+    private int offset;
+
+    public int getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(int pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
     public Date getDataDate() {
         return dataDate;
     }
@@ -88,6 +125,9 @@ public class EcommerceTimeShareDTO {
                 ", groupName='" + groupName + '\'' +
                 ", statType=" + statType +
                 ", appId='" + appId + '\'' +
+                ", pageNumber=" + pageNumber +
+                ", pageSize=" + pageSize +
+                ", offset=" + offset +
                 '}';
     }
 }

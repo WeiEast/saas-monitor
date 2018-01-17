@@ -7,6 +7,8 @@ import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.EcommerceRO;
 import com.treefinance.saas.monitor.facade.service.EcommerceFacade;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import java.util.List;
  */
 @Service("ecommerceFacade")
 public class EcommerceFacadeImpl implements EcommerceFacade {
+    private final static Logger logger = LoggerFactory.getLogger(EcommerceFacadeImpl.class);
     @Autowired
     private EcommerceService ecommerceService;
 
@@ -26,4 +29,6 @@ public class EcommerceFacadeImpl implements EcommerceFacade {
         List<EcommerceRO> dataList = DataConverterUtils.convert(list, EcommerceRO.class);
         return MonitorResultBuilder.build(dataList);
     }
+
+
 }

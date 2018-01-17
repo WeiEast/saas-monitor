@@ -14,12 +14,34 @@ public interface EcommerceStatDivisionAccessFacade {
 
 
     /**
-     * 查询电商总分时监控统计数据
+     * 查询电商分时监控统计数据
      *
      * @param request
      * @return
      */
     MonitorResult<List<EcommerceAllDetailRO>> queryEcommerceAllDetailAccessList(EcommerceDetailAccessRequest request);
+
+
+
+    /**
+     * 查询电商整体监控统计数据
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<List<EcommerceAllDetailRO>> queryEcommerceAllAccessList(EcommerceDetailAccessRequest request);
+
+
+
+
+
+
+
+
+
+
+
+
 
 //    /**
 //     * 查询电商详细分时监控统计数据
