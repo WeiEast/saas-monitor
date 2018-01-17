@@ -84,7 +84,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
      */
     @Override
     public MonitorResult<List<EcommerceAllDetailRO>> queryEcommerceAllAccessList(EcommerceDetailAccessRequest request) {
-        if (request == null || request.getStartDate() == null ||request.getEndDate() == null || request.getStatType() == null) {
+        if (request == null || request.getStartDate() == null || request.getEndDate() == null || request.getStatType() == null) {
             logger.error("查询电商日监控整体统计数据,输入参数为空或者startDate,endDate,statType,request={}", JSON.toJSONString(request));
             return new MonitorResult("传入参数为空");
         }
@@ -115,10 +115,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
         return MonitorResultBuilder.build(result);
 
 
-
-
     }
-
 
 
 //    /**
@@ -159,20 +156,15 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
      * @return
      */
     private BigDecimal calcRate(Integer a, Integer b) {
-        BigDecimal rate = null;
-        try {
-            if (Integer.valueOf(0).compareTo(a) == 0) {
 
-                return BigDecimal.ZERO;
-            }
-            rate = BigDecimal.valueOf(b, 2)
-                    .multiply(BigDecimal.valueOf(100))
-                    .divide(BigDecimal.valueOf(a, 2), 2, BigDecimal.ROUND_HALF_UP);
+        if (Integer.valueOf(0).compareTo(a) == 0) {
 
-        } catch (Exception e) {
-            logger.error("分母不能为0", e);
+            return null;
         }
 
+        BigDecimal rate = BigDecimal.valueOf(b, 2)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(a, 2), 2, BigDecimal.ROUND_HALF_UP);
         return rate;
 
 
@@ -186,16 +178,14 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
      * @return
      */
     private BigDecimal calcRatio(Integer a, Integer b) {
-        BigDecimal rate = null;
-        try {
-            if (Integer.valueOf(0).compareTo(a) == 0) {
-                return BigDecimal.ZERO;
-            }
-            rate = BigDecimal.valueOf(b, 1)
-                    .divide(BigDecimal.valueOf(a, 1), 1, BigDecimal.ROUND_HALF_UP);
-        } catch (Exception e) {
-            logger.error("分母不能为0", e);
+
+
+        if (Integer.valueOf(0).compareTo(a) == 0) {
+            return null;
         }
+        BigDecimal rate = BigDecimal.valueOf(b, 1)
+                .divide(BigDecimal.valueOf(a, 1), 1, BigDecimal.ROUND_HALF_UP);
+
         return rate;
     }
 
