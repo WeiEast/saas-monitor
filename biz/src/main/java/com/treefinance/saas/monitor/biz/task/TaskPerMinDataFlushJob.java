@@ -2,11 +2,10 @@ package com.treefinance.saas.monitor.biz.task;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskPerMinDataFlushService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.treefinance.saas.monitor.common.utils.MonitorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +27,7 @@ public class TaskPerMinDataFlushJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        String saasEnv = Constants.SAAS_ENV;
-        logger.info("定时任务执行,当前环境SAAS-ENV={}", saasEnv);
-        if (StringUtils.isNotBlank(saasEnv)
-                && StringUtils.equalsIgnoreCase(saasEnv, com.treefinance.saas.monitor.common.domain.Constants.SAAS_ENV_PRE_PRODUCT)) {
+        if (MonitorUtils.isPreProductContext()) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
         }

@@ -5,7 +5,7 @@ import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
-import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessAlarmMsgDTO;
+import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
@@ -45,14 +45,14 @@ public class MonitorServiceTest {
 
     @Test
     public void testMail() {
-        List<OperatorStatAccessAlarmMsgDTO> msgList = Lists.newArrayList();
-        OperatorStatAccessAlarmMsgDTO msg1 = new OperatorStatAccessAlarmMsgDTO();
+        List<TaskStatAccessAlarmMsgDTO> msgList = Lists.newArrayList();
+        TaskStatAccessAlarmMsgDTO msg1 = new TaskStatAccessAlarmMsgDTO();
         msg1.setGroupName("浙江移动");
         msg1.setAlarmDesc("登录转化率低于前7天平均值的70%");
         msg1.setValue(new BigDecimal(10));
         msg1.setThreshold(new BigDecimal(20));
         msgList.add(msg1);
-        OperatorStatAccessAlarmMsgDTO msg2 = new OperatorStatAccessAlarmMsgDTO();
+        TaskStatAccessAlarmMsgDTO msg2 = new TaskStatAccessAlarmMsgDTO();
         msg2.setGroupName("浙江电信");
         msg2.setAlarmDesc("登录转化率低于前7天平均值的70%");
         msg2.setValue(new BigDecimal(20));
@@ -69,7 +69,7 @@ public class MonitorServiceTest {
     }
 
 
-    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date dataTime) {
+    private String generateMailDataBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date dataTime) {
         Integer intervalMins = diamondConfig.getOperatorMonitorIntervalMinutes();
         StringBuffer buffer = new StringBuffer();
         buffer.append("<br>").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
@@ -85,7 +85,7 @@ public class MonitorServiceTest {
                 .append("<th>").append("指标阀值(%)").append("</th>")
                 .append("<th>").append("偏离阀值程度(%)").append("</th>")
                 .append("</tr>");
-        for (OperatorStatAccessAlarmMsgDTO msg : msgList) {
+        for (TaskStatAccessAlarmMsgDTO msg : msgList) {
             buffer.append("<tr>")
                     .append("<td>").append(msg.getAlarmDesc()).append("</td>")
                     .append("<td>").append(msg.getValue()).append("</td>")

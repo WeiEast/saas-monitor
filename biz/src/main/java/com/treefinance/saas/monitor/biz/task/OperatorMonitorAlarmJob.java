@@ -4,13 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorAllAlarmService;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.common.utils.MonitorUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +36,7 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        String saasEnv = Constants.SAAS_ENV;
-        logger.info("定时任务执行,当前环境SAAS-ENV={}", saasEnv);
-        if (StringUtils.isNotBlank(saasEnv)
-                && StringUtils.equalsIgnoreCase(saasEnv, com.treefinance.saas.monitor.common.domain.Constants.SAAS_ENV_PRE_PRODUCT)) {
+        if (MonitorUtils.isPreProductContext()) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
         }
@@ -57,19 +54,19 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
                 }
                 if (configDTO.getAlarmType() == 1) {
                     //总运营商按人统计的预警
-                    operatorMonitorAllAlarmService.alarm(jobTime, configDTO, ETaskOperatorStatType.USER);
+                    operatorMonitorAllAlarmService.alarm(jobTime, configDTO, ETaskStatDataType.USER);
                 }
                 if (configDTO.getAlarmType() == 2) {
                     //分运营商按人统计的预警
-                    operatorMonitorGroupAlarmService.alarm(jobTime, configDTO, ETaskOperatorStatType.USER);
+                    operatorMonitorGroupAlarmService.alarm(jobTime, configDTO, ETaskStatDataType.USER);
                 }
                 if (configDTO.getAlarmType() == 3) {
                     //总运营商按任务统计的预警
-                    operatorMonitorAllAlarmService.alarm(jobTime, configDTO, ETaskOperatorStatType.TASK);
+                    operatorMonitorAllAlarmService.alarm(jobTime, configDTO, ETaskStatDataType.TASK);
                 }
                 if (configDTO.getAlarmType() == 4) {
                     //分运营商按任务统计的预警
-                    operatorMonitorGroupAlarmService.alarm(jobTime, configDTO, ETaskOperatorStatType.TASK);
+                    operatorMonitorGroupAlarmService.alarm(jobTime, configDTO, ETaskStatDataType.TASK);
                 }
             }
         } catch (Exception e) {

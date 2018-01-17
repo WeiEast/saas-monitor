@@ -1,21 +1,22 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.datatrees.notify.async.body.mail.MailEnum;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
-import com.treefinance.saas.monitor.biz.service.OperatorMonitorAllAlarmService;
-import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatAccessDTO;
-import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.biz.service.EcommerceMonitorAllAlarmService;
+import com.treefinance.saas.monitor.common.domain.dto.EcommerceAllStatAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.EcommerceMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccess;
-import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccessCriteria;
-import com.treefinance.saas.monitor.dao.mapper.OperatorAllStatAccessMapper;
+import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
+import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.mapper.EcommerceAllStatAccessMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -33,39 +34,38 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * Created by haojiahong on 2017/11/13.
+ * Created by haojiahong on 2018/1/17.
  */
 @Service
-public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAlarmService {
+public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllAlarmService {
 
-    private static final Logger logger = LoggerFactory.getLogger(OperatorMonitorAllAlarmService.class);
+    private static final Logger logger = LoggerFactory.getLogger(EcommerceMonitorAllAlarmService.class);
 
     @Autowired
-    private DiamondConfig diamondConfig;
+    private RedisTemplate<String, Object> redisTemplate;
     @Autowired
-    private OperatorAllStatAccessMapper operatorAllStatAccessMapper;
+    private EcommerceAllStatAccessMapper ecommerceAllStatAccessMapper;
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
+    private DiamondConfig diamondConfig;
 
     @Override
-    public void alarm(Date jobTime, OperatorMonitorAlarmConfigDTO config, ETaskStatDataType statType) {
+    public void alarm(Date jobTime, EcommerceMonitorAlarmConfigDTO config, ETaskStatDataType statType) {
         try {
             Integer intervalMins = config.getIntervalMins();
             //由于任务执行需要时间,保证预警的精确,预警统计向前一段时间(各业务任务的超时时间),此时此段时间的任务可以保证都已统计完毕.
             //好处:预警时间即使每隔1分钟预警,依然可以保证预警的准确.坏处:收到预警消息时间向后延迟了相应时间.
             //如:jobTime=14:11,但是运营商超时时间为600s,则statTime=14:01
             Date statTime = DateUtils.addSeconds(jobTime, -config.getTaskTimeoutSecs());
-            //取得预警原点时间,如:statTime=14:01分,30分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
+            //取得预警原点时间,如:statTime=14:01分,30分钟间隔统计一次,则beginTime为14:00.
             Date baseTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
             //判断此时刻是否预警预警过
             String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config.getAlarmType(), statType);
             BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
             if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
-                logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},statType={},alarmType={}已预警,不再预警",
+                logger.info("电商预警,预警定时任务执行jobTime={},baseTime={},statType={},alarmType={}已预警,不再预警",
                         MonitorDateUtils.format(baseTime), JSON.toJSONString(statType), config.getAlarmType());
                 return;
             }
@@ -77,16 +77,16 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             //获取基础数据
             Date startTime = DateUtils.addMinutes(baseTime, -intervalMins);
             Date endTime = baseTime;
-            OperatorAllStatAccessDTO dataDTO = this.getBaseData(jobTime, startTime, endTime, config, statType);
+            EcommerceAllStatAccessDTO dataDTO = this.getBaseData(jobTime, startTime, endTime, config, statType);
             if (dataDTO == null) {
-                logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有运营商的统计数据",
+                logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有运营商的统计数据",
                         MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(endTime));
                 return;
             }
 
-            //获取前7天内,相同时刻运营商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
-            OperatorAllStatAccessDTO compareDTO = getPreviousCompareData(jobTime, baseTime, config, statType);
-            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻baseTime={},获取前n天内,相同时刻所有运营商统计的平均值compareDTO={}",
+            //获取前n天内,相同时刻电商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
+            EcommerceAllStatAccessDTO compareDTO = getPreviousCompareData(jobTime, baseTime, config, statType);
+            logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻baseTime={},获取前n天内,相同时刻所有运营商统计的平均值compareDTO={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(compareDTO));
             if (compareDTO == null) {
                 return;
@@ -94,87 +94,52 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
 
             //获取需要预警的数据信息
             List<TaskStatAccessAlarmMsgDTO> msgList = getAlarmMsgList(dataDTO, compareDTO, config);
-            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻baseTime={},所有运营商统计需要预警的数据信息msgList={}",
+            logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻baseTime={},所有运营商统计需要预警的数据信息msgList={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(msgList));
             if (CollectionUtils.isEmpty(msgList)) {
                 return;
             }
             //发送预警
             alarmMsg(msgList, jobTime, startTime, endTime, config, statType);
+
         } catch (Exception e) {
-            logger.error("运营商监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
+            logger.error("电商预警,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
         }
 
     }
 
-    private OperatorAllStatAccessDTO getBaseData(Date jobTime, Date startTime, Date endTime, OperatorMonitorAlarmConfigDTO config, ETaskStatDataType statType) {
-        OperatorAllStatAccessCriteria criteria = new OperatorAllStatAccessCriteria();
-        criteria.createCriteria().andDataTypeEqualTo(statType.getCode())
-                .andAppIdEqualTo(config.getAppId())
-                .andDataTimeGreaterThanOrEqualTo(startTime)
-                .andDataTimeLessThan(endTime);
-        List<OperatorAllStatAccess> list = operatorAllStatAccessMapper.selectByExample(criteria);
-        if (CollectionUtils.isEmpty(list)) {
-            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有运营商的统计数据list={}",
-                    MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(endTime), JSON.toJSONString(list));
-            return null;
-        }
-        OperatorAllStatAccess operatorAllStatAccess = list.get(0);
-        OperatorAllStatAccessDTO dataDTO = DataConverterUtils.convert(operatorAllStatAccess, OperatorAllStatAccessDTO.class);
-        int entryCount = 0, confirmMobileCount = 0, startLoginCount = 0, loginSuccessCount = 0,
-                crawlSuccessCount = 0, processSuccessCount = 0, callbackSuccessCount = 0;
-        for (OperatorAllStatAccess item : list) {
-            entryCount = entryCount + item.getEntryCount();
-            confirmMobileCount = confirmMobileCount + item.getConfirmMobileCount();
-            startLoginCount = startLoginCount + item.getStartLoginCount();
-            loginSuccessCount = loginSuccessCount + item.getLoginSuccessCount();
-            crawlSuccessCount = crawlSuccessCount + item.getCrawlSuccessCount();
-            processSuccessCount = processSuccessCount + item.getProcessSuccessCount();
-            callbackSuccessCount = callbackSuccessCount + item.getCallbackSuccessCount();
-        }
-        dataDTO.setEntryCount(entryCount);
-        dataDTO.setConfirmMobileCount(confirmMobileCount);
-        dataDTO.setStartLoginCount(startLoginCount);
-        dataDTO.setLoginSuccessCount(loginSuccessCount);
-        dataDTO.setCrawlSuccessCount(crawlSuccessCount);
-        dataDTO.setProcessSuccessCount(processSuccessCount);
-        dataDTO.setCallbackSuccessCount(callbackSuccessCount);
-        dataDTO.setConfirmMobileConversionRate(calcRate(confirmMobileCount, entryCount));
-        dataDTO.setLoginConversionRate(calcRate(startLoginCount, confirmMobileCount));
-        dataDTO.setLoginSuccessRate(calcRate(loginSuccessCount, startLoginCount));
-        dataDTO.setCrawlSuccessRate(calcRate(crawlSuccessCount, loginSuccessCount));
-        dataDTO.setProcessSuccessRate(calcRate(processSuccessCount, crawlSuccessCount));
-        dataDTO.setCallbackSuccessRate(calcRate(callbackSuccessCount, processSuccessCount));
-        dataDTO.setWholeConversionRate(calcRate(callbackSuccessCount, entryCount));
-        return dataDTO;
-    }
-
-    private void alarmMsg(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
-                          OperatorMonitorAlarmConfigDTO config, ETaskStatDataType statType) {
+    private void alarmMsg(List<TaskStatAccessAlarmMsgDTO> msgList,
+                          Date jobTime,
+                          Date startTime,
+                          Date endTime,
+                          EcommerceMonitorAlarmConfigDTO config,
+                          ETaskStatDataType statType) {
         String baseTile;
         String mailSwitch = config.getMailAlarmSwitch();
         String weChatSwitch = config.getWeChatAlarmSwitch();
         if (ETaskStatDataType.TASK.equals(statType)) {
-            baseTile = "【总】运营商监控(按任务数统计)";
+            baseTile = "【总】电商监控(按任务数统计)";
         } else {
-            baseTile = "【总】运营商监控(按人数统计)";
+            baseTile = "【总】电商监控(按人数统计)";
 
         }
         if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
             String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile);
             String title = generateTitle(baseTile);
-            alarmMessageProducer.sendMail4OperatorMonitor(title, mailDataBody, jobTime);
+            alarmMessageProducer.sendMail(title, mailDataBody, MailEnum.HTML_MAIL);
         } else {
-            logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
+            logger.info("电商预警,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
 
         }
         if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
             String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile);
-            alarmMessageProducer.sendWebChart4OperatorMonitor(weChatBody, jobTime);
+            alarmMessageProducer.sendWebChart(weChatBody);
         } else {
-            logger.info("运营商监控,预警定时任务执行jobTime={},发送微信开关已关闭", MonitorDateUtils.format(jobTime));
+            logger.info("电商预警,预警定时任务执行jobTime={},发送微信开关已关闭", MonitorDateUtils.format(jobTime));
         }
+
     }
+
 
     private String generateTitle(String baseTile) {
         return "saas-" + diamondConfig.getMonitorEnvironment() + baseTile + "发生预警";
@@ -228,53 +193,18 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         return buffer.toString();
     }
 
-    /**
-     * 获取需要预警的数据信息
-     *
-     * @param dataDTO
-     * @param compareDTO
-     * @param config
-     * @return
-     */
-    private List<TaskStatAccessAlarmMsgDTO> getAlarmMsgList(OperatorAllStatAccessDTO dataDTO,
-                                                            OperatorAllStatAccessDTO compareDTO,
-                                                            OperatorMonitorAlarmConfigDTO config) {
+    private List<TaskStatAccessAlarmMsgDTO> getAlarmMsgList(EcommerceAllStatAccessDTO dataDTO,
+                                                            EcommerceAllStatAccessDTO compareDTO,
+                                                            EcommerceMonitorAlarmConfigDTO config) {
         List<TaskStatAccessAlarmMsgDTO> msgList = Lists.newArrayList();
         Integer previousDays = config.getPreviousDays();
 
-        BigDecimal confirmMobileCompareVal = compareDTO.getPreviousConfirmMobileConversionRate().multiply(new BigDecimal(config.getConfirmMobileConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
         BigDecimal loginConversionCompareVal = compareDTO.getPreviousLoginConversionRate().multiply(new BigDecimal(config.getLoginConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
         BigDecimal loginSuccessCompareVal = compareDTO.getPreviousLoginSuccessRate().multiply(new BigDecimal(config.getLoginSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
         BigDecimal crawlCompareVal = compareDTO.getPreviousCrawlSuccessRate().multiply(new BigDecimal(config.getCrawlSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
         BigDecimal processCompareVal = compareDTO.getPreviousProcessSuccessRate().multiply(new BigDecimal(config.getProcessSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
         BigDecimal callbackCompareVal = compareDTO.getPreviousCallbackSuccessRate().multiply(new BigDecimal(config.getCallbackSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
         BigDecimal wholeConversionCompareVal = compareDTO.getPreviousWholeConversionRate().multiply(new BigDecimal(config.getWholeConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-
-        if (dataDTO.getConfirmMobileConversionRate().compareTo(confirmMobileCompareVal) < 0) {//确认手机转化率小于前7天平均值
-            TaskStatAccessAlarmMsgDTO msg = new TaskStatAccessAlarmMsgDTO();
-            msg.setAlarmDesc("确认手机转化率低于前" + previousDays + "天平均值的" + config.getConfirmMobileConversionRate() + "%");
-            msg.setAlarmSimpleDesc("确认手机");
-            msg.setValue(dataDTO.getConfirmMobileConversionRate());
-            msg.setThreshold(confirmMobileCompareVal);
-            String valueDesc = new StringBuilder()
-                    .append(dataDTO.getConfirmMobileConversionRate()).append("%").append(" ").append("(")
-                    .append(dataDTO.getConfirmMobileCount()).append("/")
-                    .append(dataDTO.getEntryCount()).append(")").toString();
-            msg.setValueDesc(valueDesc);
-            String thresholdDesc = new StringBuilder()
-                    .append(confirmMobileCompareVal).append("%").append(" ").append("(")
-                    .append(compareDTO.getPreviousConfirmMobileAvgCount()).append("/")
-                    .append(compareDTO.getPreviousEntryAvgCount()).append("*")
-                    .append(new BigDecimal(config.getConfirmMobileConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
-            msg.setThresholdDesc(thresholdDesc);
-            if (BigDecimal.ZERO.compareTo(confirmMobileCompareVal) == 0) {
-                msg.setOffset(BigDecimal.ZERO);
-            } else {
-                BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getConfirmMobileConversionRate().divide(confirmMobileCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
-                msg.setOffset(value);
-            }
-            msgList.add(msg);
-        }
 
         if (dataDTO.getLoginConversionRate().compareTo(loginConversionCompareVal) < 0) {//登录转化率小于前7天平均值
             TaskStatAccessAlarmMsgDTO msg = new TaskStatAccessAlarmMsgDTO();
@@ -285,12 +215,12 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             String valueDesc = new StringBuilder()
                     .append(dataDTO.getLoginConversionRate()).append("%").append(" ").append("(")
                     .append(dataDTO.getLoginSuccessCount()).append("/")
-                    .append(dataDTO.getConfirmMobileCount()).append(")").toString();
+                    .append(dataDTO.getEntryCount()).append(")").toString();
             msg.setValueDesc(valueDesc);
             String thresholdDesc = new StringBuilder()
                     .append(loginConversionCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousStartLoginAvgCount()).append("/")
-                    .append(compareDTO.getPreviousConfirmMobileAvgCount()).append("*")
+                    .append(compareDTO.getEntryCount()).append("*")
                     .append(new BigDecimal(config.getLoginConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
             msg.setThresholdDesc(thresholdDesc);
 
@@ -434,32 +364,24 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         return msgList;
     }
 
-
-    /**
-     * 获取前7天内,相同时刻运营商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
-     *
-     * @param jobTime
-     * @param baseTime
-     * @param config
-     * @param statType @return
-     * @return
-     */
-    private OperatorAllStatAccessDTO getPreviousCompareData(Date jobTime, Date baseTime,
-                                                            OperatorMonitorAlarmConfigDTO config, ETaskStatDataType statType) {
+    private EcommerceAllStatAccessDTO getPreviousCompareData(Date jobTime,
+                                                             Date baseTime,
+                                                             EcommerceMonitorAlarmConfigDTO config,
+                                                             ETaskStatDataType statType) {
         Integer previousDays = config.getPreviousDays();
         List<Date> previousOClockList = MonitorDateUtils.getPreviousOClockTime(baseTime, previousDays);
 
-        List<OperatorAllStatAccessDTO> previousDTOList = Lists.newArrayList();
+        List<EcommerceAllStatAccessDTO> previousDTOList = Lists.newArrayList();
         for (Date previousOClock : previousOClockList) {
             Date startTime = DateUtils.addMinutes(previousOClock, -config.getIntervalMins());
             Date endTime = previousOClock;
-            OperatorAllStatAccessDTO dto = this.getBaseData(jobTime, startTime, endTime, config, statType);
+            EcommerceAllStatAccessDTO dto = this.getBaseData(jobTime, startTime, endTime, config, statType);
             if (dto != null) {
                 previousDTOList.add(dto);
             }
         }
         if (CollectionUtils.isEmpty(previousDTOList)) {
-            logger.info("运营商监控,预警定时任务执行jobTime={},,在此时间前{}天内,未查询到所有运营商统计数据previousOClockList={},list={}",
+            logger.info("电商预警,预警定时任务执行jobTime={},,在此时间前{}天内,未查询到所有运营商统计数据previousOClockList={},list={}",
                     MonitorDateUtils.format(jobTime), previousDays, JSON.toJSONString(previousOClockList), JSON.toJSONString(previousDTOList));
             return null;
         }
@@ -471,18 +393,16 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                     .collect(Collectors.toList());
             previousDTOList.remove(previousDTOList.size() - 1);
         }
-        BigDecimal previousConfirmMobileConversionRateCount = BigDecimal.ZERO;
         BigDecimal previousLoginConversionRateCount = BigDecimal.ZERO;
         BigDecimal previousLoginSuccessRateCount = BigDecimal.ZERO;
         BigDecimal previousCrawlSuccessRateCount = BigDecimal.ZERO;
         BigDecimal previousProcessSuccessRateCount = BigDecimal.ZERO;
         BigDecimal previousCallbackSuccessRateCount = BigDecimal.ZERO;
         BigDecimal previousWholeConversionRateCount = BigDecimal.ZERO;
-        Integer previousEntryCount = 0, previousConfirmMobileCount = 0, previousStartLoginCount = 0, previousLoginSuccessCount = 0,
+        Integer previousEntryCount = 0, previousStartLoginCount = 0, previousLoginSuccessCount = 0,
                 previousCrawlSuccessCount = 0, previousProcessSuccessCount = 0, previousCallbackSuccessCount = 0;
 
-        for (OperatorAllStatAccessDTO previousDTO : previousDTOList) {
-            previousConfirmMobileConversionRateCount = previousConfirmMobileConversionRateCount.add(previousDTO.getConfirmMobileConversionRate());
+        for (EcommerceAllStatAccessDTO previousDTO : previousDTOList) {
             previousLoginConversionRateCount = previousLoginConversionRateCount.add(previousDTO.getLoginConversionRate());
             previousLoginSuccessRateCount = previousLoginSuccessRateCount.add(previousDTO.getLoginSuccessRate());
             previousCrawlSuccessRateCount = previousCrawlSuccessRateCount.add(previousDTO.getCrawlSuccessRate());
@@ -491,32 +411,74 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             previousWholeConversionRateCount = previousWholeConversionRateCount.add(previousDTO.getWholeConversionRate());
 
             previousEntryCount = previousEntryCount + previousDTO.getEntryCount();
-            previousConfirmMobileCount = previousConfirmMobileCount + previousDTO.getConfirmMobileCount();
             previousStartLoginCount = previousStartLoginCount + previousDTO.getStartLoginCount();
             previousLoginSuccessCount = previousLoginSuccessCount + previousDTO.getLoginSuccessCount();
             previousCrawlSuccessCount = previousCrawlSuccessCount + previousDTO.getCrawlSuccessCount();
             previousProcessSuccessCount = previousProcessSuccessCount + previousDTO.getProcessSuccessCount();
             previousCallbackSuccessCount = previousCallbackSuccessCount + previousDTO.getCallbackSuccessCount();
         }
-        OperatorAllStatAccessDTO compareDto = new OperatorAllStatAccessDTO();
-        compareDto.setPreviousConfirmMobileConversionRate(previousConfirmMobileConversionRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousLoginConversionRate(previousLoginConversionRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousLoginSuccessRate(previousLoginSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousCrawlSuccessRate(previousCrawlSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousProcessSuccessRate(previousProcessSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousCallbackSuccessRate(previousCallbackSuccessRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousWholeConversionRate(previousWholeConversionRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
+        EcommerceAllStatAccessDTO compareDto = new EcommerceAllStatAccessDTO();
+        BigDecimal size = BigDecimal.valueOf(previousDTOList.size());
+        compareDto.setPreviousLoginConversionRate(this.calcRate(previousLoginConversionRateCount, size, 2));
+        compareDto.setPreviousLoginSuccessRate(this.calcRate(previousLoginSuccessRateCount, size, 2));
+        compareDto.setPreviousCrawlSuccessRate(this.calcRate(previousCrawlSuccessRateCount, size, 2));
+        compareDto.setPreviousProcessSuccessRate(this.calcRate(previousProcessSuccessRateCount, size, 2));
+        compareDto.setPreviousCallbackSuccessRate(this.calcRate(previousCallbackSuccessRateCount, size, 2));
+        compareDto.setPreviousWholeConversionRate(this.calcRate(previousWholeConversionRateCount, size, 2));
 
-        compareDto.setPreviousEntryAvgCount(BigDecimal.valueOf(previousEntryCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousConfirmMobileAvgCount(BigDecimal.valueOf(previousConfirmMobileCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousStartLoginAvgCount(BigDecimal.valueOf(previousStartLoginCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousLoginSuccessAvgCount(BigDecimal.valueOf(previousLoginSuccessCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousCrawlSuccessAvgCount(BigDecimal.valueOf(previousCrawlSuccessCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousProcessSuccessAvgCount(BigDecimal.valueOf(previousProcessSuccessCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
-        compareDto.setPreviousCallbackSuccessAvgCount(BigDecimal.valueOf(previousCallbackSuccessCount).divide(BigDecimal.valueOf(previousDTOList.size()), 1, BigDecimal.ROUND_HALF_UP));
+        compareDto.setPreviousEntryAvgCount(this.calcRate(BigDecimal.valueOf(previousEntryCount), size, 1));
+        compareDto.setPreviousStartLoginAvgCount(this.calcRate(BigDecimal.valueOf(previousStartLoginCount), size, 1));
+        compareDto.setPreviousLoginSuccessAvgCount(this.calcRate(BigDecimal.valueOf(previousLoginSuccessCount), size, 1));
+        compareDto.setPreviousCrawlSuccessAvgCount(this.calcRate(BigDecimal.valueOf(previousCrawlSuccessCount), size, 1));
+        compareDto.setPreviousProcessSuccessAvgCount(this.calcRate(BigDecimal.valueOf(previousProcessSuccessCount), size, 1));
+        compareDto.setPreviousCallbackSuccessAvgCount(this.calcRate(BigDecimal.valueOf(previousCallbackSuccessCount), size, 1));
 
         return compareDto;
     }
+
+    private EcommerceAllStatAccessDTO getBaseData(Date jobTime,
+                                                  Date startTime,
+                                                  Date endTime,
+                                                  EcommerceMonitorAlarmConfigDTO config,
+                                                  ETaskStatDataType statType) {
+        EcommerceAllStatAccessCriteria criteria = new EcommerceAllStatAccessCriteria();
+        criteria.createCriteria().andDataTypeEqualTo(statType.getCode())
+                .andAppIdEqualTo(config.getAppId())
+                .andDataTimeGreaterThanOrEqualTo(startTime)
+                .andDataTimeLessThan(endTime);
+        List<EcommerceAllStatAccess> list = ecommerceAllStatAccessMapper.selectByExample(criteria);
+        if (CollectionUtils.isEmpty(list)) {
+            logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有运营商的统计数据list={}",
+                    MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(endTime), JSON.toJSONString(list));
+            return null;
+        }
+        EcommerceAllStatAccess ecommerceAllStatAccess = list.get(0);
+        EcommerceAllStatAccessDTO dataDTO = DataConverterUtils.convert(ecommerceAllStatAccess, EcommerceAllStatAccessDTO.class);
+        int entryCount = 0, confirmMobileCount = 0, startLoginCount = 0, loginSuccessCount = 0,
+                crawlSuccessCount = 0, processSuccessCount = 0, callbackSuccessCount = 0;
+        for (EcommerceAllStatAccess item : list) {
+            entryCount = entryCount + item.getEntryCount();
+            startLoginCount = startLoginCount + item.getStartLoginCount();
+            loginSuccessCount = loginSuccessCount + item.getLoginSuccessCount();
+            crawlSuccessCount = crawlSuccessCount + item.getCrawlSuccessCount();
+            processSuccessCount = processSuccessCount + item.getProcessSuccessCount();
+            callbackSuccessCount = callbackSuccessCount + item.getCallbackSuccessCount();
+        }
+        dataDTO.setEntryCount(entryCount);
+        dataDTO.setStartLoginCount(startLoginCount);
+        dataDTO.setLoginSuccessCount(loginSuccessCount);
+        dataDTO.setCrawlSuccessCount(crawlSuccessCount);
+        dataDTO.setProcessSuccessCount(processSuccessCount);
+        dataDTO.setCallbackSuccessCount(callbackSuccessCount);
+        dataDTO.setLoginConversionRate(calcRate(startLoginCount, confirmMobileCount));
+        dataDTO.setLoginSuccessRate(calcRate(loginSuccessCount, startLoginCount));
+        dataDTO.setCrawlSuccessRate(calcRate(crawlSuccessCount, loginSuccessCount));
+        dataDTO.setProcessSuccessRate(calcRate(processSuccessCount, crawlSuccessCount));
+        dataDTO.setCallbackSuccessRate(calcRate(callbackSuccessCount, processSuccessCount));
+        dataDTO.setWholeConversionRate(calcRate(callbackSuccessCount, entryCount));
+        return dataDTO;
+    }
+
 
     /**
      * 计算比率
@@ -534,4 +496,11 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                 .divide(BigDecimal.valueOf(b, 2), 2, BigDecimal.ROUND_HALF_UP);
         return rate;
     }
+
+    private BigDecimal calcRate(BigDecimal a, BigDecimal b, int scale) {
+        BigDecimal rate = a.divide(b, scale, BigDecimal.ROUND_HALF_UP);
+        return rate;
+    }
+
+
 }
