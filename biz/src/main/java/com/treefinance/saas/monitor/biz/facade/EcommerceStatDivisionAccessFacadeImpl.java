@@ -53,6 +53,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
         List<EcommerceAllDetailRO> result = new ArrayList<>();
         EcommerceTimeShareDTO ecommerceTimeShareDTO = DataConverterUtils.convert(request, EcommerceTimeShareDTO.class);
         List<EcommerceAllStatAccess> allStatAccessList = ecommerceDetailAccessDao.getEcommerceAllDetailList(ecommerceTimeShareDTO);
+
         if (CollectionUtils.isEmpty(allStatAccessList)) {
             return MonitorResultBuilder.build(result);
         }
@@ -92,30 +93,33 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
 
         List<EcommerceAllDetailRO> result = new ArrayList<>();
         EcommerceTimeShareDTO ecommerceTimeShareDTO = DataConverterUtils.convert(request, EcommerceTimeShareDTO.class);
-        List<EcommerceAllStatDayAccess> allStatAccessList = ecommerceDetailAccessDao.getEcommerceAllList(ecommerceTimeShareDTO);
-        if (CollectionUtils.isEmpty(allStatAccessList)) {
-            return MonitorResultBuilder.build(result);
+
+        long total = ecommerceDetailAccessDao.countByExample(ecommerceTimeShareDTO);
+        if (total > 0) {
+            List<EcommerceAllStatDayAccess> allStatAccessList = ecommerceDetailAccessDao.getEcommerceAllList(ecommerceTimeShareDTO);
+
+
+            for (EcommerceAllStatDayAccess ecommerceAllStatDayAccess : allStatAccessList) {
+
+                EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatDayAccess, EcommerceAllDetailRO.class);
+                ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getStartLoginCount()));
+                ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getLoginSuccessCount()));
+                ecommerceAllDetailRO.setCrawlSuccessRate(calcRate(ecommerceAllStatDayAccess.getLoginSuccessCount(), ecommerceAllStatDayAccess.getCrawlSuccessCount()));
+                ecommerceAllDetailRO.setProcessSuccessRate(calcRate(ecommerceAllStatDayAccess.getCrawlSuccessCount(), ecommerceAllStatDayAccess.getProcessSuccessCount()));
+                ecommerceAllDetailRO.setCallbackSuccessRate(calcRate(ecommerceAllStatDayAccess.getProcessSuccessCount(), ecommerceAllStatDayAccess.getCallbackSuccessCount()));
+                ecommerceAllDetailRO.setTaskUserRatio(calcRatio(ecommerceAllStatDayAccess.getUserCount(), ecommerceAllStatDayAccess.getTaskCount()));
+                ecommerceAllDetailRO.setWholeConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getCallbackSuccessCount()));
+                result.add(ecommerceAllDetailRO);
+
+
+            }
         }
-        for (EcommerceAllStatDayAccess ecommerceAllStatDayAccess : allStatAccessList) {
-
-            EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatDayAccess, EcommerceAllDetailRO.class);
-            ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getStartLoginCount()));
-            ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getLoginSuccessCount()));
-            ecommerceAllDetailRO.setCrawlSuccessRate(calcRate(ecommerceAllStatDayAccess.getLoginSuccessCount(), ecommerceAllStatDayAccess.getCrawlSuccessCount()));
-            ecommerceAllDetailRO.setProcessSuccessRate(calcRate(ecommerceAllStatDayAccess.getCrawlSuccessCount(), ecommerceAllStatDayAccess.getProcessSuccessCount()));
-            ecommerceAllDetailRO.setCallbackSuccessRate(calcRate(ecommerceAllStatDayAccess.getProcessSuccessCount(), ecommerceAllStatDayAccess.getCallbackSuccessCount()));
-            ecommerceAllDetailRO.setTaskUserRatio(calcRatio(ecommerceAllStatDayAccess.getUserCount(), ecommerceAllStatDayAccess.getTaskCount()));
-            ecommerceAllDetailRO.setWholeConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getCallbackSuccessCount()));
-            result.add(ecommerceAllDetailRO);
 
 
-        }
+        return MonitorResultBuilder.pageResult(request,result,total);
 
 
-        return MonitorResultBuilder.build(result);
-
-
-    }
+}
 
 
 //    /**

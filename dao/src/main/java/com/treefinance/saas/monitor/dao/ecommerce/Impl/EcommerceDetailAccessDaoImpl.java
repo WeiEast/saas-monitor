@@ -41,7 +41,6 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         String appId = request.getAppId();
 
 
-
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
         String dateString = formatter1.format(request.getDataDate());
@@ -68,19 +67,42 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         String appId = request.getAppId();
 
 
-
         logger.info("查询电商日监控整体统计数据 dao层,传入的参数为{}", request.toString());
         EcommerceAllStatDayAccessCriteria ecommerceAllStatDayAccessCriteria = new EcommerceAllStatDayAccessCriteria();
+
 
         ecommerceAllStatDayAccessCriteria.setOrderByClause("dataTime desc");
         ecommerceAllStatDayAccessCriteria.setLimit(request.getPageSize());
         ecommerceAllStatDayAccessCriteria.setOffset(request.getOffset());
         ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+
         List<EcommerceAllStatDayAccess> allStatAccessList = ecommerceAllStatDayAccessMapper.selectByExample(ecommerceAllStatDayAccessCriteria);
 
         return allStatAccessList;
 
 
+    }
+
+    @Override
+    public long countByExample(EcommerceTimeShareDTO ecommerceTimeShareDTO) {
+        Date dataDate = ecommerceTimeShareDTO.getStartDate();
+        Date dataDate2 = ecommerceTimeShareDTO.getEndDate();
+        Byte statType = ecommerceTimeShareDTO.getStatType();
+        String appId = ecommerceTimeShareDTO.getAppId();
+
+
+        EcommerceAllStatDayAccessCriteria ecommerceAllStatDayAccessCriteria = new EcommerceAllStatDayAccessCriteria();
+
+
+        ecommerceAllStatDayAccessCriteria.setOrderByClause("dataTime desc");
+        ecommerceAllStatDayAccessCriteria.setLimit(ecommerceTimeShareDTO.getPageSize());
+        ecommerceAllStatDayAccessCriteria.setOffset(ecommerceTimeShareDTO.getOffset());
+        ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+        long total = ecommerceAllStatDayAccessMapper.countByExample(ecommerceAllStatDayAccessCriteria);
+        logger.info("查询电商日监控整体统计数据 dao层,返回的分页数目为{}", total);
+
+
+        return total;
     }
 
 
