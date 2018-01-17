@@ -13,7 +13,7 @@
 
     <dubbo:consumer check="false"/>
 
-    <dubbo:annotation package="com.treefinance.saas.monitor.facade.service.stat" />
+    <dubbo:annotation package="com.treefinance.saas.monitor.facade.service.stat"/>
 
     <!--生产者 -->
     <dubbo:service ref="merchantStatAccessFacade"
@@ -25,9 +25,6 @@
                    version="1.0.0"/>
     <dubbo:service ref="operatorStatAccessFacade"
                    interface="com.treefinance.saas.monitor.facade.service.stat.OperatorStatAccessFacade"
-                   version="1.0.0"/>
-    <dubbo:service ref="ecommerceStatAccessFacade"
-                   interface="com.treefinance.saas.monitor.facade.service.stat.EcommerceDayStatAccessFacade"
                    version="1.0.0"/>
     <dubbo:service ref="mailFacade" interface="com.treefinance.saas.monitor.facade.service.MailFacade" version="1.0.0"/>
     <dubbo:service ref="ecommerceFacade" interface="com.treefinance.saas.monitor.facade.service.EcommerceFacade"
