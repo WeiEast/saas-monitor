@@ -1,7 +1,7 @@
 package com.treefinance.saas.monitor.biz.service;
 
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 
 import java.util.Date;
 
@@ -17,5 +17,5 @@ public interface OperatorMonitorAllAlarmService {
      * @param config
      * @param statType
      */
-    void alarm(Date jobTime, OperatorMonitorAlarmConfigDTO config, ETaskOperatorStatType statType);
+    void alarm(Date jobTime, OperatorMonitorAlarmConfigDTO config, ETaskStatDataType statType);
 }

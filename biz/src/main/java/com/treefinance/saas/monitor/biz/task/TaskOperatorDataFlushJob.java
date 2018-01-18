@@ -7,7 +7,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.treefinance.commonservice.uid.UidGenerator;
-import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.OperatorStatAccessUpdateService;
@@ -16,11 +15,11 @@ import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatDayAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatDayAccessDTO;
-import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.common.utils.MonitorUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,10 +49,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        String saasEnv = Constants.SAAS_ENV;
-        logger.info("定时任务执行,当前环境SAAS-ENV={}", saasEnv);
-        if (StringUtils.isNotBlank(saasEnv)
-                && StringUtils.equalsIgnoreCase(saasEnv, com.treefinance.saas.monitor.common.domain.Constants.SAAS_ENV_PRE_PRODUCT)) {
+        if (MonitorUtils.isPreProductContext()) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
         }
@@ -74,22 +70,22 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
                     for (String appId : appIdSet) {
 
                         //保存所有运营商特定统计时间统计数据
-                        saveAllIntervalData(redisOperations, jobTime, appId, ETaskOperatorStatType.TASK);
+                        saveAllIntervalData(redisOperations, jobTime, appId, ETaskStatDataType.TASK);
                         //保存所有运营商日统计数据
-                        saveAllDayData(redisOperations, jobTime, appId, ETaskOperatorStatType.TASK);
+                        saveAllDayData(redisOperations, jobTime, appId, ETaskStatDataType.TASK);
                         //保存运营商特定统计时间统计数据
-                        saveIntervalData(redisOperations, jobTime, groupCodeSet, appId, ETaskOperatorStatType.TASK);
+                        saveIntervalData(redisOperations, jobTime, groupCodeSet, appId, ETaskStatDataType.TASK);
                         //保存运营商日统计数据
-                        saveDayData(redisOperations, jobTime, groupCodeSet, appId, ETaskOperatorStatType.TASK);
+                        saveDayData(redisOperations, jobTime, groupCodeSet, appId, ETaskStatDataType.TASK);
 
                         //保存所有运营商特定统计时间统计数据
-                        saveAllIntervalData(redisOperations, jobTime, appId, ETaskOperatorStatType.USER);
+                        saveAllIntervalData(redisOperations, jobTime, appId, ETaskStatDataType.USER);
                         //保存所有运营商日统计数据
-                        saveAllDayData(redisOperations, jobTime, appId, ETaskOperatorStatType.USER);
+                        saveAllDayData(redisOperations, jobTime, appId, ETaskStatDataType.USER);
                         //保存运营商特定统计时间统计数据
-                        saveIntervalData(redisOperations, jobTime, groupCodeSet, appId, ETaskOperatorStatType.USER);
+                        saveIntervalData(redisOperations, jobTime, groupCodeSet, appId, ETaskStatDataType.USER);
                         //保存运营商日统计数据
-                        saveDayData(redisOperations, jobTime, groupCodeSet, appId, ETaskOperatorStatType.USER);
+                        saveDayData(redisOperations, jobTime, groupCodeSet, appId, ETaskStatDataType.USER);
                     }
 
                     return null;
@@ -102,7 +98,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
         }
     }
 
-    private void saveAllIntervalData(RedisOperations redisOperations, Date jobTime, String appId, ETaskOperatorStatType statType) {
+    private void saveAllIntervalData(RedisOperations redisOperations, Date jobTime, String appId, ETaskStatDataType statType) {
         try {
             String dayKey = TaskOperatorMonitorKeyHelper.keyOfDayOnAllStat(jobTime, appId, statType);
             Set<String> redisStatDataTimeStrSets = redisOperations.opsForSet().members(dayKey);
@@ -193,7 +189,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
         }
     }
 
-    private void saveAllDayData(RedisOperations redisOperations, Date jobTime, String appId, ETaskOperatorStatType statType) {
+    private void saveAllDayData(RedisOperations redisOperations, Date jobTime, String appId, ETaskStatDataType statType) {
         try {
             Date redisStatDataTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(jobTime, diamondConfig.getOperatorMonitorIntervalMinutes());
             String hashKey = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(redisStatDataTime, appId, statType);
@@ -256,7 +252,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
         }
     }
 
-    private void saveDayData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet, String appId, ETaskOperatorStatType statType) {
+    private void saveDayData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet, String appId, ETaskStatDataType statType) {
         try {
             if (CollectionUtils.isEmpty(groupCodeSet)) {
                 return;
@@ -316,7 +312,7 @@ public class TaskOperatorDataFlushJob implements SimpleJob {
 
     }
 
-    private void saveIntervalData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet, String appId, ETaskOperatorStatType statType) {
+    private void saveIntervalData(RedisOperations redisOperations, Date jobTime, Set<String> groupCodeSet, String appId, ETaskStatDataType statType) {
         try {
             if (CollectionUtils.isEmpty(groupCodeSet)) {
                 return;

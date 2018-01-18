@@ -7,7 +7,7 @@ import com.treefinance.saas.assistant.model.TaskOperatorMonitorMessage;
 import com.treefinance.saas.grapserver.facade.model.enums.ETaskOperatorMonitorStatus;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
-import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class TaskOperatorMonitorMessageProcessor {
      * @param message
      * @param status
      */
-    public void updateIntervalData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
+    public void updateIntervalData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskStatDataType statType) {
         Map<String, String> statMap = Maps.newHashMap();
         statMap.put("statusType", status + "");
         String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeIntervalStat(intervalTime, message.getGroupCode(), message.getAppId(), statType);
@@ -98,7 +98,7 @@ public class TaskOperatorMonitorMessageProcessor {
      * @param message
      * @param status
      */
-    public void updateDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
+    public void updateDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskStatDataType statType) {
         Map<String, String> statMap = Maps.newHashMap();
         statMap.put("statusType", status + "");
         String key = TaskOperatorMonitorKeyHelper.keyOfGroupCodeDayStat(intervalTime, message.getGroupCode(), message.getAppId(), statType);
@@ -150,7 +150,7 @@ public class TaskOperatorMonitorMessageProcessor {
      * @param message
      * @param status
      */
-    public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
+    public void updateAllIntervalData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskStatDataType statType) {
         Map<String, String> statMap = Maps.newHashMap();
         statMap.put("statusType", status + "");
         String key = TaskOperatorMonitorKeyHelper.keyOfAllIntervalStat(intervalTime, message.getAppId(), statType);
@@ -197,7 +197,7 @@ public class TaskOperatorMonitorMessageProcessor {
      * @param message
      * @param status
      */
-    public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskOperatorStatType statType) {
+    public void updateAllDayData(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status, ETaskStatDataType statType) {
         Map<String, String> statMap = Maps.newHashMap();
         statMap.put("statusType", status + "");
         String key = TaskOperatorMonitorKeyHelper.keyOfAllDayStat(intervalTime, message.getAppId(), statType);
@@ -269,7 +269,7 @@ public class TaskOperatorMonitorMessageProcessor {
         }
     }
 
-    public void updateAllIntervalTaskUserCount(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorStatType statType) {
+    public void updateAllIntervalTaskUserCount(Date intervalTime, TaskOperatorMonitorMessage message, ETaskStatDataType statType) {
         String key = TaskOperatorMonitorKeyHelper.keyOfTaskUserCountAllIntervalStat(intervalTime, message.getAppId(), statType);
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
@@ -287,7 +287,7 @@ public class TaskOperatorMonitorMessageProcessor {
         });
     }
 
-    public void updateAllDayTaskUserCount(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorStatType statType) {
+    public void updateAllDayTaskUserCount(Date intervalTime, TaskOperatorMonitorMessage message, ETaskStatDataType statType) {
         String key = TaskOperatorMonitorKeyHelper.keyOfTaskUserCountAllDayStat(intervalTime, message.getAppId(), statType);
         redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
             @Override
@@ -310,7 +310,7 @@ public class TaskOperatorMonitorMessageProcessor {
      *
      * @return
      */
-    private Boolean isStatUserCountAllInterval(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorStatType statType) {
+    private Boolean isStatUserCountAllInterval(Date intervalTime, TaskOperatorMonitorMessage message, ETaskStatDataType statType) {
         RedisTemplate<String, String> redisTemplate = redisDao.getRedisTemplate();
         StringBuilder sb = new StringBuilder();
         String uniqueValue = sb.append(message.getAppId()).append("-").append(message.getUniqueId()).toString();
@@ -346,7 +346,7 @@ public class TaskOperatorMonitorMessageProcessor {
         return true;
     }
 
-    private Boolean isStatUserCountAllDay(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorStatType statType) {
+    private Boolean isStatUserCountAllDay(Date intervalTime, TaskOperatorMonitorMessage message, ETaskStatDataType statType) {
         RedisTemplate<String, String> redisTemplate = redisDao.getRedisTemplate();
         StringBuilder sb = new StringBuilder();
         String uniqueValue = sb.append(message.getAppId()).append("-").append(message.getUniqueId()).toString();

@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
-import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
@@ -13,7 +12,7 @@ import com.treefinance.saas.monitor.biz.service.TaskExistMonitorAlarmService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoSuccessMinsConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
-import org.apache.commons.lang3.StringUtils;
+import com.treefinance.saas.monitor.common.utils.MonitorUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,10 +44,7 @@ public class NoTaskAlarmJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        String saasEnv = Constants.SAAS_ENV;
-        logger.info("定时任务执行,当前环境SAAS-ENV={}", saasEnv);
-        if (StringUtils.isNotBlank(saasEnv)
-                && StringUtils.equalsIgnoreCase(saasEnv, com.treefinance.saas.monitor.common.domain.Constants.SAAS_ENV_PRE_PRODUCT)) {
+        if (MonitorUtils.isPreProductContext()) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
         }
