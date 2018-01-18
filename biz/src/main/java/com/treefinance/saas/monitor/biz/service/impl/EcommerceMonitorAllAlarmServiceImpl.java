@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.datatrees.notify.async.body.mail.MailEnum;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
@@ -18,6 +19,7 @@ import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.EcommerceAllStatAccessMapper;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
@@ -62,7 +64,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             Date baseTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
             //判断此时刻是否预警预警过
-            String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config.getAlarmType(), statType);
+            String alarmTimeKey = EcommerceAlarmKeyHelper.keyOfAlarmTimeLog(baseTime, config.getAlarmType(), statType);
             BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
             if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
                 logger.info("电商预警,预警定时任务执行jobTime={},baseTime={},statType={},alarmType={}已预警,不再预警",
@@ -500,6 +502,16 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
     private BigDecimal calcRate(BigDecimal a, BigDecimal b, int scale) {
         BigDecimal rate = a.divide(b, scale, BigDecimal.ROUND_HALF_UP);
         return rate;
+    }
+
+    private static class EcommerceAlarmKeyHelper {
+        private static final String KEY_PREFIX = "saas-monitor-task-ecommerce-monitor";
+        private static final String KEY_ALARM_TIMES = "key-alarm-times";
+
+        public static String keyOfAlarmTimeLog(Date baseTime, Integer alarmType, ETaskStatDataType statType) {
+            String intervalDateStr = DateFormatUtils.format(baseTime, "yyyy-MM-dd");
+            return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, alarmType, statType);
+        }
     }
 
 
