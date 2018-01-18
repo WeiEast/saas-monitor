@@ -100,6 +100,12 @@ public class DiamondConfig {
     @DAttribute(key = "monitor.http.interval.minutes")
     private Integer monitorHttpIntervalMinutes;
 
+    /**
+     * 电商预警配置
+     */
+    @DAttribute(key = "ecommerce.monitor.alarm.config")
+    private String ecommerceMonitorAlarmConfig;
+
     // 预警消息，group
     @DAttribute(key = "monitor.alarm.group.name")
     private String monitorAlarmGroupName;
@@ -403,5 +409,13 @@ public class DiamondConfig {
 
     public void setTaskExistAlarmSmsSwitch(String taskExistAlarmSmsSwitch) {
         this.taskExistAlarmSmsSwitch = taskExistAlarmSmsSwitch;
+    }
+
+    public String getEcommerceMonitorAlarmConfig() {
+        return ecommerceMonitorAlarmConfig;
+    }
+
+    public void setEcommerceMonitorAlarmConfig(String ecommerceMonitorAlarmConfig) {
+        this.ecommerceMonitorAlarmConfig = ecommerceMonitorAlarmConfig;
     }
 }
