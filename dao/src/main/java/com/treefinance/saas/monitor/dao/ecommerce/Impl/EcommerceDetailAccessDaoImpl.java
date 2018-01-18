@@ -51,7 +51,13 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         logger.info("查询电商日监控分时统计数据 dao层,传入的参数为{}", request.toString());
         EcommerceAllStatAccessCriteria ecommerceAllStatAccessCriteria = new EcommerceAllStatAccessCriteria();
         ecommerceAllStatAccessCriteria.setOrderByClause("dataTime desc");
-        ecommerceAllStatAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+        if (("virtual_total_stat_appId").equals(appId)) {
+            ecommerceAllStatAccessCriteria.createCriteria().andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+
+        } else {
+            ecommerceAllStatAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+
+        }
         List<EcommerceAllStatAccess> allStatAccessList = ecommerceAllStatAccessMapper.selectByExample(ecommerceAllStatAccessCriteria);
 
         return allStatAccessList;
@@ -75,8 +81,13 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         ecommerceAllStatDayAccessCriteria.setOrderByClause("dataTime desc");
         ecommerceAllStatDayAccessCriteria.setLimit(request.getPageSize());
         ecommerceAllStatDayAccessCriteria.setOffset(request.getOffset());
-        ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
 
+        if (("virtual_total_stat_appId").equals(appId)) {
+            ecommerceAllStatDayAccessCriteria.createCriteria().andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+
+        } else {
+            ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+        }
         List<EcommerceAllStatDayAccess> allStatAccessList = ecommerceAllStatDayAccessMapper.selectByExample(ecommerceAllStatDayAccessCriteria);
 
         return allStatAccessList;
@@ -98,7 +109,13 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         ecommerceAllStatDayAccessCriteria.setOrderByClause("dataTime desc");
         ecommerceAllStatDayAccessCriteria.setLimit(ecommerceTimeShareDTO.getPageSize());
         ecommerceAllStatDayAccessCriteria.setOffset(ecommerceTimeShareDTO.getOffset());
-        ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+
+        if (("virtual_total_stat_appId").equals(appId)) {
+            ecommerceAllStatDayAccessCriteria.createCriteria().andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+
+        } else {
+            ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+        }
         long total = ecommerceAllStatDayAccessMapper.countByExample(ecommerceAllStatDayAccessCriteria);
         logger.info("查询电商日监控整体统计数据 dao层,返回的分页数目为{}", total);
 
