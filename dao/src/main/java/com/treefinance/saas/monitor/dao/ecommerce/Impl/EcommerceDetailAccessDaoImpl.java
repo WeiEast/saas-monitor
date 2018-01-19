@@ -104,7 +104,7 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         ecommerceAllStatDayAccessCriteria.setOffset(ecommerceTimeShareDTO.getOffset());
 
 
-        ecommerceAllStatDayAccessCriteria.createCriteria().andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+        ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
 
 
         long total = ecommerceAllStatDayAccessMapper.countByExample(ecommerceAllStatDayAccessCriteria);
