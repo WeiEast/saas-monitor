@@ -37,8 +37,7 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
     public List<EcommerceAllStatAccess> getEcommerceAllDetailList(EcommerceTimeShareDTO request) {
 
         Date dataDate = request.getDataDate();
-        Byte statType = request.getStatType();
-        String appId = request.getAppId();
+        Byte sourceType = request.getSourceType();
 
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -53,7 +52,9 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         ecommerceAllStatAccessCriteria.setOrderByClause("dataTime desc");
 
 
-        ecommerceAllStatAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+
+
+        ecommerceAllStatAccessCriteria.createCriteria().andAppIdEqualTo(request.getAppId()).andDataTypeEqualTo(request.getStatType()).andSourceTypeEqualTo(request.getSourceType()).andDataTimeBetween(dataDate, dataDate2);
 
         List<EcommerceAllStatAccess> allStatAccessList = ecommerceAllStatAccessMapper.selectByExample(ecommerceAllStatAccessCriteria);
 
@@ -65,11 +66,6 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
     @Override
     public List<EcommerceAllStatDayAccess> getEcommerceAllList(EcommerceTimeShareDTO request) {
 
-        Date dataDate = request.getStartDate();
-        Date dataDate2 = request.getEndDate();
-        Byte statType = request.getStatType();
-        String appId = request.getAppId();
-
 
         logger.info("查询电商日监控整体统计数据 dao层,传入的参数为{}", request.toString());
         EcommerceAllStatDayAccessCriteria ecommerceAllStatDayAccessCriteria = new EcommerceAllStatDayAccessCriteria();
@@ -80,7 +76,8 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         ecommerceAllStatDayAccessCriteria.setOffset(request.getOffset());
 
 
-        ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+        ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(request.getAppId()).andSourceTypeEqualTo(request.getSourceType()).andDataTypeEqualTo(request.getStatType()).andDataTimeBetween(request.getStartDate(), request.getEndDate());
+
         List<EcommerceAllStatDayAccess> allStatAccessList = ecommerceAllStatDayAccessMapper.selectByExample(ecommerceAllStatDayAccessCriteria);
 
         return allStatAccessList;
@@ -90,10 +87,6 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
 
     @Override
     public long countByExample(EcommerceTimeShareDTO ecommerceTimeShareDTO) {
-        Date dataDate = ecommerceTimeShareDTO.getStartDate();
-        Date dataDate2 = ecommerceTimeShareDTO.getEndDate();
-        Byte statType = ecommerceTimeShareDTO.getStatType();
-        String appId = ecommerceTimeShareDTO.getAppId();
 
 
         EcommerceAllStatDayAccessCriteria ecommerceAllStatDayAccessCriteria = new EcommerceAllStatDayAccessCriteria();
@@ -104,7 +97,7 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         ecommerceAllStatDayAccessCriteria.setOffset(ecommerceTimeShareDTO.getOffset());
 
 
-        ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(appId).andDataTypeEqualTo(statType).andDataTimeBetween(dataDate, dataDate2);
+        ecommerceAllStatDayAccessCriteria.createCriteria().andSourceTypeEqualTo(ecommerceTimeShareDTO.getSourceType()).andAppIdEqualTo(ecommerceTimeShareDTO.getAppId()).andDataTypeEqualTo(ecommerceTimeShareDTO.getStatType()).andDataTimeBetween(ecommerceTimeShareDTO.getStartDate(), ecommerceTimeShareDTO.getEndDate());
 
 
         long total = ecommerceAllStatDayAccessMapper.countByExample(ecommerceAllStatDayAccessCriteria);

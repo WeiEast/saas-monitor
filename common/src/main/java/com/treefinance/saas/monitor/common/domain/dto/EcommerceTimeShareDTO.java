@@ -20,6 +20,8 @@ public class EcommerceTimeShareDTO {
 
     private Byte statType;
 
+    private Byte sourceType;
+
     private String appId;
 
     /**
@@ -34,6 +36,14 @@ public class EcommerceTimeShareDTO {
      * 偏移量
      */
     private int offset;
+
+    public Byte getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(Byte sourceType) {
+        this.sourceType = sourceType;
+    }
 
     public int getPageNumber() {
         return pageNumber;
@@ -51,7 +61,7 @@ public class EcommerceTimeShareDTO {
         this.pageSize = pageSize;
     }
 
-    public int getOffset() {
+    public int  getOffset() {
         return offset;
     }
 
@@ -124,6 +134,7 @@ public class EcommerceTimeShareDTO {
                 ", groupCode='" + groupCode + '\'' +
                 ", groupName='" + groupName + '\'' +
                 ", statType=" + statType +
+                ", sourceType=" + sourceType +
                 ", appId='" + appId + '\'' +
                 ", pageNumber=" + pageNumber +
                 ", pageSize=" + pageSize +
