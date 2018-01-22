@@ -44,8 +44,8 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
      */
     @Override
     public MonitorResult<List<EcommerceAllDetailRO>> queryEcommerceAllDetailAccessList(EcommerceDetailAccessRequest request) {
-        if (request == null || request.getDataDate() == null || request.getStatType() == null) {
-            logger.error("查询电商日监控分时统计数据,输入参数为空或者dataDate,statType,appId为空,request={}", JSON.toJSONString(request));
+        if (request == null || request.getDataDate() == null || request.getStatType() == null ||request.getSourceType() == null) {
+            logger.error("查询电商日监控分时统计数据,输入参数为空或者dataDate,statType,sourceType,appId为空,request={}", JSON.toJSONString(request));
             return new MonitorResult("传入参数为空");
         }
         logger.info("查询电商日监控分时统计数据,输入参数request={}", JSON.toJSONString(request));

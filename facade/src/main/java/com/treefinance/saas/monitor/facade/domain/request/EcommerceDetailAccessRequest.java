@@ -25,7 +25,18 @@ public class EcommerceDetailAccessRequest extends PageRequest implements Seriali
 
     private Byte statType;
 
+    private Byte sourceType;
+
     private String appId;
+
+
+    public Byte getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(Byte sourceType) {
+        this.sourceType = sourceType;
+    }
 
     public Date getDataDate() {
         return dataDate;
