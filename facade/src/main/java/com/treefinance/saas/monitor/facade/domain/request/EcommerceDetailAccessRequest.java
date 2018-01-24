@@ -30,6 +30,16 @@ public class EcommerceDetailAccessRequest extends PageRequest implements Seriali
     private String appId;
 
 
+    private Integer intervalMins = 30;
+
+    public Integer getIntervalMins() {
+        return intervalMins;
+    }
+
+    public void setIntervalMins(Integer intervalMins) {
+        this.intervalMins = intervalMins;
+    }
+
     public Byte getSourceType() {
         return sourceType;
     }
