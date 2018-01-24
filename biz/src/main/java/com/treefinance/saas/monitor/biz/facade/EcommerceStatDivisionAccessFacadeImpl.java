@@ -65,6 +65,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
         }
         //调用changeIntervalDataTimeEcommerceAllStatAccess，进行按给定的分钟段统计数据
         List<EcommerceAllStatAccess> changeList = this.changeIntervalDataTimeEcommerceAllStatAccess(allStatAccessList, request.getIntervalMins());
+        changeList = changeList.stream().sorted((o1, o2) -> o2.getDataTime().compareTo(o1.getDataTime())).collect(Collectors.toList());
 
         for (EcommerceAllStatAccess ecommerceAllStatAccess : changeList) {
 
