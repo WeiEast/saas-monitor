@@ -1,8 +1,10 @@
 package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceTimeShareDTO;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.ecommerce.EcommerceDetailAccessDao;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatDayAccess;
@@ -13,13 +15,17 @@ import com.treefinance.saas.monitor.facade.domain.ro.stat.ecommerce.EcommerceAll
 import com.treefinance.saas.monitor.facade.service.stat.EcommerceStatDivisionAccessFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author:guoguoyun
@@ -57,7 +63,10 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
         if (CollectionUtils.isEmpty(allStatAccessList)) {
             return MonitorResultBuilder.build(result);
         }
-        for (EcommerceAllStatAccess ecommerceAllStatAccess : allStatAccessList) {
+        //调用changeIntervalDataTimeEcommerceAllStatAccess，进行按给定的分钟段统计数据
+        List<EcommerceAllStatAccess> changeList = this.changeIntervalDataTimeEcommerceAllStatAccess(allStatAccessList, request.getIntervalMins());
+
+        for (EcommerceAllStatAccess ecommerceAllStatAccess : changeList) {
 
             EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatAccess, EcommerceAllDetailRO.class);
             ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatAccess.getEntryCount(), ecommerceAllStatAccess.getStartLoginCount()));
@@ -75,6 +84,44 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
 
         return MonitorResultBuilder.build(result);
     }
+
+    private List<EcommerceAllStatAccess> changeIntervalDataTimeEcommerceAllStatAccess(List<EcommerceAllStatAccess> list, final Integer intervalMins) {
+        Map<Date, List<EcommerceAllStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
+        List<EcommerceAllStatAccess> resultList = Lists.newArrayList();
+        for (Map.Entry<Date, List<EcommerceAllStatAccess>> entry : map.entrySet()) {
+            if (CollectionUtils.isEmpty(entry.getValue())) {
+                continue;
+            }
+            EcommerceAllStatAccess data = new EcommerceAllStatAccess();
+            BeanUtils.copyProperties(entry.getValue().get(0), data);
+            data.setDataTime(entry.getKey());
+            List<EcommerceAllStatAccess> entryList = entry.getValue();
+            int userCount = 0, taskCount = 0, entryCount = 0, confirmMobileCount = 0,
+                    startLoginCount = 0, loginSuccessCount = 0, crawlSuccessCount = 0,
+                    processSuccessCount = 0, callbackSuccessCount = 0;
+            for (EcommerceAllStatAccess item : entryList) {
+                userCount = userCount + item.getUserCount();
+                taskCount = taskCount + item.getTaskCount();
+                entryCount = entryCount +item.getEntryCount();
+                startLoginCount = startLoginCount + item.getStartLoginCount();
+                loginSuccessCount = loginSuccessCount + item.getLoginSuccessCount();
+                crawlSuccessCount = crawlSuccessCount + item.getCrawlSuccessCount();
+                processSuccessCount = processSuccessCount + item.getProcessSuccessCount();
+                callbackSuccessCount = callbackSuccessCount + item.getCallbackSuccessCount();
+            }
+            data.setUserCount(userCount);
+            data.setTaskCount(taskCount);
+            data.setEntryCount(entryCount);
+            data.setStartLoginCount(startLoginCount);
+            data.setLoginSuccessCount(loginSuccessCount);
+            data.setCrawlSuccessCount(crawlSuccessCount);
+            data.setProcessSuccessCount(processSuccessCount);
+            data.setCallbackSuccessCount(callbackSuccessCount);
+            resultList.add(data);
+        }
+        return resultList;
+    }
+
 
 
     /**
