@@ -297,7 +297,7 @@ public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMoni
                 // 当日时间列表
                 String dayKey = RedisKeyHelper.keyOfDay(intervalTime);
                 redisOperations.opsForSet().add(dayKey, intervalTime.getTime() + "");
-                logger.info("TaskMonitorAlarm:stat-day中的值为:daykey={},value={}", dayKey, JSON.toJSONString(redisOperations.opsForSet().members(dayKey)));
+                logger.info("TaskMonitorAlarm:template-day中的值为:daykey={},value={}", dayKey, JSON.toJSONString(redisOperations.opsForSet().members(dayKey)));
                 statMap.put("dataTime", intervalTime.getTime() + "");
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
@@ -343,7 +343,7 @@ public class TaskMonitorMessageHandler implements TagBaseMessageHandler<TaskMoni
                 // 当日时间列表
                 String dayKey = RedisKeyHelper.keyOfDay(intervalTime);
                 redisOperations.opsForSet().add(dayKey, intervalTime.getTime() + "");
-                logger.info("TaskMonitorAlarm:stat-day中的值为:daykey={},value={}", dayKey, JSON.toJSONString(redisOperations.opsForSet().members(dayKey)));
+                logger.info("TaskMonitorAlarm:template-day中的值为:daykey={},value={}", dayKey, JSON.toJSONString(redisOperations.opsForSet().members(dayKey)));
                 statMap.put("dataTime", intervalTime.getTime() + "");
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);

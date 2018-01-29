@@ -20,10 +20,10 @@ public class TaskOperatorMonitorKeyHelper {
     private static final String KEY_INTERVAL_USER_MOBILE_LOG = "key-interval-user-mobile-log";
     private static final String KEY_DAY_ON_GROUP = "key-days-group";
     private static final String KEY_DAY_ON_All = "key-days-all";
-    private static final String GROUP_STAT_ACCESS_INTERVAL = "group-stat-interval";
-    private static final String GROUP_STAT_ACCESS_DAY = "group-stat-day";
-    private static final String ALL_STAT_ACCESS_INTERVAL = "all-stat-interval";
-    private static final String ALL_STAT_ACCESS_DAY = "all-stat-day";
+    private static final String GROUP_STAT_ACCESS_INTERVAL = "group-template-interval";
+    private static final String GROUP_STAT_ACCESS_DAY = "group-template-day";
+    private static final String ALL_STAT_ACCESS_INTERVAL = "all-template-interval";
+    private static final String ALL_STAT_ACCESS_DAY = "all-template-day";
 
     private static final String KEY_USERS_GROUP_ON_ACTION = "key-users-group-on-action";
     private static final String KEY_USERS_ALL_ON_ACTION = "key-users-all-on-action";
@@ -41,7 +41,7 @@ public class TaskOperatorMonitorKeyHelper {
 
     /**
      * 获取特定运营商统计key
-     * saas-monitor-task-operator-monitor:group-stat-interval:statType:groupCode:yyyy-MM-dd HH:mm:ss
+     * saas-monitor-task-operator-monitor:group-template-interval:statType:groupCode:yyyy-MM-dd HH:mm:ss
      *
      * @param intervalTime
      * @param groupCode
@@ -56,7 +56,7 @@ public class TaskOperatorMonitorKeyHelper {
 
     /**
      * 获取特定运营商日统计key
-     * saas-monitor-task-operator-monitor:group-stat-day:statType:groupCode:yyyy-MM-dd
+     * saas-monitor-task-operator-monitor:group-template-day:statType:groupCode:yyyy-MM-dd
      *
      * @param intervalTime
      * @param groupCode
@@ -70,7 +70,7 @@ public class TaskOperatorMonitorKeyHelper {
 
     /**
      * 获取所有运营商按按时间间隔统计key
-     * saas-monitor-task-operator-monitor:all-stat-interval:yyyy-MM-dd HH:mm:ss
+     * saas-monitor-task-operator-monitor:all-template-interval:yyyy-MM-dd HH:mm:ss
      *
      * @param intervalTime
      * @return
@@ -82,7 +82,7 @@ public class TaskOperatorMonitorKeyHelper {
 
     /**
      * 获取所有运营商日统计key
-     * saas-monitor-task-operator-monitor:all-stat-day:yyyy-MM-dd
+     * saas-monitor-task-operator-monitor:all-template-day:yyyy-MM-dd
      *
      * @param intervalTime
      * @return
@@ -217,11 +217,11 @@ public class TaskOperatorMonitorKeyHelper {
     }
 
     public static String keyOfGroupCodes() {
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "stat-group-codes");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "template-group-codes");
     }
 
     public static String keyOfAppIds() {
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "stat-appIds");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "template-appIds");
     }
 
     public static String keyOfAlarmTimeLog(Date baseTime, Integer alarmType, ETaskOperatorStatType statType) {
