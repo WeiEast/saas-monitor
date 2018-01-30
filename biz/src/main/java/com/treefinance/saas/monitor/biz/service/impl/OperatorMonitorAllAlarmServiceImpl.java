@@ -161,12 +161,13 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
 
         }
         if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
-            String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile);
-            String title = generateTitle(baseTile);
-            alarmMessageProducer.sendMail4OperatorMonitor(title, mailDataBody, jobTime);
+            StringBuilder titleBuilder = new StringBuilder();
+            titleBuilder.append(generateTitle(baseTile));
+            String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile,titleBuilder);
+
+            alarmMessageProducer.sendMail4OperatorMonitor(titleBuilder.toString(), mailDataBody, jobTime);
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
-
         }
         if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
             String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile);
@@ -180,7 +181,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         return "saas-" + diamondConfig.getMonitorEnvironment() + baseTile + "发生预警";
     }
 
-    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTile) {
+    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTile,StringBuilder sb) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<br>").append("【").append(EAlarmLevel.info).append("】").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(baseTile)
@@ -202,7 +203,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                     .append("<td>").append(msg.getValueDesc()).append(" ").append("</td>")
                     .append("<td>").append(msg.getThresholdDesc()).append(" ").append("</td>")
                     .append("<td>").append(msg.getOffset()).append("%").append(" ").append("</td>").append("</tr>");
-
+            sb.append(msg.getGroupName()).append(msg.getOffset()).append("%").append(" ");
         }
         buffer.append("</table>");
         return buffer.toString();

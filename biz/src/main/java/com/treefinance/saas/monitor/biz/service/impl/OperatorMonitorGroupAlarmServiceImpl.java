@@ -30,6 +30,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -189,12 +190,13 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             baseTitle = "运营商监控(按人数统计)";
         }
         if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
-            String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTitle);
-            String title = generateTitle(baseTitle);
+            StringBuilder sb = new StringBuilder();
+            sb.append(generateTitle(baseTitle));
+            String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTitle,sb);
+            String title = sb.toString();
             alarmMessageProducer.sendMail4OperatorMonitor(title, mailDataBody, jobTime);
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
-
         }
         if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
             String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTitle);
@@ -204,7 +206,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         }
     }
 
-    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTitle) {
+    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTitle,StringBuilder sb) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<br>").append("【").append(EAlarmLevel.info).append("】").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(baseTitle)
@@ -227,7 +229,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                     .append("<td>").append(msg.getValueDesc()).append(" ").append("</td>")
                     .append("<td>").append(msg.getThresholdDesc()).append(" ").append("</td>")
                     .append("<td>").append(msg.getOffset()).append("%").append(" ").append("</td>").append("</tr>");
-
+            sb.append(msg.getGroupName()).append(msg.getOffset()).append("%").append(" ");
         }
         buffer.append("</table>");
         return buffer.toString();
@@ -514,7 +516,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             }
 
         }
-        msgList = msgList.stream().sorted((o1, o2) -> o1.getGroupName().compareTo(o2.getGroupName())).collect(Collectors.toList());
+        msgList = msgList.stream().sorted(Comparator.comparing(OperatorStatAccessAlarmMsgDTO::getGroupName)).collect(Collectors.toList());
         return msgList;
     }
 
