@@ -28,6 +28,8 @@ public class OperatorStatAccessAlarmMsgDTO implements Serializable {
 
     private BigDecimal offset;//偏离阈值程度
 
+    private String alarmType;//预警类型
+
     public String getGroupCode() {
         return groupCode;
     }
@@ -106,5 +108,13 @@ public class OperatorStatAccessAlarmMsgDTO implements Serializable {
 
     public void setThresholdDesc(String thresholdDesc) {
         this.thresholdDesc = thresholdDesc;
+    }
+
+    public String getAlarmType(){
+        return alarmType;
+    }
+
+    public void setAlarmType(String type){
+        this.alarmType = type;
     }
 }
