@@ -162,7 +162,6 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             baseTile = "【总】运营商监控(按任务数统计)";
         } else {
             baseTile = "【总】运营商监控(按人数统计)";
-
         }
         if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
 
@@ -194,8 +193,9 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
 
         List<String> operatorNameList = Splitter.on(",").splitToList(diamondConfig.getOperatorAlarmOperatorNameList());
 
-        StringBuffer buffer = new StringBuffer();
-
+        //邮箱页面的html片段
+        StringBuilder pageHtml = new StringBuilder();
+        //页面表格中行的数据
         StringBuilder tableTrs = new StringBuilder();
 
         //title里面的具体内容
@@ -213,10 +213,10 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                 isInflate = true;
             }
             detail.append(msg.getGroupName()).append("-").append(msg.getAlarmType()).append("(").append(msg.getOffset()).append("%").append(")").append(" ");
-
         }
+
         String module = "saas-"+diamondConfig.getMonitorEnvironment();
-        buffer.append("<br>").append("【").append(isInflate?EAlarmLevel.warning:EAlarmLevel.info).append("】").append
+        pageHtml.append("<br>").append("【").append(isInflate?EAlarmLevel.warning:EAlarmLevel.info).append("】").append
                 ("您好，").append(module)
                 .append(baseTile)
                 .append("预警,在")
@@ -224,16 +224,15 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                 .append("--")
                 .append(MonitorDateUtils.format(endTime))
                 .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("</br>");
-        buffer.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\">");
-        buffer.append("<tr bgcolor=\"#C9C9C9\">")
+        pageHtml.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\">");
+        pageHtml.append("<tr bgcolor=\"#C9C9C9\">")
                 .append("<th>").append("预警描述").append("</th>")
                 .append("<th>").append("当前指标值").append("</th>")
                 .append("<th>").append("指标阀值").append("</th>")
                 .append("<th>").append("偏离阀值程度").append("</th>")
                 .append("</tr>");
-
-        buffer.append(tableTrs);
-        buffer.append("</table>");
+        pageHtml.append(tableTrs);
+        pageHtml.append("</table>");
 
 
         map.put("module",module);
@@ -241,7 +240,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         map.put("level",isInflate?EAlarmLevel.warning:EAlarmLevel.info);
 
 
-        return buffer.toString();
+        return pageHtml.toString();
     }
 
     private String generateWeChatBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTile) {
