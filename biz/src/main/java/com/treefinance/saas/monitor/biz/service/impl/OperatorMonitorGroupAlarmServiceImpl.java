@@ -213,14 +213,13 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
                                         String baseTitle,Map<String,Object> map) {
 
-        List<String> operatorNameList = Splitter.on(",").splitToList(diamondConfig.getOperatorAlarmOperatorNameList());
+
+        StringBuilder pageHtml = new StringBuilder();
 
         StringBuilder tableTrs = new StringBuilder();
 
         //title里面的具体内容
         StringBuilder detail = new StringBuilder();
-        //确定是否需要将info升级到warning的标志
-        boolean isInflate = false;
 
         detail.append("【");
         for (OperatorStatAccessAlarmMsgDTO msg : msgList) {
@@ -229,16 +228,12 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                     .append("<td>").append(msg.getValueDesc()).append(" ").append("</td>")
                     .append("<td>").append(msg.getThresholdDesc()).append(" ").append("</td>")
                     .append("<td>").append(msg.getOffset()).append("%").append(" ").append("</td>").append("</tr>");
-            if(operatorNameList.contains(msg.getGroupName())){
-                isInflate = true;
-            }
             detail.append(msg.getGroupName()).append("-").append(msg.getAlarmType()).append("(").append(msg.getOffset()).append("%").append(")").append(" ");
         }
         detail.append("】");
 
         String module = "saas-"+diamondConfig.getMonitorEnvironment();
-        StringBuilder pageHtml = new StringBuilder();
-        pageHtml.append("<br>").append("【").append(isInflate?EAlarmLevel.warning:EAlarmLevel.info).append("】").append
+        pageHtml.append("<br>").append("【").append(EAlarmLevel.warning).append("】").append
                 ("您好，").append
                 (module)
                 .append(baseTitle)
@@ -262,7 +257,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
         map.put("module",module);
         map.put("detail",detail.toString());
-        map.put("level",isInflate?EAlarmLevel.warning:EAlarmLevel.info);
+        map.put("level",EAlarmLevel.warning);
 
 
         return pageHtml.toString();
