@@ -137,16 +137,15 @@ public class ElasticSimpleJobServiceImpl implements ElasticSimpleJobService, App
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         this.coordinatorRegistryCenter = applicationContext.getBean(CoordinatorRegistryCenter.class);
-
-        JobCoreConfiguration jobCoreConfiguration = JobCoreConfiguration.newBuilder("test1", "0/10 * * * * ?", 1).build();
-        createJob(new TestJob(), jobCoreConfiguration);
+//        JobCoreConfiguration jobCoreConfiguration = JobCoreConfiguration.newBuilder("test1", "0/10 * * * * ?", 1).build();
+//        createJob(new TestJob(), jobCoreConfiguration);
     }
 
-    public static class TestJob implements SimpleJob {
-
-        @Override
-        public void execute(ShardingContext shardingContext) {
-            logger.info("test job is running....");
-        }
-    }
+//    public static class TestJob implements SimpleJob {
+//
+//        @Override
+//        public void execute(ShardingContext shardingContext) {
+//            logger.info("test job is running....");
+//        }
+//    }
 }

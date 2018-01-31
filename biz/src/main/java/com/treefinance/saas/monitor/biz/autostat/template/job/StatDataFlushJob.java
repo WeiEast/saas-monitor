@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.autostat.template.job;
 
+import com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.StatDataCalculator;
@@ -47,6 +48,10 @@ public class StatDataFlushJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        statDataCalculator.flushData(statTemplate, statGroups, statItems);
+        try {
+            statDataCalculator.flushData(statTemplate, statGroups, statItems);
+        } catch (Exception e) {
+            logger.error("flush data error : template={}", JSON.toJSONString(statTemplate), e);
+        }
     }
 }

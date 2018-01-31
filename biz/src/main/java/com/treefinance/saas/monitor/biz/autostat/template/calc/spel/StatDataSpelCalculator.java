@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.autostat.template.calc.spel;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.*;
+import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.MybatisService;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.model.DbColumn;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.StatDataCalculator;
@@ -9,6 +10,7 @@ import com.treefinance.saas.monitor.dao.entity.StatGroup;
 import com.treefinance.saas.monitor.dao.entity.StatItem;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -33,7 +35,7 @@ public class StatDataSpelCalculator implements StatDataCalculator {
     /**
      * redis key前缀
      */
-    public static final String PREFIX = "saas-monitor:stat-data:spel:";
+    public static final String PREFIX = "saas-monitor:stat-data:";
     /**
      * 数据时间
      */
@@ -51,7 +53,7 @@ public class StatDataSpelCalculator implements StatDataCalculator {
 
 
     @Override
-    public List<Map<String, Object>> calculate(StatTemplate statTemplate, List<StatGroup> statGroups, List<StatItem> statItems, List<?> datas) {
+    public List<Map<String, Object>> calculate(StatTemplate statTemplate, List<StatGroup> statGroups, List<StatItem> statItems, List<?> dataList) {
         List<Map<String, Object>> resultList = Lists.newArrayList();
         Date currentTime = new Date();
         String templateCode = statTemplate.getTemplateCode();
@@ -62,12 +64,13 @@ public class StatDataSpelCalculator implements StatDataCalculator {
         String statTimeStr = DateFormatUtils.format(statTime, "yyyy-MM-dd HH:mm:ss");
         Multimap<String, Map<String, Object>> redisMultiMap = ArrayListMultimap.create();
         String keyPrefix = Joiner.on(":").join(PREFIX, templateCode);
-        for (Object data : datas) {
+        for (Object dataObj : dataList) {
+            Map<String, Object> data = (Map<String, Object>) dataObj;
             Map<String, Object> dataMap = Maps.newHashMap();
             List<Object> redisGroups = Lists.newArrayList(keyPrefix);
 
             // 1.计算分组值
-            dataMap.put(DATA_TIME, statTime);
+            dataMap.put(DATA_TIME, statTime.getTime());
             statGroups.forEach(statGroup -> {
                 String groupCode = statGroup.getGroupCode();
                 String groupExpression = statGroup.getGroupExpression();
@@ -84,7 +87,7 @@ public class StatDataSpelCalculator implements StatDataCalculator {
                 dataMap.put(itemCode, itemValue);
             });
             redisGroups.add(statTimeStr);
-            String redisKey = Joiner.on(":").join(redisGroups);
+            String redisKey = Joiner.on(":").useForNull("null").join(redisGroups);
             redisMultiMap.put(redisKey, dataMap);
         }
 
@@ -92,23 +95,23 @@ public class StatDataSpelCalculator implements StatDataCalculator {
         List<String> groupNames = statGroups.stream().map(StatGroup::getGroupCode).collect(Collectors.toList());
         redisMultiMap.keys().forEach(redisKey -> {
             Map<String, Double> totalMap = Maps.newHashMap();
-            Map<String, Object> groupMap = Maps.newHashMap();
+            Map<String, String> groupMap = Maps.newHashMap();
             redisMultiMap.get(redisKey).forEach(dataMap -> {
-                dataMap.keySet().stream()
-                        .forEach(key -> {
-                            if (groupNames.contains(key)) {
-                                groupMap.put(key, dataMap.get(key));
-                            } else {
-                                Double totalValue = totalMap.get(key);
-                                Number value = (Number) dataMap.get(key);
-                                if (totalValue == null) {
-                                    totalMap.put(key, value.doubleValue());
-                                } else {
-                                    totalMap.put(key, totalValue + value.doubleValue());
-                                }
-                            }
-                        });
+                dataMap.keySet().stream().forEach(key -> {
+                    if (groupNames.contains(key) || DATA_TIME.equals(key)) {
+                        groupMap.put(key, dataMap.get(key) + "");
+                    } else {
+                        Double totalValue = totalMap.get(key);
+                        Number value = (Number) dataMap.get(key);
+                        if (totalValue == null) {
+                            totalMap.put(key, value.doubleValue());
+                        } else {
+                            totalMap.put(key, totalValue + value.doubleValue());
+                        }
+                    }
+                });
             });
+
 
             redisTemplate.boundHashOps(redisKey).putAll(groupMap);
             totalMap.keySet().forEach(key -> redisTemplate
@@ -138,7 +141,16 @@ public class StatDataSpelCalculator implements StatDataCalculator {
         HashOperations<String, String, Object> hashOperations = redisTemplate.opsForHash();
         dataKeySet.forEach(dataKey -> {
             Map<String, Object> dataMap = hashOperations.entries(dataKey);
-            resultList.add(dataMap);
+            if (MapUtils.isNotEmpty(dataMap)) {
+                // 增加ID
+                dataMap.put("id", UidGenerator.getId());
+
+                if (dataMap.get(DATA_TIME) != null) {
+                    Long dataTime = Long.valueOf(dataMap.get(DATA_TIME).toString());
+                    dataMap.put(DATA_TIME, new Date(dataTime));
+                }
+                resultList.add(dataMap);
+            }
         });
 
         // 二次计算(统计数据来源：0-基础数据，1-统计数据项)
@@ -157,12 +169,13 @@ public class StatDataSpelCalculator implements StatDataCalculator {
             });
         }
 
-
-        // 获取数据对象
-        String tableName = statTemplate.getDataObject();
         // 刷新到db
+        if (CollectionUtils.isNotEmpty(resultList)) {
+            mybatisService.batchInsertOrUpdate(statTemplate.getDataObject(), resultList);
+        }
 
-
+        // 清除redis数据
+        redisTemplate.delete(dataKeySet);
         return resultList;
     }
 

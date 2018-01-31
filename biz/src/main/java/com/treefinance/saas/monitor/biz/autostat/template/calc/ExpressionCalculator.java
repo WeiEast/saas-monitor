@@ -1,5 +1,7 @@
 package com.treefinance.saas.monitor.biz.autostat.template.calc;
 
+import java.util.Map;
+
 /**
  * Created by yh-treefinance on 2018/1/24.
  */
@@ -12,5 +14,5 @@ public interface ExpressionCalculator {
      * @param expression
      * @return
      */
-    Object calculate(Object data, String expression);
+    Object calculate(Map<String,Object> data, String expression);
 }

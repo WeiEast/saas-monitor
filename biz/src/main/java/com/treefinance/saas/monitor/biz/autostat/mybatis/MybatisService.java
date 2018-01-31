@@ -3,7 +3,10 @@ package com.treefinance.saas.monitor.biz.autostat.mybatis;
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.model.DbColumn;
+import com.treefinance.saas.monitor.dao.mapper.AutoStatMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.jdbc.SQL;
 import org.apache.ibatis.session.SqlSession;
@@ -17,10 +20,7 @@ import org.springframework.stereotype.Component;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -32,6 +32,9 @@ public class MybatisService implements InitializingBean {
 
     @Autowired
     private SqlSessionFactoryBean sqlSessionFactoryBean;
+
+    @Autowired
+    private AutoStatMapper autoStatMapper;
 
     /**
      * 获取表名
@@ -88,57 +91,38 @@ public class MybatisService implements InitializingBean {
      * @param dataList
      * @return
      */
-    public int insertOrUpdate(String tableName, List<Map<String, Object>> dataList) {
+    public int batchInsertOrUpdate(String tableName, List<Map<String, Object>> dataList) {
         List<DbColumn> dbColumns = getTableColumns(tableName);
-        StringBuilder sql = generateSQL(tableName, dataList, dbColumns);
+        List<String> columnNames = dbColumns.stream().map(DbColumn::getActualColumnName).collect(Collectors.toList());
 
-        String sqlString = sql.toString();
-        SqlSession sqlSession = sqlSessionFactoryBean.getObject().openSession();
-        sqlSession.
-        return 0;
-    }
+        Set<String> dataKeys = Sets.newHashSet();
+        dataList.stream().forEach(map -> dataKeys.addAll(map.keySet()));
+        // 取交集：仅更新需要字段
+        columnNames.retainAll(dataKeys);
 
-    /**
-     * 生成更新sql
-     *
-     * @param tableName
-     * @param dataList
-     * @param dbColumns
-     * @return
-     */
-    private StringBuilder generateSQL(String tableName, List<Map<String, Object>> dataList, List<DbColumn> dbColumns) {
-        List<String> columnNames = dbColumns.stream()
-                .map(DbColumn::getActualColumnName)
-                .collect(Collectors.toList());
+        List<Object> rows = Lists.newArrayList();
+        Map<String, Object> paramsMap = Maps.newHashMap();
 
-        // sql 语句
-        StringBuilder sql = new StringBuilder();
-        // insert into table ();
-        sql.append("insert into ").append(tableName);
-        sql.append("( ");
-        Joiner.on(",").appendTo(sql, columnNames);
-        sql.append(" )");
-        sql.append("VALUES ");
+        int result = -1;
+        try {
+            paramsMap.put("tableName",tableName);
+            paramsMap.put("columns", columnNames);
+            paramsMap.put("rows", rows);
 
-
-        String[] valuesArr = new String[columnNames.size()];
-        Arrays.fill(valuesArr, "?");
-        List<String> params = Arrays.asList(valuesArr);
-        List<String> valueSql = Lists.newArrayList();
-        for (Map<String, Object> data : dataList) {
-            valueSql.add("(" + Joiner.on(",").appendTo(sql, params) + ")");
+            for (Map<String, Object> data : dataList) {
+                List<Object> row = Lists.newArrayList();
+                for (String column : columnNames) {
+                    row.add(data.get(column));
+                }
+                rows.add(row);
+            }
+            result = autoStatMapper.batchInsertOrUpdate(paramsMap);
+        } finally {
+            logger.info("batchInsertOrUpdate : result={}, tableName={}, columnNames={},paramsMap={}, dataList={}",
+                    result, tableName, JSON.toJSONString(columnNames),
+                    JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
         }
-        Joiner.on(",").appendTo(sql, valueSql);
-
-
-        // ON DUPLICATE KEY UPDATE
-        sql.append(" ON DUPLICATE KEY UPDATE ");
-        List<String> updateSql = Lists.newArrayList();
-        for (String columnName : columnNames) {
-            updateSql.add(columnName + "=VALUES(" + columnName + ")");
-        }
-        Joiner.on(",").appendTo(sql, updateSql);
-        return sql;
+        return result;
     }
 
 

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilter;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.StatDataCalculator;
@@ -16,12 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * Created by yh-treefinance on 2018/1/23.
  */
-public class StatCalculateJob implements SimpleJob, BasicDataFilter<JSONObject> {
+public class StatCalculateJob implements SimpleJob, BasicDataFilter<Map<String, Object>> {
     /**
      * logger
      */
@@ -29,7 +31,7 @@ public class StatCalculateJob implements SimpleJob, BasicDataFilter<JSONObject> 
     /**
      * 数据队列
      */
-    private final ArrayBlockingQueue<JSONObject> dataQueue = Queues.newArrayBlockingQueue(20000);
+    private final ArrayBlockingQueue<Map<String, Object>> dataQueue = Queues.newArrayBlockingQueue(2);
 
     /**
      * 统计模板
@@ -66,19 +68,23 @@ public class StatCalculateJob implements SimpleJob, BasicDataFilter<JSONObject> 
     @Override
     public void execute(ShardingContext shardingContext) {
         long startTime = System.currentTimeMillis();
-        List<JSONObject> dataList = Lists.newArrayList();
-        if (!dataQueue.isEmpty()) {
-            while (!dataQueue.isEmpty()) {
-                dataList.add(dataQueue.poll());
+        try {
+            List<Map<String, Object>> dataList = Lists.newArrayList();
+            if (!dataQueue.isEmpty()) {
+                while (!dataQueue.isEmpty()) {
+                    dataList.add(dataQueue.poll());
+                }
+                // 数据计算
+                statDataCalculator.calculate(statTemplate, statGroups, statItems, dataList);
             }
-            // 数据计算
-            statDataCalculator.calculate(statTemplate, statGroups, statItems, dataList);
+            logger.info("stat data calculate cost {}ms : dataSize={},template={}...", (System.currentTimeMillis() - startTime), dataList.size(), JSON.toJSONString(statTemplate));
+        } catch (Exception e) {
+            logger.error("stat data error : template={}", JSON.toJSONString(statTemplate), e);
         }
-        logger.info("stat data calculate cost {}ms : dataSize={},template={}...", (System.currentTimeMillis() - startTime), dataList.size(), JSON.toJSONString(statTemplate));
     }
 
     @Override
-    public void doFilter(List<JSONObject> data) {
+    public void doFilter(List<Map<String, Object>> data) {
         if (CollectionUtils.isNotEmpty(data)) {
             int size = data.size();
             int remainderSize = dataQueue.remainingCapacity();
@@ -86,7 +92,11 @@ public class StatCalculateJob implements SimpleJob, BasicDataFilter<JSONObject> 
             if (remainderSize < size) {
                 execute(null);
             }
-            dataQueue.addAll(data);
+            data.forEach(map -> {
+                Map<String, Object> dataMap = Maps.newHashMap();
+                dataMap.putAll(map);
+                dataQueue.add(dataMap);
+            });
         }
     }
 }

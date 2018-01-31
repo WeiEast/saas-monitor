@@ -9,12 +9,9 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilter;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilterContext;
-import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
@@ -53,7 +50,7 @@ public class BasicDataMessageListener implements MessageListenerConcurrently {
             logger.info("收到消息无效==>{}", msgs);
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         }
-        List<JSONObject> jsonObjects = Lists.newArrayList();
+        List<Map<String,Object>> jsonObjects = Lists.newArrayList();
         for (MessageExt messageExt : msgs) {
             String json = new String(messageExt.getBody());
             jsonObjects.add(JSON.parseObject(json));

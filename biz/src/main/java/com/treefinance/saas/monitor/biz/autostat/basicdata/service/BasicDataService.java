@@ -8,11 +8,4 @@ import com.treefinance.saas.monitor.dao.entity.BasicData;
  * Created by yh-treefinance on 2018/1/22.
  */
 public interface BasicDataService extends BaseQueryService<BasicData> {
-
-    /**
-     * 启动监听器
-     *
-     * @param dataCode
-     */
-    void startListener(String dataCode);
 }
