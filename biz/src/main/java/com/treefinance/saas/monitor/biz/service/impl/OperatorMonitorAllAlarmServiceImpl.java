@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
@@ -17,6 +18,7 @@ import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.OperatorAllStatAccessMapper;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
@@ -28,7 +30,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -161,11 +165,15 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
 
         }
         if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
-            StringBuilder titleBuilder = new StringBuilder();
-            titleBuilder.append(generateTitle(baseTile));
-            String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile,titleBuilder);
 
-            alarmMessageProducer.sendMail4OperatorMonitor(titleBuilder.toString(), mailDataBody, jobTime);
+            String mailBaseTitle = "【${level}】【${module}】【${type}】发生 ${detail} 预警";
+
+            Map<String,Object> map = new HashMap<>(4);
+            map.put("type",ETaskOperatorStatType.TASK.equals(statType)?"运营商-分时任务":"运营商-分时人数");
+
+            String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile,map);
+
+            alarmMessageProducer.sendMail4OperatorMonitor(StrSubstitutor.replace(mailBaseTitle,map), mailDataBody, jobTime);
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
         }
@@ -181,9 +189,35 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         return "saas-" + diamondConfig.getMonitorEnvironment() + baseTile + "发生预警";
     }
 
-    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTile,StringBuilder sb) {
+    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
+                                        String baseTile,Map<String,Object> map) {
+
+        List<String> operatorNameList = Splitter.on(",").splitToList(diamondConfig.getOperatorAlarmOperatorNameList());
+
         StringBuffer buffer = new StringBuffer();
-        buffer.append("<br>").append("【").append(EAlarmLevel.info).append("】").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
+
+        StringBuilder tableTrs = new StringBuilder();
+
+        //title里面的具体内容
+        StringBuilder detail = new StringBuilder();
+        //确定是否需要将info升级到warning的标志
+        boolean isInflate = false;
+        detail.append("【");
+        for (OperatorStatAccessAlarmMsgDTO msg : msgList) {
+            tableTrs.append("<tr>")
+                    .append("<td>").append(msg.getAlarmDesc()).append(" ").append("</td>")
+                    .append("<td>").append(msg.getValueDesc()).append(" ").append("</td>")
+                    .append("<td>").append(msg.getThresholdDesc()).append(" ").append("</td>")
+                    .append("<td>").append(msg.getOffset()).append("%").append(" ").append("</td>").append("</tr>");
+            if(operatorNameList.contains(msg.getGroupName())){
+                isInflate = true;
+            }
+            detail.append(msg.getGroupName()).append("-").append(msg.getAlarmType()).append("(").append(msg.getOffset()).append("%").append(")").append(" ");
+
+        }
+        String module = "saas-"+diamondConfig.getMonitorEnvironment();
+        buffer.append("<br>").append("【").append(isInflate?EAlarmLevel.warning:EAlarmLevel.info).append("】").append
+                ("您好，").append(module)
                 .append(baseTile)
                 .append("预警,在")
                 .append(MonitorDateUtils.format(startTime))
@@ -197,15 +231,16 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                 .append("<th>").append("指标阀值").append("</th>")
                 .append("<th>").append("偏离阀值程度").append("</th>")
                 .append("</tr>");
-        for (OperatorStatAccessAlarmMsgDTO msg : msgList) {
-            buffer.append("<tr>")
-                    .append("<td>").append(msg.getAlarmDesc()).append(" ").append("</td>")
-                    .append("<td>").append(msg.getValueDesc()).append(" ").append("</td>")
-                    .append("<td>").append(msg.getThresholdDesc()).append(" ").append("</td>")
-                    .append("<td>").append(msg.getOffset()).append("%").append(" ").append("</td>").append("</tr>");
-            sb.append(msg.getGroupName()).append(msg.getOffset()).append("%").append(" ");
-        }
+
+        buffer.append(tableTrs);
         buffer.append("</table>");
+
+
+        map.put("module",module);
+        map.put("detail",detail.toString());
+        map.put("level",isInflate?EAlarmLevel.warning:EAlarmLevel.info);
+
+
         return buffer.toString();
     }
 
@@ -255,6 +290,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
             msg.setAlarmDesc("确认手机转化率低于前" + previousDays + "天平均值的" + config.getConfirmMobileConversionRate() + "%");
             msg.setAlarmSimpleDesc("确认手机");
+            msg.setAlarmType("确认手机转化率");
             msg.setValue(dataDTO.getConfirmMobileConversionRate());
             msg.setThreshold(confirmMobileCompareVal);
             String valueDesc = new StringBuilder()
@@ -281,6 +317,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
             msg.setAlarmDesc("登陆转化率低于前" + previousDays + "天平均值的" + config.getLoginConversionRate() + "%");
             msg.setAlarmSimpleDesc("开始登陆");
+            msg.setAlarmType("登陆转化率");
             msg.setValue(dataDTO.getLoginConversionRate());
             msg.setThreshold(loginConversionCompareVal);
             String valueDesc = new StringBuilder()
@@ -306,6 +343,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         if (dataDTO.getLoginSuccessRate().compareTo(loginSuccessCompareVal) < 0) {//登录成功率小于前7天平均值
             OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
             msg.setAlarmDesc("登陆成功率低于前" + previousDays + "天平均值的" + config.getLoginSuccessRate() + "%");
+            msg.setAlarmType("登陆成功率");
             msg.setAlarmSimpleDesc("登陆");
             msg.setValue(dataDTO.getLoginSuccessRate());
             msg.setThreshold(loginSuccessCompareVal);
@@ -331,6 +369,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         if (dataDTO.getCrawlSuccessRate().compareTo(crawlCompareVal) < 0) {//抓取成功率小于前7天平均值
             OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
             msg.setAlarmDesc("抓取成功率低于前" + previousDays + "天平均值的" + config.getCrawlSuccessRate() + "%");
+            msg.setAlarmType("抓取成功率");
             msg.setAlarmSimpleDesc("抓取");
             msg.setValue(dataDTO.getCrawlSuccessRate());
             msg.setThreshold(crawlCompareVal);
@@ -356,6 +395,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         if (dataDTO.getProcessSuccessRate().compareTo(processCompareVal) < 0) {//洗数成功率小于前7天平均值
             OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
             msg.setAlarmDesc("洗数成功率低于前" + previousDays + "天平均值的" + config.getProcessSuccessRate() + "%");
+            msg.setAlarmType("洗数成功率");
             msg.setAlarmSimpleDesc("洗数");
             msg.setValue(dataDTO.getProcessSuccessRate());
             msg.setThreshold(processCompareVal);
@@ -381,6 +421,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         if (dataDTO.getCallbackSuccessRate().compareTo(callbackCompareVal) < 0) {//回调成功率小于前7天平均值
             OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
             msg.setAlarmDesc("回调成功率低于前" + previousDays + "天平均值的" + config.getCallbackSuccessRate() + "%");
+            msg.setAlarmType("回调成功率");
             msg.setAlarmSimpleDesc("回调");
             msg.setValue(dataDTO.getCallbackSuccessRate());
             msg.setThreshold(callbackCompareVal);
@@ -408,6 +449,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         if (dataDTO.getWholeConversionRate().compareTo(wholeConversionCompareVal) < 0) {//总转化率小于前7天平均值
             OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
             msg.setAlarmDesc("总转化率低于前" + previousDays + "天平均值的" + config.getWholeConversionRate() + "%");
+            msg.setAlarmType("总转化率");
             msg.setAlarmSimpleDesc("总转化率");
             msg.setValue(dataDTO.getWholeConversionRate());
             msg.setThreshold(wholeConversionCompareVal);
