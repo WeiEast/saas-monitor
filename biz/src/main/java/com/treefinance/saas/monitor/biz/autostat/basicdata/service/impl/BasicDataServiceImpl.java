@@ -20,12 +20,12 @@ public class BasicDataServiceImpl implements BasicDataService {
 
 
     @Override
-    public List<BasicData> getAll() {
+    public List<BasicData> queryAll() {
         return basicDataMapper.selectByExample(new BasicDataCriteria());
     }
 
     @Override
-    public BasicData getByCode(String dataCode) {
+    public BasicData queryByCode(String dataCode) {
         BasicDataCriteria criteria = new BasicDataCriteria();
         criteria.createCriteria().andDataCodeEqualTo(dataCode);
         List<BasicData> list = basicDataMapper.selectByExample(criteria);
@@ -36,7 +36,7 @@ public class BasicDataServiceImpl implements BasicDataService {
     }
 
     @Override
-    public BasicData getById(Long id) {
+    public BasicData queryById(Long id) {
         return basicDataMapper.selectByPrimaryKey(id);
     }
 }
