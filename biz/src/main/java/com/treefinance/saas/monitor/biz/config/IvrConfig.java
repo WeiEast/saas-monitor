@@ -32,6 +32,38 @@ public class IvrConfig {
     @DAttribute(key = "monitor.environment")
     private String environment;
 
+    @DAttribute(key = "ivrreplayurl")
+    private String ivrReplayurl;
+
+    @DAttribute(key = "auth.ivr.accessKey")
+    private String accessKey;
+    @DAttribute(key = "auth.ivr.token")
+    private String token;
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getIvrReplayurl() {
+        return ivrReplayurl;
+    }
+
+    public void setIvrReplayurl(String ivrreplayurl) {
+        this.ivrReplayurl = ivrreplayurl;
+    }
+
     @BeforeUpdate
     public void before(String key, Object newValue) {
         logger.info(key + " update to " + newValue + " start...");
