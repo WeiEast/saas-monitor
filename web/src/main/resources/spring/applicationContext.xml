@@ -16,5 +16,12 @@
 	<import resource="classpath*:spring/core.jedis.xml" />
 	<import resource="classpath*:spring/elastic-job.xml"/>
 	<context:component-scan base-package="com.treefinance.saas.monitor" />
-	
+
+
+	<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="2" />
+		<property name="maxPoolSize" value="100" />
+		<property name="queueCapacity" value="25" />
+	</bean>
+
 </beans>

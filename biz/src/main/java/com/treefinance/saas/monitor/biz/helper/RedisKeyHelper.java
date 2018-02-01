@@ -13,18 +13,18 @@ import java.util.Date;
 public class RedisKeyHelper {
 
     public static final String KEY_PREFIX = "saas-monitor";
-    public static final String STAT_ACCESS = "stat-access";
-    public static final String STAT_ACCESS_ALL = "stat-access-all";
-    public static final String STAT_ACCESS_DAY = "stat-access-day";
-    public static final String STAT_ACCESS_DAY_ALL = "stat-access-day-all";
-    public static final String STAT_ACCESS_DAY_ERROR = "stat-access-day-error";
-    public static final String STAT_MAIL = "stat-mail";
-    public static final String STAT_ECOMMERCE = "stat-ecommerce";
-    public static final String STAT_OPERATOR = "stat-operator";
+    public static final String STAT_ACCESS = "template-access";
+    public static final String STAT_ACCESS_ALL = "template-access-all";
+    public static final String STAT_ACCESS_DAY = "template-access-day";
+    public static final String STAT_ACCESS_DAY_ALL = "template-access-day-all";
+    public static final String STAT_ACCESS_DAY_ERROR = "template-access-day-error";
+    public static final String STAT_MAIL = "template-mail";
+    public static final String STAT_ECOMMERCE = "template-ecommerce";
+    public static final String STAT_OPERATOR = "template-operator";
     public static final String ALARM_ACCESS_DAY = "alarm-flag";
     public static final String ALARM_ACCESS_DAY_ALL = "alarm-flag-all";
     public static final String ALARM_ACCESS_DAY_TIMES_ALL = "alarm-flag-times-all";
-    public static final String HTTP_STAT = "stat-http";
+    public static final String HTTP_STAT = "template-http";
     public static final String TASK_EXIST = "saas-monitor-task-exist-monitor";
 
     /**
@@ -110,7 +110,7 @@ public class RedisKeyHelper {
      * appId列表
      */
     public static String keyOfAppIds() {
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "stat-appids").toString();
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "template-appids").toString();
     }
 
     /**
@@ -121,7 +121,7 @@ public class RedisKeyHelper {
      */
     public static String keyOfDay(Date date) {
         String day = DateFormatUtils.format(date, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "stat-day", day).toString();
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "template-day", day).toString();
     }
 
 
