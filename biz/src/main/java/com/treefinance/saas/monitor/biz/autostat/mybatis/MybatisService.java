@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * Created by yh-treefinance on 2018/1/25.
  */
 @Component
-public class MybatisService implements InitializingBean {
+public class MybatisService {
     private static final Logger logger = LoggerFactory.getLogger(MybatisService.class);
 
     @Autowired
@@ -133,10 +133,5 @@ public class MybatisService implements InitializingBean {
             } catch (Exception e) {
             }
         }
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        logger.info("get table columns : {}", JSON.toJSONString(getTableColumns("api_stat_access"), true));
     }
 }

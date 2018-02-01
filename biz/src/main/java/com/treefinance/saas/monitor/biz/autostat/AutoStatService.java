@@ -47,7 +47,7 @@ public class AutoStatService implements InitializingBean {
     /**
      * 已经启动的监听器
      */
-    private Map<String, DefaultMQPushConsumer> consumerContext = Maps.newConcurrentMap();
+    private Map<Long, DefaultMQPushConsumer> consumerContext = Maps.newConcurrentMap();
 
 //    private LoadingCache<String, StatTemplate> cache = CacheBuilder.newBuilder()
 //            .refreshAfterWrite(5, TimeUnit.MINUTES)
@@ -83,7 +83,7 @@ public class AutoStatService implements InitializingBean {
             } catch (MQClientException e) {
                 throw new RuntimeException("start " + basicDataCode + " consumer error", e);
             }
-            consumerContext.put(basicDataCode, consumer);
+            consumerContext.put(basicDataId, consumer);
         }
         logger.info("start basic data listener : {}", JSON.toJSONString(basicData));
     }
@@ -107,7 +107,7 @@ public class AutoStatService implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         List<StatTemplate> activeTemplates = statTemplateService.getActiveList();
-        activeTemplates.stream().map(StatTemplate::getBasicDataId).forEach(basicDataId -> initListener(basicDataId));
+        activeTemplates.stream().map(StatTemplate::getBasicDataId).distinct().forEach(basicDataId -> initListener(basicDataId));
         threadPoolTaskExecutor.execute(() -> activeTemplates.forEach(statTemplate -> loadTemplate(statTemplate)));
     }
 
