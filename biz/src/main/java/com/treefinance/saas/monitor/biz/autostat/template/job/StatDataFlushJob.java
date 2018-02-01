@@ -26,30 +26,19 @@ public class StatDataFlushJob implements SimpleJob {
     private StatTemplate statTemplate;
 
     /**
-     * 统计分组
-     */
-    private List<StatGroup> statGroups;
-    /**
-     * 统计数据项
-     */
-    private List<StatItem> statItems;
-
-    /**
      * 数据计算器
      */
     private StatDataCalculator statDataCalculator;
 
-    public StatDataFlushJob(StatTemplate statTemplate, List<StatGroup> statGroups, List<StatItem> statItems, StatDataCalculator statDataCalculator) {
+    public StatDataFlushJob(StatTemplate statTemplate, StatDataCalculator statDataCalculator) {
         this.statTemplate = statTemplate;
-        this.statGroups = statGroups;
-        this.statItems = statItems;
         this.statDataCalculator = statDataCalculator;
     }
 
     @Override
     public void execute(ShardingContext shardingContext) {
         try {
-            statDataCalculator.flushData(statTemplate, statGroups, statItems);
+            statDataCalculator.flushData(statTemplate);
         } catch (Exception e) {
             logger.error("flush data error : template={}", JSON.toJSONString(statTemplate), e);
         }

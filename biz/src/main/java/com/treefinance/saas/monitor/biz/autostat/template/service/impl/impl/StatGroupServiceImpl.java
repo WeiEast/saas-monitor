@@ -1,5 +1,7 @@
 package com.treefinance.saas.monitor.biz.autostat.template.service.impl.impl;
 
+import com.google.common.base.Function;
+import com.treefinance.saas.monitor.biz.autostat.base.AbstractCacheService;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatGroupService;
 import com.treefinance.saas.monitor.dao.entity.StatGroup;
 import com.treefinance.saas.monitor.dao.entity.StatGroupCriteria;
@@ -14,20 +16,20 @@ import java.util.List;
  * Created by yh-treefinance on 2018/1/23.
  */
 @Service
-public class StatGroupServiceImpl implements StatGroupService {
+public class StatGroupServiceImpl extends AbstractCacheService<Long, List<StatGroup>> implements StatGroupService {
 
     @Autowired
     private StatGroupMapper statGroupMapper;
 
     @Override
-    public List<StatGroup> getAll() {
+    public List<StatGroup> queryAll() {
         StatGroupCriteria criteria = new StatGroupCriteria();
         criteria.createCriteria();
         return statGroupMapper.selectByExample(criteria);
     }
 
     @Override
-    public StatGroup getByCode(String code) {
+    public StatGroup queryByCode(String code) {
         StatGroupCriteria criteria = new StatGroupCriteria();
         criteria.createCriteria().andGroupCodeEqualTo(code);
         List<StatGroup> list = statGroupMapper.selectByExample(criteria);
@@ -38,14 +40,19 @@ public class StatGroupServiceImpl implements StatGroupService {
     }
 
     @Override
-    public StatGroup getById(Long id) {
+    public StatGroup queryById(Long id) {
         return statGroupMapper.selectByPrimaryKey(id);
     }
 
     @Override
-    public List<StatGroup> getByTemplateId(Long templateId) {
+    public List<StatGroup> queryByTemplateId(Long templateId) {
         StatGroupCriteria criteria = new StatGroupCriteria();
         criteria.createCriteria().andTemplateIdEqualTo(templateId);
         return statGroupMapper.selectByExample(criteria);
+    }
+
+    @Override
+    public Function<Long, List<StatGroup>> dataLoader() {
+        return this::queryByTemplateId;
     }
 }

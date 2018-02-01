@@ -1,11 +1,15 @@
-package com.treefinance.saas.monitor.biz.autostat.template.calc.spel;
+package com.treefinance.saas.monitor.biz.autostat.template.calc.calculator;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.*;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.MybatisService;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.model.DbColumn;
+import com.treefinance.saas.monitor.biz.autostat.template.calc.ExpressionCalculator;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.StatDataCalculator;
+import com.treefinance.saas.monitor.biz.autostat.template.calc.spel.SpelExpressionCalculator;
+import com.treefinance.saas.monitor.biz.autostat.template.service.StatGroupService;
+import com.treefinance.saas.monitor.biz.autostat.template.service.StatItemService;
 import com.treefinance.saas.monitor.dao.entity.StatGroup;
 import com.treefinance.saas.monitor.dao.entity.StatItem;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
@@ -31,7 +35,7 @@ import java.util.stream.Collectors;
  * Created by yh-treefinance on 2018/1/24.
  */
 @Component
-public class StatDataSpelCalculator implements StatDataCalculator {
+public class DefaultStatDataCalculator implements StatDataCalculator {
     /**
      * redis key前缀
      */
@@ -47,13 +51,21 @@ public class StatDataSpelCalculator implements StatDataCalculator {
     @Autowired
     private StringRedisTemplate redisTemplate;
     @Autowired
-    private SpelExpressionCalculator spelExpressionCalculator;
+    private ExpressionCalculator expressionCalculator;
     @Autowired
     private MybatisService mybatisService;
+    @Autowired
+    private StatGroupService statGroupService;
+    @Autowired
+    private StatItemService statItemService;
 
 
     @Override
-    public List<Map<String, Object>> calculate(StatTemplate statTemplate, List<StatGroup> statGroups, List<StatItem> statItems, List<?> dataList) {
+    public List<Map<String, Object>> calculate(StatTemplate statTemplate, List<?> dataList) {
+        Long templateId = statTemplate.getId();
+        List<StatGroup> statGroups = statGroupService.get(templateId);
+        List<StatItem> statItems = statItemService.get(templateId);
+
         List<Map<String, Object>> resultList = Lists.newArrayList();
         Date currentTime = new Date();
         String templateCode = statTemplate.getTemplateCode();
@@ -74,7 +86,7 @@ public class StatDataSpelCalculator implements StatDataCalculator {
             statGroups.forEach(statGroup -> {
                 String groupCode = statGroup.getGroupCode();
                 String groupExpression = statGroup.getGroupExpression();
-                Object groupValue = spelExpressionCalculator.calculate(data, groupExpression);
+                Object groupValue = expressionCalculator.calculate(data, groupExpression);
                 dataMap.put(groupCode, groupValue);
                 redisGroups.add(groupValue);
             });
@@ -83,7 +95,7 @@ public class StatDataSpelCalculator implements StatDataCalculator {
             statItems.stream().filter(statItem -> Byte.valueOf("0").equals(statItem.getDataSource())).forEach(statItem -> {
                 String itemCode = statItem.getItemCode();
                 String itemExpression = statItem.getItemExpression();
-                Object itemValue = spelExpressionCalculator.calculate(data, itemExpression);
+                Object itemValue = expressionCalculator.calculate(data, itemExpression);
                 dataMap.put(itemCode, itemValue);
             });
             redisGroups.add(statTimeStr);
@@ -129,7 +141,11 @@ public class StatDataSpelCalculator implements StatDataCalculator {
     }
 
     @Override
-    public List<Map<String, Object>> flushData(StatTemplate statTemplate, List<StatGroup> statGroups, List<StatItem> statItems) {
+    public List<Map<String, Object>> flushData(StatTemplate statTemplate) {
+        // 获取模板、分组、数据项信息
+        Long templateId = statTemplate.getId();
+        List<StatItem> statItems = statItemService.get(templateId);
+
         List<Map<String, Object>> resultList = Lists.newArrayList();
         String templateCode = statTemplate.getTemplateCode();
         String dataListKey = Joiner.on(":").join(PREFIX, templateCode);
@@ -163,7 +179,7 @@ public class StatDataSpelCalculator implements StatDataCalculator {
                 _statItems.forEach(statItem -> {
                     String itemCode = statItem.getItemCode();
                     String itemExpression = statItem.getItemExpression();
-                    Object value = spelExpressionCalculator.calculate(dataMap, itemExpression);
+                    Object value = expressionCalculator.calculate(dataMap, itemExpression);
                     dataMap.put(itemCode, value);
                 });
             });

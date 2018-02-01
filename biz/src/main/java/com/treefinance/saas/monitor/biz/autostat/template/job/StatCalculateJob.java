@@ -31,21 +31,12 @@ public class StatCalculateJob implements SimpleJob, BasicDataFilter<Map<String, 
     /**
      * 数据队列
      */
-    private final ArrayBlockingQueue<Map<String, Object>> dataQueue = Queues.newArrayBlockingQueue(2);
+    private final ArrayBlockingQueue<Map<String, Object>> dataQueue = Queues.newArrayBlockingQueue(200);
 
     /**
      * 统计模板
      */
     private StatTemplate statTemplate;
-
-    /**
-     * 统计分组
-     */
-    private List<StatGroup> statGroups;
-    /**
-     * 统计数据项
-     */
-    private List<StatItem> statItems;
 
     /**
      * 数据计算器
@@ -54,14 +45,10 @@ public class StatCalculateJob implements SimpleJob, BasicDataFilter<Map<String, 
 
     /**
      * @param statTemplate
-     * @param statGroups
-     * @param statItems
      * @param statDataCalculator
      */
-    public StatCalculateJob(StatTemplate statTemplate, List<StatGroup> statGroups, List<StatItem> statItems, StatDataCalculator statDataCalculator) {
+    public StatCalculateJob(StatTemplate statTemplate, StatDataCalculator statDataCalculator) {
         this.statTemplate = statTemplate;
-        this.statGroups = statGroups;
-        this.statItems = statItems;
         this.statDataCalculator = statDataCalculator;
     }
 
@@ -75,7 +62,7 @@ public class StatCalculateJob implements SimpleJob, BasicDataFilter<Map<String, 
                     dataList.add(dataQueue.poll());
                 }
                 // 数据计算
-                statDataCalculator.calculate(statTemplate, statGroups, statItems, dataList);
+                statDataCalculator.calculate(statTemplate, dataList);
             }
             logger.info("stat data calculate cost {}ms : dataSize={},template={}...", (System.currentTimeMillis() - startTime), dataList.size(), JSON.toJSONString(statTemplate));
         } catch (Exception e) {

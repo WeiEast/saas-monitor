@@ -3,8 +3,7 @@ package com.treefinance.saas.monitor.biz.autostat.template.parser.impl;
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilterContext;
 import com.treefinance.saas.monitor.biz.autostat.elasticjob.ElasticSimpleJobService;
-import com.treefinance.saas.monitor.biz.autostat.template.calc.spel.SpelExpressionCalculator;
-import com.treefinance.saas.monitor.biz.autostat.template.calc.spel.StatDataSpelCalculator;
+import com.treefinance.saas.monitor.biz.autostat.template.calc.calculator.DefaultStatDataCalculator;
 import com.treefinance.saas.monitor.biz.autostat.template.job.StatCalculateJob;
 import com.treefinance.saas.monitor.biz.autostat.template.job.StatDataFlushJob;
 import com.treefinance.saas.monitor.biz.autostat.template.parser.StatTemplateParser;
@@ -36,7 +35,7 @@ public class AutoStatTemplateParser implements StatTemplateParser {
     @Autowired
     ElasticSimpleJobService elasticSimpleJobService;
     @Autowired
-    StatDataSpelCalculator statDataSpelCalculator;
+    DefaultStatDataCalculator statDataSpelCalculator;
 
 
     @Override
