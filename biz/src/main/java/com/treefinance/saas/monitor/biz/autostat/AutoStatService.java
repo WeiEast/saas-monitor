@@ -64,7 +64,7 @@ public class AutoStatService implements InitializingBean {
         if (consumerContext.containsKey(basicDataId)) {
             return;
         }
-        BasicData basicData = basicDataService.getById(basicDataId);
+        BasicData basicData = basicDataService.queryById(basicDataId);
         String basicDataCode = basicData.getDataCode();
         synchronized (this) {
             Map<String, Object> configMap = JSON.parseObject(basicData.getDataSourceConfigJson());
@@ -106,7 +106,7 @@ public class AutoStatService implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        List<StatTemplate> activeTemplates = statTemplateService.getActiveList();
+        List<StatTemplate> activeTemplates = statTemplateService.queryActiveList();
         activeTemplates.stream().map(StatTemplate::getBasicDataId).distinct().forEach(basicDataId -> initListener(basicDataId));
         threadPoolTaskExecutor.execute(() -> activeTemplates.forEach(statTemplate -> loadTemplate(statTemplate)));
     }

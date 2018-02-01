@@ -11,7 +11,7 @@ public interface BaseQueryService<T> {
      *
      * @return
      */
-    List<T> getAll();
+    List<T> queryAll();
 
     /**
      * 根据编码获取
@@ -19,7 +19,7 @@ public interface BaseQueryService<T> {
      * @param code
      * @return
      */
-    T getByCode(String code);
+    T queryByCode(String code);
 
     /**
      * 根据ID获取
@@ -27,5 +27,5 @@ public interface BaseQueryService<T> {
      * @param id
      * @return
      */
-    T getById(Long id);
+    T queryById(Long id);
 }

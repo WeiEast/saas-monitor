@@ -3,8 +3,7 @@ package com.treefinance.saas.monitor.biz.autostat.template.parser.impl;
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilterContext;
 import com.treefinance.saas.monitor.biz.autostat.elasticjob.ElasticSimpleJobService;
-import com.treefinance.saas.monitor.biz.autostat.template.calc.spel.SpelExpressionCalculator;
-import com.treefinance.saas.monitor.biz.autostat.template.calc.spel.StatDataSpelCalculator;
+import com.treefinance.saas.monitor.biz.autostat.template.calc.calculator.DefaultStatDataCalculator;
 import com.treefinance.saas.monitor.biz.autostat.template.job.StatCalculateJob;
 import com.treefinance.saas.monitor.biz.autostat.template.job.StatDataFlushJob;
 import com.treefinance.saas.monitor.biz.autostat.template.parser.StatTemplateParser;
@@ -36,7 +35,7 @@ public class AutoStatTemplateParser implements StatTemplateParser {
     @Autowired
     ElasticSimpleJobService elasticSimpleJobService;
     @Autowired
-    StatDataSpelCalculator statDataSpelCalculator;
+    DefaultStatDataCalculator statDataSpelCalculator;
 
 
     @Override
@@ -46,17 +45,17 @@ public class AutoStatTemplateParser implements StatTemplateParser {
 
         // 1.获取模板信息
         String templateCode = statTemplate.getTemplateCode();
-        statTemplate = statTemplateService.getByCode(templateCode);
+        statTemplate = statTemplateService.queryByCode(templateCode);
 
         Assert.notNull(statTemplate.getStatCron(), "统计cron不能为空");
         Assert.isTrue(Byte.valueOf("1").equals(statTemplate.getStatus()), "统计模板必须先启用");
 
         Long templateId = statTemplate.getId();
-        List<StatGroup> statGroups = statGroupService.getByTemplateId(templateId);
-        List<StatItem> statItems = statItemService.getByTemplateId(templateId);
+        List<StatGroup> statGroups = statGroupService.get(templateId);
+        List<StatItem> statItems = statItemService.get(templateId);
 
         // 2.注册过滤器（数据计算器）
-        StatCalculateJob statCalculateJob = new StatCalculateJob(statTemplate, statGroups, statItems, statDataSpelCalculator);
+        StatCalculateJob statCalculateJob = new StatCalculateJob(statTemplate, statDataSpelCalculator);
         basicDataFilterContext.registerFilter(statTemplate, statCalculateJob);
 
         // 3.生成数据计算任务
@@ -68,7 +67,7 @@ public class AutoStatTemplateParser implements StatTemplateParser {
         elasticSimpleJobService.createJob(statCalculateJob, statCalculateJobConf);
 
         // 4.数据刷新定时任务
-        StatDataFlushJob statDataFlushJob = new StatDataFlushJob(statTemplate, statGroups, statItems, statDataSpelCalculator);
+        StatDataFlushJob statDataFlushJob = new StatDataFlushJob(statTemplate, statDataSpelCalculator);
         JobCoreConfiguration statDataFlushJobConf = JobCoreConfiguration
                 .newBuilder(templateCode + "-DataFlush", statTemplate.getStatCron(), 1)
                 .failover(true)
