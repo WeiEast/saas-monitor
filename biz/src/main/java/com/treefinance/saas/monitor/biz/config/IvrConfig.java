@@ -32,7 +32,7 @@ public class IvrConfig {
     @DAttribute(key = "monitor.environment")
     private String environment;
 
-    @DAttribute(key = "ivrreplayurl")
+    @DAttribute(key = "ivr.replay.url")
     private String ivrReplayurl;
 
     @DAttribute(key = "auth.ivr.accessKey")
