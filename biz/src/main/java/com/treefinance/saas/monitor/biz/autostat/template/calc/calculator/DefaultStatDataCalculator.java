@@ -75,9 +75,9 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         // 统计时间
         Date statTime = getStatDate(currentTime, statCron);
         String statTimeStr = DateFormatUtils.format(statTime, "yyyy-MM-dd HH:mm:ss");
-        String keyPrefix = Joiner.on(":").join(PREFIX, templateCode);
 
         for (Integer groupIndex : statGroupMap.keySet()) {
+            String keyPrefix = Joiner.on(":").join(PREFIX, templateCode, groupIndex);
             Multimap<String, Map<String, Object>> redisMultiMap = ArrayListMultimap.create();
             List<StatGroup> _statGroups = statGroupMap.get(groupIndex);
             if (CollectionUtils.isEmpty(_statGroups)) {
@@ -89,7 +89,6 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 List<Object> redisGroups = Lists.newArrayList(keyPrefix);
 
                 // 1.计算分组值
-                dataMap.put(DATA_TIME, statTime.getTime());
                 _statGroups.forEach(statGroup -> {
                     String groupCode = statGroup.getGroupCode();
                     String groupExpression = statGroup.getGroupExpression();
@@ -97,6 +96,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                     dataMap.put(groupCode, groupValue);
                     redisGroups.add(groupValue);
                 });
+                dataMap.put(DATA_TIME, statTime.getTime());
 
                 // 2.计算数据项值
                 statItems.stream().filter(statItem -> Byte.valueOf("0").equals(statItem.getDataSource())).forEach(statItem -> {
@@ -143,7 +143,8 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 resultList.add(resultMap);
                 logger.info("spel base data calculate: redisKey={},result={}", redisKey, resultMap);
             });
-            redisTemplate.boundSetOps(keyPrefix).add(redisMultiMap.keys().toArray(new String[]{}));
+            String dataListKey = Joiner.on(":").join(PREFIX, templateCode);
+            redisTemplate.boundSetOps(dataListKey).add(redisMultiMap.keys().toArray(new String[]{}));
         }
 
         return resultList;
