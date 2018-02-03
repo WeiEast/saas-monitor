@@ -16,6 +16,7 @@ import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,9 +73,6 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         Date currentTime = new Date();
         String templateCode = statTemplate.getTemplateCode();
         String statCron = statTemplate.getStatCron();
-        // 统计时间
-        Date statTime = getStatDate(currentTime, statCron);
-        String statTimeStr = DateFormatUtils.format(statTime, "yyyy-MM-dd HH:mm:ss");
 
         for (Integer groupIndex : statGroupMap.keySet()) {
             String keyPrefix = Joiner.on(":").join(PREFIX, templateCode, groupIndex);
@@ -96,7 +94,19 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                     dataMap.put(groupCode, groupValue);
                     redisGroups.add(groupValue);
                 });
-                dataMap.put(DATA_TIME, statTime.getTime());
+
+
+                // 统计时间
+                Date dataTime = null;
+                if (dataMap.containsKey(DATA_TIME)) {
+                    Long times = (Long) dataMap.get(DATA_TIME);
+                    dataTime = getStatDate(new Date(times), statCron);
+                } else {
+                    dataTime = getStatDate(currentTime, statCron);
+                }
+
+                dataMap.put(DATA_TIME, dataTime.getTime());
+                String dataTimeStr = DateFormatUtils.format(dataTime, "yyyy-MM-dd HH:mm:ss");
 
                 // 2.计算数据项值
                 statItems.stream().filter(statItem -> Byte.valueOf("0").equals(statItem.getDataSource())).forEach(statItem -> {
@@ -105,7 +115,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                     Object itemValue = expressionCalculator.calculate(data, itemExpression);
                     dataMap.put(itemCode, itemValue);
                 });
-                redisGroups.add(statTimeStr);
+                redisGroups.add(dataTimeStr);
                 String redisKey = Joiner.on(":").useForNull("null").join(redisGroups);
                 redisMultiMap.put(redisKey, dataMap);
             }
@@ -212,13 +222,37 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
      * @param statCron
      * @return
      */
-    private Date getStatDate(Date currentTime, String statCron) {
+    private static Date getStatDate(Date currentTime, String statCron) {
         CronExpression cronExpression = null;
         try {
             cronExpression = new CronExpression(statCron);
+            Date cronDate = cronExpression.getNextValidTimeAfter(currentTime);
+            int timeDiff = ((Long) (cronExpression.getNextValidTimeAfter(cronDate).getTime() - cronDate.getTime())).intValue();
+            while (currentTime.before(cronDate)) {
+                cronDate = DateUtils.addMilliseconds(cronDate, -2 * timeDiff);
+                cronDate = cronExpression.getNextValidTimeAfter(cronDate);
+            }
         } catch (ParseException e) {
             throw new RuntimeException("parse cron exception: cron=" + statCron, e);
         }
-        return cronExpression.getTimeAfter(currentTime);
+        return cronExpression.getNextValidTimeAfter(currentTime);
+    }
+
+    public ExpressionCalculator getExpressionCalculator() {
+        return expressionCalculator;
+    }
+
+    public static void main(String[] args) throws ParseException {
+        Date date = new Date();
+        CronExpression cronExpression = new CronExpression("0/1 * * * * ? ");
+        Date cronDate = cronExpression.getNextValidTimeAfter(date);
+        System.out.println("date:" + DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss"));
+        System.out.println("cronDate:" + DateFormatUtils.format(cronDate, "yyyy-MM-dd HH:mm:ss"));
+        int timeDiff = ((Long) (cronExpression.getNextValidTimeAfter(cronDate).getTime() - cronDate.getTime())).intValue();
+        while (date.before(cronDate)) {
+            cronDate = DateUtils.addMilliseconds(cronDate, -2 * timeDiff);
+            cronDate = cronExpression.getNextValidTimeAfter(cronDate);
+            System.out.println(DateFormatUtils.format(cronDate, "yyyy-MM-dd HH:mm:ss"));
+        }
     }
 }

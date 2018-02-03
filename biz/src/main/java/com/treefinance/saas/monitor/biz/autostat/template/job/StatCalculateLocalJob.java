@@ -7,12 +7,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilter;
+import com.treefinance.saas.monitor.biz.autostat.template.calc.ExpressionCalculator;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.StatDataCalculator;
-import com.treefinance.saas.monitor.dao.entity.StatGroup;
-import com.treefinance.saas.monitor.dao.entity.StatItem;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
-import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +22,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 /**
  * Created by yh-treefinance on 2018/1/23.
  */
-public class StatCalculateJob implements SimpleJob, BasicDataFilter<Map<String, Object>> {
+public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<Map<String, Object>> {
     /**
      * logger
      */
-    private static Logger logger = LoggerFactory.getLogger(StatCalculateJob.class);
+    private static Logger logger = LoggerFactory.getLogger(StatCalculateLocalJob.class);
     /**
      * 数据队列
      */
@@ -47,7 +46,7 @@ public class StatCalculateJob implements SimpleJob, BasicDataFilter<Map<String, 
      * @param statTemplate
      * @param statDataCalculator
      */
-    public StatCalculateJob(StatTemplate statTemplate, StatDataCalculator statDataCalculator) {
+    public StatCalculateLocalJob(StatTemplate statTemplate, StatDataCalculator statDataCalculator) {
         this.statTemplate = statTemplate;
         this.statDataCalculator = statDataCalculator;
     }
@@ -79,10 +78,14 @@ public class StatCalculateJob implements SimpleJob, BasicDataFilter<Map<String, 
             if (remainderSize < size) {
                 execute(null);
             }
+            ExpressionCalculator expressionCalculator = statDataCalculator.getExpressionCalculator();
+            String expression = statTemplate.getBasicDataFilter();
             data.forEach(map -> {
                 Map<String, Object> dataMap = Maps.newHashMap();
-                dataMap.putAll(map);
-                dataQueue.add(dataMap);
+                if (StringUtils.isEmpty(expression) || Boolean.TRUE.equals(expressionCalculator.calculate(map, expression))) {
+                    dataMap.putAll(map);
+                    dataQueue.add(dataMap);
+                }
             });
         }
     }

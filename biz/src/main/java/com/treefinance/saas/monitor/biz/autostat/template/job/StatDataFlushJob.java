@@ -4,13 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.StatDataCalculator;
-import com.treefinance.saas.monitor.dao.entity.StatGroup;
-import com.treefinance.saas.monitor.dao.entity.StatItem;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * Created by yh-treefinance on 2018/1/25.
@@ -19,7 +15,7 @@ public class StatDataFlushJob implements SimpleJob {
     /**
      * logger
      */
-    private static Logger logger = LoggerFactory.getLogger(StatCalculateJob.class);
+    private static Logger logger = LoggerFactory.getLogger(StatCalculateLocalJob.class);
     /**
      * 统计模板
      */
