@@ -1,23 +1,24 @@
 package com.treefinance.saas.monitor.biz.autostat.template.calc.calculator;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.MybatisService;
-import com.treefinance.saas.monitor.biz.autostat.mybatis.model.DbColumn;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.ExpressionCalculator;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.StatDataCalculator;
-import com.treefinance.saas.monitor.biz.autostat.template.calc.spel.SpelExpressionCalculator;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatGroupService;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatItemService;
+import com.treefinance.saas.monitor.biz.autostat.utils.CronUtils;
 import com.treefinance.saas.monitor.dao.entity.StatGroup;
 import com.treefinance.saas.monitor.dao.entity.StatItem;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -37,14 +39,6 @@ import java.util.stream.Collectors;
  */
 @Component
 public class DefaultStatDataCalculator implements StatDataCalculator {
-    /**
-     * redis key前缀
-     */
-    public static final String PREFIX = "saas-monitor:stat-data:";
-    /**
-     * 数据时间
-     */
-    public static final String DATA_TIME = "dataTime";
     /**
      * logger
      */
@@ -63,19 +57,22 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
     @Override
     public List<Map<String, Object>> calculate(StatTemplate statTemplate, List<?> dataList) {
+        expressionCalculator.initContext(AsConstants.STAT_TEMPLATE, statTemplate);
+
         Long templateId = statTemplate.getId();
         List<StatGroup> statGroups = statGroupService.get(templateId);
         List<StatItem> statItems = statItemService.get(templateId);
+
         // 分组计算
         Map<Integer, List<StatGroup>> statGroupMap = statGroups.stream().collect(Collectors.groupingBy(StatGroup::getGroupIndex));
-
         List<Map<String, Object>> resultList = Lists.newArrayList();
         Date currentTime = new Date();
         String templateCode = statTemplate.getTemplateCode();
         String statCron = statTemplate.getStatCron();
+        Long expireTime = getExpireTime(statCron);
 
         for (Integer groupIndex : statGroupMap.keySet()) {
-            String keyPrefix = Joiner.on(":").join(PREFIX, templateCode, groupIndex);
+            String keyPrefix = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode, groupIndex);
             Multimap<String, Map<String, Object>> redisMultiMap = ArrayListMultimap.create();
             List<StatGroup> _statGroups = statGroupMap.get(groupIndex);
             if (CollectionUtils.isEmpty(_statGroups)) {
@@ -86,29 +83,36 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 Map<String, Object> dataMap = Maps.newHashMap();
                 List<Object> redisGroups = Lists.newArrayList(keyPrefix);
 
-                // 1.计算分组值
-                _statGroups.forEach(statGroup -> {
-                    String groupCode = statGroup.getGroupCode();
-                    String groupExpression = statGroup.getGroupExpression();
-                    Object groupValue = expressionCalculator.calculate(data, groupExpression);
-                    dataMap.put(groupCode, groupValue);
-                    redisGroups.add(groupValue);
-                });
+                // 1.优先计算数据时间
+                _statGroups.stream().filter(statGroup -> AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
+                        .forEach(statGroup -> {
+                            Object groupValue = expressionCalculator.calculate(data, statGroup.getGroupExpression());
+                            dataMap.put(statGroup.getGroupCode(), groupValue);
+                            redisGroups.add(groupValue);
+                        });
 
-
-                // 统计时间
+                // 2.获取统计时间
                 Date dataTime = null;
-                if (dataMap.containsKey(DATA_TIME)) {
-                    Long times = (Long) dataMap.get(DATA_TIME);
-                    dataTime = getStatDate(new Date(times), statCron);
+                if (dataMap.containsKey(AsConstants.DATA_TIME)) {
+                    Long times = (Long) dataMap.get(AsConstants.DATA_TIME);
+                    dataTime = CronUtils.getStatDate(new Date(times), statCron);
                 } else {
-                    dataTime = getStatDate(currentTime, statCron);
+                    dataTime = CronUtils.getStatDate(currentTime, statCron);
                 }
-
-                dataMap.put(DATA_TIME, dataTime.getTime());
+                dataMap.put(AsConstants.DATA_TIME, dataTime.getTime());
                 String dataTimeStr = DateFormatUtils.format(dataTime, "yyyy-MM-dd HH:mm:ss");
 
-                // 2.计算数据项值
+                // 3.计算各分组数据项值
+                _statGroups.stream().filter(statGroup -> !AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
+                        .forEach(statGroup -> {
+                            String groupCode = statGroup.getGroupCode();
+                            String groupExpression = statGroup.getGroupExpression();
+                            Object groupValue = expressionCalculator.calculate(data, groupExpression);
+                            dataMap.put(groupCode, groupValue);
+                            redisGroups.add(groupValue);
+                        });
+
+                // 4.计算数据项值
                 statItems.stream().filter(statItem -> Byte.valueOf("0").equals(statItem.getDataSource())).forEach(statItem -> {
                     String itemCode = statItem.getItemCode();
                     String itemExpression = statItem.getItemExpression();
@@ -127,7 +131,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 Map<String, String> groupMap = Maps.newHashMap();
                 redisMultiMap.get(redisKey).forEach(dataMap -> {
                     dataMap.keySet().stream().forEach(key -> {
-                        if (groupNames.contains(key) || DATA_TIME.equals(key)) {
+                        if (groupNames.contains(key) || AsConstants.DATA_TIME.equals(key)) {
                             groupMap.put(key, dataMap.get(key) + "");
                         } else {
                             Double totalValue = totalMap.get(key);
@@ -143,6 +147,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
 
                 redisTemplate.boundHashOps(redisKey).putAll(groupMap);
+                redisTemplate.boundHashOps(redisKey).expire(expireTime, TimeUnit.MILLISECONDS);
                 totalMap.keySet().forEach(key -> redisTemplate
                         .boundHashOps(redisKey)
                         .increment(key, totalMap.get(key)));
@@ -153,7 +158,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 resultList.add(resultMap);
                 logger.info("spel base data calculate: redisKey={},result={}", redisKey, resultMap);
             });
-            String dataListKey = Joiner.on(":").join(PREFIX, templateCode);
+            String dataListKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode);
             redisTemplate.boundSetOps(dataListKey).add(redisMultiMap.keys().toArray(new String[]{}));
         }
 
@@ -168,7 +173,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
         List<Map<String, Object>> resultList = Lists.newArrayList();
         String templateCode = statTemplate.getTemplateCode();
-        String dataListKey = Joiner.on(":").join(PREFIX, templateCode);
+        String dataListKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode);
         Set<String> dataKeySet = redisTemplate.boundSetOps(dataListKey).members();
         if (CollectionUtils.isEmpty(dataKeySet)) {
             return resultList;
@@ -181,9 +186,9 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 // 增加ID
                 dataMap.put("id", UidGenerator.getId());
 
-                if (dataMap.get(DATA_TIME) != null) {
-                    Long dataTime = Long.valueOf(dataMap.get(DATA_TIME).toString());
-                    dataMap.put(DATA_TIME, new Date(dataTime));
+                if (dataMap.get(AsConstants.DATA_TIME) != null) {
+                    Long dataTime = Long.valueOf(dataMap.get(AsConstants.DATA_TIME).toString());
+                    dataMap.put(AsConstants.DATA_TIME, new Date(dataTime));
                 }
                 resultList.add(dataMap);
             }
@@ -215,27 +220,19 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         return resultList;
     }
 
+
     /**
-     * 获取统计时间
+     * 获取超时时间
      *
-     * @param currentTime
      * @param statCron
      * @return
      */
-    private static Date getStatDate(Date currentTime, String statCron) {
-        CronExpression cronExpression = null;
-        try {
-            cronExpression = new CronExpression(statCron);
-            Date cronDate = cronExpression.getNextValidTimeAfter(currentTime);
-            int timeDiff = ((Long) (cronExpression.getNextValidTimeAfter(cronDate).getTime() - cronDate.getTime())).intValue();
-            while (currentTime.before(cronDate)) {
-                cronDate = DateUtils.addMilliseconds(cronDate, -2 * timeDiff);
-                cronDate = cronExpression.getNextValidTimeAfter(cronDate);
-            }
-            return cronDate;
-        } catch (ParseException e) {
-            throw new RuntimeException("parse cron exception: cron=" + statCron, e);
+    private static Long getExpireTime(String statCron) {
+        Long expireTime = CronUtils.getTimeInterval(statCron);
+        if (expireTime < 10 * 60 * 1000) {
+            return 10 * 60 * 1000L;
         }
+        return expireTime;
     }
 
     public ExpressionCalculator getExpressionCalculator() {
@@ -244,15 +241,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
     public static void main(String[] args) throws ParseException {
         Date date = new Date();
-        CronExpression cronExpression = new CronExpression("0/1 * * * * ? ");
-        Date cronDate = cronExpression.getNextValidTimeAfter(date);
-        System.out.println("date:" + DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss"));
-        System.out.println("cronDate:" + DateFormatUtils.format(cronDate, "yyyy-MM-dd HH:mm:ss"));
-        int timeDiff = ((Long) (cronExpression.getNextValidTimeAfter(cronDate).getTime() - cronDate.getTime())).intValue();
-        while (date.before(cronDate)) {
-            cronDate = DateUtils.addMilliseconds(cronDate, -2 * timeDiff);
-            cronDate = cronExpression.getNextValidTimeAfter(cronDate);
-            System.out.println(DateFormatUtils.format(cronDate, "yyyy-MM-dd HH:mm:ss"));
-        }
+        String cron = "0 0/5 * * * ? ";
+        System.out.println(getExpireTime(cron));
     }
 }
