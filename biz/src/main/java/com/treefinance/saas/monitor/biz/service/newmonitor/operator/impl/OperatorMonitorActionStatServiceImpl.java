@@ -9,7 +9,7 @@ import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.newmonitor.operator.OperatorMonitorActionStatService;
 import com.treefinance.saas.monitor.biz.service.newmonitor.operator.TaskOperatorMonitorMessageProcessor;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -45,7 +45,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
             logger.error("运营商监控,消息处理,groupCode,groupName为空,message={}", JSON.toJSONString(message));
             return;
         }
-        taskOperatorMonitorMessageProcessor.updateIntervalData(intervalTime, message, status, ETaskOperatorStatType.TASK);
+        taskOperatorMonitorMessageProcessor.updateIntervalData(intervalTime, message, status, ETaskStatDataType.TASK);
     }
 
     @Override
@@ -54,19 +54,19 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
             logger.error("运营商监控,消息处理,groupCode,groupName为空,message={}", JSON.toJSONString(message));
             return;
         }
-        taskOperatorMonitorMessageProcessor.updateDayData(intervalTime, message, status, ETaskOperatorStatType.TASK);
+        taskOperatorMonitorMessageProcessor.updateDayData(intervalTime, message, status, ETaskStatDataType.TASK);
 
     }
 
     @Override
     public void updateAllIntervalDataByTask(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status) {
-        taskOperatorMonitorMessageProcessor.updateAllIntervalData(intervalTime, message, status, ETaskOperatorStatType.TASK);
+        taskOperatorMonitorMessageProcessor.updateAllIntervalData(intervalTime, message, status, ETaskStatDataType.TASK);
 
     }
 
     @Override
     public void updateAllDayDataByTask(Date intervalTime, TaskOperatorMonitorMessage message, ETaskOperatorMonitorStatus status) {
-        taskOperatorMonitorMessageProcessor.updateAllDayData(intervalTime, message, status, ETaskOperatorStatType.TASK);
+        taskOperatorMonitorMessageProcessor.updateAllDayData(intervalTime, message, status, ETaskStatDataType.TASK);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
             }
 
         }
-        taskOperatorMonitorMessageProcessor.updateIntervalData(intervalTime, message, status, ETaskOperatorStatType.USER);
+        taskOperatorMonitorMessageProcessor.updateIntervalData(intervalTime, message, status, ETaskStatDataType.USER);
 
     }
 
@@ -171,7 +171,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
 
         }
 
-        taskOperatorMonitorMessageProcessor.updateDayData(intervalTime, message, status, ETaskOperatorStatType.USER);
+        taskOperatorMonitorMessageProcessor.updateDayData(intervalTime, message, status, ETaskStatDataType.USER);
 
     }
 
@@ -227,7 +227,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
 
         }
 
-        taskOperatorMonitorMessageProcessor.updateAllIntervalData(intervalTime, message, status, ETaskOperatorStatType.USER);
+        taskOperatorMonitorMessageProcessor.updateAllIntervalData(intervalTime, message, status, ETaskStatDataType.USER);
 
     }
 
@@ -271,30 +271,30 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
 
         }
 
-        taskOperatorMonitorMessageProcessor.updateAllDayData(intervalTime, message, status, ETaskOperatorStatType.USER);
+        taskOperatorMonitorMessageProcessor.updateAllDayData(intervalTime, message, status, ETaskStatDataType.USER);
 
     }
 
     @Override
     public void updateAllIntervalTaskUserCountByTask(Date intervalTime, TaskOperatorMonitorMessage msg) {
-        taskOperatorMonitorMessageProcessor.updateAllIntervalTaskUserCount(intervalTime, msg, ETaskOperatorStatType.TASK);
+        taskOperatorMonitorMessageProcessor.updateAllIntervalTaskUserCount(intervalTime, msg, ETaskStatDataType.TASK);
     }
 
     @Override
     public void updateAllIntervalTaskUserCountByUser(Date intervalTime, TaskOperatorMonitorMessage msg) {
-        taskOperatorMonitorMessageProcessor.updateAllIntervalTaskUserCount(intervalTime, msg, ETaskOperatorStatType.USER);
+        taskOperatorMonitorMessageProcessor.updateAllIntervalTaskUserCount(intervalTime, msg, ETaskStatDataType.USER);
 
     }
 
     @Override
     public void updateAllDayTaskUserCountByTask(Date intervalTime, TaskOperatorMonitorMessage msg) {
-        taskOperatorMonitorMessageProcessor.updateAllDayTaskUserCount(intervalTime, msg, ETaskOperatorStatType.TASK);
+        taskOperatorMonitorMessageProcessor.updateAllDayTaskUserCount(intervalTime, msg, ETaskStatDataType.TASK);
 
     }
 
     @Override
     public void updateallDayTaskUserCountByUser(Date intervalTime, TaskOperatorMonitorMessage msg) {
-        taskOperatorMonitorMessageProcessor.updateAllDayTaskUserCount(intervalTime, msg, ETaskOperatorStatType.USER);
+        taskOperatorMonitorMessageProcessor.updateAllDayTaskUserCount(intervalTime, msg, ETaskStatDataType.USER);
 
     }
 }

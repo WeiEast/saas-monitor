@@ -15,4 +15,7 @@ public interface EcommerceFacade {
      * @return
      */
     MonitorResult<List<EcommerceRO>> queryAll();
+
+
+
 }

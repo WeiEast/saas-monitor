@@ -13,6 +13,8 @@
 
     <dubbo:consumer check="false"/>
 
+    <dubbo:annotation package="com.treefinance.saas.monitor.facade.service.stat"/>
+
     <!--生产者 -->
     <dubbo:service ref="merchantStatAccessFacade"
                    interface="com.treefinance.saas.monitor.facade.service.stat.MerchantStatAccessFacade"
@@ -32,6 +34,11 @@
     <dubbo:service ref="bankFacade" interface="com.treefinance.saas.monitor.facade.service.BankFacade" version="1.0.0"/>
     <dubbo:service ref="websiteFacade" interface="com.treefinance.saas.monitor.facade.service.WebsiteFacade"
                    version="1.0.0"/>
+
+    <dubbo:service ref="ecommerceStatDivisionAccessFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.stat.EcommerceStatDivisionAccessFacade"
+                   version="1.0.0"/>
+
 
 </beans>
 

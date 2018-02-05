@@ -52,7 +52,7 @@ public class IvrNotifyService {
         Map<String, Object> cronMap = JSON.parseObject(alarmTypeCron);
         if (MapUtils.isNotEmpty(cronMap) && cronMap.get(type.getCode()) != null) {
             String typeCron = cronMap.get(type.getCode()).toString();
-            // 根据cron表达式来判断此人是否负责当前时间点
+            // 根据cron表o达式来判断此人是否负责当前时间点
             if (!isSatisfiedBy(new Date(), typeCron)) {
                 logger.info("告警类型不在指定时段：alarmLevel={},type={},alarmRule={}," +
                         "alarmTypeCron={}", alarmLevel, type, alarmRule, alarmTypeCron);

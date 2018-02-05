@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class OperatorStatAccessAlarmMsgDTO implements Serializable {
+public class TaskStatAccessAlarmMsgDTO implements Serializable {
 
     private static final long serialVersionUID = -6477590375789936061L;
 
@@ -27,6 +27,8 @@ public class OperatorStatAccessAlarmMsgDTO implements Serializable {
     private String thresholdDesc;//指标阈值描述
 
     private BigDecimal offset;//偏离阈值程度
+
+    private String alarmType;//预警类型
 
     public String getGroupCode() {
         return groupCode;
@@ -106,5 +108,13 @@ public class OperatorStatAccessAlarmMsgDTO implements Serializable {
 
     public void setThresholdDesc(String thresholdDesc) {
         this.thresholdDesc = thresholdDesc;
+    }
+
+    public String getAlarmType(){
+        return alarmType;
+    }
+
+    public void setAlarmType(String type){
+        this.alarmType = type;
     }
 }
