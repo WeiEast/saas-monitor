@@ -12,6 +12,11 @@ public class AsConstants {
      * redis
      */
     public static final String REDIS = "redis";
+
+    /**
+     * 数据时间
+     */
+    public static final String DATA = "data";
     /**
      * 数据时间
      */
