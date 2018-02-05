@@ -11,27 +11,27 @@
                         http://www.dangdang.com/schema/ddframe/job/job.xsd
                         ">
     <!--配置作业注册中心 -->
-    <reg:zookeeper id="regCenter" server-lists="${zk.address}" namespace="monitor-job"
+    <reg:zookeeper id="regCenter" server-lists="127.0.0.1:2181" namespace="monitor-job"
                    base-sleep-time-milliseconds="1000"
                    max-sleep-time-milliseconds="3000" max-retries="3"/>
 
     <!-- 配置作业-->
-    <job:simple id="taskDataFlushJob" class="com.treefinance.saas.monitor.biz.task.TaskDataFlushJob"
-                registry-center-ref="regCenter" cron="0 0/2 * * * ?"
-                sharding-total-count="1" overwrite="true"/>
+    <!--<job:simple id="taskDataFlushJob" class="com.treefinance.saas.monitor.biz.task.TaskDataFlushJob"-->
+    <!--registry-center-ref="regCenter" cron="0 0/2 * * * ?"-->
+    <!--sharding-total-count="1" overwrite="true"/>-->
 
-    <job:simple id="taskPerMinDataFlushJob" class="com.treefinance.saas.monitor.biz.task.TaskPerMinDataFlushJob"
-                registry-center-ref="regCenter" cron="0 0/2 * * * ?"
-                sharding-total-count="1" overwrite="true"/>
+    <!--<job:simple id="taskPerMinDataFlushJob" class="com.treefinance.saas.monitor.biz.task.TaskPerMinDataFlushJob"-->
+    <!--registry-center-ref="regCenter" cron="0 0/2 * * * ?"-->
+    <!--sharding-total-count="1" overwrite="true"/>-->
 
-    <job:simple id="httpDataFlushJob" class="com.treefinance.saas.monitor.biz.task.HttpDataFlushJob"
-                registry-center-ref="regCenter" cron="0 2/10 * * * ?"
-                sharding-total-count="1" overwrite="true"/>
+    <!--<job:simple id="httpDataFlushJob" class="com.treefinance.saas.monitor.biz.task.HttpDataFlushJob"-->
+    <!--registry-center-ref="regCenter" cron="0 2/10 * * * ?"-->
+    <!--sharding-total-count="1" overwrite="true"/>-->
 
     <!--运营商监控-->
-    <job:simple id="taskOperatorFlushJob" class="com.treefinance.saas.monitor.biz.task.TaskOperatorDataFlushJob"
-                registry-center-ref="regCenter" cron="0 1/5 * * * ?"
-                sharding-total-count="1" overwrite="true"/>
+    <!--<job:simple id="taskOperatorFlushJob" class="com.treefinance.saas.monitor.biz.task.TaskOperatorDataFlushJob"-->
+    <!--registry-center-ref="regCenter" cron="0 1/5 * * * ?"-->
+    <!--sharding-total-count="1" overwrite="true"/>-->
     <!--
     &lt;!&ndash; 报警任务 &ndash;&gt;
     <job:simple id="alarmJob" class="com.treefinance.saas.monitor.biz.task.AlarmJob" registry-center-ref="regCenter"
@@ -39,17 +39,17 @@
                 sharding-total-count="1" overwrite="true"/>-->
 
     <!-- 无任务预警 -->
-    <job:simple id="noTaskAlarmJob" class="com.treefinance.saas.monitor.biz.task.NoTaskAlarmJob"
-                registry-center-ref="regCenter" cron="0 0/5 * * * ?"
-                sharding-total-count="1" overwrite="true"/>
+    <!--<job:simple id="noTaskAlarmJob" class="com.treefinance.saas.monitor.biz.task.NoTaskAlarmJob"-->
+    <!--registry-center-ref="regCenter" cron="0 0/5 * * * ?"-->
+    <!--sharding-total-count="1" overwrite="true"/>-->
 
     <!-- 任务成功率预警 -->
-    <job:simple id="taskSuccessRateAlarmJob" class="com.treefinance.saas.monitor.biz.task.TaskSuccessRateAlarmJob"
-                registry-center-ref="regCenter" cron="0 0/1 * * * ?"
-                sharding-total-count="1" overwrite="true"/>
+    <!--<job:simple id="taskSuccessRateAlarmJob" class="com.treefinance.saas.monitor.biz.task.TaskSuccessRateAlarmJob"-->
+    <!--registry-center-ref="regCenter" cron="0 0/1 * * * ?"-->
+    <!--sharding-total-count="1" overwrite="true"/>-->
     <!--运营商监控,定时预警任务-->
     <job:simple id="operatorMonitorAlarmJob"
                 class="com.treefinance.saas.monitor.biz.task.OperatorMonitorAlarmJob"
-                registry-center-ref="regCenter" cron="0 0/5 * * * ? "
+                registry-center-ref="regCenter" cron="0 0/1 * * * ? " monitor-port="9888"
                 sharding-total-count="1" overwrite="true"/>
 </beans>

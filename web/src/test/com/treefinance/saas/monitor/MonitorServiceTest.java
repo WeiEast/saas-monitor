@@ -4,8 +4,10 @@ import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
+import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessAlarmMsgDTO;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
@@ -42,6 +44,8 @@ public class MonitorServiceTest {
     private RedisTemplate<String, String> redisTemplate;
     @Autowired
     private RedisDao redisDao;
+    @Autowired
+    private SmsNotifyService smsNotifyService;
 
     @Test
     public void testMail() {
@@ -195,6 +199,24 @@ public class MonitorServiceTest {
         }
 
 
+    }
+
+    @Test
+    public void smsTest() {
+        String content = this.generateNoTaskWeChatBody(new Date(), new Date());
+        smsNotifyService.send(content);
+    }
+
+    private String generateNoTaskWeChatBody(Date startTime, Date endTime) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append(EAlarmLevel.error).append(",");
+        buffer.append("您好,").append("saas-").append(diamondConfig.getMonitorEnvironment())
+                .append("发生任务预警,在")
+                .append(MonitorDateUtils.format(startTime))
+                .append("--")
+                .append(MonitorDateUtils.format(endTime))
+                .append("时段内没有任务创建,").append("请及时处理!").append("\n");
+        return buffer.toString();
     }
 
 }
