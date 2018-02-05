@@ -1,23 +1,21 @@
 package com.treefinance.saas.monitor.biz.autostat.template.parser.impl;
 
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
+import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilterContext;
 import com.treefinance.saas.monitor.biz.autostat.elasticjob.ElasticSimpleJobService;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.calculator.DefaultStatDataCalculator;
-import com.treefinance.saas.monitor.biz.autostat.template.job.StatCalculateJob;
+import com.treefinance.saas.monitor.biz.autostat.template.job.StatCalculateLocalJob;
 import com.treefinance.saas.monitor.biz.autostat.template.job.StatDataFlushJob;
 import com.treefinance.saas.monitor.biz.autostat.template.parser.StatTemplateParser;
-import com.treefinance.saas.monitor.biz.autostat.template.service.StatGroupService;
-import com.treefinance.saas.monitor.biz.autostat.template.service.StatItemService;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatTemplateService;
-import com.treefinance.saas.monitor.dao.entity.StatGroup;
-import com.treefinance.saas.monitor.dao.entity.StatItem;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * Created by yh-treefinance on 2018/1/23.
@@ -29,13 +27,14 @@ public class AutoStatTemplateParser implements StatTemplateParser {
     @Autowired
     StatTemplateService statTemplateService;
     @Autowired
-    StatGroupService statGroupService;
-    @Autowired
-    StatItemService statItemService;
-    @Autowired
     ElasticSimpleJobService elasticSimpleJobService;
     @Autowired
     DefaultStatDataCalculator statDataSpelCalculator;
+
+    /**
+     * local job
+     */
+    private Map<String, StatCalculateLocalJob> statCalculateLocalJobs = Maps.newConcurrentMap();
 
 
     @Override
@@ -50,29 +49,33 @@ public class AutoStatTemplateParser implements StatTemplateParser {
         Assert.notNull(statTemplate.getStatCron(), "统计cron不能为空");
         Assert.isTrue(Byte.valueOf("1").equals(statTemplate.getStatus()), "统计模板必须先启用");
 
-        Long templateId = statTemplate.getId();
-        List<StatGroup> statGroups = statGroupService.get(templateId);
-        List<StatItem> statItems = statItemService.get(templateId);
-
         // 2.注册过滤器（数据计算器）
-        StatCalculateJob statCalculateJob = new StatCalculateJob(statTemplate, statDataSpelCalculator);
+        StatCalculateLocalJob statCalculateJob = new StatCalculateLocalJob(statTemplate, statDataSpelCalculator);
         basicDataFilterContext.registerFilter(statTemplate, statCalculateJob);
+        statCalculateLocalJobs.put(statTemplate.getTemplateCode(), statCalculateJob);
 
         // 3.生成数据计算任务
-        JobCoreConfiguration statCalculateJobConf = JobCoreConfiguration
-                .newBuilder(templateCode + "-DataCalc", statTemplate.getStatCron(), 1)
-                .failover(true)
-                .description(statTemplate.getTemplateName())
-                .build();
-        elasticSimpleJobService.createJob(statCalculateJob, statCalculateJobConf);
+//        JobCoreConfiguration statCalculateJobConf = JobCoreConfiguration
+//                .newBuilder(templateCode + "-DataCalc", statTemplate.getStatCron(), 1)
+//                .failover(true)
+//                .description(statTemplate.getTemplateName())
+//                .build();
+//        elasticSimpleJobService.createJob(statCalculateJob, statCalculateJobConf);
 
         // 4.数据刷新定时任务
         StatDataFlushJob statDataFlushJob = new StatDataFlushJob(statTemplate, statDataSpelCalculator);
         JobCoreConfiguration statDataFlushJobConf = JobCoreConfiguration
-                .newBuilder(templateCode + "-DataFlush", statTemplate.getStatCron(), 1)
+                .newBuilder(templateCode /*+ "-DataFlush"*/, statTemplate.getFlushDataCron(), 1)
                 .failover(true)
                 .description(statTemplate.getTemplateName())
                 .build();
         elasticSimpleJobService.createJob(statDataFlushJob, statDataFlushJobConf);
+    }
+
+
+    @Scheduled(fixedRate = 60000)
+    public void scheduledLocalJob() {
+        // 每分钟定时执行
+        statCalculateLocalJobs.values().forEach(statCalculateLocalJob -> statCalculateLocalJob.execute(null));
     }
 }

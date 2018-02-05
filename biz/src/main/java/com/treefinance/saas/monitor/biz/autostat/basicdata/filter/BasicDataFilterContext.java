@@ -65,4 +65,13 @@ public class BasicDataFilterContext {
         }
         return dataFilters;
     }
+
+    /**
+     * 获取所有Filter
+     *
+     * @return
+     */
+    public List<BasicDataFilter> getAllBasicDataFilters() {
+        return Lists.newArrayList(contextMap.values());
+    }
 }

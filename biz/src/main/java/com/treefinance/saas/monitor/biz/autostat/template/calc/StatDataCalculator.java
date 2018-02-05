@@ -27,4 +27,11 @@ public interface StatDataCalculator {
      * @return
      */
     List<Map<String, Object>> flushData(StatTemplate statTemplate);
+
+    /**
+     * 获取计算器
+     *
+     * @return
+     */
+    ExpressionCalculator getExpressionCalculator();
 }

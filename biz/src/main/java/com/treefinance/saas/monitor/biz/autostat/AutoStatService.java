@@ -49,12 +49,6 @@ public class AutoStatService implements InitializingBean {
      */
     private Map<Long, DefaultMQPushConsumer> consumerContext = Maps.newConcurrentMap();
 
-//    private LoadingCache<String, StatTemplate> cache = CacheBuilder.newBuilder()
-//            .refreshAfterWrite(5, TimeUnit.MINUTES)
-//            .refreshAfterWrite(5, TimeUnit.MINUTES)
-//            .maximumSize(2000).build(CacheLoader.from(code -> statTemplateService.getByCode(code)));
-
-
     /**
      * 启动基础数据监听器
      *
