@@ -151,6 +151,36 @@ public class DiamondConfig {
     //预警消息,剔除的商户
     @DAttribute(key = "monitor.alarm.excludeAppIdsAll")
     private String monitorAlarmExcludeAppIdsAll;
+    /**
+     * ivr 服务密钥
+     */
+    @DAttribute(key = "auth.ivr.accessKey")
+    private String ivrAccessKey;
+    /**
+     * ivr token
+     */
+    @DAttribute(key = "auth.ivr.token")
+    private String ivrToken;
+
+
+
+
+
+    public String getIvrAccessKey() {
+        return ivrAccessKey;
+    }
+
+    public void setIvrAccessKey(String ivrAccessKey) {
+        this.ivrAccessKey = ivrAccessKey;
+    }
+
+    public String getIvrToken() {
+        return ivrToken;
+    }
+
+    public void setIvrToken(String ivrToken) {
+        this.ivrToken = ivrToken;
+    }
 
     public String getMonitorEnvironment() {
         return monitorEnvironment;
