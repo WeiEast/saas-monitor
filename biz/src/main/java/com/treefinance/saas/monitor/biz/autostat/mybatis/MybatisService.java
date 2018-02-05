@@ -21,6 +21,8 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +37,10 @@ public class MybatisService {
 
     @Autowired
     private AutoStatMapper autoStatMapper;
+    /**
+     * conditionMap
+     */
+    private final Map<String, ReentrantLock> lockMap = Maps.newConcurrentMap();
 
     /**
      * 获取表名
@@ -92,20 +98,32 @@ public class MybatisService {
      * @return
      */
     public int batchInsertOrUpdate(String tableName, List<Map<String, Object>> dataList) {
-        List<DbColumn> dbColumns = getTableColumns(tableName);
-        List<String> columnNames = dbColumns.stream().map(DbColumn::getActualColumnName).collect(Collectors.toList());
-
-        Set<String> dataKeys = Sets.newHashSet();
-        dataList.stream().forEach(map -> dataKeys.addAll(map.keySet()));
-        // 取交集：仅更新需要字段
-        columnNames.retainAll(dataKeys);
-
-        List<Object> rows = Lists.newArrayList();
-        Map<String, Object> paramsMap = Maps.newHashMap();
-
-        int result = -1;
+        // lock by tables 防止并发死锁
+        ReentrantLock lock = lockMap.get(tableName);
+        if (lock == null) {
+            synchronized (this) {
+                if (!lockMap.containsKey(tableName)) {
+                    lock = new ReentrantLock(true);
+                    lockMap.put(tableName, lock);
+                }
+            }
+        }
         try {
-            paramsMap.put("tableName",tableName);
+            lock.lock();
+            logger.info("lock table for batchInsertOrUpdate: tableName={}", tableName);
+            List<DbColumn> dbColumns = getTableColumns(tableName);
+            List<String> columnNames = dbColumns.stream().map(DbColumn::getActualColumnName).collect(Collectors.toList());
+
+            Set<String> dataKeys = Sets.newHashSet();
+            dataList.stream().forEach(map -> dataKeys.addAll(map.keySet()));
+            // 取交集：仅更新需要字段
+            columnNames.retainAll(dataKeys);
+
+            List<Object> rows = Lists.newArrayList();
+            Map<String, Object> paramsMap = Maps.newHashMap();
+
+            int result = -1;
+            paramsMap.put("tableName", tableName);
             paramsMap.put("columns", columnNames);
             paramsMap.put("rows", rows);
 
@@ -117,12 +135,14 @@ public class MybatisService {
                 rows.add(row);
             }
             result = autoStatMapper.batchInsertOrUpdate(paramsMap);
-        } finally {
-            logger.info("batchInsertOrUpdate : result={}, tableName={}, columnNames={},paramsMap={}, dataList={}",
+            logger.info("batchInsertOrUpdate : result={}, tableName={}, columnNames={}, paramsMap={}, dataList={}",
                     result, tableName, JSON.toJSONString(columnNames),
                     JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
+            return result;
+        } finally {
+            lock.unlock();
+            logger.info("unlock table for batchInsertOrUpdate: tableName={}", tableName);
         }
-        return result;
     }
 
 
