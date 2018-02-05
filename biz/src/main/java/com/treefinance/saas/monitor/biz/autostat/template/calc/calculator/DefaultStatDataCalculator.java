@@ -180,6 +180,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         }
         // 获取数据
         HashOperations<String, String, Object> hashOperations = redisTemplate.opsForHash();
+        List<String> emptyDataKeys = Lists.newArrayList();
         dataKeySet.forEach(dataKey -> {
             Map<String, Object> dataMap = hashOperations.entries(dataKey);
             if (MapUtils.isNotEmpty(dataMap)) {
@@ -191,8 +192,12 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                     dataMap.put(AsConstants.DATA_TIME, new Date(dataTime));
                 }
                 resultList.add(dataMap);
+            } else {
+                emptyDataKeys.add(dataKey);
             }
         });
+        // 移除空数据key
+        redisTemplate.boundSetOps(dataListKey).remove(emptyDataKeys.toArray(new String[]{}));
 
         // 二次计算(统计数据来源：0-基础数据，1-统计数据项)
         List<StatItem> _statItems = statItems.stream()
@@ -215,8 +220,8 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             mybatisService.batchInsertOrUpdate(statTemplate.getDataObject(), resultList);
         }
 
-        // 清除redis数据
-        redisTemplate.delete(dataKeySet);
+//        // 清除redis数据
+//        redisTemplate.delete(dataKeySet);
         return resultList;
     }
 
