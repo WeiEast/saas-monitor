@@ -19,6 +19,7 @@ import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.OperatorStatD
 import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
 import com.treefinance.saas.monitor.facade.service.stat.OperatorStatAccessFacade;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -100,6 +101,47 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         }
         logger.info("查询各个运营商日监控统计数据(分页),返回结果result={}", JSON.toJSONString(result));
         return MonitorResultBuilder.pageResult(request, result, total);
+    }
+
+    @Override
+    public MonitorResult<List<OperatorStatAccessRO>> queryOperatorStatHourAccessListWithPage(OperatorStatAccessRequest request) {
+        if (request == null || request.getDataDate() == null || request.getStatType() == null
+                || StringUtils.isBlank(request.getAppId()) || request.getIntervalMins() == null) {
+            logger.error("查询各个运营商小时监控统计数据(分页),输入参数为空,request={}", JSON.toJSONString(request));
+            throw new ParamCheckerException("请求参数非法");
+        }
+        logger.info("查询各个运营商小时监控统计数据(分页),输入参数request={}", JSON.toJSONString(request));
+        List<OperatorStatAccessRO> result = Lists.newArrayList();
+        OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
+
+        criteria.setLimit(request.getPageSize());
+        criteria.setOffset(request.getOffset());
+        OperatorStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        Date startTime = request.getDataDate();
+        Date endTime = DateUtils.addMinutes(request.getDataDate(), request.getIntervalMins());
+        innerCriteria.andAppIdEqualTo(request.getAppId())
+                .andDataTypeEqualTo(request.getStatType())
+                .andDataTimeGreaterThanOrEqualTo(startTime)
+                .andDataTimeLessThan(endTime);
+        if (StringUtils.isNotBlank(request.getGroupName())) {
+            innerCriteria.andGroupNameLike("%" + request.getGroupName() + "%");
+        }
+
+        long total = operatorStatAccessMapper.countByExample(criteria);
+        if (total == 0) {
+            return MonitorResultBuilder.pageResult(request, result, 0L);
+        }
+
+        //数据库5分钟一个点,无法用数据库分页,这里手动分页
+        List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
+        List<OperatorStatAccess> changeList = this.changeIntervalDataTimeOperatorStatAccess(list, request.getIntervalMins());
+        changeList = changeList.stream().sorted((o1, o2) -> o2.getConfirmMobileCount().compareTo(o1.getConfirmMobileCount())).collect(Collectors.toList());
+        changeList = changeList.subList(request.getOffset(), request.getPageSize());
+        for (OperatorStatAccess data : changeList) {
+            OperatorStatAccessRO ro = DataConverterUtils.convert(data, OperatorStatAccessRO.class);
+            result.add(ro);
+        }
+        return MonitorResultBuilder.pageResult(request, result, changeList.size());
     }
 
     @Override
