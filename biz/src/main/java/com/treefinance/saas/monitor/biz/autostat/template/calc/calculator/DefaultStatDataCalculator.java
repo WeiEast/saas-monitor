@@ -232,10 +232,10 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 cronDate = DateUtils.addMilliseconds(cronDate, -2 * timeDiff);
                 cronDate = cronExpression.getNextValidTimeAfter(cronDate);
             }
+            return cronDate;
         } catch (ParseException e) {
             throw new RuntimeException("parse cron exception: cron=" + statCron, e);
         }
-        return cronExpression.getNextValidTimeAfter(currentTime);
     }
 
     public ExpressionCalculator getExpressionCalculator() {
