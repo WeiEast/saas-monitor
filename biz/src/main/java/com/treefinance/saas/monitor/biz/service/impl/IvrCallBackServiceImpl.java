@@ -41,7 +41,7 @@ public class IvrCallBackServiceImpl implements IvrCallBackService {
         try {
             map.put("params", AESUtils.encrytDataWithBase64AsString(JSONObject.toJSONString(stringStringMap), ivrConfig.getAccessKey()));
         } catch (Exception e) {
-            e.printStackTrace();
+           logger.error("exception",e);
         }
 
 
