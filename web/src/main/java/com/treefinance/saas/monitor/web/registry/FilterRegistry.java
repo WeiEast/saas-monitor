@@ -47,15 +47,15 @@ public class FilterRegistry {
         return bean;
     }
 
-    @Bean
-    public FilterRegistrationBean webContextFilter() {
-        FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(new WebContextFilter());
-        registration.setName("webContextFilter");
-        registration.addUrlPatterns("/*");
-        registration.setOrder(1);
-        return registration;
-    }
+//    @Bean
+//    public FilterRegistrationBean webContextFilter() {
+//        FilterRegistrationBean registration = new FilterRegistrationBean();
+//        registration.setFilter(new WebContextFilter());
+//        registration.setName("webContextFilter");
+//        registration.addUrlPatterns("/*");
+//        registration.setOrder(1);
+//        return registration;
+//    }
 
     @Bean
     public FilterRegistrationBean ivrFilter(DiamondConfig diamondConfig) {
