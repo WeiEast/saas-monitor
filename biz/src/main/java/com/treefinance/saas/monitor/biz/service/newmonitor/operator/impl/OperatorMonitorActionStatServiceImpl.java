@@ -147,7 +147,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         }
         setOperations.add(uniqueValue);
         if (setOperations.getExpire() == -1) {
-            setOperations.expire(2, TimeUnit.HOURS);
+            setOperations.expire(2, TimeUnit.DAYS);
         }
 
         //统计时段内只统计用户一个手机号的数据
@@ -247,7 +247,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         }
         setOperations.add(uniqueValue);
         if (setOperations.getExpire() == -1) {
-            setOperations.expire(2, TimeUnit.HOURS);
+            setOperations.expire(2, TimeUnit.DAYS);
         }
 
         //统计时段内只统计用户一个手机号的数据
@@ -266,7 +266,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
                 hashOperations.put(uniqueValue, accountNo);
             }
             if (hashOperations.getExpire() == -1) {
-                setOperations.expire(2, TimeUnit.HOURS);
+                hashOperations.expire(2, TimeUnit.DAYS);
             }
 
         }
