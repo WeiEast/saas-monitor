@@ -47,6 +47,7 @@ public class IvrFilter extends OncePerRequestFilter {
         String params = null;
         try {
             // 1.验证token
+            logger.info("{} request for {} : headers={}", request.getMethod(), request.getRequestURL(), JSON.toJSONString(request.getHeaderNames()));
             if (!diamondConfig.getIvrToken().equals(token)) {
                 logger.info("无效的token: token={}, ivrToken={}...", token, diamondConfig.getIvrToken());
                 String responseBody = Jackson.toJSONString(SimpleResult.failResult("无效的token"));
