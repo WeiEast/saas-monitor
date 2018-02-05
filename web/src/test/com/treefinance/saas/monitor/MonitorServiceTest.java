@@ -1,13 +1,18 @@
-package com.treefinance.saas.monitor;
+package treefinance.saas.monitor;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
+import com.treefinance.saas.monitor.biz.service.OperatorMonitorAllAlarmService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
@@ -46,6 +51,8 @@ public class MonitorServiceTest {
     private RedisDao redisDao;
     @Autowired
     private SmsNotifyService smsNotifyService;
+    @Autowired
+    private OperatorMonitorAllAlarmService operatorMonitorAllAlarmService;
 
     @Test
     public void testMail() {
@@ -218,5 +225,16 @@ public class MonitorServiceTest {
                 .append("时段内没有任务创建,").append("请及时处理!").append("\n");
         return buffer.toString();
     }
+
+    @Test
+    public void alarmAll(){
+        String text = "{\"alarmSwitch\":\"on\",\"alarmType\":1,\"alarmTypeDesc\":\"总运营商按人统计预警\"," +
+                "\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"callbackSuccessRate\":70,\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"intervalMins\":30,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"mailAlarmSwitch\":\"on\",\"previousDays\":7,\"processSuccessRate\":70,\"taskTimeoutSecs\":600,\"weChatAlarmSwitch\":\"on\",\"wholeConversionRate\":90}";
+        OperatorMonitorAlarmConfigDTO configDTO = JSONObject.toJavaObject(JSON.parseObject(text), OperatorMonitorAlarmConfigDTO
+                .class);
+
+        operatorMonitorAllAlarmService.alarm(new Date(),configDTO, ETaskOperatorStatType.TASK);
+    }
+
 
 }

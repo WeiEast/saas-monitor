@@ -59,6 +59,20 @@ public class DiamondConfig {
     @DAttribute(key = "operator.alarm.operator.name.list")
     private String operatorAlarmOperatorNameList;
 
+
+    /**
+     * 运营商预警,确定预警等级的上下界
+     */
+    @DAttribute(key = "operator.alarm.level.error.lower")
+    private Integer errorLower;
+
+
+    /**
+     * 运营商预警,确定预警等级的上下界，warning等级的下界，<= warningLower info; > warningLower && < errorLower warning ; >= errorLower error
+     */
+    @DAttribute(key = "operator.alarm.level.warning.lower")
+    private Integer warningLower;
+
     /**
      * 运营商预警,统计数量低于此值时,取特殊阀值处理
      */
@@ -136,6 +150,7 @@ public class DiamondConfig {
     //预警消息,微信通知开关
     @DAttribute(key = "monitor.alarm.wechat.switch")
     private String monitorAlarmWechatSwitch;
+
     //预警消息,邮箱通知开关
     @DAttribute(key = "monitor.alarm.mail.switch")
     private String monitorAlarmMailSwitch;
@@ -145,6 +160,10 @@ public class DiamondConfig {
     //预警消息,剔除的商户
     @DAttribute(key = "monitor.alarm.excludeAppIdsAll")
     private String monitorAlarmExcludeAppIdsAll;
+
+
+
+
 
     public String getMonitorEnvironment() {
         return monitorEnvironment;
@@ -403,5 +422,21 @@ public class DiamondConfig {
 
     public void setTaskExistAlarmSmsSwitch(String taskExistAlarmSmsSwitch) {
         this.taskExistAlarmSmsSwitch = taskExistAlarmSmsSwitch;
+    }
+
+    public Integer getErrorLower() {
+        return errorLower;
+    }
+
+    public void setErrorLower(Integer errorLower) {
+        this.errorLower = errorLower;
+    }
+
+    public Integer getWarningLower() {
+        return warningLower;
+    }
+
+    public void setWarningLower(Integer warningLower) {
+        this.warningLower = warningLower;
     }
 }

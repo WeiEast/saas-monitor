@@ -4,13 +4,17 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
+import com.treefinance.saas.monitor.biz.config.OperatorMonitorConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
+import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorAllAlarmService;
+import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -29,6 +33,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +57,16 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private IvrNotifyService ivrNotifyService;
+
+    @Autowired
+    private SmsNotifyService smsNotifyService;
+
+    @Autowired
+    private OperatorMonitorConfig operatorMonitorConfig;
+
 
 
     @Override
@@ -96,13 +111,15 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                 return;
             }
 
-            //获取需要预警的数据信息
+            //获取需要预警的数据信息、确认预警等级
+            EAlarmLevel level = EAlarmLevel.info;
             List<OperatorStatAccessAlarmMsgDTO> msgList = getAlarmMsgList(dataDTO, compareDTO, config);
             logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻baseTime={},所有运营商统计需要预警的数据信息msgList={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(msgList));
             if (CollectionUtils.isEmpty(msgList)) {
                 return;
             }
+
             //发送预警
             alarmMsg(msgList, jobTime, startTime, endTime, config, statType);
         } catch (Exception e) {
@@ -155,17 +172,95 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
 
     private void alarmMsg(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
                           OperatorMonitorAlarmConfigDTO config, ETaskOperatorStatType statType) {
+
+        boolean isError = msgList.stream().anyMatch(operatorStatAccessAlarmMsgDTO -> EAlarmLevel.error.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel()));
+        boolean isWarning = msgList.stream().anyMatch(operatorStatAccessAlarmMsgDTO -> EAlarmLevel.warning.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel()));
+
         String baseTile;
+
         String mailSwitch = config.getMailAlarmSwitch();
         String weChatSwitch = config.getWeChatAlarmSwitch();
+        String smsSwitch = diamondConfig.getTaskExistAlarmSmsSwitch();
+        String ivrSwitch = operatorMonitorConfig.getIvrSwitch();
+
         if (ETaskOperatorStatType.TASK.equals(statType)) {
             baseTile = "【总】运营商监控(按任务数统计)";
         } else {
             baseTile = "【总】运营商监控(按人数统计)";
         }
+
+        if(isError){
+            sendMail(msgList, jobTime, startTime, endTime, statType, baseTile, mailSwitch);
+            sendIvr(msgList,jobTime, startTime, endTime, statType,ivrSwitch);
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTile, weChatSwitch);
+        }else if(isWarning){
+            sendMail(msgList, jobTime, startTime, endTime, statType, baseTile, mailSwitch);
+            sendSms(msgList, jobTime, startTime, endTime, statType, smsSwitch);
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTile, weChatSwitch);
+        }else {
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTile, weChatSwitch);
+        }
+
+    }
+    private void sendSms(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
+                         ETaskOperatorStatType statType, String smsSwitch){
+        if (StringUtils.equalsIgnoreCase(smsSwitch, "on")) {
+
+            List<OperatorStatAccessAlarmMsgDTO> errorMsgs = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
+                    EAlarmLevel.warning.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+
+            String type = ETaskOperatorStatType.TASK.equals(statType)?"运营商-分时任务":"运营商-分时人数";
+
+            StringBuilder content = new StringBuilder();
+            content.append(type);
+
+            String format = "yyyy-MM-dd HH:mm:SS";
+            String startTimeStr = new SimpleDateFormat(format).format(startTime);
+            String endTimeStr = new SimpleDateFormat(format).format(endTime);
+
+            for(OperatorStatAccessAlarmMsgDTO dto :errorMsgs){
+                content.append("时间段:").append(startTimeStr).append("至").append(endTimeStr);
+                content.append("预警类型:").append(dto.getAlarmDesc()).append(" 偏离阀值程度").append("百分之").append(dto
+                        .getOffset());
+            }
+
+            smsNotifyService.send(content.toString());
+        } else {
+            logger.info("运营商监控,预警定时任务执行jobTime={},发送短信开关已关闭", MonitorDateUtils.format(jobTime));
+        }
+    }
+
+    private void sendIvr(List<OperatorStatAccessAlarmMsgDTO> msgList,Date jobTime, Date startTime, Date endTime,
+                         ETaskOperatorStatType statType,String ivrSwitch){
+            if(StringUtils.equalsIgnoreCase(ivrSwitch, "on")){
+                String type = ETaskOperatorStatType.TASK.equals(statType)?"运营商-分时任务":"运营商-分时人数";
+
+                List<OperatorStatAccessAlarmMsgDTO> errorMsgs = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
+                        EAlarmLevel.error.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+
+                StringBuilder content = new StringBuilder();
+                content.append(type);
+
+                String format = "yyyy年MM月dd日 a HH点mm分SS秒";
+                String startTimeStr = new SimpleDateFormat(format).format(startTime);
+                String endTimeStr = new SimpleDateFormat(format).format(endTime);
+
+                for(OperatorStatAccessAlarmMsgDTO dto :errorMsgs){
+                    content.append("时间段是").append(startTimeStr).append("至").append(endTimeStr);
+                    content.append("预警类型是").append(dto.getAlarmDesc()).append("偏离阀值程度").append("百分之").append(dto.getOffset());
+                }
+
+                ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm,content.toString());
+            }else {
+                logger.info("运营商监控,预警定时任务执行jobTime={},ivr开关已关闭", MonitorDateUtils.format(jobTime));
+            }
+
+    }
+
+    private void sendMail(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime, ETaskOperatorStatType statType, String baseTile, String mailSwitch) {
         if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
 
-            String mailBaseTitle = "【${level}】【${module}】【${type}】发生 ${detail} 预警";
+            String mailBaseTitle = "【${level}】【${module}】【${type}】发生 ${de4tail} 预警";
 
             Map<String,Object> map = new HashMap<>(4);
             map.put("type",ETaskOperatorStatType.TASK.equals(statType)?"运营商-分时任务":"运营商-分时人数");
@@ -176,6 +271,9 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
         }
+    }
+
+    private void sendWeChat(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime, String baseTile, String weChatSwitch) {
         if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
             String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile);
             alarmMessageProducer.sendWebChart4OperatorMonitor(weChatBody, jobTime);
@@ -308,6 +406,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             } else {
                 BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getConfirmMobileConversionRate().divide(confirmMobileCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
+                determineLevel(msg, value);
             }
             msgList.add(msg);
         }
@@ -336,6 +435,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             } else {
                 BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getLoginConversionRate().divide(loginConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
+                determineLevel(msg, value);
             }
             msgList.add(msg);
         }
@@ -362,6 +462,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             } else {
                 BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getLoginSuccessRate().divide(loginSuccessCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
+                determineLevel(msg, value);
             }
             msgList.add(msg);
         }
@@ -388,6 +489,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             } else {
                 BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getCrawlSuccessRate().divide(crawlCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
+                determineLevel(msg, value);
             }
             msgList.add(msg);
         }
@@ -414,6 +516,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             } else {
                 BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getProcessSuccessRate().divide(processCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
+                determineLevel(msg, value);
             }
             msgList.add(msg);
         }
@@ -440,6 +543,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             } else {
                 BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getCallbackSuccessRate().divide(callbackCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
+                determineLevel(msg, value);
             }
             msgList.add(msg);
 
@@ -468,12 +572,28 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             } else {
                 BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getWholeConversionRate().divide(wholeConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
                 msg.setOffset(value);
+                determineLevel(msg, value);
             }
             msgList.add(msg);
 
         }
 
         return msgList;
+    }
+    /**
+     * 确定预警等级
+     * @param msg 预警消息
+     * @param value offset 某一属性的偏转值
+     *
+     * */
+    private void determineLevel(OperatorStatAccessAlarmMsgDTO msg, BigDecimal value) {
+        if(value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0){
+            msg.setAlarmLevel(EAlarmLevel.error);
+        }else if(value.compareTo(BigDecimal.valueOf(diamondConfig.getWarningLower())) > 0){
+            msg.setAlarmLevel(EAlarmLevel.warning);
+        }else {
+            msg.setAlarmLevel(EAlarmLevel.info);
+        }
     }
 
 
@@ -494,8 +614,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         List<OperatorAllStatAccessDTO> previousDTOList = Lists.newArrayList();
         for (Date previousOClock : previousOClockList) {
             Date startTime = DateUtils.addMinutes(previousOClock, -config.getIntervalMins());
-            Date endTime = previousOClock;
-            OperatorAllStatAccessDTO dto = this.getBaseData(jobTime, startTime, endTime, config, statType);
+            OperatorAllStatAccessDTO dto = this.getBaseData(jobTime, startTime, previousOClock, config, statType);
             if (dto != null) {
                 previousDTOList.add(dto);
             }
