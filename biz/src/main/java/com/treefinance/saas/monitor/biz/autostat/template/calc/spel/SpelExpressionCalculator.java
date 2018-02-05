@@ -81,6 +81,8 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         dataMap.keySet().forEach(key -> context.setVariable(key, dataMap.get(key)));
         Object value = null;
         try {
+            initContext(AsConstants.DATA, dataMap);
+
             context.registerFunction("count", this.getClass().getDeclaredMethod("count", Object.class));
             context.registerFunction("distinct", this.getClass().getDeclaredMethod("distinct", Object.class));
             context.registerFunction("exists", this.getClass().getDeclaredMethod("exists", Object.class));
@@ -95,6 +97,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             throw new RuntimeException(e);
         } finally {
             destroyContext(AsConstants.EXPRESSION);
+            destroyContext(AsConstants.DATA);
         }
         return value;
     }
@@ -123,11 +126,11 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         String expression = context.get().get(AsConstants.EXPRESSION).toString();
         long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
-        Long dataTime = (Long) context.get().get(AsConstants.DATA_TIME);
 
-        String redisKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, "DISTINCT",
-                statTemplate.getTemplateCode(), expression,
-                DateFormatUtils.format(dataTime, "yyyy-MM-dd HH:mm:ss"));
+        String dataTimeStr = (String) context.get().get(AsConstants.DATA_TIME);
+        String redisKey = Joiner.on(":").useForNull("null").join(AsConstants.REDIS_PREFIX, "DISTINCT",
+                statTemplate.getTemplateCode(), expression, dataTimeStr);
+
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         String value = object.toString();
         if (redisTemplate.boundSetOps(redisKey).isMember(value)) {
@@ -151,11 +154,12 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         String expression = context.get().get(AsConstants.EXPRESSION).toString();
         long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
-        Long dataTime = (Long) context.get().get(AsConstants.DATA_TIME);
+        Map<String, Object> dataMap = (Map<String, Object>) context.get().get(AsConstants.DATA);
 
-        String redisKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, "DISTINCT",
-                statTemplate.getTemplateCode(), expression,
-                DateFormatUtils.format(dataTime, "yyyy-MM-dd HH:mm:ss"));
+        String dataTimeStr = (String) context.get().get(AsConstants.DATA_TIME);
+        String redisKey = Joiner.on(":").useForNull("null").join(AsConstants.REDIS_PREFIX, "DISTINCT",
+                statTemplate.getTemplateCode(), expression, dataTimeStr);
+
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         String value = object.toString();
         if (redisTemplate.boundSetOps(redisKey).isMember(value)) {
@@ -195,7 +199,6 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         System.out.println(calculator.calculate(map, "(#taskSteps.?[#this[stepCode] == \"create\"]).size()>0?1:0"));
         System.out.println(calculator.calculate(map, "\"virtual_total_stat_appId\""));
         System.out.println(calculator.calculate(map, "#day(#createTime)"));
-
     }
 
 }

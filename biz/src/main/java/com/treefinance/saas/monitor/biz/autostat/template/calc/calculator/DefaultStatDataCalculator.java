@@ -101,6 +101,8 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 }
                 dataMap.put(AsConstants.DATA_TIME, dataTime.getTime());
                 String dataTimeStr = DateFormatUtils.format(dataTime, "yyyy-MM-dd HH:mm:ss");
+                // 计算器上下文，需要数据时间
+                expressionCalculator.initContext(AsConstants.DATA_TIME, dataTimeStr);
 
                 // 3.计算各分组数据项值
                 _statGroups.stream().filter(statGroup -> !AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
@@ -197,7 +199,9 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             }
         });
         // 移除空数据key
-        redisTemplate.boundSetOps(dataListKey).remove(emptyDataKeys.toArray(new String[]{}));
+        if(CollectionUtils.isNotEmpty(emptyDataKeys)){
+            redisTemplate.boundSetOps(dataListKey).remove(emptyDataKeys.toArray(new String[]{}));
+        }
 
         // 二次计算(统计数据来源：0-基础数据，1-统计数据项)
         List<StatItem> _statItems = statItems.stream()
