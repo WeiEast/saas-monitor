@@ -2,11 +2,18 @@ package com.treefinance.saas.monitor.biz.autostat.template.calc.spel;
 
 import com.alibaba.fastjson.JSON;
 import com.datatrees.toolkits.util.other.DataUtils;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
+import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.ExpressionCalculator;
+import com.treefinance.saas.monitor.biz.autostat.utils.CronUtils;
+import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpression;
@@ -18,6 +25,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 数据计算器
@@ -29,19 +37,53 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
      * logger
      */
     private static Logger logger = LoggerFactory.getLogger(SpelExpressionCalculator.class);
+
+    /**
+     * context
+     */
+    private static ThreadLocal<Map<String, Object>> context = new ThreadLocal<>();
+
     /**
      * spel 解析器
      */
     private ExpressionParser parser = new SpelExpressionParser();
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    @Override
+    public void initContext(String key, Object value) {
+        Map<String, Object> contextMap = context.get();
+        if (contextMap == null) {
+            contextMap = Maps.newHashMap();
+            context.set(contextMap);
+        }
+        contextMap.put(key, value);
+    }
+
+    /**
+     * 移除
+     *
+     * @param key
+     */
+    public void destroyContext(String key) {
+        Map<String, Object> contextMap = context.get();
+        if (contextMap != null) {
+            contextMap.remove(key);
+        }
+    }
+
     @Override
     public Object calculate(Map<String, Object> dataMap, String expression) {
+        initContext(AsConstants.EXPRESSION, expression);
+        initContext(AsConstants.REDIS, redisTemplate);
         StandardEvaluationContext context = new StandardEvaluationContext();
         dataMap.keySet().forEach(key -> context.setVariable(key, dataMap.get(key)));
         Object value = null;
         try {
             context.registerFunction("count", this.getClass().getDeclaredMethod("count", Object.class));
             context.registerFunction("distinct", this.getClass().getDeclaredMethod("distinct", Object.class));
+            context.registerFunction("exists", this.getClass().getDeclaredMethod("exists", Object.class));
             context.registerFunction("day", this.getClass().getDeclaredMethod("day", Long.class));
 
             SpelExpression spelExpression = (SpelExpression) parser.parseExpression(expression);
@@ -51,6 +93,8 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         } catch (Exception e) {
             logger.error(" calculate expression={} for data={}", expression, JSON.toJSONString(expression), e);
             throw new RuntimeException(e);
+        } finally {
+            destroyContext(AsConstants.EXPRESSION);
         }
         return value;
     }
@@ -73,11 +117,59 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
      * @return
      */
     public static int distinct(Object object) {
-        return object == null ? 0 : 1;
+        if (object == null) {
+            return 0;
+        }
+        StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
+        String expression = context.get().get(AsConstants.EXPRESSION).toString();
+        long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        Long dataTime = (Long) context.get().get(AsConstants.DATA_TIME);
+
+        String redisKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, "DISTINCT",
+                statTemplate.getTemplateCode(), expression,
+                DateFormatUtils.format(dataTime, "yyyy-MM-dd HH:mm:ss"));
+        StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
+        String value = object.toString();
+        if (redisTemplate.boundSetOps(redisKey).isMember(value)) {
+            return 0;
+        }
+        redisTemplate.boundSetOps(redisKey).add(value);
+        redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
+        return 1;
     }
 
     /**
+     * 是否存在
+     *
+     * @param object
+     * @return
+     */
+    public static boolean exists(Object object) {
+        if (object == null) {
+            return false;
+        }
+        StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
+        String expression = context.get().get(AsConstants.EXPRESSION).toString();
+        long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        Long dataTime = (Long) context.get().get(AsConstants.DATA_TIME);
+
+        String redisKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, "DISTINCT",
+                statTemplate.getTemplateCode(), expression,
+                DateFormatUtils.format(dataTime, "yyyy-MM-dd HH:mm:ss"));
+        StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
+        String value = object.toString();
+        if (redisTemplate.boundSetOps(redisKey).isMember(value)) {
+            return true;
+        }
+        redisTemplate.boundSetOps(redisKey).add(value);
+        redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
+        return false;
+    }
+
+
+    /**
      * 获取日
+     *
      * @param times
      * @return
      * @throws ParseException
@@ -91,6 +183,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
 
 
     public static void main(String[] args) {
+        System.out.println(DateFormatUtils.format(1517403542000L, "yyyy-MM-dd HH:mm:ss"));
         String json = "{\"appId\":\"QATestabcdefghQA\",\"bizType\":3,\"completeTime\":1516959226000,\"monitorType\":\"task\",\"status\":1,\"stepCode\":\"\",\"taskId\":141595882901499904,\"uniqueId\":\"test\"}";
         Map<String, Object> map = JSON.parseObject(json);
         SpelExpressionCalculator calculator = new SpelExpressionCalculator();
