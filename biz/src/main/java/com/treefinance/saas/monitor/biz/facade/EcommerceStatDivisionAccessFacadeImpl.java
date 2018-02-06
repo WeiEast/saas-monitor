@@ -71,7 +71,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
 
             EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatAccess, EcommerceAllDetailRO.class);
             ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatAccess.getEntryCount(), ecommerceAllStatAccess.getStartLoginCount()));
-            ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatAccess.getEntryCount(), ecommerceAllStatAccess.getLoginSuccessCount()));
+            ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatAccess.getStartLoginCount(), ecommerceAllStatAccess.getLoginSuccessCount()));
             ecommerceAllDetailRO.setCrawlSuccessRate(calcRate(ecommerceAllStatAccess.getLoginSuccessCount(), ecommerceAllStatAccess.getCrawlSuccessCount()));
             ecommerceAllDetailRO.setProcessSuccessRate(calcRate(ecommerceAllStatAccess.getCrawlSuccessCount(), ecommerceAllStatAccess.getProcessSuccessCount()));
             ecommerceAllDetailRO.setCallbackSuccessRate(calcRate(ecommerceAllStatAccess.getProcessSuccessCount(), ecommerceAllStatAccess.getCallbackSuccessCount()));
@@ -151,7 +151,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
 
                 EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatDayAccess, EcommerceAllDetailRO.class);
                 ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getStartLoginCount()));
-                ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getLoginSuccessCount()));
+                ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatDayAccess.getStartLoginCount(), ecommerceAllStatDayAccess.getLoginSuccessCount()));
                 ecommerceAllDetailRO.setCrawlSuccessRate(calcRate(ecommerceAllStatDayAccess.getLoginSuccessCount(), ecommerceAllStatDayAccess.getCrawlSuccessCount()));
                 ecommerceAllDetailRO.setProcessSuccessRate(calcRate(ecommerceAllStatDayAccess.getCrawlSuccessCount(), ecommerceAllStatDayAccess.getProcessSuccessCount()));
                 ecommerceAllDetailRO.setCallbackSuccessRate(calcRate(ecommerceAllStatDayAccess.getProcessSuccessCount(), ecommerceAllStatDayAccess.getCallbackSuccessCount()));
