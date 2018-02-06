@@ -73,25 +73,30 @@ public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<Map<Str
     @Override
     public void doFilter(List<Map<String, Object>> data) {
         if (CollectionUtils.isNotEmpty(data)) {
-            int size = data.size();
-            int remainderSize = dataQueue.remainingCapacity();
-            // 队列是否已满，如果已满触发消费
-            if (remainderSize < size) {
-                execute(null);
-            }
-            ExpressionCalculator expressionCalculator = statDataCalculator.getExpressionCalculator();
-            // 计算模板
-            expressionCalculator.initContext(AsConstants.STAT_TEMPLATE, statTemplate);
-
-            Long expressioId = statTemplate.getId();
-            String expression = statTemplate.getBasicDataFilter();
-            data.forEach(map -> {
-                Map<String, Object> dataMap = Maps.newHashMap();
-                if (StringUtils.isEmpty(expression) || Boolean.TRUE.equals(expressionCalculator.calculate(expressioId, expression, map))) {
-                    dataMap.putAll(map);
-                    dataQueue.add(dataMap);
+            try {
+                int size = data.size();
+                int remainderSize = dataQueue.remainingCapacity();
+                // 队列是否已满，如果已满触发消费
+                if (remainderSize < size) {
+                    execute(null);
                 }
-            });
+                ExpressionCalculator expressionCalculator = statDataCalculator.getExpressionCalculator();
+                // 计算模板
+                expressionCalculator.initContext(AsConstants.STAT_TEMPLATE, statTemplate);
+
+                Long expressioId = statTemplate.getId();
+                String expression = statTemplate.getBasicDataFilter();
+                data.forEach(map -> {
+                    Map<String, Object> dataMap = Maps.newHashMap();
+                    if (StringUtils.isEmpty(expression) || Boolean.TRUE.equals(expressionCalculator.calculate(expressioId, expression, map))) {
+                        dataMap.putAll(map);
+                        dataQueue.add(dataMap);
+                    }
+                });
+            } catch (Exception e) {
+                logger.error("fliter data error:data={}", JSON.toJSONString(data), e);
+                throw new RuntimeException(e);
+            }
         }
     }
 }
