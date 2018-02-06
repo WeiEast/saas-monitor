@@ -59,7 +59,6 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             context.set(contextMap);
         }
         contextMap.put(key, value);
-        logger.info("spel calculate context：{}", JSON.toJSONString(contextMap));
     }
 
     /**
