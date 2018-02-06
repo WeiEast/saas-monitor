@@ -15,9 +15,10 @@ public interface ExpressionCalculator {
     /**
      * 数据计算
      *
-     * @param data
+     * @param expressionId
      * @param expression
+     * @param dataMap
      * @return
      */
-    Object calculate(Map<String, Object> data, String expression);
+    Object calculate(Long expressionId, String expression, Map<String, Object> dataMap);
 }

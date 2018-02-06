@@ -74,9 +74,15 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
     }
 
     @Override
-    public Object calculate(Map<String, Object> dataMap, String expression) {
+    public Object calculate(Long expressionId, String expression, Map<String, Object> dataMap) {
+        long start = System.currentTimeMillis();
+        // 初始化
         initContext(AsConstants.EXPRESSION, expression);
+        initContext(AsConstants.EXPRESSION_ID, expressionId);
         initContext(AsConstants.REDIS, redisTemplate);
+        StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
+
+        // 数据准备
         StandardEvaluationContext context = new StandardEvaluationContext();
         dataMap.keySet().forEach(key -> context.setVariable(key, dataMap.get(key)));
         Object value = null;
@@ -91,13 +97,17 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             SpelExpression spelExpression = (SpelExpression) parser.parseExpression(expression);
             spelExpression.setEvaluationContext(context);
             value = spelExpression.getValue();
-            logger.info("spel calculate {} : result={}", expression, value);
         } catch (Exception e) {
-            logger.error(" calculate expression={} for data={}", expression, JSON.toJSONString(expression), e);
+            logger.error(" spel calculate error:  expressionId={}, expression={} result={},dataMap={}, statTemplate={}",
+                    expressionId, expression, value, JSON.toJSONString(dataMap), JSON.toJSONString(statTemplate), e);
             throw new RuntimeException(e);
         } finally {
             destroyContext(AsConstants.EXPRESSION);
             destroyContext(AsConstants.DATA);
+            if (logger.isDebugEnabled()) {
+                logger.debug(" spel calculate :  expressionId={}, expression={} result={},dataMap={}, statTemplate={}",
+                        expressionId, expression, value, JSON.toJSONString(dataMap), JSON.toJSONString(statTemplate));
+            }
         }
         return value;
     }
@@ -124,12 +134,13 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             return 0;
         }
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
-        String expression = context.get().get(AsConstants.EXPRESSION).toString();
+        Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
+//        String expression = context.get().get(AsConstants.EXPRESSION).toString();
         long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
 
         String dataTimeStr = (String) context.get().get(AsConstants.DATA_TIME);
         String redisKey = Joiner.on(":").useForNull("null").join(AsConstants.REDIS_PREFIX,
-                statTemplate.getTemplateCode(), "distinct", expression, dataTimeStr);
+                statTemplate.getTemplateCode(), "distinct", "expressionId", expressionId, dataTimeStr);
 
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         String value = object.toString();
@@ -152,12 +163,13 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             return false;
         }
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
+        Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
         String expression = context.get().get(AsConstants.EXPRESSION).toString();
         long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
 
         String dataTimeStr = (String) context.get().get(AsConstants.DATA_TIME);
         String redisKey = Joiner.on(":").useForNull("null").join(AsConstants.REDIS_PREFIX,
-                statTemplate.getTemplateCode(), "exists", expression, dataTimeStr);
+                statTemplate.getTemplateCode(), "exists", "expressionId", expressionId, dataTimeStr);
 
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         String value = object.toString();
@@ -190,14 +202,14 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         String json = "{\"appId\":\"QATestabcdefghQA\",\"bizType\":3,\"completeTime\":1516959226000,\"monitorType\":\"task\",\"status\":1,\"stepCode\":\"\",\"taskId\":141595882901499904,\"uniqueId\":\"test\"}";
         Map<String, Object> map = JSON.parseObject(json);
         SpelExpressionCalculator calculator = new SpelExpressionCalculator();
-        System.out.println(calculator.calculate(map, "#distinct(#uniqueId)"));
+        System.out.println(calculator.calculate(1L, "#distinct(#uniqueId)", map));
 
         //
         json = "{\"accountNo\":\"1$zcR5gBUG1c83qEjS4spSxJAAAAwA\",\"appId\":\"QATestabcdefghQA\",\"bizType\":2,\"createTime\":1517403542000,\"id\":143459355679813632,\"lastUpdateTime\":1517403542000,\"monitorType\":\"task_ecommerce\",\"status\":2,\"taskAttributes\":{\"idCard\":\"1$==QAG4qCG6YqbZ5B7x4jZAAAYTdnqCA1U33ohkj8YTtIGEAAAAwA\",\"mobile\":\"1$h1F8RLAXKjQ/jJTw4YvIjQAAAAwA\",\"name\":\"1$uTiLQUhWyEEnvx/Qv3uilMAAAAwA\"},\"taskSteps\":[{\"stepCode\":\"create\",\"stepIndex\":1,\"stepName\":\"创建任务\"},{\"stepCode\":\"login\",\"stepIndex\":3,\"stepName\":\"登录\"},{\"stepCode\":\"crawl\",\"stepIndex\":4,\"stepName\":\"抓取\"},{\"stepCode\":\"process\",\"stepIndex\":5,\"stepName\":\"洗数\"}],\"uniqueId\":\"test\",\"webSite\":\"taobao.com\"}";
         map = JSON.parseObject(json);
-        System.out.println(calculator.calculate(map, "(#taskSteps.?[#this[stepCode] == \"create\"]).size()>0?1:0"));
-        System.out.println(calculator.calculate(map, "\"virtual_total_stat_appId\""));
-        System.out.println(calculator.calculate(map, "#day(#createTime)"));
+        System.out.println(calculator.calculate(1L, "(#taskSteps.?[#this[stepCode] == \"create\"]).size()>0?1:0", map));
+        System.out.println(calculator.calculate(1L, "\"virtual_total_stat_appId\"", map));
+        System.out.println(calculator.calculate(1L, "#day(#createTime)", map));
     }
 
 }

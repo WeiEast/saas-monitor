@@ -86,7 +86,8 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 // 1.优先计算数据时间
                 _statGroups.stream().filter(statGroup -> AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
                         .forEach(statGroup -> {
-                            Object groupValue = expressionCalculator.calculate(data, statGroup.getGroupExpression());
+                            Long itemId = statGroup.getId();
+                            Object groupValue = expressionCalculator.calculate(itemId, statGroup.getGroupExpression(), data);
                             dataMap.put(statGroup.getGroupCode(), groupValue);
                             redisGroups.add(groupValue);
                         });
@@ -107,18 +108,20 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 // 3.计算各分组数据项值
                 _statGroups.stream().filter(statGroup -> !AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
                         .forEach(statGroup -> {
+                            Long groupId = statGroup.getId();
                             String groupCode = statGroup.getGroupCode();
                             String groupExpression = statGroup.getGroupExpression();
-                            Object groupValue = expressionCalculator.calculate(data, groupExpression);
+                            Object groupValue = expressionCalculator.calculate(groupId, groupExpression, data);
                             dataMap.put(groupCode, groupValue);
                             redisGroups.add(groupValue);
                         });
 
                 // 4.计算数据项值
                 statItems.stream().filter(statItem -> Byte.valueOf("0").equals(statItem.getDataSource())).forEach(statItem -> {
+                    Long itemId = statItem.getId();
                     String itemCode = statItem.getItemCode();
                     String itemExpression = statItem.getItemExpression();
-                    Object itemValue = expressionCalculator.calculate(data, itemExpression);
+                    Object itemValue = expressionCalculator.calculate(itemId, itemExpression, data);
                     dataMap.put(itemCode, itemValue);
                 });
                 redisGroups.add(dataTimeStr);
@@ -169,6 +172,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
     @Override
     public List<Map<String, Object>> flushData(StatTemplate statTemplate) {
+        expressionCalculator.initContext(AsConstants.STAT_TEMPLATE, statTemplate);
         // 获取模板、分组、数据项信息
         Long templateId = statTemplate.getId();
         List<StatItem> statItems = statItemService.get(templateId);
@@ -199,7 +203,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             }
         });
         // 移除空数据key
-        if(CollectionUtils.isNotEmpty(emptyDataKeys)){
+        if (CollectionUtils.isNotEmpty(emptyDataKeys)) {
             redisTemplate.boundSetOps(dataListKey).remove(emptyDataKeys.toArray(new String[]{}));
         }
 
@@ -213,7 +217,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 _statItems.forEach(statItem -> {
                     String itemCode = statItem.getItemCode();
                     String itemExpression = statItem.getItemExpression();
-                    Object value = expressionCalculator.calculate(dataMap, itemExpression);
+                    Object value = expressionCalculator.calculate(statItem.getId(), itemExpression, dataMap);
                     dataMap.put(itemCode, value);
                 });
             });
