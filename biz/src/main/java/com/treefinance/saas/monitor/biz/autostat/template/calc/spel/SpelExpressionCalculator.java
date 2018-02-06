@@ -59,6 +59,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             context.set(contextMap);
         }
         contextMap.put(key, value);
+        logger.info("spel calculate context：{}", JSON.toJSONString(contextMap));
     }
 
     /**
@@ -106,7 +107,11 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             destroyContext(AsConstants.DATA);
             if (logger.isDebugEnabled()) {
                 logger.debug(" spel calculate :  expressionId={}, expression={} result={}, dataMap={}, statTemplate={}",
-                        expressionId, expression, value, JSON.toJSONString(dataMap), statTemplate.getTemplateCode());
+                        expressionId,
+                        expression,
+                        value,
+                        JSON.toJSONString(dataMap),
+                        statTemplate.getTemplateCode());
             }
         }
         return value;

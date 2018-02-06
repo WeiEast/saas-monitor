@@ -60,6 +60,9 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         Long templateId = statTemplate.getId();
         List<StatGroup> statGroups = statGroupService.get(templateId);
 
+        // 计算模板
+        expressionCalculator.initContext(AsConstants.STAT_TEMPLATE, statTemplate);
+
         // 分组计算
         Map<Integer, List<StatGroup>> statGroupMap = statGroups.stream().collect(Collectors.groupingBy(StatGroup::getGroupIndex));
         List<Map<String, Object>> resultList = Lists.newArrayList();
@@ -99,8 +102,6 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         String templateCode = statTemplate.getTemplateCode();
         String keyPrefix = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode, groupIndex);
 
-        // 计算模板
-        expressionCalculator.initContext(AsConstants.STAT_TEMPLATE, statTemplate);
         // 计算数据项
         List<StatItem> statItems = statItemService.get(templateId);
         // 计算结果
@@ -180,10 +181,6 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         String templateCode = statTemplate.getTemplateCode();
         String statCron = statTemplate.getStatCron();
         Long expireTime = getExpireTime(statCron);
-
-
-        // 计算模板
-        expressionCalculator.initContext(AsConstants.STAT_TEMPLATE, statTemplate);
 
         // 分组名称
         List<String> groupNames = _statGroups.stream().map(StatGroup::getGroupCode).collect(Collectors.toList());
