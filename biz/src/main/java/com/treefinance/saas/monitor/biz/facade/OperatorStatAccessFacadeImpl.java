@@ -137,7 +137,11 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         List<OperatorStatAccess> pageList;
         int limit = request.getOffset() + request.getPageSize();
         if (limit > changeList.size()) {
-            pageList = changeList.subList(request.getOffset(), changeList.size());
+            if (request.getOffset() > changeList.size()) {
+                pageList = Lists.newArrayList();
+            } else {
+                pageList = changeList.subList(request.getOffset(), changeList.size());
+            }
         } else {
             pageList = changeList.subList(request.getOffset(), limit);
         }
