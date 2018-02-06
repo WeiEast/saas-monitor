@@ -222,55 +222,51 @@ public class IvrNotifyService {
      */
     @Async
     public void sendMessage(Map<String, String> paramsMap) {
-        int count = ivrConfig.getIvrCount() == null ? 3 : ivrConfig.getIvrCount();
-        for (int i = 0; i < count; i++) {
-            Map<String, String> headerMap = Maps.newHashMap();
-            headerMap.put("token", ivrConfig.getIvrToken());
-            CloseableHttpResponse response = null;
-            try {
-                response = HttpClientUtils.fullyPost(ivrConfig.getIvrUrl(), paramsMap, headerMap, null);
-                Thread.sleep(60000);
-            } catch (Exception e) {
-                logger.error("send ivr message exception: url={},paramsMap={},headerMap={}", ivrConfig.getIvrUrl(),
-                        JSON.toJSONString(paramsMap), JSON.toJSONString(headerMap), e);
-            } finally {
-                HttpClientUtils.closeResponse(response);
-                logger.info("send ivr message: url={},paramsMap={},headerMap={}", ivrConfig.getIvrUrl(),
-                        JSON.toJSONString(paramsMap), JSON.toJSONString(headerMap));
-            }
+        Map<String, String> headerMap = Maps.newHashMap();
+        headerMap.put("token", ivrConfig.getIvrToken());
+        CloseableHttpResponse response = null;
+        try {
+            response = HttpClientUtils.fullyPost(ivrConfig.getIvrUrl(), paramsMap, headerMap, null);
+        } catch (Exception e) {
+            logger.error("send ivr message exception: url={},paramsMap={},headerMap={}", ivrConfig.getIvrUrl(),
+                    JSON.toJSONString(paramsMap), JSON.toJSONString(headerMap), e);
+        } finally {
+            HttpClientUtils.closeResponse(response);
+            logger.info("send ivr message: url={},paramsMap={},headerMap={}", ivrConfig.getIvrUrl(),
+                    JSON.toJSONString(paramsMap), JSON.toJSONString(headerMap));
         }
+
     }
 
     /**
      * 重播MQ消息
      */
     public void resendMessage(IvrCallBackResult callBackResult) {
-        Map<String, Object> jsonMap = Maps.newHashMap();
-        Map<String, String> paramsMap = Maps.newHashMap();
         Long currentCount = 0L;
-        try {
 
-            Long refId = callBackResult.getRefId();
-            String redisKey = Constants.PREFIX_KEY + ":ivr-message:" + refId;
-            String message = redisTemplate.opsForValue().get(redisKey);
-            if (Long.valueOf(1).equals(refId) || StringUtils.isEmpty(message)) {
-                logger.error("resend ivr message error : message[{}] is empty", redisKey);
-                return;
-            }
-            jsonMap = JSON.parseObject(message);
-            paramsMap = encrytMessageBody(jsonMap);
+        Long refId = callBackResult.getRefId();
+        String redisKey = Constants.PREFIX_KEY + ":ivr-message:" + refId;
+        String message = redisTemplate.opsForValue().get(redisKey);
+        if (Long.valueOf(1).equals(refId) || StringUtils.isEmpty(message)) {
+            logger.error("resend ivr message error : message[{}] is empty", redisKey);
+            return;
+        }
+        Map<String, Object> jsonMap = JSON.parseObject(message);
+        Map<String, String> paramsMap = encrytMessageBody(jsonMap);
 
-            // 计数判断
-            String countKey = Constants.PREFIX_KEY + ":ivr-message:resend-count:" + refId;
-            currentCount = redisTemplate.opsForValue().increment(countKey, 1) - 1;
-            if (currentCount < ivrConfig.getIvrCount()) {
-                sendMessage(paramsMap);
-            }
-            redisTemplate.expire(countKey, 1, TimeUnit.HOURS);
-        } finally {
+        // 计数判断
+        String countKey = Constants.PREFIX_KEY + ":ivr-message:resend-count:" + refId;
+        currentCount = redisTemplate.opsForValue().increment(countKey, 1) - 1;
+        if (currentCount < ivrConfig.getIvrCount()) {
+            sendMessage(paramsMap);
             logger.info("resend ivr message : ivrcount={}, resendcount={} , callback={}, message={}, encrytJson={}",
                     ivrConfig.getIvrCount(), currentCount, JSON.toJSONString(callBackResult), JSON.toJSONString(jsonMap),
                     JSON.toJSONString(paramsMap));
+            return;
         }
+        redisTemplate.expire(countKey, 1, TimeUnit.HOURS);
+        logger.info("resend ivr message : failed, ivrcount={} < resendcount={} , callback={}, message={}, encrytJson={}",
+                ivrConfig.getIvrCount(), currentCount, JSON.toJSONString(callBackResult), JSON.toJSONString(jsonMap),
+                JSON.toJSONString(paramsMap));
     }
 }
