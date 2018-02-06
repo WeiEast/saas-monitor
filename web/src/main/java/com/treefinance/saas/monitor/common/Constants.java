@@ -10,9 +10,13 @@ public interface Constants {
     String TOKEN = "token";
 
 
-
     /**
      * 访问参数
      */
     String PARAMS = "params";
+
+    /**
+     * redis 前缀
+     */
+    String REDIS_PRFIX = "saas-monitor";
 }
