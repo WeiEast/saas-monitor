@@ -181,6 +181,11 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         String statCron = statTemplate.getStatCron();
         Long expireTime = getExpireTime(statCron);
 
+
+        // 计算模板
+        expressionCalculator.initContext(AsConstants.STAT_TEMPLATE, statTemplate);
+
+        // 分组名称
         List<String> groupNames = _statGroups.stream().map(StatGroup::getGroupCode).collect(Collectors.toList());
         redisMultiMap.keys().forEach(redisKey -> {
             Map<String, Double> totalMap = Maps.newHashMap();

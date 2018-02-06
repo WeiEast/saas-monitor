@@ -55,7 +55,7 @@ public class HttpMonitorMessageHandler implements TagBaseMessageHandler<List<Htt
             // 3.更新挨批访问数据
             updateApiData(list);
         } finally {
-            logger.info("handleMessage cost {} ms , message={}", System.currentTimeMillis() - start, JSON.toJSONString(list));
+            logger.info("handleMessage cost {} ms , message={}", System.currentTimeMillis() - start, list.size());
         }
 
 
