@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilter;
+import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.ExpressionCalculator;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.StatDataCalculator;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
@@ -79,6 +80,9 @@ public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<Map<Str
                 execute(null);
             }
             ExpressionCalculator expressionCalculator = statDataCalculator.getExpressionCalculator();
+            // 计算模板
+            expressionCalculator.initContext(AsConstants.STAT_TEMPLATE, statTemplate);
+
             Long expressioId = statTemplate.getId();
             String expression = statTemplate.getBasicDataFilter();
             data.forEach(map -> {
