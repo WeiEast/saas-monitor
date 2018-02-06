@@ -33,4 +33,8 @@ public class AsConstants {
      * 计算模板
      */
     public static final String STAT_TEMPLATE = "statTemplate";
+    /**
+     * group Index
+     */
+    public static final String GROUP_INDEX = "groupIndex";
 }

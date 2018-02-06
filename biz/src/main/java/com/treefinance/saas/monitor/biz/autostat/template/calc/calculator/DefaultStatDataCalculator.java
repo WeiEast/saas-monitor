@@ -57,116 +57,164 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
     @Override
     public List<Map<String, Object>> calculate(StatTemplate statTemplate, List<?> dataList) {
-        expressionCalculator.initContext(AsConstants.STAT_TEMPLATE, statTemplate);
-
         Long templateId = statTemplate.getId();
         List<StatGroup> statGroups = statGroupService.get(templateId);
-        List<StatItem> statItems = statItemService.get(templateId);
 
         // 分组计算
         Map<Integer, List<StatGroup>> statGroupMap = statGroups.stream().collect(Collectors.groupingBy(StatGroup::getGroupIndex));
         List<Map<String, Object>> resultList = Lists.newArrayList();
         Date currentTime = new Date();
-        String templateCode = statTemplate.getTemplateCode();
-        String statCron = statTemplate.getStatCron();
-        Long expireTime = getExpireTime(statCron);
 
         for (Integer groupIndex : statGroupMap.keySet()) {
-            String keyPrefix = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode, groupIndex);
-            Multimap<String, Map<String, Object>> redisMultiMap = ArrayListMultimap.create();
             List<StatGroup> _statGroups = statGroupMap.get(groupIndex);
             if (CollectionUtils.isEmpty(_statGroups)) {
                 continue;
             }
-            for (Object dataObj : dataList) {
-                Map<String, Object> data = (Map<String, Object>) dataObj;
-                Map<String, Object> dataMap = Maps.newHashMap();
-                List<Object> redisGroups = Lists.newArrayList(keyPrefix);
-
-                // 1.优先计算数据时间
-                _statGroups.stream().filter(statGroup -> AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
-                        .forEach(statGroup -> {
-                            Long itemId = statGroup.getId();
-                            Object groupValue = expressionCalculator.calculate(itemId, statGroup.getGroupExpression(), data);
-                            dataMap.put(statGroup.getGroupCode(), groupValue);
-                            redisGroups.add(groupValue);
-                        });
-
-                // 2.获取统计时间
-                Date dataTime = null;
-                if (dataMap.containsKey(AsConstants.DATA_TIME)) {
-                    Long times = (Long) dataMap.get(AsConstants.DATA_TIME);
-                    dataTime = CronUtils.getStatDate(new Date(times), statCron);
-                } else {
-                    dataTime = CronUtils.getStatDate(currentTime, statCron);
-                }
-                dataMap.put(AsConstants.DATA_TIME, dataTime.getTime());
-                String dataTimeStr = DateFormatUtils.format(dataTime, "yyyy-MM-dd HH:mm:ss");
-                // 计算器上下文，需要数据时间
-                expressionCalculator.initContext(AsConstants.DATA_TIME, dataTimeStr);
-
-                // 3.计算各分组数据项值
-                _statGroups.stream().filter(statGroup -> !AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
-                        .forEach(statGroup -> {
-                            Long groupId = statGroup.getId();
-                            String groupCode = statGroup.getGroupCode();
-                            String groupExpression = statGroup.getGroupExpression();
-                            Object groupValue = expressionCalculator.calculate(groupId, groupExpression, data);
-                            dataMap.put(groupCode, groupValue);
-                            redisGroups.add(groupValue);
-                        });
-
-                // 4.计算数据项值
-                statItems.stream().filter(statItem -> Byte.valueOf("0").equals(statItem.getDataSource())).forEach(statItem -> {
-                    Long itemId = statItem.getId();
-                    String itemCode = statItem.getItemCode();
-                    String itemExpression = statItem.getItemExpression();
-                    Object itemValue = expressionCalculator.calculate(itemId, itemExpression, data);
-                    dataMap.put(itemCode, itemValue);
-                });
-                redisGroups.add(dataTimeStr);
-                String redisKey = Joiner.on(":").useForNull("null").join(redisGroups);
-                redisMultiMap.put(redisKey, dataMap);
+            // 1.计算数据
+            Multimap<String, Map<String, Object>> redisMultiMap = caculateData(dataList, statTemplate, currentTime, groupIndex, _statGroups);
+            // 2.写入redis（数据合并计算）
+            List<Map<String, Object>> _resultList = cacheData2Redis(statTemplate, redisMultiMap, _statGroups);
+            // 3.数据结果
+            if (CollectionUtils.isNotEmpty(_resultList)) {
+                resultList.addAll(_resultList);
             }
-
-            // 写入redis, 批量数据++
-            List<String> groupNames = _statGroups.stream().map(StatGroup::getGroupCode).collect(Collectors.toList());
-            redisMultiMap.keys().forEach(redisKey -> {
-                Map<String, Double> totalMap = Maps.newHashMap();
-                Map<String, String> groupMap = Maps.newHashMap();
-                redisMultiMap.get(redisKey).forEach(dataMap -> {
-                    dataMap.keySet().stream().forEach(key -> {
-                        if (groupNames.contains(key) || AsConstants.DATA_TIME.equals(key)) {
-                            groupMap.put(key, dataMap.get(key) + "");
-                        } else {
-                            Double totalValue = totalMap.get(key);
-                            Number value = (Number) dataMap.get(key);
-                            if (totalValue == null) {
-                                totalMap.put(key, value.doubleValue());
-                            } else {
-                                totalMap.put(key, totalValue + value.doubleValue());
-                            }
-                        }
-                    });
-                });
-
-
-                redisTemplate.boundHashOps(redisKey).putAll(groupMap);
-                redisTemplate.boundHashOps(redisKey).expire(expireTime, TimeUnit.MILLISECONDS);
-                totalMap.keySet().forEach(key -> redisTemplate
-                        .boundHashOps(redisKey)
-                        .increment(key, totalMap.get(key)));
-
-                Map<String, Object> resultMap = Maps.newHashMap();
-                resultMap.putAll(groupMap);
-                resultMap.putAll(totalMap);
-                resultList.add(resultMap);
-                logger.info("spel base data calculate: redisKey={},result={}", redisKey, resultMap);
-            });
-            String dataListKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode);
-            redisTemplate.boundSetOps(dataListKey).add(redisMultiMap.keys().toArray(new String[]{}));
         }
 
+        return resultList;
+    }
+
+    /**
+     * 数据计算
+     *
+     * @param dataList
+     * @param statTemplate
+     * @param currentTime
+     * @param groupIndex
+     * @param _statGroups
+     * @return
+     */
+    private Multimap<String, Map<String, Object>> caculateData(List<?> dataList, StatTemplate statTemplate, Date currentTime, Integer groupIndex, List<StatGroup> _statGroups) {
+        Long templateId = statTemplate.getId();
+        String statCron = statTemplate.getStatCron();
+        String templateCode = statTemplate.getTemplateCode();
+        String keyPrefix = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode, groupIndex);
+
+        // 计算模板
+        expressionCalculator.initContext(AsConstants.STAT_TEMPLATE, statTemplate);
+        // 计算数据项
+        List<StatItem> statItems = statItemService.get(templateId);
+        // 计算结果
+        Multimap<String, Map<String, Object>> redisMultiMap = ArrayListMultimap.create();
+        // 数据计算
+        for (Object dataObj : dataList) {
+            Map<String, Object> data = (Map<String, Object>) dataObj;
+            Map<String, Object> dataMap = Maps.newHashMap();
+            List<Object> redisGroups = Lists.newArrayList(keyPrefix);
+
+            // 1.优先计算数据时间
+            _statGroups.stream().filter(statGroup -> AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
+                    .forEach(statGroup -> {
+                        Long itemId = statGroup.getId();
+                        Object groupValue = expressionCalculator.calculate(itemId, statGroup.getGroupExpression(), data);
+                        dataMap.put(statGroup.getGroupCode(), groupValue);
+                        redisGroups.add(groupValue);
+                    });
+
+            // 2.获取统计时间
+            Date dataTime = null;
+            if (dataMap.containsKey(AsConstants.DATA_TIME)) {
+                Long times = (Long) dataMap.get(AsConstants.DATA_TIME);
+                dataTime = CronUtils.getStatDate(new Date(times), statCron);
+            } else {
+                dataTime = CronUtils.getStatDate(currentTime, statCron);
+            }
+            dataMap.put(AsConstants.DATA_TIME, dataTime.getTime());
+
+            // 计算器上下文，需要数据时间
+            String dataTimeStr = DateFormatUtils.format(dataTime, "yyyy-MM-dd HH:mm:ss");
+            expressionCalculator.initContext(AsConstants.DATA_TIME, dataTimeStr);
+
+            // groupIndex 的特殊处理: 一个数据项对应多个分组
+            Object _groupIndex = data.get(AsConstants.GROUP_INDEX);
+            data.put(AsConstants.GROUP_INDEX, groupIndex);
+            // 3.计算各分组数据项值
+            _statGroups.stream().filter(statGroup -> !AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
+                    .forEach(statGroup -> {
+                        Long groupId = statGroup.getId();
+                        String groupCode = statGroup.getGroupCode();
+                        String groupExpression = statGroup.getGroupExpression();
+                        Object groupValue = expressionCalculator.calculate(groupId, groupExpression, data);
+                        dataMap.put(groupCode, groupValue);
+                        redisGroups.add(groupValue);
+                    });
+            data.put(AsConstants.GROUP_INDEX, _groupIndex);
+            dataMap.put(AsConstants.GROUP_INDEX, groupIndex);
+
+            // 4.计算数据项值
+            statItems.stream().filter(statItem -> Byte.valueOf("0").equals(statItem.getDataSource())).forEach(statItem -> {
+                Long itemId = statItem.getId();
+                String itemCode = statItem.getItemCode();
+                String itemExpression = statItem.getItemExpression();
+                Object itemValue = expressionCalculator.calculate(itemId, itemExpression, data);
+                dataMap.put(itemCode, itemValue);
+            });
+            // 分组标记
+            dataMap.put(AsConstants.GROUP_INDEX, groupIndex);
+
+            redisGroups.add(dataTimeStr);
+            String redisKey = Joiner.on(":").useForNull("null").join(redisGroups);
+            redisMultiMap.put(redisKey, dataMap);
+        }
+        return redisMultiMap;
+    }
+
+    /**
+     * 数据保存至redis
+     *
+     * @param statTemplate
+     * @param redisMultiMap
+     * @param _statGroups
+     */
+    private List<Map<String, Object>> cacheData2Redis(StatTemplate statTemplate, Multimap<String, Map<String, Object>> redisMultiMap, List<StatGroup> _statGroups) {
+        List<Map<String, Object>> resultList = Lists.newArrayList();
+        String templateCode = statTemplate.getTemplateCode();
+        String statCron = statTemplate.getStatCron();
+        Long expireTime = getExpireTime(statCron);
+
+        List<String> groupNames = _statGroups.stream().map(StatGroup::getGroupCode).collect(Collectors.toList());
+        redisMultiMap.keys().forEach(redisKey -> {
+            Map<String, Double> totalMap = Maps.newHashMap();
+            Map<String, String> groupMap = Maps.newHashMap();
+            redisMultiMap.get(redisKey).forEach(dataMap -> {
+                dataMap.keySet().stream().forEach(key -> {
+                    if (groupNames.contains(key) || AsConstants.DATA_TIME.equals(key)) {
+                        groupMap.put(key, dataMap.get(key) + "");
+                    } else {
+                        Double totalValue = totalMap.get(key);
+                        Number value = (Number) dataMap.get(key);
+                        if (totalValue == null) {
+                            totalMap.put(key, value.doubleValue());
+                        } else {
+                            totalMap.put(key, totalValue + value.doubleValue());
+                        }
+                    }
+                });
+            });
+
+            redisTemplate.boundHashOps(redisKey).putAll(groupMap);
+            redisTemplate.boundHashOps(redisKey).expire(expireTime, TimeUnit.MILLISECONDS);
+            totalMap.keySet().forEach(key -> redisTemplate
+                    .boundHashOps(redisKey)
+                    .increment(key, totalMap.get(key)));
+
+            Map<String, Object> resultMap = Maps.newHashMap();
+            resultMap.putAll(groupMap);
+            resultMap.putAll(totalMap);
+            resultList.add(resultMap);
+            logger.info("spel base data calculate: redisKey={},result={}", redisKey, resultMap);
+        });
+        String dataListKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode);
+        redisTemplate.boundSetOps(dataListKey).add(redisMultiMap.keys().toArray(new String[]{}));
         return resultList;
     }
 
