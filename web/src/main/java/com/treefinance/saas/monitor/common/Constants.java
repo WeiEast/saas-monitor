@@ -7,7 +7,9 @@ public interface Constants {
     /**
      * 访问token
      */
-    String TOKEN = "login_token";
+    String TOKEN = "token";
+
+
 
     /**
      * 访问参数
