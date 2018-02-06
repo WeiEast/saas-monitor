@@ -25,6 +25,7 @@ import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -211,7 +212,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
         if (isError) {
             sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.error);
-            sendIvr(msgList, jobTime, startTime, endTime, statType, ivrSwitch);
+            sendIvr(msgList, jobTime, ivrSwitch);
             sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch);
         } else if (isWarning) {
             sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.warning);
@@ -222,36 +223,39 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         }
     }
 
-
     private void sendSms(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
                          ETaskOperatorStatType statType, String smsSwitch) {
         if (StringUtils.equalsIgnoreCase(smsSwitch, "on")) {
 
+            String template = "${level} ${type} 时间段:${startTime}至${endTime},运营商:${groupName} " +
+                    "预警类型:${alarmDesc},偏离阀值程度${offset}%";
+            Map<String,Object> map = Maps.newHashMap();
+
             List<OperatorStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
                     EAlarmLevel.warning.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
 
-            String type = ETaskOperatorStatType.TASK.equals(statType) ? "运营商-分时任务" : "运营商-分时人数";
-
-            StringBuilder content = new StringBuilder();
-            content.append(type).append(" ");
+            String type = "SAAS-" + (ETaskOperatorStatType.TASK.equals(statType)?"运营商-分时任务" : "运营商-分时人数");
 
             String format = "yyyy-MM-dd HH:mm:SS";
             String startTimeStr = new SimpleDateFormat(format).format(startTime);
             String endTimeStr = new SimpleDateFormat(format).format(endTime);
-
             OperatorStatAccessAlarmMsgDTO dto = warningMsg.get(0);
-            content.append("时间段:").append(startTimeStr).append("至").append(endTimeStr);
-            content.append("运营商:").append(dto.getGroupName());
-            content.append("预警类型:").append(dto.getAlarmDesc()).append(" 偏离阀值程度").append("百分之").append(dto
-                    .getOffset());
-            smsNotifyService.send(content.toString());
+
+            map.put("level",EAlarmLevel.error);
+            map.put("type",type);
+            map.put("startTime",startTimeStr);
+            map.put("endTime",endTimeStr);
+            map.put("groupName",dto.getGroupName());
+            map.put("alarmDesc",dto.getAlarmDesc());
+            map.put("offset",dto.getOffset());
+
+            smsNotifyService.send(StrSubstitutor.replace(template,map));
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
         }
     }
 
-    private void sendIvr(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
-                         ETaskOperatorStatType statType, String ivrSwitch) {
+    private void sendIvr(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, String ivrSwitch) {
         if (StringUtils.equalsIgnoreCase(ivrSwitch, "on")) {
 
             List<OperatorStatAccessAlarmMsgDTO> errorMsgs = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
@@ -259,7 +263,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
             logger.info("特定运营商预警 发送ivr请求 {}",errorMsgs.get(0).getAlarmDesc());
 
-            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm, "中国联通报警");
+            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm, errorMsgs.get(0).getAlarmDesc());
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},发送ivr开关已关闭", MonitorDateUtils.format(jobTime));
         }
@@ -273,12 +277,12 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             String mailBaseTitle = "【${level}】【${module}】【${type}】发生 ${detail} 预警";
 
             Map<String, Object> map = new HashMap<>(4);
-            map.put("type", ETaskOperatorStatType.TASK.equals(statType) ? "运营商大盘-任务" : "运营商大盘-人数");
+            map.put("type", ETaskOperatorStatType.TASK.equals(statType) ? "运营商-任务" : "运营商-人数");
             map.put("level", alarmLevel.name());
 
             String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile, map, alarmLevel);
 
-            alarmMessageProducer.sendMail4OperatorMonitor(org.apache.commons.lang.text.StrSubstitutor.replace(mailBaseTitle, map), mailDataBody, jobTime);
+            alarmMessageProducer.sendMail4OperatorMonitor(StrSubstitutor.replace(mailBaseTitle, map), mailDataBody, jobTime);
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
         }
