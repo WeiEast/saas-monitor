@@ -79,10 +79,11 @@ public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<Map<Str
                 execute(null);
             }
             ExpressionCalculator expressionCalculator = statDataCalculator.getExpressionCalculator();
+            Long expressioId = statTemplate.getId();
             String expression = statTemplate.getBasicDataFilter();
             data.forEach(map -> {
                 Map<String, Object> dataMap = Maps.newHashMap();
-                if (StringUtils.isEmpty(expression) || Boolean.TRUE.equals(expressionCalculator.calculate(map, expression))) {
+                if (StringUtils.isEmpty(expression) || Boolean.TRUE.equals(expressionCalculator.calculate(expressioId, expression, map))) {
                     dataMap.putAll(map);
                     dataQueue.add(dataMap);
                 }
