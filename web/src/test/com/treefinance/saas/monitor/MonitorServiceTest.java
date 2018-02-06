@@ -6,12 +6,14 @@ import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
+import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorAllAlarmService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -45,6 +47,8 @@ public class MonitorServiceTest {
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
     private DiamondConfig diamondConfig;
+    @Autowired
+    private IvrNotifyService ivrNotifyService;
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
     @Autowired
@@ -235,6 +239,12 @@ public class MonitorServiceTest {
 
         operatorMonitorAllAlarmService.alarm(new Date(),configDTO, ETaskOperatorStatType.TASK);
     }
+
+    @Test
+    public void ivrAlarm() {
+        ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm,"运营商-分时人数时间段是2018年02月06日 下午 14点30分00秒至2018年02月06日 下午 15点00分00秒运营商:中国联通预警类型是登陆成功率低于前7天平均值的70%偏离阀值程度百分之28.00时间段是2018年02月06日 下午 14点30分00秒至2018年02月06日 下午 15点00分00秒运营商:中国联通预警类型是抓取成功率低于前7天平均值的70%偏离阀值程度百分之100.00");
+    }
+
 
 
 }

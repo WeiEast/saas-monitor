@@ -1,9 +1,14 @@
 package com.treefinance.saas.monitor.biz.config;
 
+import com.github.diamond.client.extend.annotation.AfterUpdate;
+import com.github.diamond.client.extend.annotation.BeforeUpdate;
 import com.github.diamond.client.extend.annotation.DAttribute;
 import com.github.diamond.client.extend.annotation.DResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
  *  运营商监控的配置类
@@ -12,10 +17,12 @@ import org.springframework.context.annotation.Scope;
  * @Author: chengtong
  * @Date: 18/2/5 19:21
  */
-@Configuration
+@Component
 @Scope
 @DResource
 public class OperatorMonitorConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(IvrConfig.class);
 
     /**
      * 新增的 对运营商监控的ivr开关
@@ -43,5 +50,17 @@ public class OperatorMonitorConfig {
 
     public void setSmsSwitch(String smsSwitch) {
         this.smsSwitch = smsSwitch;
+    }
+
+
+
+    @BeforeUpdate
+    public void before(String key, Object newValue) {
+        logger.info(key + " update to " + newValue + " start...");
+    }
+
+    @AfterUpdate
+    public void after(String key, Object newValue) {
+        logger.info(key + " update to " + newValue + " end...");
     }
 }
