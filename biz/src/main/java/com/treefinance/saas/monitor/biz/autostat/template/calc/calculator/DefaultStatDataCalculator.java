@@ -189,7 +189,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             Map<String, String> groupMap = Maps.newHashMap();
             redisMultiMap.get(redisKey).forEach(dataMap -> {
                 dataMap.keySet().stream().forEach(key -> {
-                    if (groupNames.contains(key) || AsConstants.DATA_TIME.equals(key)) {
+                    if (groupNames.contains(key) || AsConstants.DATA_TIME.equals(key) || AsConstants.GROUP.equals(key)) {
                         groupMap.put(key, dataMap.get(key) + "");
                     } else {
                         Double totalValue = totalMap.get(key);
