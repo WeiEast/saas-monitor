@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.service.impl;
 import com.alibaba.rocketmq.shade.com.alibaba.fastjson.JSONObject;
 import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.biz.service.IvrCallBackService;
+import com.treefinance.saas.monitor.common.exceptions.RequestFailedException;
 import com.treefinance.saas.monitor.common.result.IvrCallBackResult;
 import com.treefinance.saas.monitor.common.utils.AESUtils;
 import com.treefinance.saas.monitor.common.utils.HttpClientUtils;
@@ -41,7 +42,7 @@ public class IvrCallBackServiceImpl implements IvrCallBackService {
         try {
             map.put("params", AESUtils.encrytDataWithBase64AsString(JSONObject.toJSONString(stringStringMap), ivrConfig.getAccessKey()));
         } catch (Exception e) {
-           logger.error("encrytData exception",e);
+            logger.error("encrytData exception map集合为{},密钥为{}",JSONObject.toJSONString(stringStringMap),ivrConfig.getAccessKey(), e);
         }
 
 
@@ -51,7 +52,11 @@ public class IvrCallBackServiceImpl implements IvrCallBackService {
 
 
         //HTTP  post 请求
-        HttpClientUtils.doPostwithHeader(ivrConfig.getIvrReplayurl(), JSONObject.toJSONString(map), map1);
+        try {
+            HttpClientUtils.doPostwithHeader(ivrConfig.getIvrReplayurl(), JSONObject.toJSONString(map), map1);
+        } catch (RequestFailedException e) {
+            logger.error("RequestFailedException  callbackurl为{},aesContent为{},token信息为{}",ivrConfig.getIvrReplayurl(),JSONObject.toJSONString(map),map1.toString(),e);
+        }
 
 
     }

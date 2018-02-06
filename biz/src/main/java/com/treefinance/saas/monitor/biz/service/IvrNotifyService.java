@@ -190,6 +190,10 @@ public class IvrNotifyService {
         // 缓存消息
         String redisKey = Constants.PREFIX_KEY + ":ivr-message:" + refId;
         redisTemplate.opsForValue().set(redisKey, JSON.toJSONString(ivrParams), 1, TimeUnit.DAYS);
+
+        logger.info("send ivr message: url={},ivrParams={},contactsDTOS={}", alarmInfo,
+                JSON.toJSONString(ivrParams),
+                JSON.toJSONString(contactsDTOS));
         return ivrParams;
     }
 
@@ -247,7 +251,7 @@ public class IvrNotifyService {
         Long refId = callBackResult.getRefId();
         String redisKey = Constants.PREFIX_KEY + ":ivr-message:" + refId;
         String message = redisTemplate.opsForValue().get(redisKey);
-        if (Long.valueOf(1).equals(refId) || StringUtils.isEmpty(message)) {
+        if (StringUtils.isEmpty(message)) {
             logger.error("resend ivr message error : message[{}] is empty", redisKey);
             return;
         }
