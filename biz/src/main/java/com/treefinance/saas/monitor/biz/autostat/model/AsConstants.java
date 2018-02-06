@@ -26,6 +26,10 @@ public class AsConstants {
      */
     public static final String EXPRESSION = "expression";
     /**
+     * 表达式ID
+     */
+    public static final String EXPRESSION_ID = "expressionId";
+    /**
      * 计算模板
      */
     public static final String STAT_TEMPLATE = "statTemplate";
