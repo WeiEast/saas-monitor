@@ -1,5 +1,8 @@
 package com.treefinance.saas.monitor.ivr.controller;
 
+import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.result.IvrCallBackResult;
 import com.treefinance.saas.monitor.biz.service.IvrCallBackService;
 import org.slf4j.Logger;
@@ -20,12 +23,21 @@ public class IvrCallBackController {
 
     @Autowired
     private IvrCallBackService ivrCallBackService;
+    @Autowired
+    private IvrNotifyService ivrNotifyService;
 
     @RequestMapping("/callback")
     public String dealIvrCallBackMessage(@RequestBody IvrCallBackResult ivrCallBackResult) {
-        logger.info("Ivr回调信息传入为{}",ivrCallBackResult.toString());
-        ivrCallBackService.dealIvrCallBackMessage(ivrCallBackResult);
+        logger.info("Ivr回调信息传入为{}", ivrCallBackResult.toString());
+//        ivrCallBackService.dealIvrCallBackMessage(ivrCallBackResult);
+        ivrNotifyService.resendMessage(ivrCallBackResult);
         return "success";
+    }
 
+
+    @RequestMapping("/test")
+    public String test(EAlarmLevel alarmLevel, EAlarmType type, String alarmRule) {
+        ivrNotifyService.notifyIvr(alarmLevel, type, alarmRule);
+        return "success";
     }
 }
