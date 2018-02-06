@@ -201,6 +201,10 @@ public class IvrNotifyService {
     private byte getUserGroup() {
         String key = Constants.PREFIX_KEY + ":ivr-user-group";
         String userGroupStr = redisTemplate.opsForValue().get(key);
+        if (StringUtils.isEmpty(userGroupStr)) {
+            redisTemplate.opsForValue().increment(key, 0);
+            return 0;
+        }
         Integer userGroup = Integer.valueOf(userGroupStr);
         if (userGroup > 128) {
             redisTemplate.opsForValue().set(key, "0");
