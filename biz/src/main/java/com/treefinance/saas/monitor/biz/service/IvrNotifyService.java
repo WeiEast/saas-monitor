@@ -248,6 +248,11 @@ public class IvrNotifyService {
     public void resendMessage(IvrCallBackResult callBackResult) {
         Long currentCount = 0L;
 
+        if (!("fail").equals(callBackResult.getStatus())) {
+            logger.info("resend ivr message error : IVR状态信息为{}", JSON.toJSONString(callBackResult));
+            return;
+        }
+
         Long refId = callBackResult.getRefId();
         String redisKey = Constants.PREFIX_KEY + ":ivr-message:" + refId;
         String message = redisTemplate.opsForValue().get(redisKey);
