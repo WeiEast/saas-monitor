@@ -59,13 +59,11 @@ public class DiamondConfig {
     @DAttribute(key = "operator.alarm.operator.name.list")
     private String operatorAlarmOperatorNameList;
 
-
     /**
      * 运营商预警,确定预警等级的上下界
      */
     @DAttribute(key = "operator.alarm.level.error.lower")
     private Integer errorLower;
-
 
     /**
      * 运营商预警,确定预警等级的上下界，warning等级的下界，<= warningLower info; > warningLower && < errorLower warning ; >= errorLower error
@@ -150,7 +148,6 @@ public class DiamondConfig {
     //预警消息,微信通知开关
     @DAttribute(key = "monitor.alarm.wechat.switch")
     private String monitorAlarmWechatSwitch;
-
     //预警消息,邮箱通知开关
     @DAttribute(key = "monitor.alarm.mail.switch")
     private String monitorAlarmMailSwitch;
@@ -160,10 +157,6 @@ public class DiamondConfig {
     //预警消息,剔除的商户
     @DAttribute(key = "monitor.alarm.excludeAppIdsAll")
     private String monitorAlarmExcludeAppIdsAll;
-
-
-
-
 
     public String getMonitorEnvironment() {
         return monitorEnvironment;

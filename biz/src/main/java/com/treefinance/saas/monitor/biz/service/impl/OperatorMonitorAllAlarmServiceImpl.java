@@ -1,7 +1,6 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
