@@ -36,5 +36,5 @@ public class AsConstants {
     /**
      * group Index
      */
-    public static final String GROUP_INDEX = "groupIndex";
+    public static final String GROUP= "group";
 }

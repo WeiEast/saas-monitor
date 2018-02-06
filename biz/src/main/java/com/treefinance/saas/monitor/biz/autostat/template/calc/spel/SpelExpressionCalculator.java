@@ -139,13 +139,10 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         }
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
-//        String expression = context.get().get(AsConstants.EXPRESSION).toString();
         long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
 
-        Object groupIndex = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP_INDEX);
-        String dataTimeStr = (String) context.get().get(AsConstants.DATA_TIME);
-        String redisKey = Joiner.on(":").useForNull("null").join(AsConstants.REDIS_PREFIX,
-                statTemplate.getTemplateCode(), "distinct", "group-" + groupIndex, "express-" + expressionId, dataTimeStr);
+        Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        String redisKey = Joiner.on(":").useForNull("null").join(group, "distinct", expressionId);
 
 
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
@@ -172,10 +169,8 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
         long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
 
-        Object groupIndex = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP_INDEX);
-        String dataTimeStr = (String) context.get().get(AsConstants.DATA_TIME);
-        String redisKey = Joiner.on(":").useForNull("null").join(AsConstants.REDIS_PREFIX,
-                statTemplate.getTemplateCode(), "exists", "group-" + groupIndex, "express-" + expressionId, dataTimeStr);
+        Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        String redisKey = Joiner.on(":").useForNull("null").join(group, "exists", expressionId);
 
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         String value = object.toString();

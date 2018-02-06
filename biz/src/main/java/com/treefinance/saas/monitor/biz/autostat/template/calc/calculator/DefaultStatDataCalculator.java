@@ -131,13 +131,17 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             }
             dataMap.put(AsConstants.DATA_TIME, dataTime.getTime());
 
+
             // 计算器上下文，需要数据时间
             String dataTimeStr = DateFormatUtils.format(dataTime, "yyyy-MM-dd HH:mm:ss");
             expressionCalculator.initContext(AsConstants.DATA_TIME, dataTimeStr);
 
-            // groupIndex 的特殊处理: 一个数据项对应多个分组
-            Object _groupIndex = data.get(AsConstants.GROUP_INDEX);
-            data.put(AsConstants.GROUP_INDEX, groupIndex);
+            // 分组唯一键
+            redisGroups.add(dataTimeStr);
+            String redisKey = Joiner.on(":").useForNull("null").join(redisGroups);
+
+            // GROUP 的特殊处理: 一个数据项对应多个分组
+            data.put(AsConstants.GROUP, redisKey);
             // 3.计算各分组数据项值
             _statGroups.stream().filter(statGroup -> !AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
                     .forEach(statGroup -> {
@@ -157,12 +161,9 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 Object itemValue = expressionCalculator.calculate(itemId, itemExpression, data);
                 dataMap.put(itemCode, itemValue);
             });
-            data.put(AsConstants.GROUP_INDEX, _groupIndex);
             // 分组标记
-            dataMap.put(AsConstants.GROUP_INDEX, groupIndex);
+            dataMap.put(AsConstants.GROUP, redisKey);
 
-            redisGroups.add(dataTimeStr);
-            String redisKey = Joiner.on(":").useForNull("null").join(redisGroups);
             redisMultiMap.put(redisKey, dataMap);
         }
         return redisMultiMap;
