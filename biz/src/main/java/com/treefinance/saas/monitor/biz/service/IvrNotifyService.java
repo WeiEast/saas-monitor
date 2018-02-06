@@ -249,7 +249,7 @@ public class IvrNotifyService {
             Long refId = callBackResult.getRefId();
             String redisKey = Constants.PREFIX_KEY + ":ivr-message:" + refId;
             String message = redisTemplate.opsForValue().get(redisKey);
-            if (StringUtils.isEmpty(message)) {
+            if (Long.valueOf(1).equals(refId) || StringUtils.isEmpty(message)) {
                 logger.error("resend ivr message error : message[{}] is empty", redisKey);
                 return;
             }
