@@ -213,18 +213,18 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         if (isError) {
             sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.error);
             sendIvr(msgList, jobTime, ivrSwitch);
-            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch);
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch,EAlarmLevel.error);
         } else if (isWarning) {
             sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.warning);
-            sendSms(msgList, jobTime, startTime, endTime, statType, smsSwitch);
-            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch);
+            sendSms(msgList, jobTime, startTime, endTime, statType, smsSwitch,EAlarmLevel.warning);
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch,EAlarmLevel.warning);
         } else {
-            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch);
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch,EAlarmLevel.info);
         }
     }
 
     private void sendSms(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
-                         ETaskOperatorStatType statType, String smsSwitch) {
+                         ETaskOperatorStatType statType, String smsSwitch,EAlarmLevel alarmLevel) {
         if (StringUtils.equalsIgnoreCase(smsSwitch, "on")) {
 
             String template = "${level} ${type} 时间段:${startTime}至${endTime},运营商:${groupName} " +
@@ -241,7 +241,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             String endTimeStr = new SimpleDateFormat(format).format(endTime);
             OperatorStatAccessAlarmMsgDTO dto = warningMsg.get(0);
 
-            map.put("level",EAlarmLevel.error);
+            map.put("level",alarmLevel.name());
             map.put("type",type);
             map.put("startTime",startTimeStr);
             map.put("endTime",endTimeStr);
@@ -288,9 +288,10 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         }
     }
 
-    private void sendWeChat(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime, String baseTile, String weChatSwitch) {
+    private void sendWeChat(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
+                            String baseTile, String weChatSwitch,EAlarmLevel alarmLevel) {
         if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
-            String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile);
+            String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile,alarmLevel);
             alarmMessageProducer.sendWebChart4OperatorMonitor(weChatBody, jobTime);
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},发送微信开关已关闭", MonitorDateUtils.format(jobTime));
@@ -351,9 +352,10 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         return "saas-" + diamondConfig.getMonitorEnvironment() + baseTitle + "发生预警";
     }
 
-    private String generateWeChatBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTitle) {
+    private String generateWeChatBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
+                                      String baseTitle,EAlarmLevel alarmLevel) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("【").append(EAlarmLevel.info).append("】")
+        buffer.append("【").append(alarmLevel.name()).append("】")
                 .append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(baseTitle)
                 .append("预警,在")
