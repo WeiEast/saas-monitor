@@ -148,8 +148,6 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                         dataMap.put(groupCode, groupValue);
                         redisGroups.add(groupValue);
                     });
-            data.put(AsConstants.GROUP_INDEX, _groupIndex);
-            dataMap.put(AsConstants.GROUP_INDEX, groupIndex);
 
             // 4.计算数据项值
             statItems.stream().filter(statItem -> Byte.valueOf("0").equals(statItem.getDataSource())).forEach(statItem -> {
@@ -159,6 +157,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 Object itemValue = expressionCalculator.calculate(itemId, itemExpression, data);
                 dataMap.put(itemCode, itemValue);
             });
+            data.put(AsConstants.GROUP_INDEX, _groupIndex);
             // 分组标记
             dataMap.put(AsConstants.GROUP_INDEX, groupIndex);
 
