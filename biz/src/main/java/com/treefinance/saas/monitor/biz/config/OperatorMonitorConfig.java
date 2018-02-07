@@ -36,6 +36,34 @@ public class OperatorMonitorConfig {
     @DAttribute(key = "saas-monitor.operator.sms.switch")
     private String smsSwitch;
 
+    /**
+     * 大盘预警的短信模板
+     * */
+    @DAttribute(key = "saas-monitor.operator.sms.all.template")
+    private String smsAllTemplate;
+
+    /**
+    * 分组预警的短信模板
+    * */
+    @DAttribute(key = "saas-monitor.operator.sms.group.template")
+    private String smsGroupTemplate;
+
+    public String getSmsAllTemplate() {
+        return smsAllTemplate;
+    }
+
+    public void setSmsAllTemplate(String smsAllTemplate) {
+        this.smsAllTemplate = smsAllTemplate;
+    }
+
+    public String getSmsGroupTemplate() {
+        return smsGroupTemplate;
+    }
+
+    public void setSmsGroupTemplate(String smsGroupTemplate) {
+        this.smsGroupTemplate = smsGroupTemplate;
+    }
+
     public String getIvrSwitch() {
         return ivrSwitch;
     }

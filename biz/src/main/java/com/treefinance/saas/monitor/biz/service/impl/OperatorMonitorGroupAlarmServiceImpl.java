@@ -229,8 +229,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                          ETaskOperatorStatType statType, String smsSwitch,EAlarmLevel alarmLevel) {
         if (StringUtils.equalsIgnoreCase(smsSwitch, SWITCH_ON)) {
 
-            String template = "${level} ${type} 时间段:${startTime}至${endTime},运营商:${groupName} " +
-                    "预警类型:${alarmDesc},偏离阀值程度${offset}%";
+            String template = operatorMonitorConfig.getSmsGroupTemplate();
             Map<String,Object> map = Maps.newHashMap();
 
             List<OperatorStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
