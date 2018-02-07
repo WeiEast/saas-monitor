@@ -7,7 +7,7 @@ public class AsConstants {
     /**
      * redis key前缀
      */
-    public static final String REDIS_PREFIX = "saas-monitor:stat-data:";
+    public static final String REDIS_PREFIX = "saas-monitor:stat";
     /**
      * redis
      */
