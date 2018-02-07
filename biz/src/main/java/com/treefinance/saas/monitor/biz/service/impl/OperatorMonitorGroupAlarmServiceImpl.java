@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.treefinance.saas.monitor.common.domain.Constants.SWITCH_ON;
+import static java.util.stream.Collectors.groupingBy;
 
 /**
  * Created by haojiahong on 2017/11/13.
@@ -148,7 +149,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             return Lists.newArrayList();
         }
         List<OperatorStatAccess> dataList = Lists.newArrayList();
-        Map<String, List<OperatorStatAccess>> groupCodeDataMap = list.stream().collect(Collectors.groupingBy(OperatorStatAccess::getGroupCode));
+        Map<String, List<OperatorStatAccess>> groupCodeDataMap = list.stream().collect(groupingBy(OperatorStatAccess::getGroupCode));
         for (Map.Entry<String, List<OperatorStatAccess>> entry : groupCodeDataMap.entrySet()) {
             OperatorStatAccess data = entry.getValue().get(0);
             List<OperatorStatAccess> valueList = entry.getValue();
@@ -175,8 +176,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             data.setCallbackSuccessRate(calcRate(callbackSuccessCount, processSuccessCount));
             dataList.add(data);
         }
-        List<OperatorStatAccessDTO> dtoList = DataConverterUtils.convert(dataList, OperatorStatAccessDTO.class);
-        return dtoList;
+        return DataConverterUtils.convert(dataList, OperatorStatAccessDTO.class);
     }
 
     /**
@@ -207,10 +207,14 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             baseTitle = "运营商监控(按人数统计)";
         }
 
+        Map<String,List<OperatorStatAccessAlarmMsgDTO>> operatorNameGroup = msgList.stream().collect(Collectors
+                .groupingBy
+                (OperatorStatAccessAlarmMsgDTO::getGroupName));
+
         boolean isError = msgList.stream().anyMatch(operatorStatAccessAlarmMsgDTO -> operatorStatAccessAlarmMsgDTO
                 .getAlarmLevel().equals(EAlarmLevel.error));
         boolean isWarning = msgList.stream().anyMatch(operatorStatAccessAlarmMsgDTO -> operatorStatAccessAlarmMsgDTO
-                .getAlarmLevel().equals(EAlarmLevel.warning)) || msgList.size() > 3;
+                .getAlarmLevel().equals(EAlarmLevel.warning)) || operatorNameGroup.keySet().size() >= 3;
 
         if (isError) {
             sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.error);
@@ -405,7 +409,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             return Maps.newHashMap();
         }
         //<groupCode,List<OperatorStatAccessDTO>>
-        Map<String, List<OperatorStatAccessDTO>> previousMap = previousDTOList.stream().collect(Collectors.groupingBy(OperatorStatAccessDTO::getGroupCode));
+        Map<String, List<OperatorStatAccessDTO>> previousMap = previousDTOList.stream().collect(groupingBy(OperatorStatAccessDTO::getGroupCode));
         Map<String, OperatorStatAccessDTO> compareMap = Maps.newHashMap();
         for (Map.Entry<String, List<OperatorStatAccessDTO>> entry : previousMap.entrySet()) {
             List<OperatorStatAccessDTO> entryList = entry.getValue();
