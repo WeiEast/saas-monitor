@@ -118,7 +118,6 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                         Long itemId = statGroup.getId();
                         Object groupValue = expressionCalculator.calculate(itemId, statGroup.getGroupExpression(), data);
                         dataMap.put(statGroup.getGroupCode(), groupValue);
-                        redisGroups.add(groupValue);
                     });
 
             // 2.获取统计时间
@@ -150,7 +149,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                         String groupExpression = statGroup.getGroupExpression();
                         Object groupValue = expressionCalculator.calculate(groupId, groupExpression, data);
                         dataMap.put(groupCode, groupValue);
-                        redisGroups.add(groupValue);
+                        redisGroups.add(groupCode + "-" + groupValue);
                     });
 
             // 4.计算数据项值
