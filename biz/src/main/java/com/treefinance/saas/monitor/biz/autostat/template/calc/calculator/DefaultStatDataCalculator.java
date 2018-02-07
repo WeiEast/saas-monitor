@@ -100,7 +100,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         Long templateId = statTemplate.getId();
         String statCron = statTemplate.getStatCron();
         String templateCode = statTemplate.getTemplateCode();
-        String keyPrefix = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode, groupIndex);
+        String keyPrefix = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode, "index-" + groupIndex);
 
         // 计算数据项
         List<StatItem> statItems = statItemService.get(templateId);
@@ -151,6 +151,9 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                         dataMap.put(groupCode, groupValue);
                         redisGroups.add(groupCode + "-" + groupValue);
                     });
+            // 分组数据项值
+            redisKey = Joiner.on(":").useForNull("null").join(redisGroups);
+            data.put(AsConstants.GROUP, redisKey);
 
             // 4.计算数据项值
             statItems.stream().filter(statItem -> Byte.valueOf("0").equals(statItem.getDataSource())).forEach(statItem -> {
