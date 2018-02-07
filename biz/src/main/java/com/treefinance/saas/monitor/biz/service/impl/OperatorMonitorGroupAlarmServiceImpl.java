@@ -208,8 +208,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         }
 
         Map<String,List<OperatorStatAccessAlarmMsgDTO>> operatorNameGroup = msgList.stream().collect(Collectors
-                .groupingBy
-                (OperatorStatAccessAlarmMsgDTO::getGroupName));
+                .groupingBy(OperatorStatAccessAlarmMsgDTO::getGroupName));
 
         boolean isError = msgList.stream().anyMatch(operatorStatAccessAlarmMsgDTO -> operatorStatAccessAlarmMsgDTO
                 .getAlarmLevel().equals(EAlarmLevel.error));
