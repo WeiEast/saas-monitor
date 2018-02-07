@@ -148,10 +148,12 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         String value = object.toString();
         if (redisTemplate.boundSetOps(redisKey).isMember(value)) {
+            logger.info("distinct : result=0, expressionId={},redisKey={},value={}", expressionId, redisKey, value);
             return 0;
         }
         redisTemplate.boundSetOps(redisKey).add(value);
         redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
+        logger.info("distinct : result=1, expressionId={},redisKey={},value={}", expressionId, redisKey, value);
         return 1;
     }
 
@@ -175,10 +177,12 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         String value = object.toString();
         if (redisTemplate.boundSetOps(redisKey).isMember(value)) {
+            logger.info("exists : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey, value);
             return true;
         }
         redisTemplate.boundSetOps(redisKey).add(value);
         redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
+        logger.info("exists : result=false, expressionId={},redisKey={},value={}", expressionId, redisKey, value);
         return false;
     }
 
