@@ -26,6 +26,8 @@ import com.treefinance.saas.monitor.web.auth.LoginManager;
 import com.treefinance.saas.monitor.web.context.WebContext;
 import com.treefinance.saas.monitor.web.auth.exception.ForbiddenException;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -44,85 +46,86 @@ import java.util.Map;
 
 public class WebContextFilter extends AbstractRequestFilter {
 
-  public static final String WEB_CONTEXT_ATTRIBUTE = "WebContext";
-  //已经验证的token
-  private static final String LOGIN_TOKEN = "login_token";
-  // 用户登录管理
-  private LoginManager loginManager;
+    public static final String WEB_CONTEXT_ATTRIBUTE = "WebContext";
+    //已经验证的token
+    private static final String LOGIN_TOKEN = "login_token";
+    // 用户登录管理
+    private LoginManager loginManager;
 
-  @Override
-  protected void initFilterBean(FilterConfig filterConfig) throws ServletException {
-    WebApplicationContext webApplicationContext =
-        WebApplicationContextUtils.findWebApplicationContext(filterConfig.getServletContext());
+    private static final Logger logger = LoggerFactory.getLogger(WebContextFilter.class);
 
-    if (webApplicationContext == null) {
-      throw new ServletException("Web application context failed to init...");
+    @Override
+    protected void initFilterBean(FilterConfig filterConfig) throws ServletException {
+        WebApplicationContext webApplicationContext =
+                WebApplicationContextUtils.findWebApplicationContext(filterConfig.getServletContext());
+
+        if (webApplicationContext == null) {
+            throw new ServletException("Web application context failed to init...");
+        }
+
+        LoginManager loginManager = webApplicationContext.getBean(LoginManager.class);
+        if (loginManager == null) {
+            throw new ServletException("Can't find the instance of the class 'LoginManager'");
+        }
+
+        this.loginManager = loginManager;
     }
 
-    LoginManager loginManager = webApplicationContext.getBean(LoginManager.class);
-    if (loginManager == null) {
-      throw new ServletException("Can't find the instance of the class 'LoginManager'");
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+        try {
+            String token = request.getHeader(LOGIN_TOKEN);
+            if (token == null) {
+                throw new ForbiddenException("Can not find header 'appid' in request.");
+            }
+
+            if (StringUtils.isBlank(token)) {
+                throw new ForbiddenException("Invalid app id.");
+            }
+            String ip = null;
+            try {
+                ip = ServletRequestUtils.getIP(request);
+                logger.error(String
+                        .format("@[%s;%s;%s] >> token: %s", request.getRequestURI(), request.getMethod(), ip,
+                                token));
+            } catch (Exception e) {
+                logger.warn(e.getMessage(), e);
+                logger.error(String
+                        .format("@[%s;%s] >> token: %s", request.getRequestURI(), request.getMethod(), token));
+            }
+
+            request.setAttribute(WEB_CONTEXT_ATTRIBUTE, createWebContext(token, ip));
+
+            try {
+                filterChain.doFilter(request, response);
+            } finally {
+                request.removeAttribute(WEB_CONTEXT_ATTRIBUTE);
+            }
+        } catch (ForbiddenException e) {
+            forbidden(request, response, e);
+        }
     }
 
-    this.loginManager = loginManager;
-  }
+    private WebContext createWebContext(String token, String ip) throws ForbiddenException {
+        LoginUserVO user = loginManager.getUserByToken(token);
 
-  @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
-    try {
-      String token = request.getHeader(LOGIN_TOKEN);
-      if (token == null) {
-        throw new ForbiddenException("Can not find header 'appid' in request.");
-      }
+        WebContext context = new WebContext();
+        context.setUser(user);
+        context.setIp(ip);
 
-      if (StringUtils.isBlank(token)) {
-        throw new ForbiddenException("Invalid app id.");
-      }
-      String ip = null;
-      try {
-        ip = ServletRequestUtils.getIP(request);
-        logger.error(String
-            .format("@[%s;%s;%s] >> token: %s", request.getRequestURI(), request.getMethod(), ip,
-                    token));
-      } catch (Exception e) {
-        logger.warn(e.getMessage(), e);
-        logger.error(String
-            .format("@[%s;%s] >> token: %s", request.getRequestURI(), request.getMethod(), token));
-      }
-
-      request.setAttribute(WEB_CONTEXT_ATTRIBUTE, createWebContext(token, ip));
-
-      try {
-        filterChain.doFilter(request, response);
-      } finally {
-        request.removeAttribute(WEB_CONTEXT_ATTRIBUTE);
-      }
-    } catch (ForbiddenException e) {
-      forbidden(request, response, e);
+        return context;
     }
-  }
 
-  private WebContext createWebContext(String token, String ip) throws ForbiddenException {
-    LoginUserVO user = loginManager.getUserByToken(token);
+    private void forbidden(HttpServletRequest request, HttpServletResponse response,
+                           ForbiddenException e) {
+        logger.error("{} of request url={},ip={}", request.getMethod(), request.getRequestURI(), ServletRequestUtils.getIP(request), e);
 
-    WebContext context = new WebContext();
-    context.setUser(user);
-    context.setIp(ip);
-
-    return context;
-  }
-
-  private void forbidden(HttpServletRequest request, HttpServletResponse response,
-      ForbiddenException e) {
-    logger.error(String.format("@[%s;%s;%s] >> %s", request.getRequestURI(), request.getMethod(),
-        ServletRequestUtils.getIP(request), e.getMessage()));
-
-    Map map = Maps.newHashMap();
-    map.put("mark", 0);
-    Result result = new Result(map);
-    result.setErrorMsg("用户未登录");
-    String responseBody = Jackson.toJSONString(result);
-    ServletResponseUtils.responseJson(response, 403, responseBody);
-  }
+        Map map = Maps.newHashMap();
+        map.put("mark", 0);
+        Result result = new Result(map);
+        result.setErrorMsg("用户未登录");
+        String responseBody = Jackson.toJSONString(result);
+        ServletResponseUtils.responseJson(response, 403, responseBody);
+    }
 }
