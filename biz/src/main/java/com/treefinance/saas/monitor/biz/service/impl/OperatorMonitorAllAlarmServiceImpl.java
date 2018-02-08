@@ -206,7 +206,8 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                          ETaskOperatorStatType statType, String smsSwitch,EAlarmLevel alarmLevel) {
         if (StringUtils.equalsIgnoreCase(smsSwitch, SWITCH_ON)) {
 
-            String template = operatorMonitorConfig.getSmsAllTemplate();
+            String template = "${level} ${type} 时间段:${startTime}至${endTime},运营商大盘 " +
+                    "预警类型:${alarmDesc},偏离阀值程度${offset}%";
             Map<String, Object> placeHolder = Maps.newHashMap();
 
             List<OperatorStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
