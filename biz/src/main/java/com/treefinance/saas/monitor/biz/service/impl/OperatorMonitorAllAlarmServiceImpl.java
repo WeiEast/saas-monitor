@@ -316,9 +316,10 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                     .append("<td>").append(msg.getValueDesc()).append(" ").append("</td>")
                     .append("<td>").append(msg.getThresholdDesc()).append(" ").append("</td>")
                     .append("<td>").append(msg.getOffset()).append("%").append(" ").append("</td>").append("</tr>");
-            detail.append("运营商大盘").append(msg.getAlarmType()).append("(").append(msg.getOffset()).append("%").append
-                    (")").append(" ");
+            detail.append(msg.getAlarmType()).append("(").append(msg.getOffset()).append("%").append
+                    (")").append("，");
         }
+        detail.substring(0,detail.length()-1);
         detail.append("】");
 
         pageHtml.append(tableTrs);
