@@ -53,8 +53,6 @@ public class OperatorMonitorConfig {
         this.smsSwitch = smsSwitch;
     }
 
-
-
     @BeforeUpdate
     public void before(String key, Object newValue) {
         logger.info(key + " update to " + newValue + " start...");
