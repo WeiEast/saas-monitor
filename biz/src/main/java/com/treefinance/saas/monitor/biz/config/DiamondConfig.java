@@ -60,6 +60,18 @@ public class DiamondConfig {
     private String operatorAlarmOperatorNameList;
 
     /**
+     * 运营商预警,确定预警等级的上下界
+     */
+    @DAttribute(key = "operator.alarm.level.error.lower")
+    private Integer errorLower;
+
+    /**
+     * 运营商预警,确定预警等级的上下界，warning等级的下界，<= warningLower info; > warningLower && < errorLower warning ; >= errorLower error
+     */
+    @DAttribute(key = "operator.alarm.level.warning.lower")
+    private Integer warningLower;
+
+    /**
      * 运营商预警,统计数量低于此值时,取特殊阀值处理
      */
     @DAttribute(key = "operator.alarm.few.num")
@@ -161,9 +173,6 @@ public class DiamondConfig {
      */
     @DAttribute(key = "auth.ivr.token")
     private String ivrToken;
-
-
-
 
 
     public String getIvrAccessKey() {
@@ -441,11 +450,28 @@ public class DiamondConfig {
         this.taskExistAlarmSmsSwitch = taskExistAlarmSmsSwitch;
     }
 
+
     public String getEcommerceMonitorAlarmConfig() {
         return ecommerceMonitorAlarmConfig;
     }
 
     public void setEcommerceMonitorAlarmConfig(String ecommerceMonitorAlarmConfig) {
         this.ecommerceMonitorAlarmConfig = ecommerceMonitorAlarmConfig;
+    }
+
+    public Integer getErrorLower() {
+        return errorLower;
+    }
+
+    public void setErrorLower(Integer errorLower) {
+        this.errorLower = errorLower;
+    }
+
+    public Integer getWarningLower() {
+        return warningLower;
+    }
+
+    public void setWarningLower(Integer warningLower) {
+        this.warningLower = warningLower;
     }
 }
