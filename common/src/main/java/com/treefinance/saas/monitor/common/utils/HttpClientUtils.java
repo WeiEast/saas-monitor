@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.common.exceptions.RequestFailedException;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -24,6 +25,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -290,6 +292,57 @@ public class HttpClientUtils {
         httpPost.setEntity(entity);
         return httpClient.execute(httpPost);
     }
+    /**
+     * 发送 POST 请求（HTTP），JSON形式，Map header
+     *
+     * @param url
+     * @param json json对象
+     * @return
+     */
+    public static String doPostwithHeader(String url, Object json,Map<String, String> headers) {
+        long start = System.currentTimeMillis();
+        CloseableHttpClient httpClient = getClient();
+        String httpStr = null;
+        HttpPost httpPost = new HttpPost(url);
+        CloseableHttpResponse response = null;
+
+        int statusCode = 0;
+        try {
+            httpPost.setConfig(getConfig());
+            StringEntity stringEntity = new StringEntity(json.toString(), "UTF-8");//解决中文乱码问题
+            stringEntity.setContentEncoding("UTF-8");
+            stringEntity.setContentType("application/json");
+
+            List<Header> headerList = Lists.newArrayList();
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                Header header = new BasicHeader(entry.getKey(), entry.getValue());
+                headerList.add(header);
+            }
+            Header[] headerArray = new Header[headerList.size()];
+            headerArray = headerList.toArray(headerArray);
+            httpPost.setEntity(stringEntity);
+            httpPost.setHeaders(headerArray);
+            response = httpClient.execute(httpPost);
+            statusCode = response.getStatusLine().getStatusCode();
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                httpStr = EntityUtils.toString(entity, "UTF-8");
+            }
+            if (statusCode != HttpStatus.SC_OK) {
+                throw new RequestFailedException("request url=" + url + " failed , statusCode = " + statusCode);            }
+        } catch (IOException e) {
+            throw new RequestFailedException("request url=" + url + " failed , statusCode = " + statusCode, e);
+        } finally {
+            if (logger.isInfoEnabled()) {
+                logger.info(" doPost completed: url={}, json={}, statusCode={} ,result={}, cost {} ms ",
+                        url, JSON.toJSONString(json), statusCode, httpStr, (System.currentTimeMillis() - start));
+            }
+            closeResponse(response);
+        }
+        return httpStr;
+    }
+
+
 
     public static void main(String[] args) {
         System.out.println(HttpClientUtils.doGet("https://www.google.co.jp/?gfe_rd=cr&ei=W435WL2vFbDU8AfP-KqABQ"));
