@@ -34,6 +34,8 @@ public interface OperatorStatAccessFacade {
      */
     MonitorResult<List<OperatorStatDayAccessRO>> queryOperatorStatDayAccessListWithPage(OperatorStatAccessRequest request);
 
+    MonitorResult<List<OperatorStatAccessRO>> queryOperatorStatHourAccessListWithPage(OperatorStatAccessRequest request);
+
     /**
      * 查询某一个运营商日监控统计数据(分页),如:联通
      *

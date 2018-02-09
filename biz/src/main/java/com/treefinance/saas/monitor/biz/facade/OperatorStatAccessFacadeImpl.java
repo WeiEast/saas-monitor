@@ -19,6 +19,7 @@ import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.OperatorStatD
 import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
 import com.treefinance.saas.monitor.facade.service.stat.OperatorStatAccessFacade;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -100,6 +101,97 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         }
         logger.info("查询各个运营商日监控统计数据(分页),返回结果result={}", JSON.toJSONString(result));
         return MonitorResultBuilder.pageResult(request, result, total);
+    }
+
+    @Override
+    public MonitorResult<List<OperatorStatAccessRO>> queryOperatorStatHourAccessListWithPage(OperatorStatAccessRequest request) {
+        if (request == null || request.getDataDate() == null || request.getStatType() == null
+                || StringUtils.isBlank(request.getAppId()) || request.getIntervalMins() == null) {
+            logger.error("查询各个运营商小时监控统计数据(分页),输入参数为空,request={}", JSON.toJSONString(request));
+            throw new ParamCheckerException("请求参数非法");
+        }
+        logger.info("查询各个运营商小时监控统计数据(分页),输入参数request={}", JSON.toJSONString(request));
+        List<OperatorStatAccessRO> result = Lists.newArrayList();
+        OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
+
+        OperatorStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        Date startTime = request.getDataDate();
+        Date endTime = DateUtils.addMinutes(request.getDataDate(), request.getIntervalMins());
+        innerCriteria.andAppIdEqualTo(request.getAppId())
+                .andDataTypeEqualTo(request.getStatType())
+                .andDataTimeGreaterThanOrEqualTo(startTime)
+                .andDataTimeLessThan(endTime);
+        if (StringUtils.isNotBlank(request.getGroupName())) {
+            innerCriteria.andGroupNameLike("%" + request.getGroupName() + "%");
+        }
+
+        long total = operatorStatAccessMapper.countByExample(criteria);
+        if (total == 0) {
+            return MonitorResultBuilder.pageResult(request, result, 0L);
+        }
+
+        //数据库5分钟一个点,无法用数据库分页,这里手动分页
+        List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
+        List<OperatorStatAccess> changeList = this.changeSumGroupCodeOperatorStatAccess(list, startTime);
+        changeList = changeList.stream().sorted((o1, o2) -> o2.getConfirmMobileCount().compareTo(o1.getConfirmMobileCount())).collect(Collectors.toList());
+        List<OperatorStatAccess> pageList;
+        int limit = request.getOffset() + request.getPageSize();
+        if (limit > changeList.size()) {
+            if (request.getOffset() > changeList.size()) {
+                pageList = Lists.newArrayList();
+            } else {
+                pageList = changeList.subList(request.getOffset(), changeList.size());
+            }
+        } else {
+            pageList = changeList.subList(request.getOffset(), limit);
+        }
+        for (OperatorStatAccess data : pageList) {
+            OperatorStatAccessRO ro = DataConverterUtils.convert(data, OperatorStatAccessRO.class);
+            result.add(ro);
+        }
+        return MonitorResultBuilder.pageResult(request, result, changeList.size());
+    }
+
+    private List<OperatorStatAccess> changeSumGroupCodeOperatorStatAccess(List<OperatorStatAccess> list, Date startTime) {
+        Map<String, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(OperatorStatAccess::getGroupCode));
+        List<OperatorStatAccess> resultList = Lists.newArrayList();
+        for (Map.Entry<String, List<OperatorStatAccess>> entry : map.entrySet()) {
+            if (CollectionUtils.isEmpty(entry.getValue())) {
+                continue;
+            }
+            OperatorStatAccess data = new OperatorStatAccess();
+            BeanUtils.copyProperties(entry.getValue().get(0), data);
+            data.setDataTime(startTime);
+            List<OperatorStatAccess> entryList = entry.getValue();
+            int userCount = 0, taskCount = 0, entryCount = 0, confirmMobileCount = 0,
+                    startLoginCount = 0, loginSuccessCount = 0, crawlSuccessCount = 0,
+                    processSuccessCount = 0, callbackSuccessCount = 0;
+            for (OperatorStatAccess item : entryList) {
+                userCount = userCount + item.getUserCount();
+                taskCount = taskCount + item.getTaskCount();
+                confirmMobileCount = confirmMobileCount + item.getConfirmMobileCount();
+                startLoginCount = startLoginCount + item.getStartLoginCount();
+                loginSuccessCount = loginSuccessCount + item.getLoginSuccessCount();
+                crawlSuccessCount = crawlSuccessCount + item.getCrawlSuccessCount();
+                processSuccessCount = processSuccessCount + item.getProcessSuccessCount();
+                callbackSuccessCount = callbackSuccessCount + item.getCallbackSuccessCount();
+            }
+            data.setUserCount(userCount);
+            data.setTaskCount(taskCount);
+            data.setConfirmMobileCount(confirmMobileCount);
+            data.setStartLoginCount(startLoginCount);
+            data.setLoginSuccessCount(loginSuccessCount);
+            data.setCrawlSuccessCount(crawlSuccessCount);
+            data.setProcessSuccessCount(processSuccessCount);
+            data.setCallbackSuccessCount(callbackSuccessCount);
+            data.setLoginConversionRate(calcRate(confirmMobileCount, startLoginCount));
+            data.setLoginSuccessRate(calcRate(startLoginCount, loginSuccessCount));
+            data.setCrawlSuccessRate(calcRate(loginSuccessCount, crawlSuccessCount));
+            data.setProcessSuccessRate(calcRate(crawlSuccessCount, processSuccessCount));
+            data.setCallbackSuccessRate(calcRate(processSuccessCount, callbackSuccessCount));
+            resultList.add(data);
+        }
+        return resultList;
     }
 
     @Override
