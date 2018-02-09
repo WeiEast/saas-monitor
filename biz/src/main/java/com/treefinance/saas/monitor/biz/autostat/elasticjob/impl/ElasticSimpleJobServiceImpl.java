@@ -132,20 +132,26 @@ public class ElasticSimpleJobServiceImpl implements ElasticSimpleJobService, App
         }
     }
 
+    @Override
+    public List<String> getAllJobNames() {
+        List<String> jobNames = coordinatorRegistryCenter.getChildrenKeys("/");
+        return jobNames;
+    }
+
+    @Override
+    public boolean exists(String jobName) {
+        JobNodePath jobNodePath = new JobNodePath(jobName);
+        String liteJobConfigJson = coordinatorRegistryCenter.get(jobNodePath.getConfigNodePath());
+        if (liteJobConfigJson == null) {
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         this.coordinatorRegistryCenter = applicationContext.getBean(CoordinatorRegistryCenter.class);
-//        JobCoreConfiguration jobCoreConfiguration = JobCoreConfiguration.newBuilder("test1", "0/10 * * * * ?", 1).build();
-//        createJob(new TestJob(), jobCoreConfiguration);
     }
 
-//    public static class TestJob implements SimpleJob {
-//
-//        @Override
-//        public void execute(ShardingContext shardingContext) {
-//            logger.info("test job is running....");
-//        }
-//    }
 }
