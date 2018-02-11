@@ -83,4 +83,13 @@ public interface OperatorStatAccessFacade {
     MonitorResult<List<OperatorAllStatAccessRO>> queryAllOperatorStaAccessList(OperatorStatAccessRequest request);
 
 
+    /**
+     * 多条件查询各个运营商分时统计数据
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<List<OperatorStatAccessRO>> queryOperatorStatAccessListByExample(OperatorStatAccessRequest request);
+
+
 }

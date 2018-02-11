@@ -374,6 +374,42 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         return MonitorResultBuilder.build(result);
     }
 
+    @Override
+    public MonitorResult<List<OperatorStatAccessRO>> queryOperatorStatAccessListByExample(OperatorStatAccessRequest request) {
+        logger.info("查询各个运营商小时监控统计数据,输入参数request={}", JSON.toJSONString(request));
+        List<OperatorStatAccessRO> result = Lists.newArrayList();
+        OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
+        criteria.setOrderByClause("dataTime desc");
+        OperatorStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        if (StringUtils.isNotBlank(request.getAppId())) {
+            innerCriteria.andAppIdEqualTo(request.getAppId());
+        }
+        if (StringUtils.isNotBlank(request.getGroupCode())) {
+            innerCriteria.andGroupCodeEqualTo(request.getGroupCode());
+        }
+        if (request.getStatType() != null) {
+            innerCriteria.andDataTypeEqualTo(request.getStatType());
+        }
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            innerCriteria.andDataTimeGreaterThanOrEqualTo(request.getStartDate()).andDataTimeLessThan(request.getEndDate());
+        }
+        List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
+        if (CollectionUtils.isEmpty(list)) {
+            return MonitorResultBuilder.build(result);
+        }
+        for (OperatorStatAccess data : list) {
+            data.setDataTime(MonitorDateUtils.getIntervalDateTime(data.getDataTime(), request.getIntervalMins()));
+        }
+        for (OperatorStatAccess data : list) {
+            OperatorStatAccessRO ro = DataConverterUtils.convert(data, OperatorStatAccessRO.class);
+            ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
+            result.add(ro);
+        }
+        logger.info("查询各个运营商小时监控统计数据,输出结果result={}", JSON.toJSONString(result));
+        return MonitorResultBuilder.build(result);
+
+    }
+
     private List<OperatorAllStatAccess> changeIntervalDataTimeOperatorAllStatAccess(List<OperatorAllStatAccess> list, final Integer intervalMins) {
         Map<Date, List<OperatorAllStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
         List<OperatorAllStatAccess> resultList = Lists.newArrayList();
