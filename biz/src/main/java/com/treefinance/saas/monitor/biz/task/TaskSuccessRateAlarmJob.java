@@ -3,12 +3,14 @@ package com.treefinance.saas.monitor.biz.task;
 import com.alibaba.fastjson.JSONObject;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskSuccessRateAlarmService;
 import com.treefinance.saas.monitor.common.domain.dto.TaskSuccessRateAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,13 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
+        String saasEnv = Constants.SAAS_ENV;
+        logger.info("定时任务执行,当前环境SAAS-ENV={}", saasEnv);
+        if (StringUtils.isNotBlank(saasEnv)
+                && StringUtils.equalsIgnoreCase(saasEnv, com.treefinance.saas.monitor.common.domain.Constants.SAAS_ENV_PRE_PRODUCT)) {
+            logger.info("定时任务,预发布环境暂不执行");
+            return;
+        }
         long start = System.currentTimeMillis();
         Date jobTime = new Date();//定时任务执行时间
         logger.info("任务成功率预警,定时任务执行jobTime={}", MonitorDateUtils.format(jobTime));

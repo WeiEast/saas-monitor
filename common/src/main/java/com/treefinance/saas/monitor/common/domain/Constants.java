@@ -3,8 +3,11 @@ package com.treefinance.saas.monitor.common.domain;
 import com.datatrees.common.conf.PropertiesConfiguration;
 
 public interface Constants {
-	
-		String PREFIX_KEY = "saas-gateway:";
+
+    String PREFIX_KEY = "saas-gateway:";
+
+    String SAAS_ENV_PRE_PRODUCT = "preproduct";
+
 
     int REDIS_KEY_TIMEOUT = PropertiesConfiguration.getInstance().getInt("platform.redisKey.timeout", 600);
 
