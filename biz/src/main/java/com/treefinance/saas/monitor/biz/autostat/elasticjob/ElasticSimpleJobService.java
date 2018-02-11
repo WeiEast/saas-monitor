@@ -3,6 +3,8 @@ package com.treefinance.saas.monitor.biz.autostat.elasticjob;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
 
+import java.util.List;
+
 /**
  * Created by yh-treefinance on 2018/1/19.
  */
@@ -49,4 +51,19 @@ public interface ElasticSimpleJobService {
      * @param jobName
      */
     void shutdown(String jobName);
+
+    /**
+     * 获取所有任务名
+     *
+     * @return
+     */
+    List<String> getAllJobNames();
+
+    /**
+     * 是否存在此job
+     *
+     * @param jobName
+     * @return
+     */
+    boolean exists(String jobName);
 }
