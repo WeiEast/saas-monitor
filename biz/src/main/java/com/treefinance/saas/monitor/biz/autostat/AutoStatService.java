@@ -15,6 +15,7 @@ import com.treefinance.saas.monitor.biz.autostat.basicdata.service.BasicDataServ
 import com.treefinance.saas.monitor.biz.autostat.elasticjob.ElasticSimpleJobService;
 import com.treefinance.saas.monitor.biz.autostat.template.parser.StatTemplateParser;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatTemplateService;
+import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.dao.entity.BasicData;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.slf4j.Logger;
@@ -24,12 +25,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 /**
@@ -44,8 +43,6 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
     @Autowired
     private StatTemplateService statTemplateService;
     @Autowired
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
-    @Autowired
     private StatTemplateParser statTemplateParser;
     @Autowired
     private BasicDataFilterContext basicDataFilterContext;
@@ -56,6 +53,9 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
      */
     @Autowired
     private ElasticSimpleJobService elasticSimpleJobService;
+
+    @Autowired
+    private DiamondConfig diamondConfig;
 
     /**
      * 已经启动的监听器
@@ -82,7 +82,7 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
             Map<String, Object> configMap = JSON.parseObject(basicData.getDataSourceConfigJson());
             String topic = (String) configMap.get("topic");
             String tag = (String) configMap.get("tag");
-            String namesrvAddr = (String) configMap.get("namesrvAddr");
+            String namesrvAddr = diamondConfig.getNamesrvAddr();
             String group = (String) configMap.get("group");
 
             DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(group);
