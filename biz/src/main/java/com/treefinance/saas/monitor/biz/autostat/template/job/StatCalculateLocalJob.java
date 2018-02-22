@@ -64,7 +64,7 @@ public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<Map<Str
                 // 数据计算
                 statDataCalculator.calculate(statTemplate, dataList);
             }
-            logger.info("stat data calculate cost {}ms : dataSize={},template={}...", (System.currentTimeMillis() - startTime), dataList.size(), JSON.toJSONString(statTemplate));
+            logger.info("stat data calculate cost {}ms : dataSize={},data={},template={}...", (System.currentTimeMillis() - startTime), dataList.size(), JSON.toJSONString(dataList), JSON.toJSONString(statTemplate));
         } catch (Exception e) {
             logger.error("stat data error : template={}", JSON.toJSONString(statTemplate), e);
         }
