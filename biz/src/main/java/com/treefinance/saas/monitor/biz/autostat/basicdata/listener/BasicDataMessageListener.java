@@ -46,22 +46,29 @@ public class BasicDataMessageListener implements MessageListenerConcurrently {
 
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
-        if (CollectionUtils.isEmpty(msgs)) {
-            logger.info("收到消息无效==>{}", msgs);
-            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-        }
-        List<Map<String,Object>> jsonObjects = Lists.newArrayList();
-        for (MessageExt messageExt : msgs) {
-            String json = new String(messageExt.getBody());
-            jsonObjects.add(JSON.parseObject(json));
-        }
-        List<BasicDataFilter> filters = basicDataFilterContext.getBasicDataFilters(basicDataId);
-        if (CollectionUtils.isNotEmpty(filters)) {
-            for (BasicDataFilter filter : filters) {
-                filter.doFilter(jsonObjects);
+        try {
+
+            if (CollectionUtils.isEmpty(msgs)) {
+                logger.info("收到消息无效==>{}", msgs);
+                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
+            List<Map<String, Object>> jsonObjects = Lists.newArrayList();
+            for (MessageExt messageExt : msgs) {
+                String json = new String(messageExt.getBody());
+                jsonObjects.add(JSON.parseObject(json));
+            }
+            logger.info("收到消息==>{}", JSON.toJSONString(jsonObjects));
+            List<BasicDataFilter> filters = basicDataFilterContext.getBasicDataFilters(basicDataId);
+            if (CollectionUtils.isNotEmpty(filters)) {
+                for (BasicDataFilter filter : filters) {
+                    filter.doFilter(jsonObjects);
+                }
+            }
+            return CONSUME_SUCCESS;
+        } catch (Exception e) {
+            logger.error("收到消息，处理异常", e);
+            throw e;
         }
-        return CONSUME_SUCCESS;
     }
 
     public Long getBasicDataId() {
