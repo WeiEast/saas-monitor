@@ -244,7 +244,10 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             String format = "yyyy-MM-dd HH:mm:SS";
             String startTimeStr = new SimpleDateFormat(format).format(startTime);
             String endTimeStr = new SimpleDateFormat(format).format(endTime);
-            TaskStatAccessAlarmMsgDTO dto = warningMsg.get(0);
+            TaskStatAccessAlarmMsgDTO dto = msgList.get(0);
+            if(!warningMsg.isEmpty()){
+                dto = warningMsg.get(0);
+            }
 
             map.put("level",alarmLevel.name());
             map.put("type",type);
