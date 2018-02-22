@@ -7,6 +7,7 @@ import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
+import com.dangdang.ddframe.job.lite.spring.api.SpringJobScheduler;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilterContext;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.listener.BasicDataMessageListener;
@@ -18,8 +19,11 @@ import com.treefinance.saas.monitor.dao.entity.BasicData;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +36,7 @@ import java.util.stream.Collectors;
  * Created by yh-treefinance on 2018/1/29.
  */
 @Component
-public class AutoStatService implements InitializingBean, SimpleJob {
+public class AutoStatService implements InitializingBean, SimpleJob, ApplicationContextAware {
     /**
      * logger
      */
@@ -57,6 +61,10 @@ public class AutoStatService implements InitializingBean, SimpleJob {
      * 已经启动的监听器
      */
     private Map<Long, DefaultMQPushConsumer> consumerContext = Maps.newConcurrentMap();
+    /**
+     * applicationContext
+     */
+    private ApplicationContext applicationContext;
 
 
     /**
@@ -160,7 +168,21 @@ public class AutoStatService implements InitializingBean, SimpleJob {
                 .forEach(this::stopTemplate);
 
         // # 5.启用模板，启用job
-        activeTemplates.forEach(this::startTemplate);
+        activeTemplates.stream().filter(statTemplate -> applicationContext.containsBean(statTemplate.getTemplateCode()))
+                .forEach(statTemplate -> {
+                    // 根据模板获取对应job
+                    String templateCode = statTemplate.getTemplateCode();
+                    Object job = applicationContext.getBean(templateCode);
+                    if (job instanceof SpringJobScheduler) {
+                        SpringJobScheduler jobScheduler = (SpringJobScheduler) job;
+                    }
+                    this.startTemplate(statTemplate);
+                });
 
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

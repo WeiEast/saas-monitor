@@ -1,10 +1,8 @@
 package com.treefinance.saas.monitor.biz.autostat.elasticjob.impl;
 
-import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
 import com.dangdang.ddframe.job.config.simple.SimpleJobConfiguration;
-import com.dangdang.ddframe.job.event.JobEventConfiguration;
 import com.dangdang.ddframe.job.lite.config.LiteJobConfiguration;
 import com.dangdang.ddframe.job.lite.internal.storage.JobNodePath;
 import com.dangdang.ddframe.job.lite.spring.api.SpringJobScheduler;
@@ -52,14 +50,10 @@ public class ElasticSimpleJobServiceImpl implements ElasticSimpleJobService, App
     @Override
     public void createJob(SimpleJob simpleJob, JobCoreConfiguration jobCoreConfiguration) {
         String jobName = jobCoreConfiguration.getJobName();
-        if (applicationContext.containsBean(jobName)) {
-            throw new RuntimeException("job " + jobName + " has created already...");
-        }
         // 1.beanFactory
         DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
 
         // 2.job event config
-        JobEventConfiguration jobEventConfig = null;
         SimpleJobConfiguration simpleJobConfig = new SimpleJobConfiguration(jobCoreConfiguration, simpleJob.getClass().getCanonicalName());
         LiteJobConfiguration liteJobConfiguration = LiteJobConfiguration.newBuilder(simpleJobConfig).overwrite(true).build();
 
@@ -71,12 +65,10 @@ public class ElasticSimpleJobServiceImpl implements ElasticSimpleJobService, App
         beanDefinitionBuilder.addConstructorArgValue(coordinatorRegistryCenter);
         beanDefinitionBuilder.addConstructorArgValue(liteJobConfiguration);
         beanDefinitionBuilder.addConstructorArgValue(result);
-
         beanFactory.registerBeanDefinition(jobName, beanDefinitionBuilder.getBeanDefinition());
 
         // 创建Spring 任务
         logger.info("create job success : " + beanFactory.getBean(jobName));
-//        new JobScheduler(coordinatorRegistryCenter, LiteJobConfiguration.newBuilder(simpleJobConfig).build(), jobEventConfig).init();
     }
 
     @Override
