@@ -72,6 +72,9 @@ public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<Map<Str
 
     @Override
     public void doFilter(List<Map<String, Object>> data) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("filter data : data={}", JSON.toJSONString(data));
+        }
         if (CollectionUtils.isNotEmpty(data)) {
             try {
                 int size = data.size();

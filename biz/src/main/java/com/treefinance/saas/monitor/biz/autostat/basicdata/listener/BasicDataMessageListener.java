@@ -57,8 +57,8 @@ public class BasicDataMessageListener implements MessageListenerConcurrently {
                 String json = new String(messageExt.getBody());
                 jsonObjects.add(JSON.parseObject(json));
             }
-            logger.info("收到消息==>{}", JSON.toJSONString(jsonObjects));
             List<BasicDataFilter> filters = basicDataFilterContext.getBasicDataFilters(basicDataId);
+            logger.info("收到消息==>{},filters={}", JSON.toJSONString(jsonObjects), filters.size());
             if (CollectionUtils.isNotEmpty(filters)) {
                 for (BasicDataFilter filter : filters) {
                     filter.doFilter(jsonObjects);
