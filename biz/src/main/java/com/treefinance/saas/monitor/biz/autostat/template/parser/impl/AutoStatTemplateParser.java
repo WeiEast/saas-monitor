@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.autostat.template.parser.impl;
 
+import com.alibaba.rocketmq.shade.com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilterContext;
@@ -10,6 +11,8 @@ import com.treefinance.saas.monitor.biz.autostat.template.job.StatDataFlushJob;
 import com.treefinance.saas.monitor.biz.autostat.template.parser.StatTemplateParser;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatTemplateService;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -22,6 +25,10 @@ import java.util.Map;
  */
 @Component
 public class AutoStatTemplateParser implements StatTemplateParser {
+    /**
+     * logger
+     */
+    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     BasicDataFilterContext basicDataFilterContext;
     @Autowired
@@ -39,6 +46,7 @@ public class AutoStatTemplateParser implements StatTemplateParser {
 
     @Override
     public void parse(StatTemplate statTemplate) {
+        logger.info("auto stat template parse: statTemplate={}", JSON.toJSONString(statTemplate));
         Assert.notNull(statTemplate, "统计模板不能为空");
         Assert.notNull(statTemplate.getTemplateCode(), "统计模板编码不能为空");
 

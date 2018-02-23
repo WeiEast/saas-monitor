@@ -1,11 +1,14 @@
 package com.treefinance.saas.monitor.biz.autostat.basicdata.filter;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -17,6 +20,10 @@ import java.util.Map;
  */
 @Component
 public class BasicDataFilterContext {
+    /**
+     * logger
+     */
+    private Logger logger = LoggerFactory.getLogger(getClass());
     /**
      * template - filter
      */
@@ -44,6 +51,7 @@ public class BasicDataFilterContext {
             if (templateCodes != null && !templateCodes.contains(templateCode)) {
                 basicDataContext.put(basicDataId, templateCode);
             }
+            logger.info("registerFilter : statTemplate={},templateCodes={}...", JSON.toJSONString(statTemplate), templateCodes);
         }
     }
 

@@ -143,41 +143,42 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
                 .build();
         elasticSimpleJobService.createJob(this, statCalculateJobConf);
         elasticSimpleJobService.triggerJob(autoJobName);
+        logger.info("auto load stat template job running...");
     }
 
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        logger.info("auto flush stat template....");
-        List<StatTemplate> statTemplates = statTemplateService.queryAll();
-        // 1.激活状态的模板
-        List<StatTemplate> activeTemplates = statTemplates.stream().filter(statTemplate -> Byte.valueOf("1").equals(statTemplate.getStatus())).collect(Collectors.toList());
+        try {
 
-        // 2.新增的基础数据源，自动增加数据监停
-        List<Long> basicIds = activeTemplates.stream().map(StatTemplate::getBasicDataId).distinct().collect(Collectors.toList());
-        basicIds.forEach(basicId -> {
-            if (!consumerContext.containsKey(basicId)) {
-                initListener(basicId);
-            }
-        });
+            List<StatTemplate> statTemplates = statTemplateService.queryAll();
 
-        // # 3.无激活模板的，停止监听 TODO
+            // 1.激活状态的模板
+            List<StatTemplate> activeTemplates = statTemplates.stream().filter(statTemplate -> Byte.valueOf("1").equals(statTemplate.getStatus())).collect(Collectors.toList());
 
-        // # 4.未启用的模板，停止job
-        statTemplates.stream().filter(statTemplate -> !Byte.valueOf("1").equals(statTemplate.getStatus()))
-                .forEach(this::stopTemplate);
+            // 2.新增的基础数据源，自动增加数据监停
+            List<Long> basicIds = activeTemplates.stream().map(StatTemplate::getBasicDataId).distinct().collect(Collectors.toList());
+            basicIds.forEach(basicId -> {
+                if (!consumerContext.containsKey(basicId)) {
+                    initListener(basicId);
+                }
+            });
 
-        // # 5.启用模板，启用job
-        activeTemplates.stream().filter(statTemplate -> applicationContext.containsBean(statTemplate.getTemplateCode()))
-                .forEach(statTemplate -> {
-                    // 根据模板获取对应job
-                    String templateCode = statTemplate.getTemplateCode();
-                    Object job = applicationContext.getBean(templateCode);
-                    if (job instanceof SpringJobScheduler) {
-                        SpringJobScheduler jobScheduler = (SpringJobScheduler) job;
-                    }
-                    this.startTemplate(statTemplate);
-                });
+            // # 3.无激活模板的，停止监听 TODO
+
+            // # 4.未启用的模板，停止job
+            statTemplates.stream().filter(statTemplate -> !Byte.valueOf("1").equals(statTemplate.getStatus()))
+                    .forEach(this::stopTemplate);
+
+            // # 5.启用模板，启用job
+            activeTemplates.stream().forEach(statTemplate -> {
+                logger.info("auto flush stat template : start {}", JSON.toJSONString(statTemplate));
+                this.startTemplate(statTemplate);
+            });
+            logger.info("auto flush stat template : activeTemplates={}", JSON.toJSONString(activeTemplates));
+        } catch (Exception e) {
+            logger.error("auto flush stat template error :", e);
+        }
 
     }
 
