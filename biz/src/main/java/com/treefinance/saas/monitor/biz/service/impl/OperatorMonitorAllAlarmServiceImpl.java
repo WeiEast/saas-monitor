@@ -213,7 +213,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             List<OperatorStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
                     EAlarmLevel.warning.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
 
-            String type = "SAAS-" + (ETaskOperatorStatType.TASK.equals(statType) ? "运营商大盘-任务" : "运营商大盘-人数");
+            String type = "SAAS-" + diamondConfig.getMonitorEnvironment() + "-" + (ETaskOperatorStatType.TASK.equals(statType) ? "运营商大盘-任务" : "运营商大盘-人数");
 
             String format = "yyyy-MM-dd HH:mm:SS";
             String startTimeStr = new SimpleDateFormat(format).format(startTime);

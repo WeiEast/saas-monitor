@@ -239,7 +239,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             List<OperatorStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
                     EAlarmLevel.warning.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
 
-            String type = "SAAS-" + (ETaskOperatorStatType.TASK.equals(statType)?"运营商-分时任务" : "运营商-分时人数");
+            String type = "SAAS-" +  diamondConfig.getMonitorEnvironment() + "-" + (ETaskOperatorStatType.TASK.equals(statType)?"运营商-分时任务" : "运营商-分时人数");
 
             String format = "yyyy-MM-dd HH:mm:SS";
             String startTimeStr = new SimpleDateFormat(format).format(startTime);
@@ -259,7 +259,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
             smsNotifyService.send(StrSubstitutor.replace(template,map));
         } else {
-            logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
+            logger.info("运营商监控,预警定时任务执行jobTime={},发送短信开关已关闭", MonitorDateUtils.format(jobTime));
         }
     }
 
