@@ -1,5 +1,7 @@
 package com.treefinance.saas.monitor.common.domain.dto;
 
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -27,6 +29,18 @@ public class OperatorStatAccessAlarmMsgDTO implements Serializable {
     private String thresholdDesc;//指标阈值描述
 
     private BigDecimal offset;//偏离阈值程度
+
+    private String alarmType;//预警类型
+
+    private Enum alarmLevel;//预警等级
+
+    public Enum getAlarmLevel() {
+        return alarmLevel;
+    }
+
+    public void setAlarmLevel(Enum alarmLevel) {
+        this.alarmLevel = alarmLevel;
+    }
 
     public String getGroupCode() {
         return groupCode;
@@ -106,5 +120,13 @@ public class OperatorStatAccessAlarmMsgDTO implements Serializable {
 
     public void setThresholdDesc(String thresholdDesc) {
         this.thresholdDesc = thresholdDesc;
+    }
+
+    public String getAlarmType(){
+        return alarmType;
+    }
+
+    public void setAlarmType(String type){
+        this.alarmType = type;
     }
 }
