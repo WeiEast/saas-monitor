@@ -14,7 +14,9 @@ import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+<<<<<<<<< Temporary merge branch 1
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
+=========
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -173,8 +175,8 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
     private void alarmMsg(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
                           OperatorMonitorAlarmConfigDTO config, ETaskStatDataType statType) {
 
-        boolean isError = msgList.stream().anyMatch(operatorStatAccessAlarmMsgDTO -> EAlarmLevel.error.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel()));
-        boolean isWarning = msgList.stream().anyMatch(operatorStatAccessAlarmMsgDTO -> EAlarmLevel.warning.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel()));
+        boolean isError = msgList.stream().anyMatch(TaskStatAccessAlarmMsgDTO -> EAlarmLevel.error.equals(TaskStatAccessAlarmMsgDTO.getAlarmLevel()));
+        boolean isWarning = msgList.stream().anyMatch(TaskStatAccessAlarmMsgDTO -> EAlarmLevel.warning.equals(TaskStatAccessAlarmMsgDTO.getAlarmLevel()));
 
         String baseTile;
 
@@ -211,8 +213,8 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                     "预警类型:${alarmDesc},偏离阀值程度${offset}%";
             Map<String, Object> placeHolder = Maps.newHashMap();
 
-            List<TaskStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
-                    EAlarmLevel.warning.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+            List<TaskStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(TaskStatAccessAlarmMsgDTO ->
+                    EAlarmLevel.warning.equals(TaskStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
 
             String type = "SAAS-" + diamondConfig.getMonitorEnvironment() + "-" + (ETaskStatDataType.TASK.equals(statType) ? "运营商大盘-任务" : "运营商大盘-人数");
 
@@ -240,8 +242,8 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
                          String ivrSwitch) {
         if (StringUtils.equalsIgnoreCase(ivrSwitch, SWITCH_ON)) {
 
-            List<TaskStatAccessAlarmMsgDTO> errorMsgs = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
-                    EAlarmLevel.error.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+            List<TaskStatAccessAlarmMsgDTO> errorMsgs = msgList.stream().filter(TaskStatAccessAlarmMsgDTO ->
+                    EAlarmLevel.error.equals(TaskStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
 
             logger.info("特定运营商预警 发送ivr请求 {}", errorMsgs.get(0).getAlarmDesc());
 
@@ -292,6 +294,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         StringBuilder detail = new StringBuilder();
 
 
+
         String module = "saas-" + diamondConfig.getMonitorEnvironment();
         pageHtml.append("<br>").append("【").append(alarmLevel.name()).append("】").append
                 ("您好，").append(module)
@@ -332,6 +335,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         return pageHtml.toString();
     }
 
+    private String generateWeChatBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
 
     private String generateWeChatBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
                                       String baseTile,EAlarmLevel alarmLevel) {
@@ -375,6 +379,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         BigDecimal processCompareVal = compareDTO.getPreviousProcessSuccessRate().multiply(new BigDecimal(config.getProcessSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
         BigDecimal callbackCompareVal = compareDTO.getPreviousCallbackSuccessRate().multiply(new BigDecimal(config.getCallbackSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
         BigDecimal wholeConversionCompareVal = compareDTO.getPreviousWholeConversionRate().multiply(new BigDecimal(config.getWholeConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+
 
         //确认手机转化率小于前7天平均值
         if (dataDTO.getConfirmMobileConversionRate().compareTo(confirmMobileCompareVal) < 0) {

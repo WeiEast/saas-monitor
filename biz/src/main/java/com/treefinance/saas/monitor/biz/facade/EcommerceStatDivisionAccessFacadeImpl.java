@@ -50,7 +50,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
      */
     @Override
     public MonitorResult<List<EcommerceAllDetailRO>> queryEcommerceAllDetailAccessList(EcommerceDetailAccessRequest request) {
-        if (request == null || request.getDataDate() == null || request.getStatType() == null ||request.getSourceType() == null) {
+        if (request == null || request.getDataDate() == null || request.getStatType() == null || request.getSourceType() == null) {
             logger.error("查询电商日监控分时统计数据,输入参数为空或者dataDate,statType,sourceType,appId为空,request={}", JSON.toJSONString(request));
             return new MonitorResult("传入参数为空");
         }
@@ -103,7 +103,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
             for (EcommerceAllStatAccess item : entryList) {
                 userCount = userCount + item.getUserCount();
                 taskCount = taskCount + item.getTaskCount();
-                entryCount = entryCount +item.getEntryCount();
+                entryCount = entryCount + item.getEntryCount();
                 startLoginCount = startLoginCount + item.getStartLoginCount();
                 loginSuccessCount = loginSuccessCount + item.getLoginSuccessCount();
                 crawlSuccessCount = crawlSuccessCount + item.getCrawlSuccessCount();
@@ -122,7 +122,6 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
         }
         return resultList;
     }
-
 
 
     /**
@@ -164,10 +163,10 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
         }
 
 
-        return MonitorResultBuilder.pageResult(request,result,total);
+        return MonitorResultBuilder.pageResult(request, result, total);
 
 
-}
+    }
 
 
 //    /**
@@ -211,7 +210,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
 
         if (Integer.valueOf(0).compareTo(a) == 0) {
 
-            return null;
+            return BigDecimal.ZERO;
         }
 
         BigDecimal rate = BigDecimal.valueOf(b, 2)
@@ -233,7 +232,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
 
 
         if (Integer.valueOf(0).compareTo(a) == 0) {
-            return null;
+            return BigDecimal.ZERO;
         }
         BigDecimal rate = BigDecimal.valueOf(b, 1)
                 .divide(BigDecimal.valueOf(a, 1), 1, BigDecimal.ROUND_HALF_UP);

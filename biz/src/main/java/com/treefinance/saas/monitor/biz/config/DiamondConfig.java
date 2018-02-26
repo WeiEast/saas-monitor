@@ -434,6 +434,14 @@ public class DiamondConfig {
         this.operatorMonitorAlarmConfig = operatorMonitorAlarmConfig;
     }
 
+    public String getEcommerceMonitorAlarmConfig() {
+        return ecommerceMonitorAlarmConfig;
+    }
+
+    public void setEcommerceMonitorAlarmConfig(String ecommerceMonitorAlarmConfig) {
+        this.ecommerceMonitorAlarmConfig = ecommerceMonitorAlarmConfig;
+    }
+
     public String getMonitorAlarmMobiles() {
         return monitorAlarmMobiles;
     }

@@ -198,6 +198,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         String baseTitle;
         String mailSwitch = config.getMailAlarmSwitch();
         String weChatSwitch = config.getWeChatAlarmSwitch();
+
         String smsSwitch = operatorMonitorConfig.getSmsSwitch();
         String ivrSwitch = operatorMonitorConfig.getIvrSwitch();
 
@@ -210,9 +211,9 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         Map<String,List<TaskStatAccessAlarmMsgDTO>> operatorNameGroup = msgList.stream().collect(Collectors
                 .groupingBy(TaskStatAccessAlarmMsgDTO::getGroupName));
 
-        boolean isError = msgList.stream().anyMatch(operatorStatAccessAlarmMsgDTO -> operatorStatAccessAlarmMsgDTO
+        boolean isError = msgList.stream().anyMatch(TaskStatAccessAlarmMsgDTO -> TaskStatAccessAlarmMsgDTO
                 .getAlarmLevel().equals(EAlarmLevel.error));
-        boolean isWarning = msgList.stream().anyMatch(operatorStatAccessAlarmMsgDTO -> operatorStatAccessAlarmMsgDTO
+        boolean isWarning = msgList.stream().anyMatch(TaskStatAccessAlarmMsgDTO -> TaskStatAccessAlarmMsgDTO
                 .getAlarmLevel().equals(EAlarmLevel.warning)) || operatorNameGroup.keySet().size() >= 3;
 
         if (isError) {
@@ -236,8 +237,8 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                     "预警类型:${alarmDesc},偏离阀值程度${offset}%";
             Map<String,Object> map = Maps.newHashMap();
 
-            List<TaskStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
-                    EAlarmLevel.warning.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+            List<TaskStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(TaskStatAccessAlarmMsgDTO ->
+                    EAlarmLevel.warning.equals(TaskStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
 
             String type = "SAAS-" +  diamondConfig.getMonitorEnvironment() + "-" + (ETaskStatDataType.TASK.equals(statType)?"运营商-分时任务" : "运营商-分时人数");
 
@@ -266,8 +267,8 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     private void sendIvr(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, String ivrSwitch) {
         if (StringUtils.equalsIgnoreCase(ivrSwitch, SWITCH_ON)) {
 
-            List<TaskStatAccessAlarmMsgDTO> errorMsgs = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
-                    EAlarmLevel.error.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+            List<TaskStatAccessAlarmMsgDTO> errorMsgs = msgList.stream().filter(TaskStatAccessAlarmMsgDTO ->
+                    EAlarmLevel.error.equals(TaskStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
 
             logger.info("特定运营商预警 发送ivr请求 {}",errorMsgs.get(0).getAlarmDesc());
 
@@ -544,7 +545,6 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 calcOffsetAndLevel(loginSuccessCompareVal, msg, dto.getLoginSuccessRate());
                 msgList.add(msg);
             }
-
             //抓取成功率小于前7天平均值
             if (isAlarm(dto.getLoginSuccessCount(), dto.getCrawlSuccessRate(), crawlCompareVal)) {
                 TaskStatAccessAlarmMsgDTO msg = new TaskStatAccessAlarmMsgDTO();
@@ -570,7 +570,6 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 calcOffsetAndLevel(crawlCompareVal, msg, dto.getCrawlSuccessRate());
                 msgList.add(msg);
             }
-
             //洗数成功率小于前7天平均值
             if (isAlarm(dto.getCrawlSuccessCount(), dto.getProcessSuccessRate(), processCompareVal)) {
                 TaskStatAccessAlarmMsgDTO msg = new TaskStatAccessAlarmMsgDTO();

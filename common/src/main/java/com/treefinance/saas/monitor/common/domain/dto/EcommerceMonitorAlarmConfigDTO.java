@@ -27,6 +27,11 @@ public class EcommerceMonitorAlarmConfigDTO implements Serializable {
      */
     private Integer alarmType;
     private String alarmTypeDesc;
+    /**
+     * 来源类型: 0:所有来源; 1:sdk来源; 2:h5来源
+     */
+    private Integer sourceType;
+    private String sourceTypeDesc;
 
     private Integer intervalMins;
     private Integer previousDays;
@@ -56,6 +61,8 @@ public class EcommerceMonitorAlarmConfigDTO implements Serializable {
         dto1.setAppName("所有商户");
         dto1.setAlarmType(1);
         dto1.setAlarmTypeDesc("总电商按人统计预警");
+        dto1.setSourceType(0);
+        dto1.setSourceTypeDesc("对所有来源预警");
         dto1.setIntervalMins(30);
         dto1.setTaskTimeoutSecs(240);
         dto1.setAlarmSwitch("on");
@@ -74,7 +81,9 @@ public class EcommerceMonitorAlarmConfigDTO implements Serializable {
         dto2.setAppId("virtual_total_stat_appId");
         dto2.setAppName("所有商户");
         dto2.setAlarmType(2);
-        dto2.setAlarmTypeDesc("所有电商按任务数统计预警");
+        dto2.setAlarmTypeDesc("总电商按任务数统计预警");
+        dto1.setSourceType(0);
+        dto1.setSourceTypeDesc("对所有来源预警");
         dto2.setIntervalMins(30);
         dto2.setTaskTimeoutSecs(240);
         dto2.setAlarmSwitch("on");
@@ -217,5 +226,21 @@ public class EcommerceMonitorAlarmConfigDTO implements Serializable {
 
     public void setWeChatAlarmSwitch(String weChatAlarmSwitch) {
         this.weChatAlarmSwitch = weChatAlarmSwitch;
+    }
+
+    public Integer getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(Integer sourceType) {
+        this.sourceType = sourceType;
+    }
+
+    public String getSourceTypeDesc() {
+        return sourceTypeDesc;
+    }
+
+    public void setSourceTypeDesc(String sourceTypeDesc) {
+        this.sourceTypeDesc = sourceTypeDesc;
     }
 }
