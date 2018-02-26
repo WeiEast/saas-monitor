@@ -15,19 +15,19 @@ public class TaskMonitorPerMinKeyHelper {
 
     private static final String KEY_PREFIX = "saas-monitor-task-monitor";
 
-    private static final String MERCHANT_INTERVAL_STAT = "merchant-interval-stat";
-    private static final String MERCHANT_DAY_STAT = "merchant-day-stat";
+    private static final String MERCHANT_INTERVAL_STAT = "merchant-interval-template";
+    private static final String MERCHANT_DAY_STAT = "merchant-day-template";
     private static final String KEY_DAY_ON_MERCHANT_INTERVAL = "key-days-merchant-interval";
     private static final String KEY_USER_ON_MERCHANT_INTERVAL = "key-users-merchant-interval";
     private static final String KEY_USER_ON_MERCHANT_DAY = "key-users-merchant-day";
 
-    private static final String SAAS_INTERVAL_STAT = "saas-interval-stat";
-    private static final String SAAS_DAY_STAT = "saas-day-stat";
+    private static final String SAAS_INTERVAL_STAT = "saas-interval-template";
+    private static final String SAAS_DAY_STAT = "saas-day-template";
     private static final String KEY_DAY_ON_SAAS_INTERVAL = "key-days-saas-interval";
     private static final String KEY_USER_ON_SAAS_INTERVAL = "key-users-saas-interval";
     private static final String KEY_USER_ON_SAAS_DAY = "key-users-saas-day";
 
-    private static final String MERCHANT_WITH_TYPE_INTERVAL_STAT = "merchant-type-interval-stat";
+    private static final String MERCHANT_WITH_TYPE_INTERVAL_STAT = "merchant-type-interval-template";
     private static final String KEY_DAY_ON_MERCHANT_WITH_TYPE_INTERVAL = "key-days-merchant-type-interval";
     private static final String KEY_USER_ON_MERCHANT_WITH_TYPE_INTERVAL = "key-users-merchant-type-interval";
 
