@@ -15,6 +15,7 @@
  */
 package com.treefinance.saas.monitor.web.advice;
 
+import com.datatrees.toolkits.util.http.servlet.ServletRequestUtils;
 import com.datatrees.toolkits.util.http.servlet.ServletResponseUtils;
 import com.datatrees.toolkits.util.json.Jackson;
 import com.google.common.collect.Maps;
@@ -37,7 +38,6 @@ import javax.validation.ValidationException;
 import java.util.Map;
 
 /**
- *
  * @author <A HREF="mailto:yaojun@datatrees.com.cn">Jun Yao</A>
  * @version 1.0
  * @since 2017年3月06日 上午10:12:41
@@ -78,7 +78,7 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public void handleValidationException(ValidationException ex,
-                                                        HttpServletRequest request, HttpServletResponse response) {
+                                          HttpServletRequest request, HttpServletResponse response) {
         responseException(request, ex, HttpStatus.BAD_REQUEST, response);
     }
 
@@ -91,7 +91,9 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
         if (ex != null) {
             logBuffer.append(",exception:" + ex);
         }
-        logger.error(logBuffer.toString(), ex);
+//        logger.error(logBuffer.toString(), ex);
+        logger.error("{} of request url={},ip={}", request.getMethod(), request.getRequestURI(), ServletRequestUtils.getIP(request), ex);
+
     }
 
     private void responseException(HttpServletRequest request, Exception ex, HttpStatus httpStatus, HttpServletResponse response) {

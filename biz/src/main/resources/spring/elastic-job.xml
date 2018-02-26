@@ -58,4 +58,5 @@
                 class="com.treefinance.saas.monitor.biz.task.EcommerceMonitorAlarmJob"
                 registry-center-ref="regCenter" cron="0 0/5 * * * ? "
                 sharding-total-count="1" overwrite="true"/>
+
 </beans>
