@@ -14,10 +14,8 @@ import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
-<<<<<<<<< Temporary merge branch 1
-import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-=========
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccess;
@@ -195,18 +193,18 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         if (isError) {
             sendMail(msgList, jobTime, startTime, endTime, statType, baseTile, mailSwitch, EAlarmLevel.error);
             sendIvr(msgList, jobTime, ivrSwitch);
-            sendWeChat(msgList, jobTime, startTime, endTime, baseTile, weChatSwitch,EAlarmLevel.error);
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTile, weChatSwitch, EAlarmLevel.error);
         } else if (isWarning) {
             sendMail(msgList, jobTime, startTime, endTime, statType, baseTile, mailSwitch, EAlarmLevel.warning);
-            sendSms(msgList, jobTime, startTime, endTime, statType, smsSwitch,EAlarmLevel.warning);
-            sendWeChat(msgList, jobTime, startTime, endTime, baseTile, weChatSwitch,EAlarmLevel.warning);
-        }else {
-            sendWeChat(msgList, jobTime, startTime, endTime, baseTile, weChatSwitch,EAlarmLevel.info);
+            sendSms(msgList, jobTime, startTime, endTime, statType, smsSwitch, EAlarmLevel.warning);
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTile, weChatSwitch, EAlarmLevel.warning);
+        } else {
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTile, weChatSwitch, EAlarmLevel.info);
         }
     }
 
     private void sendSms(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
-                         ETaskStatDataType statType, String smsSwitch,EAlarmLevel alarmLevel) {
+                         ETaskStatDataType statType, String smsSwitch, EAlarmLevel alarmLevel) {
         if (StringUtils.equalsIgnoreCase(smsSwitch, SWITCH_ON)) {
 
             String template = "${level} ${type} 时间段:${startTime}至${endTime},运营商大盘 " +
@@ -247,7 +245,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
 
             logger.info("特定运营商预警 发送ivr请求 {}", errorMsgs.get(0).getAlarmDesc());
 
-            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm, "运营商大盘"+errorMsgs.get(0).getAlarmDesc());
+            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm, "运营商大盘" + errorMsgs.get(0).getAlarmDesc());
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},ivr开关已关闭", MonitorDateUtils.format(jobTime));
         }
@@ -273,9 +271,9 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
     }
 
     private void sendWeChat(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
-                            String baseTile, String weChatSwitch,EAlarmLevel alarmLevel) {
+                            String baseTile, String weChatSwitch, EAlarmLevel alarmLevel) {
         if (StringUtils.equalsIgnoreCase(weChatSwitch, SWITCH_ON)) {
-            String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile,alarmLevel);
+            String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile, alarmLevel);
             alarmMessageProducer.sendWebChart4OperatorMonitor(weChatBody, jobTime);
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},发送微信开关已关闭", MonitorDateUtils.format(jobTime));
@@ -292,7 +290,6 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         StringBuilder tableTrs = new StringBuilder();
         //title里面的具体内容
         StringBuilder detail = new StringBuilder();
-
 
 
         String module = "saas-" + diamondConfig.getMonitorEnvironment();
@@ -322,7 +319,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             detail.append(msg.getAlarmType()).append("(").append(msg.getOffset()).append("%").append
                     (")").append("，");
         }
-        detail.substring(0,detail.length()-1);
+        detail.substring(0, detail.length() - 1);
         detail.append("】");
 
         pageHtml.append(tableTrs);
@@ -336,9 +333,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
     }
 
     private String generateWeChatBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
-
-    private String generateWeChatBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
-                                      String baseTile,EAlarmLevel alarmLevel) {
+                                      String baseTile, EAlarmLevel alarmLevel) {
         StringBuilder buffer = new StringBuilder();
         buffer.append("【").append(alarmLevel.name()).append("】")
                 .append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
@@ -361,9 +356,9 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
     /**
      * 获取需要预警的数据信息
      *
-     * @param dataDTO 原始数据量
+     * @param dataDTO    原始数据量
      * @param compareDTO 七天的平均值的集合
-     * @param config 配置
+     * @param config     配置
      * @return
      */
     private List<TaskStatAccessAlarmMsgDTO> getAlarmMsgList(OperatorAllStatAccessDTO dataDTO,
@@ -604,9 +599,9 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
     /**
      * 获取前7天内,相同时刻运营商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
      *
-     * @param jobTime 任务时间
+     * @param jobTime  任务时间
      * @param baseTime 时间区间的结束时间
-     * @param config 配置
+     * @param config   配置
      * @param statType @return
      * @return
      */
