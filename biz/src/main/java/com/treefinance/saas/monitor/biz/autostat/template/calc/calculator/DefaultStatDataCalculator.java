@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.autostat.template.calc.calculator;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -27,10 +28,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -186,10 +184,11 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
         // 分组名称
         List<String> groupNames = _statGroups.stream().map(StatGroup::getGroupCode).collect(Collectors.toList());
-        redisMultiMap.keys().forEach(redisKey -> {
+        redisMultiMap.keySet().forEach(redisKey -> {
             Map<String, Double> totalMap = Maps.newHashMap();
             Map<String, String> groupMap = Maps.newHashMap();
-            redisMultiMap.get(redisKey).forEach(dataMap -> {
+            Collection<Map<String, Object>> dataList = redisMultiMap.get(redisKey);
+            dataList.forEach(dataMap -> {
                 dataMap.keySet().stream().forEach(key -> {
                     if (groupNames.contains(key) || AsConstants.DATA_TIME.equals(key) || AsConstants.GROUP.equals(key)) {
                         groupMap.put(key, dataMap.get(key) + "");
@@ -215,7 +214,8 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             resultMap.putAll(groupMap);
             resultMap.putAll(totalMap);
             resultList.add(resultMap);
-            logger.info("spel base data calculate: redisKey={},result={}", redisKey, resultMap);
+            logger.info("spel base data calculate: redisKey={}, groupMap={}，totalMap={},dataList={}",
+                    redisKey, groupMap, totalMap, JSON.toJSONString(dataList));
         });
         String dataListKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode);
         redisTemplate.boundSetOps(dataListKey).add(redisMultiMap.keys().toArray(new String[]{}));
@@ -305,8 +305,33 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
     }
 
     public static void main(String[] args) throws ParseException {
-        Date date = new Date();
-        String cron = "0 0/5 * * * ? ";
-        System.out.println(getExpireTime(cron));
+//        Date date = new Date();
+//        String cron = "0 0/5 * * * ? ";
+//        System.out.println(getExpireTime(cron));
+
+        Multimap<String, Map<String, Object>> redisMultiMap = ArrayListMultimap.create();
+        String key = "saas-monitor:stat:ecommerce-time-share:index-4:2018-02-24 15:50:00:appId-virtual_total_stat_appId:dataType-0:sourceType-0";
+
+        Map<String, Object> map1 = Maps.newHashMap();
+        map1.put("1", "1");
+
+        Map<String, Object> map2 = Maps.newHashMap();
+        map2.put("2", "2");
+
+        Map<String, Object> map3 = Maps.newHashMap();
+        map3.put("3", "3");
+
+        redisMultiMap.put(key, map1);
+        redisMultiMap.put(key, map2);
+        redisMultiMap.put(key, map3);
+
+        System.out.println("keys =" + JSON.toJSONString(redisMultiMap.keys()));
+        System.out.println("keyset =" + JSON.toJSONString(redisMultiMap.keySet()));
+
+
+        redisMultiMap.keys().forEach(redisKey -> {
+            System.out.println("redisKey=" + redisKey + ",dataMap=" + JSON.toJSONString(redisMultiMap.get(key)));
+        });
+
     }
 }
