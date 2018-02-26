@@ -8,6 +8,7 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskMonitorPerMinKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
+import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskSuccessRateAlarmService;
 import com.treefinance.saas.monitor.common.domain.dto.SaasStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskSuccessRateAlarmConfigDTO;
@@ -57,6 +58,8 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     private MerchantStatAccessMapper merchantStatAccessMapper;
     @Autowired
     private IvrNotifyService ivrNotifyService;
+    @Autowired
+    private SmsNotifyService smsNotifyService;
 
     @Override
     public void alarm(EBizType bizType, TaskSuccessRateAlarmConfigDTO config, Date jobTime) {
@@ -102,6 +105,9 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         }
         if (StringUtils.equalsIgnoreCase(config.getWeChatAlarmSwitch(), "on")) {
             sendWechatAlarm(list, statType);
+        }
+        if (StringUtils.equalsIgnoreCase(config.getSmsAlarmSwitch(), "on")) {
+            sendSmsAlarm(list, statType);
         }
 
         // 增加ivr服务通知
@@ -216,13 +222,13 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     }
 
     private void sendWechatAlarm(List<SaasStatAccessDTO> list, EStatType type) {
-        String body = this.generateMessageBody(list, type);
+        String body = this.generateMessageBody(list, type, "wechat");
         alarmMessageProducer.sendWechantAlarm(body);
     }
 
     private void sendMailAlarm(List<SaasStatAccessDTO> list, EStatType statType) {
         String title = this.generateTitle(statType);
-        String body = this.generateMessageBody(list, statType);
+        String body = this.generateMessageBody(list, statType, "mail");
         alarmMessageProducer.sendMailAlarm(title, body);
     }
 
@@ -230,12 +236,25 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         return "saas-" + diamondConfig.getMonitorEnvironment() + "[" + type.getName() + "]任务成功率预警";
     }
 
-    private String generateMessageBody(List<SaasStatAccessDTO> list, EStatType type) {
+    private void sendSmsAlarm(List<SaasStatAccessDTO> list, EStatType statType) {
+        String body = this.generateMessageBody(list, statType, "sms");
+        smsNotifyService.send(body);
+    }
+
+    private String generateMessageBody(List<SaasStatAccessDTO> list, EStatType type, String sendType) {
         StringBuffer buffer = new StringBuffer();
-        if (EStatType.OPERATOR.equals(type)) {
-            buffer.append("【").append(EAlarmLevel.error).append("】");
+        if (StringUtils.equalsIgnoreCase(sendType, "sms")) {//短信的花括号文字是需要备案的
+            if (EStatType.OPERATOR.equals(type)) {
+                buffer.append(EAlarmLevel.error).append(",");
+            } else {
+                buffer.append(EAlarmLevel.warning).append(",");
+            }
         } else {
-            buffer.append("【").append(EAlarmLevel.warning).append("】");
+            if (EStatType.OPERATOR.equals(type)) {
+                buffer.append("【").append(EAlarmLevel.error).append("】");
+            } else {
+                buffer.append("【").append(EAlarmLevel.warning).append("】");
+            }
         }
         buffer.append("您好，").append(generateTitle(type)).append("，监控数据如下，请及时处理：").append("\n");
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
