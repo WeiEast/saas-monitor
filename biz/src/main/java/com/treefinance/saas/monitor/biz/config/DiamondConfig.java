@@ -60,6 +60,18 @@ public class DiamondConfig {
     private String operatorAlarmOperatorNameList;
 
     /**
+     * 运营商预警,确定预警等级的上下界
+     */
+    @DAttribute(key = "operator.alarm.level.error.lower")
+    private Integer errorLower;
+
+    /**
+     * 运营商预警,确定预警等级的上下界，warning等级的下界，<= warningLower info; > warningLower && < errorLower warning ; >= errorLower error
+     */
+    @DAttribute(key = "operator.alarm.level.warning.lower")
+    private Integer warningLower;
+
+    /**
      * 运营商预警,统计数量低于此值时,取特殊阀值处理
      */
     @DAttribute(key = "operator.alarm.few.num")
@@ -89,6 +101,12 @@ public class DiamondConfig {
     private String taskExistAlarmMailSwitch;
 
     /**
+     * 任务是否存在,短信通知开关
+     */
+    @DAttribute(key = "task.exist.alarm.sms.switch")
+    private String taskExistAlarmSmsSwitch;
+
+    /**
      * 统计时间间隔:分钟为单位
      */
     @DAttribute(key = "monitor.http.interval.minutes")
@@ -106,6 +124,9 @@ public class DiamondConfig {
     // 预警消息，邮件列表
     @DAttribute(key = "monitor.alarm.mail")
     private String monitorAlarmMails;
+    //预警消息,手机列表
+    @DAttribute(key = "monitor.alarm.mobile")
+    private String monitorAlarmMobiles;
     // 预警消息，微信tag
     @DAttribute(key = "monitor.alarm.tag.webchart")
     private String monitorAlarmWebchartTag;
@@ -408,5 +429,37 @@ public class DiamondConfig {
 
     public void setOperatorMonitorAlarmConfig(String operatorMonitorAlarmConfig) {
         this.operatorMonitorAlarmConfig = operatorMonitorAlarmConfig;
+    }
+
+    public String getMonitorAlarmMobiles() {
+        return monitorAlarmMobiles;
+    }
+
+    public void setMonitorAlarmMobiles(String monitorAlarmMobiles) {
+        this.monitorAlarmMobiles = monitorAlarmMobiles;
+    }
+
+    public String getTaskExistAlarmSmsSwitch() {
+        return taskExistAlarmSmsSwitch;
+    }
+
+    public void setTaskExistAlarmSmsSwitch(String taskExistAlarmSmsSwitch) {
+        this.taskExistAlarmSmsSwitch = taskExistAlarmSmsSwitch;
+    }
+
+    public Integer getErrorLower() {
+        return errorLower;
+    }
+
+    public void setErrorLower(Integer errorLower) {
+        this.errorLower = errorLower;
+    }
+
+    public Integer getWarningLower() {
+        return warningLower;
+    }
+
+    public void setWarningLower(Integer warningLower) {
+        this.warningLower = warningLower;
     }
 }
