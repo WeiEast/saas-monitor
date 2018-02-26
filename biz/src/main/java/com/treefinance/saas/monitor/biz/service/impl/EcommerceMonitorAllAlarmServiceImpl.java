@@ -383,7 +383,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             }
         }
         if (CollectionUtils.isEmpty(previousDTOList)) {
-            logger.info("电商预警,预警定时任务执行jobTime={},,在此时间前{}天内,未查询到所有运营商统计数据previousOClockList={},list={}",
+            logger.info("电商预警,预警定时任务执行jobTime={},在此时间前{}天内,未查询到所有运营商统计数据previousOClockList={},list={}",
                     MonitorDateUtils.format(jobTime), previousDays, JSON.toJSONString(previousOClockList), JSON.toJSONString(previousDTOList));
             return null;
         }
@@ -446,6 +446,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
         EcommerceAllStatAccessCriteria criteria = new EcommerceAllStatAccessCriteria();
         criteria.createCriteria().andDataTypeEqualTo(statType.getCode())
                 .andAppIdEqualTo(config.getAppId())
+                .andSourceTypeEqualTo(config.getSourceType().byteValue())
                 .andDataTimeGreaterThanOrEqualTo(startTime)
                 .andDataTimeLessThan(endTime);
         List<EcommerceAllStatAccess> list = ecommerceAllStatAccessMapper.selectByExample(criteria);
