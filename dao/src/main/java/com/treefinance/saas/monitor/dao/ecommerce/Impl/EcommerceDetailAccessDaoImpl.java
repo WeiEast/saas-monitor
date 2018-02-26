@@ -1,6 +1,5 @@
 package com.treefinance.saas.monitor.dao.ecommerce.Impl;
 
-import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceTimeShareDTO;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.ecommerce.EcommerceDetailAccessDao;
@@ -37,20 +36,13 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
 
     @Override
     public List<EcommerceAllStatAccess> getEcommerceAllDetailList(EcommerceTimeShareDTO request) {
-
-
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
-        String dateString = formatter1.format(request.getDataDate());
-        ParsePosition pos = new ParsePosition(0);
-        Date dataDate2 = formatter.parse((dateString + " 23:59:59"), pos);
-
-
         logger.info("查询电商日监控分时统计数据 dao层,传入的参数为{}", request.toString());
         EcommerceAllStatAccessCriteria ecommerceAllStatAccessCriteria = new EcommerceAllStatAccessCriteria();
         ecommerceAllStatAccessCriteria.setOrderByClause("dataTime desc");
 
-        ecommerceAllStatAccessCriteria.createCriteria().andAppIdEqualTo(request.getAppId()).andDataTypeEqualTo(request.getStatType()).andSourceTypeEqualTo(request.getSourceType()).andDataTimeBetween(request.getDataDate(), dataDate2);
+        ecommerceAllStatAccessCriteria.createCriteria().andAppIdEqualTo(request.getAppId())
+                .andDataTypeEqualTo(request.getStatType()).andSourceTypeEqualTo(request.getSourceType())
+                .andDataTimeBetween(request.getDataDate(), MonitorDateUtils.getDayEndTime(request.getDataDate()));
 
         List<EcommerceAllStatAccess> allStatAccessList = ecommerceAllStatAccessMapper.selectByExample(ecommerceAllStatAccessCriteria);
 
@@ -73,14 +65,9 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         ecommerceAllStatDayAccessCriteria.setOffset(request.getOffset());
 
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
-        String dateString2 = formatter1.format(request.getEndDate());
-        ParsePosition pos = new ParsePosition(0);
-        Date dataDate2 = formatter.parse((dateString2 + " 23:59:59"), pos);
-
-
-        ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(request.getAppId()).andSourceTypeEqualTo(request.getSourceType()).andDataTypeEqualTo(request.getStatType()).andDataTimeBetween(request.getStartDate(), dataDate2);
+        ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(request.getAppId())
+                .andSourceTypeEqualTo(request.getSourceType()).andDataTypeEqualTo(request.getStatType())
+                .andDataTimeBetween(request.getStartDate(), request.getEndDate());
 
         List<EcommerceAllStatDayAccess> allStatAccessList = ecommerceAllStatDayAccessMapper.selectByExample(ecommerceAllStatDayAccessCriteria);
 
@@ -95,19 +82,14 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
 
         EcommerceAllStatDayAccessCriteria ecommerceAllStatDayAccessCriteria = new EcommerceAllStatDayAccessCriteria();
 
-
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
-        String dateString2 = formatter1.format(ecommerceTimeShareDTO.getEndDate());
-        ParsePosition pos = new ParsePosition(0);
-        Date dataDate2 = formatter.parse((dateString2 + " 23:59:59"), pos);
-
         ecommerceAllStatDayAccessCriteria.setOrderByClause("dataTime desc");
         ecommerceAllStatDayAccessCriteria.setLimit(ecommerceTimeShareDTO.getPageSize());
         ecommerceAllStatDayAccessCriteria.setOffset(ecommerceTimeShareDTO.getOffset());
 
 
-        ecommerceAllStatDayAccessCriteria.createCriteria().andSourceTypeEqualTo(ecommerceTimeShareDTO.getSourceType()).andAppIdEqualTo(ecommerceTimeShareDTO.getAppId()).andDataTypeEqualTo(ecommerceTimeShareDTO.getStatType()).andDataTimeBetween(ecommerceTimeShareDTO.getStartDate(), dataDate2);
+        ecommerceAllStatDayAccessCriteria.createCriteria().andSourceTypeEqualTo(ecommerceTimeShareDTO.getSourceType())
+                .andAppIdEqualTo(ecommerceTimeShareDTO.getAppId()).andDataTypeEqualTo(ecommerceTimeShareDTO.getStatType())
+                .andDataTimeBetween(ecommerceTimeShareDTO.getStartDate(), ecommerceTimeShareDTO.getEndDate());
 
 
         long total = ecommerceAllStatDayAccessMapper.countByExample(ecommerceAllStatDayAccessCriteria);
