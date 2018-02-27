@@ -492,8 +492,9 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
      */
     private BigDecimal calcRate(Integer a, Integer b) {
         if (Integer.valueOf(0).compareTo(b) == 0) {
-            return BigDecimal.ZERO;
+            return BigDecimal.valueOf(0, 2);
         }
+
         BigDecimal rate = BigDecimal.valueOf(a, 2)
                 .multiply(BigDecimal.valueOf(100))
                 .divide(BigDecimal.valueOf(b, 2), 2, BigDecimal.ROUND_HALF_UP);
@@ -514,6 +515,4 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, alarmType, statType);
         }
     }
-
-
 }
