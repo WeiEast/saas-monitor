@@ -57,18 +57,16 @@ public class AutoStatTemplateParser implements StatTemplateParser {
         Assert.notNull(statTemplate.getStatCron(), "统计cron不能为空");
         Assert.isTrue(Byte.valueOf("1").equals(statTemplate.getStatus()), "统计模板必须先启用");
 
+        StatCalculateLocalJob oldStatCalculateJob = statCalculateLocalJobs.get(templateCode);
         // 2.注册过滤器（数据计算器）
         StatCalculateLocalJob statCalculateJob = new StatCalculateLocalJob(statTemplate, statDataSpelCalculator);
         basicDataFilterContext.registerFilter(statTemplate, statCalculateJob);
-        statCalculateLocalJobs.put(statTemplate.getTemplateCode(), statCalculateJob);
+        statCalculateLocalJobs.put(templateCode, statCalculateJob);
 
-        // 3.生成数据计算任务
-//        JobCoreConfiguration statCalculateJobConf = JobCoreConfiguration
-//                .newBuilder(templateCode + "-DataCalc", statTemplate.getStatCron(), 1)
-//                .failover(true)
-//                .description(statTemplate.getTemplateName())
-//                .build();
-//        elasticSimpleJobService.createJob(statCalculateJob, statCalculateJobConf);
+        // 3.已经注册的job，执行清空缓存数据
+        if (oldStatCalculateJob != null) {
+            oldStatCalculateJob.execute(null);
+        }
 
         // 4.数据刷新定时任务
         StatDataFlushJob statDataFlushJob = new StatDataFlushJob(statTemplate, statDataSpelCalculator);

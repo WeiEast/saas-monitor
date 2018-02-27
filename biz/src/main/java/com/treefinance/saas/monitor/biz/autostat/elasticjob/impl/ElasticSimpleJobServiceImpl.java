@@ -68,7 +68,7 @@ public class ElasticSimpleJobServiceImpl implements ElasticSimpleJobService, App
         beanFactory.registerBeanDefinition(jobName, beanDefinitionBuilder.getBeanDefinition());
 
         // 创建Spring 任务
-        logger.info("create job success : " + beanFactory.getBean(jobName));
+        logger.info("create job success : jobName" + jobName);
     }
 
     @Override

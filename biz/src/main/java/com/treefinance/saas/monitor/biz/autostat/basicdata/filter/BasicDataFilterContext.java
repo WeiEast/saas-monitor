@@ -51,7 +51,7 @@ public class BasicDataFilterContext {
             if (templateCodes != null && !templateCodes.contains(templateCode)) {
                 basicDataContext.put(basicDataId, templateCode);
             }
-            logger.info("registerFilter : statTemplate={},templateCodes={}...", JSON.toJSONString(statTemplate), templateCodes);
+            logger.info("registerFilter : statTemplate={}, templateCodes={}...", JSON.toJSONString(statTemplate), templateCodes);
         }
     }
 
