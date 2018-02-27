@@ -82,8 +82,8 @@ public class EcommerceMonitorAlarmConfigDTO implements Serializable {
         dto2.setAppName("所有商户");
         dto2.setAlarmType(2);
         dto2.setAlarmTypeDesc("总电商按任务数统计预警");
-        dto1.setSourceType(0);
-        dto1.setSourceTypeDesc("对所有来源预警");
+        dto2.setSourceType(0);
+        dto2.setSourceTypeDesc("对所有来源预警");
         dto2.setIntervalMins(30);
         dto2.setTaskTimeoutSecs(240);
         dto2.setAlarmSwitch("on");
