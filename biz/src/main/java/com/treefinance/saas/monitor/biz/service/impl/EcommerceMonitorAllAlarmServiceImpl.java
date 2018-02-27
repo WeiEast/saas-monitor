@@ -58,7 +58,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             Integer intervalMins = config.getIntervalMins();
             //由于任务执行需要时间,保证预警的精确,预警统计向前一段时间(各业务任务的超时时间),此时此段时间的任务可以保证都已统计完毕.
             //好处:预警时间即使每隔1分钟预警,依然可以保证预警的准确.坏处:收到预警消息时间向后延迟了相应时间.
-            //如:jobTime=14:11,但是运营商超时时间为600s,则statTime=14:01
+            //如:jobTime=14:11,但是电商超时时间为600s,则statTime=14:01
             Date statTime = DateUtils.addSeconds(jobTime, -config.getTaskTimeoutSecs());
             //取得预警原点时间,如:statTime=14:01分,30分钟间隔统计一次,则beginTime为14:00.
             Date baseTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, intervalMins);
@@ -81,14 +81,14 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             Date endTime = baseTime;
             EcommerceAllStatAccessDTO dataDTO = this.getBaseData(jobTime, startTime, endTime, config, statType);
             if (dataDTO == null) {
-                logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有运营商的统计数据",
+                logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有电商的统计数据",
                         MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(endTime));
                 return;
             }
 
             //获取前n天内,相同时刻电商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
             EcommerceAllStatAccessDTO compareDTO = getPreviousCompareData(jobTime, baseTime, config, statType);
-            logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻baseTime={},获取前n天内,相同时刻所有运营商统计的平均值compareDTO={}",
+            logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻baseTime={},获取前n天内,相同时刻所有电商统计的平均值compareDTO={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(compareDTO));
             if (compareDTO == null) {
                 return;
@@ -96,7 +96,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
 
             //获取需要预警的数据信息
             List<TaskStatAccessAlarmMsgDTO> msgList = getAlarmMsgList(dataDTO, compareDTO, config);
-            logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻baseTime={},所有运营商统计需要预警的数据信息msgList={}",
+            logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻baseTime={},所有电商统计需要预警的数据信息msgList={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(msgList));
             if (CollectionUtils.isEmpty(msgList)) {
                 return;
@@ -383,7 +383,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             }
         }
         if (CollectionUtils.isEmpty(previousDTOList)) {
-            logger.info("电商预警,预警定时任务执行jobTime={},在此时间前{}天内,未查询到所有运营商统计数据previousOClockList={},list={}",
+            logger.info("电商预警,预警定时任务执行jobTime={},在此时间前{}天内,未查询到所有电商统计数据previousOClockList={},list={}",
                     MonitorDateUtils.format(jobTime), previousDays, JSON.toJSONString(previousOClockList), JSON.toJSONString(previousDTOList));
             return null;
         }
@@ -451,7 +451,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
                 .andDataTimeLessThan(endTime);
         List<EcommerceAllStatAccess> list = ecommerceAllStatAccessMapper.selectByExample(criteria);
         if (CollectionUtils.isEmpty(list)) {
-            logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有运营商的统计数据list={}",
+            logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有电商的统计数据list={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(endTime), JSON.toJSONString(list));
             return null;
         }

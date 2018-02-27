@@ -93,6 +93,7 @@ public class EcommerceMonitorAlarmConfigDTO implements Serializable {
         dto2.setCrawlSuccessRate(70);
         dto2.setProcessSuccessRate(70);
         dto2.setCallbackSuccessRate(70);
+        dto2.setWholeConversionRate(90);
         dto2.setMailAlarmSwitch("on");
         dto2.setWeChatAlarmSwitch("on");
         list.add(dto2);
