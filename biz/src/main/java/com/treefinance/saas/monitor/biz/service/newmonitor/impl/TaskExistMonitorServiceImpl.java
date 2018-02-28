@@ -61,7 +61,7 @@ public class TaskExistMonitorServiceImpl implements TaskExistMonitorService {
             map.put("successCount", successCount + "");
         }
         if (hashOperations.getExpire() == -1) {
-            hashOperations.expire(1, TimeUnit.HOURS);
+            hashOperations.expire(1, TimeUnit.DAYS);
         }
         logger.info("任务预警,任务预警消息处理完成,预警处理的任务消息message={},map={}", JSON.toJSONString(message), JSON.toJSONString(map));
     }

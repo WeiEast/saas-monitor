@@ -51,7 +51,7 @@ public interface OperatorStatAccessFacade {
     MonitorResult<List<OperatorStatDayAccessRO>> queryOneOperatorStatDayAccessListWithPage(OperatorStatAccessRequest request);
 
     /**
-     * 查询各个运营商小时监控统计数据
+     * 查询某个运营商小时监控统计数据
      *
      * @param request
      * @return

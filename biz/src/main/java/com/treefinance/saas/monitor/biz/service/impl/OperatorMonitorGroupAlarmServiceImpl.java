@@ -12,11 +12,11 @@ import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessAlarmMsgDTO;
+import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
-import com.treefinance.saas.monitor.common.enumeration.ETaskOperatorStatType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
@@ -70,7 +70,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
 
     @Override
-    public void alarm(Date jobTime, OperatorMonitorAlarmConfigDTO config, ETaskOperatorStatType statType) {
+    public void alarm(Date jobTime, OperatorMonitorAlarmConfigDTO config, ETaskStatDataType statType) {
         try {
 
             Integer intervalMins = config.getIntervalMins();
@@ -114,7 +114,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             }
 
             //获取需要预警的数据信息
-            List<OperatorStatAccessAlarmMsgDTO> msgList = getAlarmMsgList(jobTime, dtoList, compareMap, config);
+            List<TaskStatAccessAlarmMsgDTO> msgList = getAlarmMsgList(jobTime, dtoList, compareMap, config);
             logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},区分运营商统计需要预警的数据信息msgList={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(msgList));
             if (CollectionUtils.isEmpty(msgList)) {
@@ -128,7 +128,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     }
 
     private List<OperatorStatAccessDTO> getBaseDataList(Date jobTime, Date startTime, Date endTime,
-                                                        OperatorMonitorAlarmConfigDTO config, ETaskOperatorStatType statType) {
+                                                        OperatorMonitorAlarmConfigDTO config, ETaskStatDataType statType) {
         List<String> operatorNameList = Splitter.on(",").splitToList(diamondConfig.getOperatorAlarmOperatorNameList());
         if (CollectionUtils.isEmpty(operatorNameList)) {
             logger.error("运营商监控,预警定时任务执行jobTime={},未配置需要预警的运营商,operator.alarm.operator.name.list未配置",
@@ -189,30 +189,31 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
      * @param config 配置文件
      * @param statType 任务类型
      */
-    private void alarmMsg(List<OperatorStatAccessAlarmMsgDTO> msgList,
+    private void alarmMsg(List<TaskStatAccessAlarmMsgDTO> msgList,
                           Date jobTime,
                           Date startTime,
                           Date endTime,
                           OperatorMonitorAlarmConfigDTO config,
-                          ETaskOperatorStatType statType) {
+                          ETaskStatDataType statType) {
         String baseTitle;
         String mailSwitch = config.getMailAlarmSwitch();
         String weChatSwitch = config.getWeChatAlarmSwitch();
+
         String smsSwitch = operatorMonitorConfig.getSmsSwitch();
         String ivrSwitch = operatorMonitorConfig.getIvrSwitch();
 
-        if (ETaskOperatorStatType.TASK.equals(statType)) {
+        if (ETaskStatDataType.TASK.equals(statType)) {
             baseTitle = "运营商监控(按任务数统计)";
         } else {
             baseTitle = "运营商监控(按人数统计)";
         }
 
-        Map<String,List<OperatorStatAccessAlarmMsgDTO>> operatorNameGroup = msgList.stream().collect(Collectors
-                .groupingBy(OperatorStatAccessAlarmMsgDTO::getGroupName));
+        Map<String,List<TaskStatAccessAlarmMsgDTO>> operatorNameGroup = msgList.stream().collect(Collectors
+                .groupingBy(TaskStatAccessAlarmMsgDTO::getGroupName));
 
-        boolean isError = msgList.stream().anyMatch(operatorStatAccessAlarmMsgDTO -> operatorStatAccessAlarmMsgDTO
+        boolean isError = msgList.stream().anyMatch(TaskStatAccessAlarmMsgDTO -> TaskStatAccessAlarmMsgDTO
                 .getAlarmLevel().equals(EAlarmLevel.error));
-        boolean isWarning = msgList.stream().anyMatch(operatorStatAccessAlarmMsgDTO -> operatorStatAccessAlarmMsgDTO
+        boolean isWarning = msgList.stream().anyMatch(TaskStatAccessAlarmMsgDTO -> TaskStatAccessAlarmMsgDTO
                 .getAlarmLevel().equals(EAlarmLevel.warning)) || operatorNameGroup.keySet().size() >= 3;
 
         if (isError) {
@@ -228,23 +229,23 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         }
     }
 
-    private void sendSms(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
-                         ETaskOperatorStatType statType, String smsSwitch,EAlarmLevel alarmLevel) {
+    private void sendSms(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
+                         ETaskStatDataType statType, String smsSwitch,EAlarmLevel alarmLevel) {
         if (StringUtils.equalsIgnoreCase(smsSwitch, SWITCH_ON)) {
 
             String template = "${level} ${type} 时间段:${startTime}至${endTime},运营商:${groupName} " +
                     "预警类型:${alarmDesc},偏离阀值程度${offset}%";
             Map<String,Object> map = Maps.newHashMap();
 
-            List<OperatorStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
-                    EAlarmLevel.warning.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+            List<TaskStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(TaskStatAccessAlarmMsgDTO ->
+                    EAlarmLevel.warning.equals(TaskStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
 
-            String type = "SAAS-" +  diamondConfig.getMonitorEnvironment() + "-" + (ETaskOperatorStatType.TASK.equals(statType)?"运营商-分时任务" : "运营商-分时人数");
+            String type = "SAAS-" +  diamondConfig.getMonitorEnvironment() + "-" + (ETaskStatDataType.TASK.equals(statType)?"运营商-分时任务" : "运营商-分时人数");
 
             String format = "yyyy-MM-dd HH:mm:SS";
             String startTimeStr = new SimpleDateFormat(format).format(startTime);
             String endTimeStr = new SimpleDateFormat(format).format(endTime);
-            OperatorStatAccessAlarmMsgDTO dto = msgList.get(0);
+            TaskStatAccessAlarmMsgDTO dto = msgList.get(0);
             if(!warningMsg.isEmpty()){
                 dto = warningMsg.get(0);
             }
@@ -263,11 +264,11 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         }
     }
 
-    private void sendIvr(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, String ivrSwitch) {
+    private void sendIvr(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, String ivrSwitch) {
         if (StringUtils.equalsIgnoreCase(ivrSwitch, SWITCH_ON)) {
 
-            List<OperatorStatAccessAlarmMsgDTO> errorMsgs = msgList.stream().filter(operatorStatAccessAlarmMsgDTO ->
-                    EAlarmLevel.error.equals(operatorStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+            List<TaskStatAccessAlarmMsgDTO> errorMsgs = msgList.stream().filter(TaskStatAccessAlarmMsgDTO ->
+                    EAlarmLevel.error.equals(TaskStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
 
             logger.info("特定运营商预警 发送ivr请求 {}",errorMsgs.get(0).getAlarmDesc());
 
@@ -278,14 +279,14 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
     }
 
-    private void sendMail(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
-                          ETaskOperatorStatType statType, String baseTile, String mailSwitch, EAlarmLevel alarmLevel) {
+    private void sendMail(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
+                          ETaskStatDataType statType, String baseTile, String mailSwitch, EAlarmLevel alarmLevel) {
         if (StringUtils.equalsIgnoreCase(mailSwitch, SWITCH_ON)) {
 
             String mailBaseTitle = "【${level}】【${module}】【${type}】发生 ${detail} 预警";
 
             Map<String, Object> map = new HashMap<>(4);
-            map.put("type", ETaskOperatorStatType.TASK.equals(statType) ? "运营商-任务" : "运营商-人数");
+            map.put("type", ETaskStatDataType.TASK.equals(statType) ? "运营商-任务" : "运营商-人数");
             map.put("level", alarmLevel.name());
 
             String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile, map, alarmLevel);
@@ -296,7 +297,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         }
     }
 
-    private void sendWeChat(List<OperatorStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
+    private void sendWeChat(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
                             String baseTile, String weChatSwitch,EAlarmLevel alarmLevel) {
         if (StringUtils.equalsIgnoreCase(weChatSwitch, SWITCH_ON)) {
             String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile,alarmLevel);
@@ -307,7 +308,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     }
 
 
-    private String generateMailDataBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
+    private String generateMailDataBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
                                         String baseTitle, Map<String, Object> map, EAlarmLevel eAlarmLevel) {
 
         StringBuilder pageHtml = new StringBuilder();
@@ -317,7 +318,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         StringBuilder detail = new StringBuilder();
 
         detail.append("【");
-        for (OperatorStatAccessAlarmMsgDTO msg : msgList) {
+        for (TaskStatAccessAlarmMsgDTO msg : msgList) {
             tableTrs.append("<tr>").append("<td>").append(msg.getGroupName()).append("</td>")
                     .append("<td>").append(msg.getAlarmDesc()).append(" ").append("</td>")
                     .append("<td>").append(msg.getValueDesc()).append(" ").append("</td>")
@@ -358,7 +359,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         return pageHtml.toString();
     }
 
-    private String generateWeChatBody(List<OperatorStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
+    private String generateWeChatBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
                                       String baseTitle,EAlarmLevel alarmLevel) {
         StringBuilder buffer = new StringBuilder();
         buffer.append("【").append(alarmLevel.name()).append("】")
@@ -369,7 +370,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 .append("--")
                 .append(MonitorDateUtils.format(endTime))
                 .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("\n");
-        for (OperatorStatAccessAlarmMsgDTO msg : msgList) {
+        for (TaskStatAccessAlarmMsgDTO msg : msgList) {
             buffer.append("【").append(msg.getGroupName()).append("】")
                     .append("【").append(msg.getAlarmSimpleDesc()).append("】")
                     .append("当前指标值:").append("【").append(msg.getValueDesc()).append("】")
@@ -394,7 +395,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     private Map<String, OperatorStatAccessDTO> getPreviousCompareDataMap(Date jobTime, Date baseTime,
                                                                          List<OperatorStatAccessDTO> dtoList,
                                                                          OperatorMonitorAlarmConfigDTO config,
-                                                                         ETaskOperatorStatType statType) {
+                                                                         ETaskStatDataType statType) {
         List<String> groupCodeList = dtoList.stream().map(OperatorStatAccessDTO::getGroupCode).distinct().collect(Collectors.toList());
         Integer previousDays = config.getPreviousDays();
         List<Date> previousOClockList = MonitorDateUtils.getPreviousOClockTime(baseTime, previousDays);
@@ -476,11 +477,11 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
      * @param config 配置
      * @return 确认手机号、登录转化率，登录、抓取、洗数、回调成功率
      */
-    private List<OperatorStatAccessAlarmMsgDTO> getAlarmMsgList(Date now,
-                                                                List<OperatorStatAccessDTO> dtoList,
-                                                                Map<String, OperatorStatAccessDTO> compareMap,
-                                                                OperatorMonitorAlarmConfigDTO config) {
-        List<OperatorStatAccessAlarmMsgDTO> msgList = Lists.newArrayList();
+    private List<TaskStatAccessAlarmMsgDTO> getAlarmMsgList(Date now,
+                                                            List<OperatorStatAccessDTO> dtoList,
+                                                            Map<String, OperatorStatAccessDTO> compareMap,
+                                                            OperatorMonitorAlarmConfigDTO config) {
+        List<TaskStatAccessAlarmMsgDTO> msgList = Lists.newArrayList();
         Integer previousDays = config.getPreviousDays();
         for (OperatorStatAccessDTO dto : dtoList) {
             if (compareMap.get(dto.getGroupCode()) == null) {
@@ -495,9 +496,10 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             BigDecimal crawlCompareVal = compareDTO.getPreviousCrawlSuccessRate().multiply(new BigDecimal(config.getCrawlSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
             BigDecimal processCompareVal = compareDTO.getPreviousProcessSuccessRate().multiply(new BigDecimal(config.getProcessSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
             BigDecimal callbackCompareVal = compareDTO.getPreviousCallbackSuccessRateRate().multiply(new BigDecimal(config.getCallbackSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+
             //登录转化率小于前7天平均值
             if (isAlarm(dto.getConfirmMobileCount(), dto.getLoginConversionRate(), loginConversionCompareVal)) {
-                OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
+                TaskStatAccessAlarmMsgDTO msg = new TaskStatAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
                 msg.setAlarmDesc("登陆转化率低于前" + previousDays + "天平均值的" + config.getLoginConversionRate() + "%");
@@ -521,7 +523,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             }
             //登录成功率小于前7天平均值
             if (isAlarm(dto.getStartLoginCount(), dto.getLoginSuccessRate(), loginSuccessCompareVal)) {
-                OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
+                TaskStatAccessAlarmMsgDTO msg = new TaskStatAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
                 msg.setAlarmDesc("登陆成功率低于前" + previousDays + "天平均值的" + config.getLoginSuccessRate() + "%");
@@ -545,7 +547,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             }
             //抓取成功率小于前7天平均值
             if (isAlarm(dto.getLoginSuccessCount(), dto.getCrawlSuccessRate(), crawlCompareVal)) {
-                OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
+                TaskStatAccessAlarmMsgDTO msg = new TaskStatAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
                 msg.setAlarmDesc("抓取成功率低于前" + previousDays + "天平均值的" + config.getCrawlSuccessRate() + "%");
@@ -570,7 +572,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             }
             //洗数成功率小于前7天平均值
             if (isAlarm(dto.getCrawlSuccessCount(), dto.getProcessSuccessRate(), processCompareVal)) {
-                OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
+                TaskStatAccessAlarmMsgDTO msg = new TaskStatAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
                 msg.setAlarmDesc("洗数成功率低于前" + previousDays + "天平均值的" + config.getProcessSuccessRate() + "%");
@@ -595,7 +597,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             }
             //洗数成功率小于前7天平均值
             if (isAlarm(dto.getCallbackSuccessCount(), dto.getCallbackSuccessRate(), callbackCompareVal)) {
-                OperatorStatAccessAlarmMsgDTO msg = new OperatorStatAccessAlarmMsgDTO();
+                TaskStatAccessAlarmMsgDTO msg = new TaskStatAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
                 msg.setAlarmDesc("回调成功率低于前" + previousDays + "天平均值的" + config.getCallbackSuccessRate() + "%");
@@ -620,11 +622,11 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             }
 
         }
-        msgList = msgList.stream().sorted(Comparator.comparing(OperatorStatAccessAlarmMsgDTO::getGroupName)).collect(Collectors.toList());
+        msgList = msgList.stream().sorted(Comparator.comparing(TaskStatAccessAlarmMsgDTO::getGroupName)).collect(Collectors.toList());
         return msgList;
     }
 
-    private void calcOffsetAndLevel(BigDecimal compareVal, OperatorStatAccessAlarmMsgDTO msg, BigDecimal actualVal) {
+    private void calcOffsetAndLevel(BigDecimal compareVal, TaskStatAccessAlarmMsgDTO msg, BigDecimal actualVal) {
         if (BigDecimal.ZERO.compareTo(compareVal) == 0) {
             msg.setOffset(BigDecimal.ZERO);
             msg.setAlarmLevel(EAlarmLevel.info);
@@ -641,7 +643,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
      * @param msg   预警消息
      * @param value offset 某一属性的偏转值
      */
-    private void determineLevel(OperatorStatAccessAlarmMsgDTO msg, BigDecimal value) {
+    private void determineLevel(TaskStatAccessAlarmMsgDTO msg, BigDecimal value) {
         if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0 && "中国联通".equals(msg.getGroupName())) {
             msg.setAlarmLevel(EAlarmLevel.error);
         } else if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0 || "中国联通".equals(msg.getGroupName())) {

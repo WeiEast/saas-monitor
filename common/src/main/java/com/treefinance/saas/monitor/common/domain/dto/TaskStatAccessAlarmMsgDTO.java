@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class OperatorStatAccessAlarmMsgDTO implements Serializable {
+public class TaskStatAccessAlarmMsgDTO implements Serializable {
 
     private static final long serialVersionUID = -6477590375789936061L;
 

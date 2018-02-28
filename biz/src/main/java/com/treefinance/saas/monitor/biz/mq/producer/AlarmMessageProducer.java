@@ -64,6 +64,57 @@ public class AlarmMessageProducer {
     }
 
 
+    public void sendMail(String title, String dataBody, MailEnum mailEnum) {
+        try {
+            String mails = diamondConfig.getMonitorAlarmMails();
+            if (StringUtils.isEmpty(mails)) {
+                logger.info("未配置邮件接收人,邮件发送失败,title={},dataBody={}", title, dataBody);
+                return;
+            }
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmMailTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
+            List<String> tolist = Splitter.on(",").splitToList(mails);
+
+            MailBody body = new MailBody();
+            //设置邮件方式，具体看枚举值
+            body.setMailEnum(mailEnum);
+            //设置业务线，预警设置为alarm
+            body.setBusiness("alarm");
+            //设置发送给谁
+            body.setToList(tolist);
+            body.setSubject(title);
+            body.setBody(dataBody);
+            logger.info("发送邮件到mails={},发送邮件message={}", mails, JSON.toJSONString(body));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+        } catch (Exception e) {
+            logger.error("发送邮件异常", e);
+        }
+    }
+
+
+    public void sendWebChart(String dataBody) {
+        try {
+            String topic = diamondConfig.getMonitorAlarmTopic();
+            String tag = diamondConfig.getMonitorAlarmWebchartTag();
+            String key = UUID.randomUUID().toString() + "_" + tag;
+
+            WeChatBody body = new WeChatBody();
+            body.setAgentId(AGENT_ID);
+            TXTMessage msg = new TXTMessage();
+            msg.setMessage(dataBody);
+            body.setMessage(msg);
+            body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
+            body.setNotifyEnum(NotifyEnum.WECHAT);
+            logger.info("发送微信message={}", JSON.toJSONString(body));
+            sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
+        } catch (Exception e) {
+            logger.error("发送微信异常", e);
+        }
+
+    }
+
+
     public void sendMailAlarm(String title, String body) {
         try {
             String mails = diamondConfig.getMonitorAlarmMails();

@@ -50,14 +50,14 @@
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
         <!--<table tableName="merchant_stat_access" domainObjectName="MerchantStatAccess"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-             <!--<property name="useActualColumnNames" value="true"/>-->
-             <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
-         <!--</table>-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
+        <!--</table>-->
 
         <!--
          <table tableName="merchant_stat_bank" domainObjectName="MerchantStatBank">
@@ -100,7 +100,102 @@
              <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
          </table>-->
 
-<!--        <table tableName="merchant_access_history" domainObjectName="MerchantAccessHistory"
+        <!--        <table tableName="merchant_access_history" domainObjectName="MerchantAccessHistory"
+                       enableSelectPaginationByExample="true"
+                       enableInsertOrUpdateBySelective="true"
+                       enableBatchInsert="true"
+                       enableBatchUpdateByPrimaryKey="true"
+                       enableBatchUpdateByPrimaryKeySelective="true">
+                    <property name="useActualColumnNames" value="true"/>
+                    <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+                </table>
+
+                -->
+
+
+        <!--<table tableName="merchant_stat_day_access" domainObjectName="MerchantStatDayAccess"-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
+        <!--</table>-->
+
+        <!--<table tableName="saas_stat_access" domainObjectName="SaasStatAccess"-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
+        <!--</table>-->
+
+        <!--<table tableName="operator_all_stat_access" domainObjectName="OperatorAllStatAccess"-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
+        <!--</table>-->
+
+        <!--<table tableName="operator_all_stat_day_access" domainObjectName="OperatorAllStatDayAccess"-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
+        <!--</table>-->
+
+        <!--<table tableName="operator_stat_day_access" domainObjectName="OperatorStatDayAccess"-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
+        <!--</table>-->
+
+        <!--<table tableName="operator_stat_access" domainObjectName="OperatorStatAccess"-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
+        <!--</table>-->
+
+        <!--<table tableName="api_stat_merchant_day_access" domainObjectName="ApiStatMerchantDayAccess"-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
+        <!--</table>-->
+
+        <!--<table tableName="api_stat_total_access" domainObjectName="ApiStatTotalAccess"-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
+        <!--</table>-->
+
+        <table tableName="ecommerce_all_stat_access" domainObjectName="EcommerceAllStatAccess"
+
+        <table tableName="as_basic_data" domainObjectName="BasicData"
                enableSelectPaginationByExample="true"
                enableInsertOrUpdateBySelective="true"
                enableBatchInsert="true"
@@ -110,20 +205,19 @@
             <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
         </table>
 
-        -->
+        <table tableName="ecommerce_all_stat_day_access" domainObjectName="EcommerceAllStatDayAccess"
 
+        <table tableName="as_stat_group" domainObjectName="StatGroup"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
 
-        <!--<table tableName="merchant_stat_day_access" domainObjectName="MerchantStatDayAccess"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
-            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
-        <!--</table>-->
-
-        <!--<table tableName="saas_stat_access" domainObjectName="SaasStatAccess"-->
+        <!--<table tableName="operator_stat_day_access" domainObjectName="OperatorStatDayAccess"-->
                <!--enableSelectPaginationByExample="true"-->
                <!--enableInsertOrUpdateBySelective="true"-->
                <!--enableBatchInsert="true"-->
@@ -133,65 +227,35 @@
             <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
         <!--</table>-->
 
-        <table tableName="operator_all_stat_access" domainObjectName="OperatorAllStatAccess"
-               enableSelectPaginationByExample="true"
-               enableInsertOrUpdateBySelective="true"
-               enableBatchInsert="true"
-               enableBatchUpdateByPrimaryKey="true"
-               enableBatchUpdateByPrimaryKeySelective="true">
-            <property name="useActualColumnNames" value="true"/>
-            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
-        </table>
-
-        <table tableName="operator_all_stat_day_access" domainObjectName="OperatorAllStatDayAccess"
-               enableSelectPaginationByExample="true"
-               enableInsertOrUpdateBySelective="true"
-               enableBatchInsert="true"
-               enableBatchUpdateByPrimaryKey="true"
-               enableBatchUpdateByPrimaryKeySelective="true">
-            <property name="useActualColumnNames" value="true"/>
-            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
-        </table>
-
-        <table tableName="operator_stat_day_access" domainObjectName="OperatorStatDayAccess"
-               enableSelectPaginationByExample="true"
-               enableInsertOrUpdateBySelective="true"
-               enableBatchInsert="true"
-               enableBatchUpdateByPrimaryKey="true"
-               enableBatchUpdateByPrimaryKeySelective="true">
-            <property name="useActualColumnNames" value="true"/>
-            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
-        </table>
-
-        <table tableName="operator_stat_access" domainObjectName="OperatorStatAccess"
-               enableSelectPaginationByExample="true"
-               enableInsertOrUpdateBySelective="true"
-               enableBatchInsert="true"
-               enableBatchUpdateByPrimaryKey="true"
-               enableBatchUpdateByPrimaryKeySelective="true">
-            <property name="useActualColumnNames" value="true"/>
-            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
-        </table>
-
-        <!--<table tableName="api_stat_merchant_day_access" domainObjectName="ApiStatMerchantDayAccess"-->
+        <!--<table tableName="operator_stat_access" domainObjectName="OperatorStatAccess"-->
                <!--enableSelectPaginationByExample="true"-->
                <!--enableInsertOrUpdateBySelective="true"-->
                <!--enableBatchInsert="true"-->
                <!--enableBatchUpdateByPrimaryKey="true"-->
                <!--enableBatchUpdateByPrimaryKeySelective="true">-->
             <!--<property name="useActualColumnNames" value="true"/>-->
-            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
+            <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
         <!--</table>-->
 
-        <!--<table tableName="api_stat_total_access" domainObjectName="ApiStatTotalAccess"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
-            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
-        <!--</table>-->
+        <table tableName="as_stat_item" domainObjectName="StatItem"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+        <table tableName="as_stat_template" domainObjectName="StatTemplate"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
 
     </context>
 
