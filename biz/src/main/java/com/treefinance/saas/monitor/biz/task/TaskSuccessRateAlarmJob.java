@@ -53,6 +53,11 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
                 if (config == null) {
                     continue;
                 }
+                String startTimeStr = config.getAlarmStartTime();
+                String endTimeStr = config.getAlarmEndTime();
+                if (!MonitorDateUtils.isInZone(startTimeStr, endTimeStr, jobTime)) {
+                    continue;
+                }
                 taskSuccessRateAlarmService.alarm(bizType, config, jobTime);
             }
 

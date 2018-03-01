@@ -13,6 +13,7 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
      * 任务业务类型
      */
     private String type;
+
     /**
      * 任务成功率预警阀值
      */
@@ -30,6 +31,16 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
      * 任务超时时间
      */
     private Integer taskTimeoutSecs;
+
+    /**
+     * 此配置生效的预警开始时间,如0:00
+     */
+    private String alarmStartTime;
+
+    /**
+     * 此配置生效的预警结束时间,如7:00
+     */
+    private String alarmEndTime;
 
     /**
      * 邮箱报警开关
@@ -109,5 +120,21 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
 
     public void setSmsAlarmSwitch(String smsAlarmSwitch) {
         this.smsAlarmSwitch = smsAlarmSwitch;
+    }
+
+    public String getAlarmStartTime() {
+        return alarmStartTime;
+    }
+
+    public void setAlarmStartTime(String alarmStartTime) {
+        this.alarmStartTime = alarmStartTime;
+    }
+
+    public String getAlarmEndTime() {
+        return alarmEndTime;
+    }
+
+    public void setAlarmEndTime(String alarmEndTime) {
+        this.alarmEndTime = alarmEndTime;
     }
 }

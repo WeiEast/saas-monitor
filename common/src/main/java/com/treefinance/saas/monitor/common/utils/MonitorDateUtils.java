@@ -5,6 +5,7 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -143,8 +144,43 @@ public class MonitorDateUtils {
         return format(getDayStartTime(date));
     }
 
-    public static void main(String[] args) {
-        System.out.println(format(getIntervalTime(new Date(), 5)));
+    /**
+     * 判断当前时间是否在此区间内
+     *
+     * @param tStartStr 字符串时间形式为HH:mm
+     * @param tEndStr   字符串时间形式为HH:mm
+     * @return
+     */
+    public static Boolean isInZone(String tStartStr, String tEndStr) {
+        return MonitorDateUtils.isInZone(tStartStr, tEndStr, new Date());
+    }
+
+    /**
+     * 判断t时间是否在此区间内
+     *
+     * @param tStartStr 字符串时间形式为HH:mm
+     * @param tEndStr   字符串时间形式为HH:mm
+     * @param now       比较的时间
+     * @return
+     */
+    public static Boolean isInZone(String tStartStr, String tEndStr, Date now) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        long tStart, tEnd, t;
+        try {
+            tStart = sdf.parse(tStartStr).getTime();
+            tEnd = sdf.parse(tEndStr).getTime();
+            t = sdf.parse(sdf.format(now)).getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return tStart <= t && t < tEnd;
+    }
+
+
+    public static void main(String[] args) throws ParseException {
+//        System.out.println(format(getIntervalTime(new Date(), 5)));
+        System.out.println(MonitorDateUtils.isInZone("14:30", "14:40"));
     }
 
 
