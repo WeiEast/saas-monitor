@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.task;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
@@ -58,8 +59,10 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
                     String startTimeStr = config.getAlarmStartTime();
                     String endTimeStr = config.getAlarmEndTime();
                     if (!MonitorDateUtils.isInZone(startTimeStr, endTimeStr, jobTime)) {
+                        logger.info("任务成功率预警,定时任务执行jobTime={}不在此预警设置时间区间内config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(config));
                         continue;
                     }
+                    logger.info("任务成功率预警,定时任务执行jobTime={}任务成功率预警执行config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(config));
                     taskSuccessRateAlarmService.alarm(bizType, config, jobTime);
                 }
             }
