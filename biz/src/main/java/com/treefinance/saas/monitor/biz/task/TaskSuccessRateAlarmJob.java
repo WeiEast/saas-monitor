@@ -9,6 +9,7 @@ import com.treefinance.saas.monitor.common.domain.dto.TaskSuccessRateAlarmConfig
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,24 +44,25 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
         try {
             String configStr = diamondConfig.getTaskSuccessRateAlarmConfig();
             List<TaskSuccessRateAlarmConfigDTO> configList = JSONObject.parseArray(configStr, TaskSuccessRateAlarmConfigDTO.class);
-            Map<String, TaskSuccessRateAlarmConfigDTO> configMap = configList.stream().collect(Collectors.toMap(TaskSuccessRateAlarmConfigDTO::getType, config -> config));
+            Map<String, List<TaskSuccessRateAlarmConfigDTO>> configMap = configList.stream().collect(Collectors.groupingBy(TaskSuccessRateAlarmConfigDTO::getType));
             if (MapUtils.isEmpty(configMap)) {
                 logger.info("任务成功率预警,定时任务执行jobTime={}任务成功率预警未设置", MonitorDateUtils.format(jobTime));
                 return;
             }
             for (EBizType bizType : EBizType.values()) {
-                TaskSuccessRateAlarmConfigDTO config = configMap.get(bizType.getText());
-                if (config == null) {
+                List<TaskSuccessRateAlarmConfigDTO> configDTOList = configMap.get(bizType.getText());
+                if (CollectionUtils.isEmpty(configDTOList)) {
                     continue;
                 }
-                String startTimeStr = config.getAlarmStartTime();
-                String endTimeStr = config.getAlarmEndTime();
-                if (!MonitorDateUtils.isInZone(startTimeStr, endTimeStr, jobTime)) {
-                    continue;
+                for (TaskSuccessRateAlarmConfigDTO config : configDTOList) {
+                    String startTimeStr = config.getAlarmStartTime();
+                    String endTimeStr = config.getAlarmEndTime();
+                    if (!MonitorDateUtils.isInZone(startTimeStr, endTimeStr, jobTime)) {
+                        continue;
+                    }
+                    taskSuccessRateAlarmService.alarm(bizType, config, jobTime);
                 }
-                taskSuccessRateAlarmService.alarm(bizType, config, jobTime);
             }
-
         } catch (Exception e) {
             logger.error("任务成功率预警,定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
         } finally {
