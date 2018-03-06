@@ -327,8 +327,8 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             detail.append(msg.getGroupName()).append("-").append(msg.getAlarmType()).append("(").append(msg.getOffset
                     ()).append("%").append(")").append("，");
         }
-        detail.substring(0,detail.length()-1);
-        detail.append("】");
+        String detailsStr = detail.substring(0,detail.length()-1);
+        detailsStr+="】";
 
         String module = "saas-" + diamondConfig.getMonitorEnvironment();
         pageHtml.append("<br>").append("【").append(eAlarmLevel.name()).append("】").append
@@ -354,7 +354,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
 
         map.put("module", module);
-        map.put("detail", detail.toString());
+        map.put("detail", detailsStr);
 
         return pageHtml.toString();
     }
