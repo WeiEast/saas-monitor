@@ -646,7 +646,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     private void determineLevel(TaskStatAccessAlarmMsgDTO msg, BigDecimal value) {
         if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0 && "中国联通".equals(msg.getGroupName())) {
             msg.setAlarmLevel(EAlarmLevel.error);
-        } else if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0 || "中国联通".equals(msg.getGroupName())) {
+        } else if ("中国联通".equals(msg.getGroupName())) {
             msg.setAlarmLevel(EAlarmLevel.warning);
         } else {
             msg.setAlarmLevel(EAlarmLevel.info);
