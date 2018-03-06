@@ -319,14 +319,14 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             detail.append(msg.getAlarmType()).append("(").append(msg.getOffset()).append("%").append
                     (")").append("，");
         }
-        detail.substring(0, detail.length() - 1);
-        detail.append("】");
+        String detailStr = detail.substring(0, detail.length() - 1);
+        detailStr +="】";
 
         pageHtml.append(tableTrs);
         pageHtml.append("</table>");
 
         map.put("module", module);
-        map.put("detail", detail.toString());
+        map.put("detail", detailStr);
 
 
         return pageHtml.toString();
