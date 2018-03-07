@@ -222,7 +222,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             String thresholdDesc = new StringBuilder()
                     .append(loginConversionCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousStartLoginAvgCount()).append("/")
-                    .append(compareDTO.getEntryCount()).append("*")
+                    .append(compareDTO.getPreviousEntryAvgCount()).append("*")
                     .append(new BigDecimal(config.getLoginConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
             msg.setThresholdDesc(thresholdDesc);
 
@@ -457,7 +457,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
         }
         EcommerceAllStatAccess ecommerceAllStatAccess = list.get(0);
         EcommerceAllStatAccessDTO dataDTO = DataConverterUtils.convert(ecommerceAllStatAccess, EcommerceAllStatAccessDTO.class);
-        int entryCount = 0, confirmMobileCount = 0, startLoginCount = 0, loginSuccessCount = 0,
+        int entryCount = 0, startLoginCount = 0, loginSuccessCount = 0,
                 crawlSuccessCount = 0, processSuccessCount = 0, callbackSuccessCount = 0;
         for (EcommerceAllStatAccess item : list) {
             entryCount = entryCount + item.getEntryCount();
@@ -473,7 +473,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
         dataDTO.setCrawlSuccessCount(crawlSuccessCount);
         dataDTO.setProcessSuccessCount(processSuccessCount);
         dataDTO.setCallbackSuccessCount(callbackSuccessCount);
-        dataDTO.setLoginConversionRate(calcRate(startLoginCount, confirmMobileCount));
+        dataDTO.setLoginConversionRate(calcRate(startLoginCount, entryCount));
         dataDTO.setLoginSuccessRate(calcRate(loginSuccessCount, startLoginCount));
         dataDTO.setCrawlSuccessRate(calcRate(crawlSuccessCount, loginSuccessCount));
         dataDTO.setProcessSuccessRate(calcRate(processSuccessCount, crawlSuccessCount));
