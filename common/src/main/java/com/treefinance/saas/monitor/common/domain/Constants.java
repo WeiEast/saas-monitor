@@ -17,6 +17,6 @@ public interface Constants {
     String REFRESH_LOGIN_RANDOMPASSWORD = "REFRESH_LOGIN_RANDOMPASSWORD";
     String RETURN_PICTURE_CODE = "RETURN_PICTURE_CODE";
 
-    String SWITCH_ON = "on";
+
 
 }

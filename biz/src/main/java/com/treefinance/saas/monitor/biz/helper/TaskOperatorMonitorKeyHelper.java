@@ -36,9 +36,6 @@ public class TaskOperatorMonitorKeyHelper {
     private static final String KEY_ALL_DAY_TASK_USER_COUNT_UNIQUE = "key-all-day-task-user-count-unique";
     private static final String KEY_ALL_DAY_TASK_USER_COUNT_UNIQUE_MOBILE = "key-all-day-task-user-count-unique-mobile";
 
-    public static final String VIRTUAL_TOTAL_STAT_APP_ID = "virtual_total_stat_appId";
-
-
     /**
      * 获取特定运营商统计key
      * saas-monitor-task-operator-monitor:group-template-interval:statType:groupCode:yyyy-MM-dd HH:mm:ss

@@ -35,6 +35,64 @@ public class EmailAlarmConfig {
     @DAttribute(key = "email.monitor.alarm.config")
     private String emailAlarmConfig;
 
+    /**
+     * 预警等级 info的上限
+     * */
+    @DAttribute(key = "email.monitor.alarm.all.info")
+    private Integer allInfo;
+
+    /**
+     * 预警等级 warning的上限
+     * */
+    @DAttribute(key = "email.monitor.alarm.all.warning")
+    private Integer allWarnning;
+
+    /**
+     * 预警等级 info的上限
+     * */
+    @DAttribute(key = "email.monitor.alarm.group.info")
+    private Integer groupInfo;
+
+    /**
+     * 预警等级 warning的上限
+     * */
+    @DAttribute(key = "email.monitor.alarm.group.warning")
+    private Integer groupWarning;
+
+
+
+    public Integer getAllInfo() {
+        return allInfo;
+    }
+
+    public void setAllInfo(Integer allInfo) {
+        this.allInfo = allInfo;
+    }
+
+    public Integer getAllWarnning() {
+        return allWarnning;
+    }
+
+    public void setAllWarnning(Integer allWarnning) {
+        this.allWarnning = allWarnning;
+    }
+
+    public Integer getGroupInfo() {
+        return groupInfo;
+    }
+
+    public void setGroupInfo(Integer groupInfo) {
+        this.groupInfo = groupInfo;
+    }
+
+    public Integer getGroupWarning() {
+        return groupWarning;
+    }
+
+    public void setGroupWarning(Integer groupWarning) {
+        this.groupWarning = groupWarning;
+    }
+
     public String getEmailAlarmConfig() {
         return emailAlarmConfig;
     }
@@ -42,4 +100,11 @@ public class EmailAlarmConfig {
     public void setEmailAlarmConfig(String emailAlarmConfig) {
         this.emailAlarmConfig = emailAlarmConfig;
     }
+
+
+
+
+
+
+
 }

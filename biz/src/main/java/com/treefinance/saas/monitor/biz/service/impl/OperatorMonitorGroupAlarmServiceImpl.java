@@ -12,11 +12,11 @@ import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
-import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
@@ -40,7 +40,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.treefinance.saas.monitor.common.domain.Constants.SWITCH_ON;
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
 import static java.util.stream.Collectors.groupingBy;
 
 /**

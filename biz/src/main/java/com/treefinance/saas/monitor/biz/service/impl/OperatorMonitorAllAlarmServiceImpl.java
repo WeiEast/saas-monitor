@@ -41,7 +41,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.treefinance.saas.monitor.common.domain.Constants.SWITCH_ON;
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
+
 
 /**
  * Created by haojiahong on 2017/11/13.

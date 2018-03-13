@@ -1,10 +1,14 @@
 package com.treefinance.saas.monitor.common.domain.dto;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Maps;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
 
 /**
  * @Author: chengtong
@@ -22,7 +26,6 @@ public class EmailMonitorAlarmConfigDTO implements Serializable{
     /**
      * 默认是 所有商户
      * */
-
     private String appName;
     /**
      * 任务超时时间
@@ -49,11 +52,50 @@ public class EmailMonitorAlarmConfigDTO implements Serializable{
      * 之前几天的平均值
      * */
     private Integer previousDays;
+    /**
+    *  数量少于多少忽略的值
+    * */
+    private Integer fewNum;
 
-    private String mailAlarmSwitch;
-    private String weChatAlarmSwitch;
+    /**
+     * 当<fewnum时 某一项目的比率的阈值
+     * */
+    private Integer threshold;
 
-    List<EmailMonitorAlarmTimeConfigDTO> list;
+    /* ============== time config ===============*/
+    /**
+     * 预警等级-预警渠道的配置
+     * */
+    private List<EmailMonitorAlarmLevelConfigDTO> levelConfig;
+
+
+    /* ======= switch ========*/
+    /**
+     * 开关
+     * */
+    private HashMap<String,String> switches;
+
+    /* ===========  time config ============= */
+    /**
+     * 不同时间段 不同阈值的配置
+     * */
+    private List<EmailMonitorAlarmTimeConfigDTO> list;
+
+    public Integer getFewNum() {
+        return fewNum;
+    }
+
+    public void setFewNum(Integer fewNum) {
+        this.fewNum = fewNum;
+    }
+
+    public Integer getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(Integer threshold) {
+        this.threshold = threshold;
+    }
 
     public String getAppId() {
         return appId;
@@ -119,22 +161,6 @@ public class EmailMonitorAlarmConfigDTO implements Serializable{
         this.previousDays = previousDays;
     }
 
-    public String getMailAlarmSwitch() {
-        return mailAlarmSwitch;
-    }
-
-    public void setMailAlarmSwitch(String mailAlarmSwitch) {
-        this.mailAlarmSwitch = mailAlarmSwitch;
-    }
-
-    public String getWeChatAlarmSwitch() {
-        return weChatAlarmSwitch;
-    }
-
-    public void setWeChatAlarmSwitch(String weChatAlarmSwitch) {
-        this.weChatAlarmSwitch = weChatAlarmSwitch;
-    }
-
     public List<EmailMonitorAlarmTimeConfigDTO> getList() {
         return list;
     }
@@ -143,19 +169,42 @@ public class EmailMonitorAlarmConfigDTO implements Serializable{
         this.list = list;
     }
 
+    public List<EmailMonitorAlarmLevelConfigDTO> getLevelConfig() {
+        return levelConfig;
+    }
+
+    public void setLevelConfig(List<EmailMonitorAlarmLevelConfigDTO> levelConfig) {
+        this.levelConfig = levelConfig;
+    }
+
+    public HashMap<String, String> getSwitches() {
+        return switches;
+    }
+
+    public void setSwitches(HashMap<String, String> switches) {
+        this.switches = switches;
+    }
 
     public static void main(String...args){
         EmailMonitorAlarmConfigDTO emailMonitorAlarmConfigDTO = new EmailMonitorAlarmConfigDTO();
         emailMonitorAlarmConfigDTO.alarmSwitch = "on";
         emailMonitorAlarmConfigDTO.alarmType = 1;
         emailMonitorAlarmConfigDTO.alarmTypeDesc = "所有邮箱所有商户按人数统计预警";
-        emailMonitorAlarmConfigDTO.mailAlarmSwitch = "on";
-        emailMonitorAlarmConfigDTO.weChatAlarmSwitch = "on";
         emailMonitorAlarmConfigDTO.appName = "所有商户";
         emailMonitorAlarmConfigDTO.intervalMins = 30;
         emailMonitorAlarmConfigDTO.previousDays = 7;
         emailMonitorAlarmConfigDTO.taskTimeoutSecs = 600;
         emailMonitorAlarmConfigDTO.appId = "virtual_total_stat_appId";
+        emailMonitorAlarmConfigDTO.threshold = 20;
+        emailMonitorAlarmConfigDTO.fewNum = 5;
+
+        HashMap<String,String> map = Maps.newHashMap();
+        map.put(EAlarmChannel.IVR.getValue(),SWITCH_ON);
+        map.put(EAlarmChannel.SMS.getValue(),SWITCH_ON);
+        map.put(EAlarmChannel.MAIL.getValue(),SWITCH_ON);
+        map.put(EAlarmChannel.WECHAT.getValue(),SWITCH_ON);
+
+        emailMonitorAlarmConfigDTO.switches = map;
 
         EmailMonitorAlarmTimeConfigDTO timeConfigDTO = new EmailMonitorAlarmTimeConfigDTO();
         timeConfigDTO.setCallbackSuccessRate(70);
@@ -194,7 +243,21 @@ public class EmailMonitorAlarmConfigDTO implements Serializable{
 
         emailMonitorAlarmConfigDTO.setList(list);
 
-        System.err.println(JSON.toJSONString(emailMonitorAlarmConfigDTO));
+        EmailMonitorAlarmLevelConfigDTO errorConfig= new EmailMonitorAlarmLevelConfigDTO();
+        errorConfig.setChannels(Arrays.asList("email","ivr","wechat"));
+        errorConfig.setLevel(EAlarmLevel.error.name());
+
+        EmailMonitorAlarmLevelConfigDTO warning= new EmailMonitorAlarmLevelConfigDTO();
+        warning.setChannels(Arrays.asList("email","sms","wechat"));
+        warning.setLevel(EAlarmLevel.warning.name());
+
+        EmailMonitorAlarmLevelConfigDTO info= new EmailMonitorAlarmLevelConfigDTO();
+        info.setChannels(Arrays.asList("email","wechat"));
+        info.setLevel(EAlarmLevel.info.name());
+
+        emailMonitorAlarmConfigDTO.setLevelConfig(Arrays.asList(errorConfig,warning,info));
+
+        System.err.println(JSON.toJSONString(Collections.singletonList(emailMonitorAlarmConfigDTO)));
     }
 
 
