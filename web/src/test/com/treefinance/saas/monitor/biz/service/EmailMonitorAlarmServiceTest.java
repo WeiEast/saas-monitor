@@ -1,9 +1,9 @@
 package com.treefinance.saas.monitor.biz.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.datatrees.toolkits.util.Arrays;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.service.impl.EmailAlarmTemplateImpl;
-import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import org.apache.commons.lang3.StringUtils;
@@ -34,16 +34,19 @@ public class EmailMonitorAlarmServiceTest {
     public void alarm() throws InterruptedException, ParseException {
         String dateStr = "2018-03-13 19:40:00";
         Date jobTime = DateUtils.parseDate(dateStr, Locale.CHINA, "yyyy-MM-dd hh:mm:ss");
-        String configStr = "[{\"alarmSwitch\":\"on\",\"alarmType\":1,\"alarmTypeDesc\":\"所有邮箱所有商户按人数统计预警\",\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"emails\":[\"virtual_total_stat_email\"],\"fewNum\":5,\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"email\",\"ivr\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"email\",\"sms\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"list\":[{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"18:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":90,\"crawlSuccessRate\":90,\"endTime\":\"18:00:00\",\"inTime\":true,\"loginConversionRate\":90,\"loginSuccessRate\":90,\"processSuccessRate\":90,\"startTime\":\"06:00:00\",\"wholeConversionRate\":90}],\"previousDays\":7,\"switches\":{\"ivr\":\"on\",\"sms\":\"on\",\"wechat\":\"on\",\"email\":\"on\"},\"taskTimeoutSecs\":600,\"threshold\":20}]\n";
-        List<EmailMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, EmailMonitorAlarmConfigDTO.class);
+        String configStr ="[{\"alarmSwitch\":\"on\",\"alarmType\":1,\"alarmTypeDesc\":\"所有邮箱所有商户按人数统计预警\",\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"emails\":[\"163.com\",\"126.com\",\"139.com\"],\"fewNum\":5,\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"email\",\"ivr\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"email\",\"sms\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"list\":[{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"18:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":90,\"crawlSuccessRate\":90,\"endTime\":\"18:00:00\",\"inTime\":true,\"loginConversionRate\":90,\"loginSuccessRate\":90,\"processSuccessRate\":90,\"startTime\":\"06:00:00\",\"wholeConversionRate\":90}],\"previousDays\":7,\"switches\":{\"ivr\":\"on\",\"sms\":\"on\",\"wechat\":\"on\",\"email\":\"on\"},\"taskTimeoutSecs\":600,\"threshold\":20}]\n";
+        List<EmailMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr,
+                EmailMonitorAlarmConfigDTO.class);
 
         for (EmailMonitorAlarmConfigDTO configDTO : configList) {
             if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), "on")) {
                 continue;
             }
+            List<String> emails = configDTO.getEmails();
             if (configDTO.getAlarmType() == 1) {
                 //总运营商按人统计的预警
-                emailAlarmTemplateImpl.alarm(jobTime, configDTO, ETaskStatDataType.USER, AlarmConstants.ALL_EMAIL);
+                emailAlarmTemplateImpl.alarm(jobTime, configDTO, ETaskStatDataType.USER, emails.toArray(Arrays
+                        .newArray(String.class,emails.size())));
             }
         }
 

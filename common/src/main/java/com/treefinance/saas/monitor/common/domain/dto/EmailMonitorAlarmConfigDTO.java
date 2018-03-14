@@ -284,7 +284,7 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
         configDTO.setList(emailMonitorAlarmConfigDTO.list);
         configDTO.setSwitches(emailMonitorAlarmConfigDTO.switches);
 
-        System.err.println(JSON.toJSONString(Arrays.asList(emailMonitorAlarmConfigDTO,configDTO),
+        System.err.println(JSON.toJSONString(Arrays.asList(configDTO),
                 SerializerFeature.DisableCircularReferenceDetect));
     }
 

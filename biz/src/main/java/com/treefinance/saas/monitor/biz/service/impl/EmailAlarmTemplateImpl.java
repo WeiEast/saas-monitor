@@ -178,7 +178,7 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
             compareDto.setPreviousCrawlSuccessRate(previousCrawlSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousProcessSuccessRate(previousProcessSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousCallbackSuccessRate(previousCallbackSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
-            compareDto.setPreviousWholeConversionRate(previousWholeConversionRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
+            compareDto.setPreviousWholeConversionRate(previousWholeConversionRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
 
             compareDto.setPreviousEntryAvgCount(BigDecimal.valueOf(previousEntryCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousStartLoginAvgCount(BigDecimal.valueOf(previousStartLoginCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
@@ -239,8 +239,8 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
             calcWholeConvert(timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, wholeConversionCompareVal);
 
         }
-        msgList = msgList.stream().sorted(Comparator.comparing(BaseAlarmMsgDTO::getDataTime)).collect(Collectors
-                .toList());
+        msgList = msgList.stream().map(baseAlarmMsgDTO -> (EmailAlarmMsgDTO) baseAlarmMsgDTO).sorted(Comparator.comparing(EmailAlarmMsgDTO
+                ::getEmail)).collect(Collectors.toList());
         return msgList;
     }
 
@@ -588,7 +588,9 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
                 .append(MonitorDateUtils.format(endTime))
                 .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("\n");
         for (BaseAlarmMsgDTO msg : msgList) {
-            buffer.append("【").append(msg.getAlarmSimpleDesc()).append("】")
+            buffer.append("【").append(((EmailAlarmMsgDTO)msg).getEmail()).append("】").append("【").append(msg
+                    .getAlarmSimpleDesc())
+                    .append("】")
                     .append("当前指标值:").append("【").append(msg.getValueDesc()).append("】")
                     .append("指标阀值:").append("【").append(msg.getThresholdDesc()).append("】")
                     .append("偏离阀值程度:").append("【").append(msg.getOffset()).append("】")
