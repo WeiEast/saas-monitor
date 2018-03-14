@@ -1,9 +1,12 @@
 package com.treefinance.saas.monitor.common.domain.dto;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.common.collect.Maps;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.utils.BeanUtils;
 
 import java.io.Serializable;
 import java.util.*;
@@ -14,18 +17,19 @@ import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITC
  * @Author: chengtong
  * @Date: 18/3/9 16:36
  */
-public class EmailMonitorAlarmConfigDTO implements Serializable{
+public class EmailMonitorAlarmConfigDTO implements Serializable {
 
     static final long serialVersionUID = 42123131212L;
 
-    /** 默认是所有的appId
+    /**
+     * 默认是所有的appId
      * {@see com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper.VIRTUAL_TOTAL_STAT_APP_ID}
-     * */
+     */
     private String appId;
 
     /**
      * 默认是 所有商户
-     * */
+     */
     private String appName;
     /**
      * 任务超时时间
@@ -41,44 +45,49 @@ public class EmailMonitorAlarmConfigDTO implements Serializable{
     private Integer alarmType;
     /**
      * 预警类型描述：
-     * */
+     */
     private String alarmTypeDesc;
     /**
      * 分区时间段 表示的是统计的时间段
-     * */
+     */
     private Integer intervalMins;
 
     /**
+     * 邮箱类型
+     */
+    private List<String> emails;
+
+    /**
      * 之前几天的平均值
-     * */
+     */
     private Integer previousDays;
     /**
-    *  数量少于多少忽略的值
-    * */
+     * 数量少于多少忽略的值
+     */
     private Integer fewNum;
 
     /**
      * 当<fewnum时 某一项目的比率的阈值
-     * */
+     */
     private Integer threshold;
 
     /* ============== time config ===============*/
     /**
      * 预警等级-预警渠道的配置
-     * */
+     */
     private List<EmailMonitorAlarmLevelConfigDTO> levelConfig;
 
 
     /* ======= switch ========*/
     /**
      * 开关
-     * */
-    private HashMap<String,String> switches;
+     */
+    private HashMap<String, String> switches;
 
     /* ===========  time config ============= */
     /**
      * 不同时间段 不同阈值的配置
-     * */
+     */
     private List<EmailMonitorAlarmTimeConfigDTO> list;
 
     public Integer getFewNum() {
@@ -185,7 +194,15 @@ public class EmailMonitorAlarmConfigDTO implements Serializable{
         this.switches = switches;
     }
 
-    public static void main(String...args){
+    public List<String> getEmails() {
+        return emails;
+    }
+
+    public void setEmails(List<String> emails) {
+        this.emails = emails;
+    }
+
+    public static void main(String... args) {
         EmailMonitorAlarmConfigDTO emailMonitorAlarmConfigDTO = new EmailMonitorAlarmConfigDTO();
         emailMonitorAlarmConfigDTO.alarmSwitch = "on";
         emailMonitorAlarmConfigDTO.alarmType = 1;
@@ -198,13 +215,15 @@ public class EmailMonitorAlarmConfigDTO implements Serializable{
         emailMonitorAlarmConfigDTO.threshold = 20;
         emailMonitorAlarmConfigDTO.fewNum = 5;
 
-        HashMap<String,String> map = Maps.newHashMap();
-        map.put(EAlarmChannel.IVR.getValue(),SWITCH_ON);
-        map.put(EAlarmChannel.SMS.getValue(),SWITCH_ON);
-        map.put(EAlarmChannel.MAIL.getValue(),SWITCH_ON);
-        map.put(EAlarmChannel.WECHAT.getValue(),SWITCH_ON);
+        HashMap<String, String> map = Maps.newHashMap();
+        map.put(EAlarmChannel.IVR.getValue(), SWITCH_ON);
+        map.put(EAlarmChannel.SMS.getValue(), SWITCH_ON);
+        map.put(EAlarmChannel.EMAIL.getValue(), SWITCH_ON);
+        map.put(EAlarmChannel.WECHAT.getValue(), SWITCH_ON);
 
         emailMonitorAlarmConfigDTO.switches = map;
+
+        emailMonitorAlarmConfigDTO.setEmails(Arrays.asList(AlarmConstants.ALL_EMAIL));
 
         EmailMonitorAlarmTimeConfigDTO timeConfigDTO = new EmailMonitorAlarmTimeConfigDTO();
         timeConfigDTO.setCallbackSuccessRate(70);
@@ -243,24 +262,31 @@ public class EmailMonitorAlarmConfigDTO implements Serializable{
 
         emailMonitorAlarmConfigDTO.setList(list);
 
-        EmailMonitorAlarmLevelConfigDTO errorConfig= new EmailMonitorAlarmLevelConfigDTO();
-        errorConfig.setChannels(Arrays.asList("email","ivr","wechat"));
+        EmailMonitorAlarmLevelConfigDTO errorConfig = new EmailMonitorAlarmLevelConfigDTO();
+        errorConfig.setChannels(Arrays.asList("email", "ivr", "wechat"));
         errorConfig.setLevel(EAlarmLevel.error.name());
 
-        EmailMonitorAlarmLevelConfigDTO warning= new EmailMonitorAlarmLevelConfigDTO();
-        warning.setChannels(Arrays.asList("email","sms","wechat"));
+        EmailMonitorAlarmLevelConfigDTO warning = new EmailMonitorAlarmLevelConfigDTO();
+        warning.setChannels(Arrays.asList("email", "sms", "wechat"));
         warning.setLevel(EAlarmLevel.warning.name());
 
-        EmailMonitorAlarmLevelConfigDTO info= new EmailMonitorAlarmLevelConfigDTO();
-        info.setChannels(Arrays.asList("email","wechat"));
+        EmailMonitorAlarmLevelConfigDTO info = new EmailMonitorAlarmLevelConfigDTO();
+        info.setChannels(Arrays.asList("email", "wechat"));
         info.setLevel(EAlarmLevel.info.name());
 
-        emailMonitorAlarmConfigDTO.setLevelConfig(Arrays.asList(errorConfig,warning,info));
+        emailMonitorAlarmConfigDTO.setLevelConfig(Arrays.asList(errorConfig, warning, info));
+        EmailMonitorAlarmConfigDTO configDTO = new EmailMonitorAlarmConfigDTO();
+        configDTO = BeanUtils.convert(emailMonitorAlarmConfigDTO,
+                configDTO);
 
-        System.err.println(JSON.toJSONString(Collections.singletonList(emailMonitorAlarmConfigDTO)));
+        configDTO.setEmails(Arrays.asList("163.com","126.com","139.com"));
+        configDTO.setLevelConfig(emailMonitorAlarmConfigDTO.levelConfig);
+        configDTO.setList(emailMonitorAlarmConfigDTO.list);
+        configDTO.setSwitches(emailMonitorAlarmConfigDTO.switches);
+
+        System.err.println(JSON.toJSONString(Arrays.asList(emailMonitorAlarmConfigDTO,configDTO),
+                SerializerFeature.DisableCircularReferenceDetect));
     }
-
-
 
 
 }

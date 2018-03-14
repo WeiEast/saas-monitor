@@ -357,7 +357,7 @@ public class AlarmMessageProducer {
      */
     public void sendMail4OperatorMonitor(String title, String dataBody, Date jobTime) {
         try {
-            String mails = diamondConfig.getMonitorAlarmMails();
+            String mails = "windside214@163.com";
             if (StringUtils.isEmpty(mails)) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},未配置邮件接收人,邮件发送失败,title={},dataBody={}",
                         MonitorDateUtils.format(jobTime), title, dataBody);

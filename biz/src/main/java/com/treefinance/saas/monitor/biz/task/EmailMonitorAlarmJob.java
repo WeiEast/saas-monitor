@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.task;
 import com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.datatrees.toolkits.util.Arrays;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
 import com.treefinance.saas.monitor.biz.service.EmailMonitorAlarmService;
 import com.treefinance.saas.monitor.common.domain.dto.EmailMonitorAlarmConfigDTO;
@@ -44,10 +45,12 @@ public class EmailMonitorAlarmJob implements SimpleJob {
                         .class);
         //这里只是区分了 任务数/人数
         // TODO: 18/3/13 在配置中尝试 大盘和某些邮箱类型
+
         try {
             for (EmailMonitorAlarmConfigDTO configDTO : configDTOList) {
                 ETaskStatDataType type = ETaskStatDataType.getByValue(configDTO.getAlarmType());
-                emailMonitorAlarmService.alarm(now, configDTO, type);
+                List<String> emails = configDTO.getEmails();
+                emailMonitorAlarmService.alarm(now, configDTO, type,emails.toArray(Arrays.newArray(String.class,emails.size())));
             }
         } catch (Exception e) {
             logger.error("邮箱监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(now), e);

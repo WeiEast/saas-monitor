@@ -8,7 +8,7 @@ public enum EAlarmChannel {
 
     IVR("ivr"),
     SMS("sms"),
-    MAIL("mail"),
+    EMAIL("email"),
     WECHAT("wechat"),
 
     ;

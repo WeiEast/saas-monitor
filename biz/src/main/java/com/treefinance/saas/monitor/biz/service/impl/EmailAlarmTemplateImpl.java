@@ -72,23 +72,28 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
             EmailStatAccess emailStatAccess = emailDataMap.get(key).get(0);
             EmailStatAccessDTO dataDTO = DataConverterUtils.convert(emailStatAccess, EmailStatAccessDTO.class);
 
-            for (EmailStatAccess item : list) {
-                dataDTO.setEntryCount(dataDTO.getEntryCount() + item.getEntryCount());
-                dataDTO.setStartLoginCount(dataDTO.getStartLoginCount() + item.getStartLoginCount());
-                dataDTO.setLoginSuccessCount(dataDTO.getLoginSuccessCount() + item.getLoginSuccessCount());
-                dataDTO.setCrawlSuccessCount(dataDTO.getCrawlSuccessCount() + item.getCrawlSuccessCount());
-                dataDTO.setProcessSuccessCount(dataDTO.getProcessSuccessCount() + item.getProcessSuccessCount());
-                dataDTO.setCallbackSuccessCount(dataDTO.getCallbackSuccessCount() + item.getCallbackSuccessCount());
+            int entryCount = 0, startLoginCount = 0, loginSuccessCount = 0,
+                    crawlSuccessCount = 0, processSuccessCount = 0, callbackSuccessCount = 0;
+            for (EmailStatAccess item : emailDataMap.get(key)) {
+                entryCount = entryCount + item.getEntryCount();
+                startLoginCount = startLoginCount + item.getStartLoginCount();
+                loginSuccessCount = loginSuccessCount + item.getLoginSuccessCount();
+                crawlSuccessCount = crawlSuccessCount + item.getCrawlSuccessCount();
+                processSuccessCount = processSuccessCount + item.getProcessSuccessCount();
+                callbackSuccessCount = callbackSuccessCount + item.getCallbackSuccessCount();
             }
-
-            dataDTO.setLoginConversionRate(calcRate(dataDTO.getStartLoginCount(), dataDTO.getEntryCount()));
-            dataDTO.setLoginSuccessRate(calcRate(dataDTO.getLoginSuccessCount(), dataDTO.getStartLoginCount()));
-            dataDTO.setCrawlSuccessRate(calcRate(dataDTO.getCrawlSuccessCount(), dataDTO.getLoginSuccessCount()));
-            dataDTO.setProcessSuccessRate(calcRate(dataDTO.getProcessSuccessCount(), dataDTO.getCrawlSuccessCount()));
-            dataDTO.setCallbackSuccessRate(calcRate(dataDTO.getCallbackSuccessCount(), dataDTO.getProcessSuccessCount()));
-            dataDTO.setWholeConversionRate(calcRate(dataDTO.getCallbackSuccessCount(), dataDTO.getEntryCount()));
-
-
+            dataDTO.setEntryCount(entryCount);
+            dataDTO.setStartLoginCount(startLoginCount);
+            dataDTO.setLoginSuccessCount(loginSuccessCount);
+            dataDTO.setCrawlSuccessCount(crawlSuccessCount);
+            dataDTO.setProcessSuccessCount(processSuccessCount);
+            dataDTO.setCallbackSuccessCount(callbackSuccessCount);
+            dataDTO.setLoginConversionRate(calcRate(startLoginCount, entryCount));
+            dataDTO.setLoginSuccessRate(calcRate(loginSuccessCount, startLoginCount));
+            dataDTO.setCrawlSuccessRate(calcRate(crawlSuccessCount, loginSuccessCount));
+            dataDTO.setProcessSuccessRate(calcRate(processSuccessCount, crawlSuccessCount));
+            dataDTO.setCallbackSuccessRate(calcRate(callbackSuccessCount, processSuccessCount));
+            dataDTO.setWholeConversionRate(calcRate(callbackSuccessCount,entryCount));
             result.add(dataDTO);
         }
 
@@ -145,7 +150,11 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
             BigDecimal previousCrawlSuccessRateCount = BigDecimal.ZERO;
             BigDecimal previousProcessSuccessRateCount = BigDecimal.ZERO;
             BigDecimal previousCallbackSuccessRateCount = BigDecimal.ZERO;
-            Integer previousStartLoginCount = 0, previousLoginSuccessCount = 0,
+            BigDecimal previousWholeConversionRateCount = BigDecimal.ZERO;
+
+            
+
+            Integer previousEntryCount = 0, previousStartLoginCount = 0, previousLoginSuccessCount = 0,
                     previousCrawlSuccessCount = 0, previousProcessSuccessCount = 0, previousCallbackSuccessCount = 0;
             for (EmailStatAccessDTO dto : entryList) {
                 previousLoginConversionRateCount = previousLoginConversionRateCount.add(dto.getLoginConversionRate());
@@ -153,6 +162,9 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
                 previousCrawlSuccessRateCount = previousCrawlSuccessRateCount.add(dto.getCrawlSuccessRate());
                 previousProcessSuccessRateCount = previousProcessSuccessRateCount.add(dto.getProcessSuccessRate());
                 previousCallbackSuccessRateCount = previousCallbackSuccessRateCount.add(dto.getCallbackSuccessRate());
+                previousWholeConversionRateCount = previousWholeConversionRateCount.add(dto.getWholeConversionRate());
+
+                previousEntryCount = previousEntryCount + dto.getEntryCount();
                 previousStartLoginCount = previousStartLoginCount + dto.getStartLoginCount();
                 previousLoginSuccessCount = previousLoginSuccessCount + dto.getLoginSuccessCount();
                 previousCrawlSuccessCount = previousCrawlSuccessCount + dto.getCrawlSuccessCount();
@@ -166,7 +178,9 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
             compareDto.setPreviousCrawlSuccessRate(previousCrawlSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousProcessSuccessRate(previousProcessSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousCallbackSuccessRate(previousCallbackSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
+            compareDto.setPreviousWholeConversionRate(previousWholeConversionRateCount.divide(BigDecimal.valueOf(previousDTOList.size()), 2, BigDecimal.ROUND_HALF_UP));
 
+            compareDto.setPreviousEntryAvgCount(BigDecimal.valueOf(previousEntryCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousStartLoginAvgCount(BigDecimal.valueOf(previousStartLoginCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousLoginSuccessAvgCount(BigDecimal.valueOf(previousLoginSuccessCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousCrawlSuccessAvgCount(BigDecimal.valueOf(previousCrawlSuccessCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
@@ -204,17 +218,25 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
             BigDecimal crawlCompareVal = compareDTO.getPreviousCrawlSuccessRate().multiply(new BigDecimal(timeConfigDTO.getCrawlSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
             BigDecimal processCompareVal = compareDTO.getPreviousProcessSuccessRate().multiply(new BigDecimal(timeConfigDTO.getProcessSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
             BigDecimal callbackCompareVal = compareDTO.getPreviousCallbackSuccessRate().multiply(new BigDecimal(timeConfigDTO.getCallbackSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal wholeConversionCompareVal = compareDTO.getPreviousWholeConversionRate().multiply(new BigDecimal(timeConfigDTO.getWholeConversionRate())).divide(new BigDecimal(100), 2, BigDecimal
+                    .ROUND_HALF_UP);
 
-            //登录转化率小于前7天平均值
-            calcConversionRate(configDTO, timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, loginConversionCompareVal);
-            //登录成功率小于前7天平均值
-            calcLoginSuccessRate(configDTO, timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, loginSuccessCompareVal);
-            //抓取成功率小于前7天平均值
-            calcCrawSuccessRate(configDTO, timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, crawlCompareVal);
-            //洗数成功率小于前7天平均值
-            calcProcessRate(configDTO, timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, processCompareVal);
 
-            calcCallbackSuccessRate(configDTO, timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, processCompareVal, callbackCompareVal);
+            //大盘不需要计算 这些
+            if (!sourceDto.getEmail().equals(AlarmConstants.ALL_EMAIL)) {
+                //登录转化率小于前7天平均值
+                calcConversionRate(configDTO, timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, loginConversionCompareVal);
+                //登录成功率小于前7天平均值
+                calcLoginSuccessRate(configDTO, timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, loginSuccessCompareVal);
+                //抓取成功率小于前7天平均值
+                calcCrawSuccessRate(configDTO, timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, crawlCompareVal);
+                //洗数成功率小于前7天平均值
+                calcProcessRate(configDTO, timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, processCompareVal);
+                //回调成功率
+                calcCallbackSuccessRate(configDTO, timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, processCompareVal, callbackCompareVal);
+            }
+
+            calcWholeConvert(timeConfigDTO, previousDays, msgList, sourceDto, compareDTO, wholeConversionCompareVal);
 
         }
         msgList = msgList.stream().sorted(Comparator.comparing(BaseAlarmMsgDTO::getDataTime)).collect(Collectors
@@ -222,11 +244,53 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
         return msgList;
     }
 
+    private void calcWholeConvert(EmailMonitorAlarmTimeConfigDTO
+                                          timeConfigDTO, Integer previousDays, List<BaseAlarmMsgDTO> msgList, EmailStatAccessDTO sourceDto, EmailStatAccessDTO
+                                          compareDTO, BigDecimal wholeConversionCompareVal) {
+        if (sourceDto.getWholeConversionRate().compareTo(wholeConversionCompareVal) < 0) {
+            EmailAlarmMsgDTO msg = new EmailAlarmMsgDTO();
+            String email = AlarmConstants.ALL_EMAIL.equals(sourceDto.getEmail()) ? "邮箱大盘" : sourceDto.getEmail();
+            msg.setEmail(email);
+            msg.setAlarmDesc("总转化率低于前" + previousDays + "天平均值的" + timeConfigDTO.getWholeConversionRate() + "%");
+            msg.setAlarmType("总转化率");
+            msg.setAlarmSimpleDesc("总转化率");
+            msg.setValue(sourceDto.getWholeConversionRate());
+            msg.setThreshold(wholeConversionCompareVal);
+            String valueDesc = new StringBuilder()
+                    .append(sourceDto.getWholeConversionRate()).append("%").append(" ").append("(")
+                    .append(sourceDto.getCallbackSuccessCount()).append("/")
+                    .append(sourceDto.getEntryCount()).append(")").toString();
+            msg.setValueDesc(valueDesc);
+            String thresholdDesc = new StringBuilder()
+                    .append(wholeConversionCompareVal).append("%").append(" ").append("(")
+                    .append(compareDTO.getPreviousCallbackSuccessAvgCount()).append("/")
+                    .append(compareDTO.getPreviousEntryAvgCount()).append("*")
+                    .append(new BigDecimal(timeConfigDTO.getWholeConversionRate()).divide(new BigDecimal(100), 1, BigDecimal
+                            .ROUND_HALF_UP)).append(")").toString();
+            msg.setThresholdDesc(thresholdDesc);
+            if (BigDecimal.ZERO.compareTo(wholeConversionCompareVal) == 0) {
+                msg.setOffset(BigDecimal.ZERO);
+            } else {
+                BigDecimal value = BigDecimal.ONE.subtract(sourceDto.getWholeConversionRate().divide
+                        (wholeConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                msg.setOffset(value);
+                determineLevel(msg, value);
+            }
+            msgList.add(msg);
+
+        }
+    }
+
     private void calcCallbackSuccessRate(EmailMonitorAlarmConfigDTO configDTO, EmailMonitorAlarmTimeConfigDTO
             timeConfigDTO, Integer previousDays, List<BaseAlarmMsgDTO> msgList, EmailStatAccessDTO sourceDto, EmailStatAccessDTO
                                                  compareDTO, BigDecimal processCompareVal, BigDecimal callbackCompareVal) {
-        if (isAlarm(sourceDto.getCallbackSuccessCount(), sourceDto.getCallbackSuccessRate(), callbackCompareVal, configDTO.getFewNum(), configDTO.getThreshold())) {
+        if (isAlarm(sourceDto.getCallbackSuccessCount(),
+                sourceDto.getCallbackSuccessRate(),
+                callbackCompareVal,
+                configDTO.getFewNum(), configDTO.getThreshold())) {
             EmailAlarmMsgDTO msg = new EmailAlarmMsgDTO();
+            String email = AlarmConstants.ALL_EMAIL.equals(sourceDto.getEmail()) ? "邮箱大盘" : sourceDto.getEmail();
+            msg.setEmail(email);
             msg.setAlarmDesc("回调成功率低于前" + previousDays + "天平均值的" + timeConfigDTO.getCallbackSuccessRate() + "%");
             msg.setAlarmType("回调成功率");
             msg.setAlarmSimpleDesc("回调");
@@ -252,6 +316,8 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
     private void calcProcessRate(EmailMonitorAlarmConfigDTO configDTO, EmailMonitorAlarmTimeConfigDTO timeConfigDTO, Integer previousDays, List<BaseAlarmMsgDTO> msgList, EmailStatAccessDTO sourceDto, EmailStatAccessDTO compareDTO, BigDecimal processCompareVal) {
         if (isAlarm(sourceDto.getCrawlSuccessCount(), sourceDto.getProcessSuccessRate(), processCompareVal, configDTO.getFewNum(), configDTO.getThreshold())) {
             EmailAlarmMsgDTO msg = new EmailAlarmMsgDTO();
+            String email = AlarmConstants.ALL_EMAIL.equals(sourceDto.getEmail()) ? "邮箱大盘" : sourceDto.getEmail();
+            msg.setEmail(email);
             msg.setAlarmDesc("洗数成功率低于前" + previousDays + "天平均值的" + timeConfigDTO.getProcessSuccessRate() + "%");
             msg.setAlarmType("洗数成功率");
             msg.setAlarmSimpleDesc("洗数");
@@ -277,6 +343,8 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
     private void calcCrawSuccessRate(EmailMonitorAlarmConfigDTO configDTO, EmailMonitorAlarmTimeConfigDTO timeConfigDTO, Integer previousDays, List<BaseAlarmMsgDTO> msgList, EmailStatAccessDTO sourceDto, EmailStatAccessDTO compareDTO, BigDecimal crawlCompareVal) {
         if (isAlarm(sourceDto.getLoginSuccessCount(), sourceDto.getCrawlSuccessRate(), crawlCompareVal, configDTO.getFewNum(), configDTO.getThreshold())) {
             EmailAlarmMsgDTO msg = new EmailAlarmMsgDTO();
+            String email = AlarmConstants.ALL_EMAIL.equals(sourceDto.getEmail()) ? "邮箱大盘" : sourceDto.getEmail();
+            msg.setEmail(email);
             msg.setAlarmDesc("抓取成功率低于前" + previousDays + "天平均值的" + timeConfigDTO.getCrawlSuccessRate() + "%");
             msg.setAlarmType("抓取成功率");
             msg.setAlarmSimpleDesc("抓取");
@@ -302,6 +370,8 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
     private void calcLoginSuccessRate(EmailMonitorAlarmConfigDTO configDTO, EmailMonitorAlarmTimeConfigDTO timeConfigDTO, Integer previousDays, List<BaseAlarmMsgDTO> msgList, EmailStatAccessDTO sourceDto, EmailStatAccessDTO compareDTO, BigDecimal loginSuccessCompareVal) {
         if (isAlarm(sourceDto.getStartLoginCount(), sourceDto.getLoginSuccessRate(), loginSuccessCompareVal, configDTO.getFewNum(), configDTO.getThreshold())) {
             EmailAlarmMsgDTO msg = new EmailAlarmMsgDTO();
+            String email = AlarmConstants.ALL_EMAIL.equals(sourceDto.getEmail()) ? "邮箱大盘" : sourceDto.getEmail();
+            msg.setEmail(email);
             msg.setAlarmDesc("登陆成功率低于前" + previousDays + "天平均值的" + timeConfigDTO.getLoginSuccessRate() + "%");
             msg.setAlarmType("登陆成功率");
             msg.setAlarmSimpleDesc("登陆");
@@ -327,7 +397,8 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
         if (isAlarm(sourceDto.getEntryCount(), sourceDto.getLoginConversionRate(), loginConversionCompareVal,
                 configDTO.getFewNum(), configDTO.getThreshold())) {
             EmailAlarmMsgDTO msg = new EmailAlarmMsgDTO();
-            msg.setEmail(sourceDto.getEmail());
+            String email = AlarmConstants.ALL_EMAIL.equals(sourceDto.getEmail()) ? "邮箱大盘" : sourceDto.getEmail();
+            msg.setEmail(email);
             msg.setAlarmDesc("登陆转化率低于前" + previousDays + "天平均值的" + timeConfigDTO.getLoginConversionRate() + "%");
             msg.setAlarmType("登陆转化率");
             msg.setAlarmSimpleDesc("开始登陆");
@@ -388,14 +459,14 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
 
     @Override
     protected void sendAlarmMsg(EAlarmLevel alarmLevel, List<BaseAlarmMsgDTO> dtoList, EmailMonitorAlarmConfigDTO
-            configDTO,Date startTime,Date endTime,ETaskStatDataType statDataType) {
+            configDTO, Date startTime, Date endTime, ETaskStatDataType statDataType) {
 
         EmailMonitorAlarmLevelConfigDTO levelConfig = configDTO.getLevelConfig().stream().filter
                 (emailMonitorAlarmLevelConfigDTO ->
                         alarmLevel.name().equals(emailMonitorAlarmLevelConfigDTO.getLevel())).findFirst().get();
 
-        HashMap<String,String> switches = configDTO.getSwitches();
-        if(switches.isEmpty()||switches.values().stream().noneMatch(SWITCH_ON::equals)){
+        HashMap<String, String> switches = configDTO.getSwitches();
+        if (switches == null || switches.isEmpty() || switches.values().stream().noneMatch(SWITCH_ON::equals)) {
             logger.info("邮箱预警配置 为空 或者预警信息发送渠道全部关闭。。");
             return;
         }
@@ -403,53 +474,51 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
 
         List<String> channels = levelConfig.getChannels();
         String alarmBiz;
-        if(AlarmConstants.ALL_EMAIL.equals(((EmailAlarmMsgDTO)dtoList.get(0)).getEmail())){
+        if ("邮箱大盘".equals(((EmailAlarmMsgDTO) dtoList.get(0)).getEmail())) {
             alarmBiz = "邮箱大盘";
-        }else {
+        } else {
             alarmBiz = "邮箱分组";
         }
-        alarmBiz += "-"+statDataType.getText();
-
-
+        alarmBiz += "-" + statDataType.getText();
 
         for (String channel : channels) {
 
             EAlarmChannel alarmChannel = EAlarmChannel.getByValue(channel);
-            if(alarmChannel == null){
+            if (alarmChannel == null) {
                 logger.info("配置错误 无法找到对应的预警渠道");
                 return;
             }
             switch (alarmChannel) {
                 case IVR:
                     if (!SWITCH_ON.equals(switches.get(alarmChannel.getValue()))) {
-                        logger.info("邮箱预警配置 "+alarmChannel.getValue()+"已关闭");
+                        logger.info("邮箱预警配置 " + alarmChannel.getValue() + "已关闭");
                         continue;
                     }
-                    sendIvr(dtoList,alarmLevel,alarmBiz);
+                    sendIvr(dtoList, alarmLevel, alarmBiz);
                     break;
                 case SMS:
                     if (!SWITCH_ON.equals(switches.get(alarmChannel.getValue()))) {
-                        logger.info("邮箱预警配置 "+alarmChannel.getValue()+"已关闭");
+                        logger.info("邮箱预警配置 " + alarmChannel.getValue() + "已关闭");
                         continue;
                     }
-                    sendSms(dtoList,startTime,endTime,alarmLevel,alarmBiz);
+                    sendSms(dtoList, startTime, endTime, alarmLevel, alarmBiz);
                     break;
                 case WECHAT:
                     if (!SWITCH_ON.equals(switches.get(alarmChannel.getValue()))) {
-                        logger.info("邮箱预警配置 "+alarmChannel.getValue()+"已关闭");
+                        logger.info("邮箱预警配置 " + alarmChannel.getValue() + "已关闭");
                         continue;
                     }
-                    sendWeChat(dtoList,startTime,endTime,alarmLevel,alarmBiz);
+                    sendWeChat(dtoList, startTime, endTime, alarmLevel, alarmBiz);
                     break;
-                case MAIL:
+                case EMAIL:
                     if (!SWITCH_ON.equals(switches.get(alarmChannel.getValue()))) {
-                        logger.info("邮箱预警配置 "+alarmChannel.getValue()+"已关闭");
+                        logger.info("邮箱预警配置 " + alarmChannel.getValue() + "已关闭");
                         continue;
                     }
-                    sendMail(dtoList,new Date(),startTime,endTime,alarmLevel,alarmBiz);
+                    sendMail(dtoList, new Date(), startTime, endTime, alarmLevel, alarmBiz);
                     break;
                 default:
-                    logger.info("不支持的邮箱预警渠道"+alarmChannel.getValue());
+                    logger.info("不支持的邮箱预警渠道" + alarmChannel.getValue());
                     break;
             }
         }
@@ -457,7 +526,7 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
 
     @Override
     protected String generateMailDataBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime, Map<String,
-            Object> placeHolder, EAlarmLevel alarmLevel,String alarmBiz) {
+            Object> placeHolder, EAlarmLevel alarmLevel, String alarmBiz) {
         StringBuilder pageHtml = new StringBuilder();
 
         StringBuilder tableTrs = new StringBuilder();
@@ -474,8 +543,8 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
             detail.append(((EmailAlarmMsgDTO) msg).getEmail()).append("-").append(msg.getAlarmType()).append("(").append(msg.getOffset
                     ()).append("%").append(")").append("，");
         }
-        String detailsStr = detail.substring(0,detail.length()-1);
-        detailsStr+="】";
+        String detailsStr = detail.substring(0, detail.length() - 1);
+        detailsStr += "】";
 
         String module = "saas-" + diamondConfig.getMonitorEnvironment();
         pageHtml.append("<br>").append("【").append(alarmLevel.name()).append("】").append
@@ -489,7 +558,7 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
                 .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("</br>");
         pageHtml.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\" >");
         pageHtml.append("<tr bgcolor=\"#C9C9C9\">")
-                .append("<th>").append("运营商").append("</th>")
+                .append("<th>").append("邮箱").append("</th>")
                 .append("<th>").append("预警描述").append("</th>")
                 .append("<th>").append("当前指标值").append("</th>")
                 .append("<th>").append("指标阀值").append("</th>")
@@ -508,7 +577,7 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
 
     @Override
     protected String generateWeChatBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime, EAlarmLevel
-            alarmLevel,String alarmBiz) {
+            alarmLevel, String alarmBiz) {
         StringBuilder buffer = new StringBuilder();
         buffer.append("【").append(alarmLevel.name()).append("】")
                 .append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
