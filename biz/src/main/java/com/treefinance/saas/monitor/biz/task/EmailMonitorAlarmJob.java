@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class EmailMonitorAlarmJob implements SimpleJob {
 
-    private static final Logger logger = LoggerFactory.getLogger(OperatorMonitorAlarmJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(EmailMonitorAlarmJob.class);
 
     @Autowired
     private EmailAlarmConfig config;
@@ -44,7 +44,6 @@ public class EmailMonitorAlarmJob implements SimpleJob {
                 EmailMonitorAlarmConfigDTO
                         .class);
         //这里只是区分了 任务数/人数
-        // TODO: 18/3/13 在配置中尝试 大盘和某些邮箱类型
 
         try {
             for (EmailMonitorAlarmConfigDTO configDTO : configDTOList) {
