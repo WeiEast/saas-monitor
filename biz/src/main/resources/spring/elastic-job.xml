@@ -13,7 +13,7 @@
     <!--配置作业注册中心 -->
     <reg:zookeeper id="regCenter" server-lists="${zk.address}" namespace="monitor-job"
                    base-sleep-time-milliseconds="1000"
-                   max-sleep-time-milliseconds="3000" max-retries="3" />
+                   max-sleep-time-milliseconds="3000" max-retries="3"/>
 
     <!-- 配置作业-->
     <job:simple id="taskDataFlushJob" class="com.treefinance.saas.monitor.biz.task.TaskDataFlushJob"
@@ -32,21 +32,22 @@
     <job:simple id="taskOperatorFlushJob" class="com.treefinance.saas.monitor.biz.task.TaskOperatorDataFlushJob"
                 registry-center-ref="regCenter" cron="0 1/5 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
-    <!-- 报警任务 -->
+    <!--
+    &lt;!&ndash; 报警任务 &ndash;&gt;
     <job:simple id="alarmJob" class="com.treefinance.saas.monitor.biz.task.AlarmJob" registry-center-ref="regCenter"
                 cron="0 1/2 * * * ?"
-                sharding-total-count="1" overwrite="true"/>
+                sharding-total-count="1" overwrite="true"/>-->
 
     <!-- 无任务预警 -->
-    <!--<job:simple id="noTaskAlarmJob" class="com.treefinance.saas.monitor.biz.task.NoTaskAlarmJob"-->
-                <!--registry-center-ref="regCenter" cron="0 0/5 * * * ?"-->
-                <!--sharding-total-count="1" overwrite="true"/>-->
+    <job:simple id="noTaskAlarmJob" class="com.treefinance.saas.monitor.biz.task.NoTaskAlarmJob"
+                registry-center-ref="regCenter" cron="0 0/5 * * * ?"
+                sharding-total-count="1" overwrite="true"/>
 
     <!-- 任务成功率预警 -->
     <job:simple id="taskSuccessRateAlarmJob" class="com.treefinance.saas.monitor.biz.task.TaskSuccessRateAlarmJob"
                 registry-center-ref="regCenter" cron="0 0/1 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
-    <!--&lt;!&ndash;运营商监控,定时预警任务&ndash;&gt;-->
+    <!--运营商监控,定时预警任务-->
     <job:simple id="operatorMonitorAlarmJob"
                 class="com.treefinance.saas.monitor.biz.task.OperatorMonitorAlarmJob"
                 registry-center-ref="regCenter" cron="0 0/5 * * * ? "

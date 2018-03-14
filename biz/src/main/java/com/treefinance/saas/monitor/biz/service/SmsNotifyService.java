@@ -28,7 +28,7 @@ public class SmsNotifyService {
     private DiamondConfig diamondConfig;
 
     public void send(String content) {
-        List<String> mobileList = Splitter.on(",").splitToList("18258265028");
+        List<String> mobileList = Splitter.on(",").splitToList(diamondConfig.getMonitorAlarmMobiles());
         SmsMessage smsMessage = new SmsMessage();
         smsMessage.setSmsEnum(SmsEnum.CUI_SHOU);
         smsMessage.setContent(content);
