@@ -225,6 +225,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             sendSms(msgList, jobTime, startTime, endTime, statType, smsSwitch,EAlarmLevel.warning);
             sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch,EAlarmLevel.warning);
         } else {
+            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.info);
             sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch,EAlarmLevel.info);
         }
     }
