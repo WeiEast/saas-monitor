@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
+
 /**
  * Created by yh-treefinance on 2017/12/6.
  */
@@ -52,10 +54,10 @@ public class IvrNotifyService {
      * 通知ivr
      */
     public void notifyIvr(EAlarmLevel alarmLevel, EAlarmType type, String alarmRule) {
-//        if (!SWITCH_ON.equalsIgnoreCase(ivrConfig.getIvrSwitch())) {
-//            logger.info("ivr 服务开关关闭...{}", JSON.toJSONString(ivrConfig));
-//            return;
-//        }
+        if (!SWITCH_ON.equalsIgnoreCase(ivrConfig.getIvrSwitch())) {
+            logger.info("ivr 服务开关关闭...{}", JSON.toJSONString(ivrConfig));
+            return;
+        }
         // 验证此类预警是否需要通知
         String alarmTypeCron = ivrConfig.getAlarmTypeCron();
         Map<String, Object> cronMap = JSON.parseObject(alarmTypeCron);
@@ -95,7 +97,7 @@ public class IvrNotifyService {
      */
     public List<IvrContactsDTO> getDutyContacts() {
         // 获取联系人心
-        String contacts = "[{\"name\":\"叶徽\",\"telNum\":\"18258265028\",\"dutyTimeCron\":[\"* * * * * ?\"]}]";
+        String contacts = ivrConfig.getContacts();
         List<IvrContactsDTO> contactsDTOS = JSON.parseArray(contacts, IvrContactsDTO.class);
         if (CollectionUtils.isEmpty(contactsDTOS)) {
             return Lists.newArrayList();
