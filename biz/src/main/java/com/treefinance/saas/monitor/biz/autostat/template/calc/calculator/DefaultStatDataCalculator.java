@@ -140,15 +140,21 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             // GROUP 的特殊处理: 一个数据项对应多个分组
             data.put(AsConstants.GROUP, redisKey);
             // 3.计算各分组数据项值
+            List<Object> groupValueList = Lists.newArrayList();
             _statGroups.stream().filter(statGroup -> !AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
                     .forEach(statGroup -> {
                         Long groupId = statGroup.getId();
                         String groupCode = statGroup.getGroupCode();
                         String groupExpression = statGroup.getGroupExpression();
                         Object groupValue = expressionCalculator.calculate(groupId, groupExpression, data);
+                        groupValueList.add(groupValue);
                         dataMap.put(groupCode, groupValue);
                         redisGroups.add(groupCode + "-" + groupValue);
                     });
+            //如果分组处理的groupValue为null,统计null维度没有实际意义.
+            if (CollectionUtils.isNotEmpty(groupValueList) && groupValueList.contains(null)) {
+                continue;
+            }
             // 分组数据项值
             redisKey = Joiner.on(":").useForNull("null").join(redisGroups);
             data.put(AsConstants.GROUP, redisKey);
