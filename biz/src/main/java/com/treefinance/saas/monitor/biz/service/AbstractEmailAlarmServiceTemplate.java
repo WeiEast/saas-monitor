@@ -179,15 +179,6 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
             BaseStatAccessDTO> compareMap, EmailMonitorAlarmConfigDTO configDTO);
 
 
-    protected BigDecimal calcRate(Integer a, Integer b) {
-        if (Integer.valueOf(0).compareTo(b) == 0) {
-            return BigDecimal.ZERO;
-        }
-        return BigDecimal.valueOf(a, 2)
-                .multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(b, 2), 2, BigDecimal.ROUND_HALF_UP);
-    }
-
     /**
      * 判断当前环节是否出发预警
      *

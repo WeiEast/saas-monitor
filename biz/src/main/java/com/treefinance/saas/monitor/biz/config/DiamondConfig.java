@@ -21,6 +21,9 @@ public class DiamondConfig {
     @DAttribute(key = "mq.namesrvAddr")
     private String namesrvAddr;
 
+    @DAttribute(key = "email.support.list")
+    private String supportEmails;
+
     @DAttribute(key = "monitor.group.name")
     private String monitorGroupName;
 
@@ -473,5 +476,13 @@ public class DiamondConfig {
 
     public void setWarningLower(Integer warningLower) {
         this.warningLower = warningLower;
+    }
+
+    public String getSupportEmails() {
+        return supportEmails;
+    }
+
+    public void setSupportEmails(String supportEmails) {
+        this.supportEmails = supportEmails;
     }
 }

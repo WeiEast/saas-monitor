@@ -22,6 +22,9 @@ public interface EmailStatAccessFacade {
      * */
     MonitorResult<List<EmailStatAccessBaseRO>> queryEmailStatDayAccessListDetail(EmailStatAccessRequest request);
 
-
+    /**
+     * 返回当前支持的邮箱列表
+     * */
+    MonitorResult<List<String>> queryEmailSupportList(EmailStatAccessRequest request);
 
 }

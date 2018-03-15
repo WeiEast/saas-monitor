@@ -47,6 +47,15 @@ public class EmailStatAccessBaseRO extends BaseRO{
 
     private BigDecimal wholeConversionRate;
 
+    private BigDecimal taskUserRatio;
+
+    public BigDecimal getTaskUserRatio() {
+        return taskUserRatio;
+    }
+
+    public void setTaskUserRatio(BigDecimal taskUserRatio) {
+        this.taskUserRatio = taskUserRatio;
+    }
 
     public Long getId() {
         return id;

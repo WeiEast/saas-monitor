@@ -13,6 +13,7 @@ import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
 import com.treefinance.saas.monitor.dao.entity.EmailStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EmailStatAccessCriteria;
 import org.apache.commons.collections.CollectionUtils;
@@ -88,12 +89,12 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
             dataDTO.setCrawlSuccessCount(crawlSuccessCount);
             dataDTO.setProcessSuccessCount(processSuccessCount);
             dataDTO.setCallbackSuccessCount(callbackSuccessCount);
-            dataDTO.setLoginConversionRate(calcRate(startLoginCount, entryCount));
-            dataDTO.setLoginSuccessRate(calcRate(loginSuccessCount, startLoginCount));
-            dataDTO.setCrawlSuccessRate(calcRate(crawlSuccessCount, loginSuccessCount));
-            dataDTO.setProcessSuccessRate(calcRate(processSuccessCount, crawlSuccessCount));
-            dataDTO.setCallbackSuccessRate(calcRate(callbackSuccessCount, processSuccessCount));
-            dataDTO.setWholeConversionRate(calcRate(callbackSuccessCount,entryCount));
+            dataDTO.setLoginConversionRate(StatisticCalcUtil.calcRate(startLoginCount, entryCount));
+            dataDTO.setLoginSuccessRate(StatisticCalcUtil.calcRate(loginSuccessCount, startLoginCount));
+            dataDTO.setCrawlSuccessRate(StatisticCalcUtil.calcRate(crawlSuccessCount, loginSuccessCount));
+            dataDTO.setProcessSuccessRate(StatisticCalcUtil.calcRate(processSuccessCount, crawlSuccessCount));
+            dataDTO.setCallbackSuccessRate(StatisticCalcUtil.calcRate(callbackSuccessCount, processSuccessCount));
+            dataDTO.setWholeConversionRate(StatisticCalcUtil.calcRate(callbackSuccessCount,entryCount));
             result.add(dataDTO);
         }
 
@@ -268,14 +269,7 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
                     .append(new BigDecimal(timeConfigDTO.getWholeConversionRate()).divide(new BigDecimal(100), 1, BigDecimal
                             .ROUND_HALF_UP)).append(")").toString();
             msg.setThresholdDesc(thresholdDesc);
-            if (BigDecimal.ZERO.compareTo(wholeConversionCompareVal) == 0) {
-                msg.setOffset(BigDecimal.ZERO);
-            } else {
-                BigDecimal value = BigDecimal.ONE.subtract(sourceDto.getWholeConversionRate().divide
-                        (wholeConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
-                msg.setOffset(value);
-                determineLevel(msg, value);
-            }
+            calcOffsetAndLevel(wholeConversionCompareVal, msg, sourceDto.getWholeConversionRate());
             msgList.add(msg);
 
         }
