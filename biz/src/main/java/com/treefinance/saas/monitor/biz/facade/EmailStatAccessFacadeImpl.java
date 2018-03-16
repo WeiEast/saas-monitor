@@ -59,6 +59,8 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
                 .getEndTime());
         List<EmailStatDayAccess> list = emailStatDayAccessMapper.selectPaginationByExample(criteria);
 
+        long total = emailStatDayAccessMapper.countByExample(criteria);
+
         if(list.isEmpty()){
             return MonitorResultBuilder.pageResult(request, Lists.newArrayList() ,0);
         }
@@ -67,7 +69,8 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
 
         calculateRate(result);
 
-        return MonitorResultBuilder.pageResult(request,result,result.size());
+
+        return MonitorResultBuilder.pageResult(request,result,total);
     }
 
     @Override
@@ -90,7 +93,7 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
                 .getEndTime());
 
         List<EmailStatAccess> list = emailStatAccessMapper.selectPaginationByExample(criteria);
-
+        long total = emailStatAccessMapper.countByExample(criteria);
         if(list.isEmpty()){
             return MonitorResultBuilder.pageResult(request, Lists.newArrayList() ,0);
         }
@@ -99,7 +102,7 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
 
         calculateRate(result);
 
-        return MonitorResultBuilder.pageResult(request,result,result.size());
+        return MonitorResultBuilder.pageResult(request,result,total);
     }
 
     private void calculateRate(List<EmailStatAccessBaseRO> result) {
