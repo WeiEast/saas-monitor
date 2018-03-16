@@ -52,6 +52,7 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
         }
 
         EmailStatDayAccessCriteria criteria = new EmailStatDayAccessCriteria();
+        criteria.setOrderByClause("datatime desc");
         criteria.setLimit(request.getPageSize());
         criteria.setOffset(request.getOffset());
         criteria.createCriteria().andAppIdEqualTo(request.getAppId()).andEmailEqualTo(request.getEmail())
@@ -69,6 +70,7 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
 
         calculateRate(result);
 
+        logger.info("console请求邮箱监控日表详细数据，request={},response={}",JSON.toJSONString(request),JSON.toJSON(result));
 
         return MonitorResultBuilder.pageResult(request,result,total);
     }
@@ -82,8 +84,6 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
         }
 
         EmailStatAccessCriteria criteria = new EmailStatAccessCriteria();
-
-
         criteria.setOrderByClause("datatime desc");
         criteria.setLimit(request.getPageSize());
         criteria.setOffset(request.getOffset());
@@ -101,7 +101,7 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
         List<EmailStatAccessBaseRO> result = DataConverterUtils.convert(list, EmailStatAccessBaseRO.class);
 
         calculateRate(result);
-
+        logger.info("console请求邮箱监控日表详细数据，request={},response={}",JSON.toJSONString(request),JSON.toJSON(result));
         return MonitorResultBuilder.pageResult(request,result,total);
     }
 
@@ -121,7 +121,6 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
 
     @Override
     public MonitorResult<List<String>> queryEmailSupportList(EmailStatAccessRequest request) {
-
         return MonitorResultBuilder.build(Arrays.asList(diamondConfig.getSupportEmails().split(",")));
     }
 }
