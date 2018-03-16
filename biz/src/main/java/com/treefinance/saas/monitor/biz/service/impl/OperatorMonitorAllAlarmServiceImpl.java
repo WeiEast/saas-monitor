@@ -201,6 +201,7 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
             sendSms(msgList, jobTime, startTime, endTime, statType, smsSwitch, EAlarmLevel.warning);
             sendWeChat(msgList, jobTime, startTime, endTime, baseTile, weChatSwitch, EAlarmLevel.warning);
         } else {
+            sendMail(msgList, jobTime, startTime, endTime, statType, baseTile, mailSwitch, EAlarmLevel.info);
             sendWeChat(msgList, jobTime, startTime, endTime, baseTile, weChatSwitch, EAlarmLevel.info);
         }
     }
