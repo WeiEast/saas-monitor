@@ -57,7 +57,7 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
         criteria.createCriteria().andAppIdEqualTo(request.getAppId()).andEmailEqualTo(request.getEmail())
                 .andDataTypeEqualTo(request.getStatType()).andDataTimeBetween(request.getStartTime(),request
                 .getEndTime());
-        List<EmailStatDayAccess> list = emailStatDayAccessMapper.selectByExample(criteria);
+        List<EmailStatDayAccess> list = emailStatDayAccessMapper.selectPaginationByExample(criteria);
 
         if(list.isEmpty()){
             return MonitorResultBuilder.pageResult(request, Lists.newArrayList() ,0);
@@ -89,7 +89,7 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
                 .andDataTypeEqualTo(request.getStatType()).andDataTimeBetween(request.getStartTime(),request
                 .getEndTime());
 
-        List<EmailStatAccess> list = emailStatAccessMapper.selectByExample(criteria);
+        List<EmailStatAccess> list = emailStatAccessMapper.selectPaginationByExample(criteria);
 
         if(list.isEmpty()){
             return MonitorResultBuilder.pageResult(request, Lists.newArrayList() ,0);
@@ -106,16 +106,17 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
         for (EmailStatAccessBaseRO ro :result){
 
             ro.setLoginConversionRate(StatisticCalcUtil.calcRate(ro.getStartLoginCount(),ro.getEntryCount()));
-            ro.setLoginSuccessRate(StatisticCalcUtil.calcRate(ro.getStartLoginCount(),ro.getEntryCount()));
-            ro.setCrawlSuccessRate(StatisticCalcUtil.calcRate(ro.getStartLoginCount(),ro.getEntryCount()));
-            ro.setProcessSuccessRate(StatisticCalcUtil.calcRate(ro.getStartLoginCount(),ro.getEntryCount()));
-            ro.setCallbackSuccessRate(StatisticCalcUtil.calcRate(ro.getStartLoginCount(),ro.getEntryCount()));
-            ro.setWholeConversionRate(StatisticCalcUtil.calcRate(ro.getStartLoginCount(),ro.getEntryCount()));
+            ro.setLoginSuccessRate(StatisticCalcUtil.calcRate(ro.getLoginSuccessCount(),ro.getStartLoginCount()));
+            ro.setCrawlSuccessRate(StatisticCalcUtil.calcRate(ro.getCrawlSuccessCount(),ro.getLoginSuccessCount()));
+            ro.setProcessSuccessRate(StatisticCalcUtil.calcRate(ro.getProcessSuccessCount(),ro.getCrawlSuccessCount()));
+            ro.setCallbackSuccessRate(StatisticCalcUtil.calcRate(ro.getCallbackSuccessCount(),ro.getProcessSuccessCount()));
+            ro.setWholeConversionRate(StatisticCalcUtil.calcRate(ro.getCallbackSuccessCount(),ro.getEntryCount()));
 
             ro.setTaskUserRatio(StatisticCalcUtil.calcRate(ro.getUserCount(),ro.getTaskCount()));
         }
     }
-    @Autowired
+
+    @Override
     public MonitorResult<List<String>> queryEmailSupportList(EmailStatAccessRequest request) {
 
         return MonitorResultBuilder.build(Arrays.asList(diamondConfig.getSupportEmails().split(",")));
