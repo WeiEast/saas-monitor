@@ -115,7 +115,7 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
             ro.setCallbackSuccessRate(StatisticCalcUtil.calcRate(ro.getCallbackSuccessCount(),ro.getProcessSuccessCount()));
             ro.setWholeConversionRate(StatisticCalcUtil.calcRate(ro.getCallbackSuccessCount(),ro.getEntryCount()));
 
-            ro.setTaskUserRatio(StatisticCalcUtil.calcRate(ro.getUserCount(),ro.getTaskCount()));
+            ro.setTaskUserRatio(StatisticCalcUtil.calcRatio(ro.getUserCount(),ro.getTaskCount()));
         }
     }
 
