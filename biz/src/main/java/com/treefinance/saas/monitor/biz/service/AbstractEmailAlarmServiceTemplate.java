@@ -120,7 +120,7 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
      * 获取基础时间
      */
     private Date getBaseTime(Date jobTime, JSONObject config) {
-        Date statTime = DateUtils.addSeconds(jobTime, -config.getIntValue("timeOutSeconds"));
+        Date statTime = DateUtils.addSeconds(jobTime, -config.getIntValue("taskTimeoutSecs"));
         //取得预警原点时间,如:statTime=14:01分,30分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
         return TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, config.getInteger("intervalMins"));
     }
