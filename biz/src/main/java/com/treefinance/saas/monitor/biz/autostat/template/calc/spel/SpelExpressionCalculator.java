@@ -104,14 +104,9 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         } finally {
             destroyContext(AsConstants.EXPRESSION);
             destroyContext(AsConstants.DATA);
-//            if (logger.isDebugEnabled()) {
-//                logger.debug(" spel calculate :  expressionId={}, expression={} result={}, dataMap={}, statTemplate={}",
-//                        expressionId,
-//                        expression,
-//                        value,
-//                        JSON.toJSONString(dataMap),
-//                        statTemplate.getTemplateCode());
-//            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("spel calculate :  expressionId={}, expression={} result={}, dataMap={}, statTemplate={}", expressionId, expression, value, JSON.toJSONString(dataMap), statTemplate.getTemplateCode());
+            }
         }
         return value;
     }
