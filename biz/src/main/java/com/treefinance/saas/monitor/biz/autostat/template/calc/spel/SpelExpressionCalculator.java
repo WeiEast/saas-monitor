@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.autostat.template.calc.spel;
 import com.alibaba.fastjson.JSON;
 import com.datatrees.toolkits.util.other.DataUtils;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.ExpressionCalculator;
@@ -22,9 +23,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -91,7 +90,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
 
             context.registerFunction("count", this.getClass().getDeclaredMethod("count", Object.class));
             context.registerFunction("distinct", this.getClass().getDeclaredMethod("distinct", Object.class));
-            context.registerFunction("exists", this.getClass().getDeclaredMethod("exists", Object.class));
+            context.registerFunction("exists", this.getClass().getDeclaredMethod("exists", Object[].class));
             context.registerFunction("day", this.getClass().getDeclaredMethod("day", Long.class));
 
             SpelExpression spelExpression = (SpelExpression) parser.parseExpression(expression);
@@ -155,11 +154,11 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
     /**
      * 是否存在
      *
-     * @param object
+     * @param objects
      * @return
      */
-    public static boolean exists(Object object) {
-        if (object == null) {
+    public static boolean exists(Object... objects) {
+        if (objects == null || objects.length <= 0) {
             return false;
         }
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
@@ -167,17 +166,17 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
 
         Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
-        String redisKey = Joiner.on(":").useForNull("null").join(group, "exists", expressionId);
+        List<Object> keys = Lists.newArrayList(group, "exists", expressionId);
+        keys.addAll(Arrays.asList(objects));
+        String redisKey = Joiner.on(":").useForNull("null").join(keys);
 
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
-        String value = object.toString();
-        if (redisTemplate.boundSetOps(redisKey).isMember(value)) {
-            logger.info("exists : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey, value);
+        if (Boolean.FALSE.equals(redisTemplate.boundValueOps(redisKey).setIfAbsent("1"))) {
+            logger.info("exists : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey);
             return true;
         }
-        redisTemplate.boundSetOps(redisKey).add(value);
-        redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
-        logger.info("exists : result=false, expressionId={},redisKey={},value={}", expressionId, redisKey, value);
+        redisTemplate.boundValueOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
+        logger.info("exists : result=false, expressionId={},redisKey={},value={}", expressionId, redisKey);
         return false;
     }
 
@@ -197,7 +196,8 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NoSuchMethodException {
+        System.out.println(SpelExpressionCalculator.class.getDeclaredMethod("exists", Object[].class));
         System.out.println(DateFormatUtils.format(1517403542000L, "yyyy-MM-dd HH:mm:ss"));
         String json = "{\"appId\":\"QATestabcdefghQA\",\"bizType\":3,\"completeTime\":1516959226000,\"monitorType\":\"task\",\"status\":1,\"stepCode\":\"\",\"taskId\":141595882901499904,\"uniqueId\":\"test\"}";
         Map<String, Object> map = JSON.parseObject(json);
