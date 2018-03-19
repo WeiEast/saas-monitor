@@ -44,8 +44,8 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
 
 
     @Override
-    public String getKey(ETaskStatDataType type, Date baseTime) {
-        return EmailMonitorKeyHelper.genEmailAllKey(baseTime, "virtual_total_stat_appId", type);
+    public String getKey(ETaskStatDataType type, Date baseTime, String alarmType) {
+        return EmailMonitorKeyHelper.genEmailAllKey(baseTime, "virtual_total_stat_appId", type, alarmType);
     }
 
     @Override
