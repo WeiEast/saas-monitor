@@ -35,6 +35,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.ALL_EMAIL;
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.GROUP_EMAIL;
+
 /**
  * 邮箱预警服务类的模板类
  *
@@ -67,7 +70,7 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
         //获取时间
         Date baseTime = getBaseTime(now, JSON.parseObject(JSON.toJSONString(configDTO)));
         //是否预警过?
-        String alarmTimeKey = getKey(type, baseTime);
+        String alarmTimeKey = getKey(type, baseTime,ALL_EMAIL.equals(emails[0])?ALL_EMAIL:GROUP_EMAIL);
         if (ifAlarmed(baseTime, alarmTimeKey)) {
             logger.info("邮箱监控,预警定时任务执行jobTime={},baseTime={},statType={},alarmType={}已预警,不再预警",
                     MonitorDateUtils.format(baseTime), JSON.toJSONString(type), configDTO.getAlarmType());
@@ -162,9 +165,10 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
      *
      * @param type     统计类型
      * @param baseTime 任务时间
+     * @param alarmType all or group
      * @return redis key
      */
-    protected abstract String getKey(ETaskStatDataType type, Date baseTime);
+    protected abstract String getKey(ETaskStatDataType type, Date baseTime, String alarmType);
 
     /**
      * 获取预警信息 的列表
