@@ -433,7 +433,7 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
      */
     private void determineLevel(EmailAlarmMsgDTO msg, BigDecimal value) {
 
-        boolean isAll = AlarmConstants.ALL_EMAIL.equals(msg.getEmail());
+        boolean isAll = "邮箱大盘".equals(msg.getEmail());
 
         BigDecimal warningUpper = isAll ? BigDecimal.valueOf(emailAlarmConfig.getAllWarnning()) : BigDecimal.valueOf
                 (emailAlarmConfig.getGroupWarning());
