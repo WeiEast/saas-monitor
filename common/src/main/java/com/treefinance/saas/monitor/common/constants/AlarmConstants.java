@@ -23,6 +23,7 @@ public interface AlarmConstants {
 
     /**所有邮箱类型*/
     String ALL_EMAIL = "virtual_total_stat_email";
-
+    /**分邮箱类型*/
+    String GROUP_EMAIL = "virtual_group_stat_email";
 
 }

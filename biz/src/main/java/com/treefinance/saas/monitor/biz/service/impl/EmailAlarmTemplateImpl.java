@@ -44,8 +44,8 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
 
 
     @Override
-    public String getKey(ETaskStatDataType type, Date baseTime) {
-        return EmailMonitorKeyHelper.genEmailAllKey(baseTime, "virtual_total_stat_appId", type);
+    public String getKey(ETaskStatDataType type, Date baseTime, String alarmType) {
+        return EmailMonitorKeyHelper.genEmailAllKey(baseTime, "virtual_total_stat_appId", type, alarmType);
     }
 
     @Override
@@ -433,7 +433,7 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
      */
     private void determineLevel(EmailAlarmMsgDTO msg, BigDecimal value) {
 
-        boolean isAll = AlarmConstants.ALL_EMAIL.equals(msg.getEmail());
+        boolean isAll = "邮箱大盘".equals(msg.getEmail());
 
         BigDecimal warningUpper = isAll ? BigDecimal.valueOf(emailAlarmConfig.getAllWarnning()) : BigDecimal.valueOf
                 (emailAlarmConfig.getGroupWarning());
