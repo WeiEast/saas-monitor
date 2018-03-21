@@ -183,6 +183,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
 
     /**
      * 包含
+     *
      * @param key
      * @param value
      * @return
@@ -196,7 +197,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
 
         Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
-        List<Object> keys = Lists.newArrayList(group, "contains", expressionId);
+        List<Object> keys = Lists.newArrayList(group, "contains", expressionId, key);
         String redisKey = Joiner.on(":").useForNull("null").join(keys);
 
         String _value = (value == null ? "null" : value.toString());
@@ -213,6 +214,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
 
     /**
      * 包含设定
+     *
      * @param key
      * @param value
      * @return
@@ -226,7 +228,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
 
         Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
-        List<Object> keys = Lists.newArrayList(group, "contains", expressionId);
+        List<Object> keys = Lists.newArrayList(group, "contains", expressionId, key);
         String redisKey = Joiner.on(":").useForNull("null").join(keys);
 
         String _value = (value == null ? "null" : value.toString());
