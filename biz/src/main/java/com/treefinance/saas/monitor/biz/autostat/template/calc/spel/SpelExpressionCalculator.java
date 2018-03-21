@@ -92,6 +92,8 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             context.registerFunction("distinct", this.getClass().getDeclaredMethod("distinct", Object.class));
             context.registerFunction("exists", this.getClass().getDeclaredMethod("exists", Object[].class));
             context.registerFunction("day", this.getClass().getDeclaredMethod("day", Long.class));
+            context.registerFunction("day", this.getClass().getDeclaredMethod("contains", String.class, Object.class));
+            context.registerFunction("day", this.getClass().getDeclaredMethod("containsSet", String.class, Object.class));
 
             SpelExpression spelExpression = (SpelExpression) parser.parseExpression(expression);
             spelExpression.setEvaluationContext(context);
@@ -181,7 +183,6 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
     }
 
 
-
     /**
      * 包含
      *
@@ -231,8 +232,6 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         logger.info("containsSet : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey);
         return true;
     }
-
-
 
 
     /**
