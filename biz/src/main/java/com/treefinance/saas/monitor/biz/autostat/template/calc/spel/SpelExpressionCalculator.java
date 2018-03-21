@@ -181,6 +181,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
     }
 
 
+
     /**
      * 包含
      *
@@ -192,9 +193,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         if (key == null || value == null) {
             return false;
         }
-        StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
-        long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
 
         Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
         List<Object> keys = Lists.newArrayList(group, "contains", expressionId, key);
@@ -207,7 +206,6 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             logger.info("contains : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey);
             return true;
         }
-        redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
         logger.info("contains : result=false, expressionId={},redisKey={},value={}", expressionId, redisKey);
         return false;
     }
@@ -219,9 +217,9 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
      * @param value
      * @return
      */
-    public static boolean containsAndSet(String key, Object value) {
+    public static boolean containsSet(String key, Object value) {
         if (key == null || value == null) {
-            return false;
+            return true;
         }
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
@@ -234,15 +232,13 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         String _value = (value == null ? "null" : value.toString());
 
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
-        if (Boolean.TRUE.equals(redisTemplate.boundSetOps(redisKey).isMember(_value))) {
-            logger.info("containsAndSet : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey);
-            return true;
-        }
         redisTemplate.boundSetOps(redisKey).add(_value);
         redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
-        logger.info("containsAndSet : result=false, expressionId={},redisKey={},value={}", expressionId, redisKey);
-        return false;
+        logger.info("containsSet : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey);
+        return true;
     }
+
+
 
 
     /**
