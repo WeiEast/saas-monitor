@@ -190,9 +190,6 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
      * @return
      */
     public static boolean contains(String key, Object value) {
-        if (key == null || value == null) {
-            return false;
-        }
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
 
         Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
@@ -218,9 +215,6 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
      * @return
      */
     public static boolean containsSet(String key, Object value) {
-        if (key == null || value == null) {
-            return true;
-        }
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
         long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
