@@ -1,7 +1,6 @@
 package com.treefinance.saas.monitor.biz.autostat.template.calc.spel;
 
 import com.alibaba.fastjson.JSON;
-import com.datatrees.toolkits.util.other.DataUtils;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
@@ -14,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -22,7 +20,6 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -202,19 +199,63 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
     }
 
 
-    public static void main(String[] args) {
-        System.out.println(DateFormatUtils.format(1517403542000L, "yyyy-MM-dd HH:mm:ss"));
-        String json = "{\"appId\":\"QATestabcdefghQA\",\"bizType\":3,\"completeTime\":1516959226000,\"monitorType\":\"task\",\"status\":1,\"stepCode\":\"\",\"taskId\":141595882901499904,\"uniqueId\":\"test\"}";
-        Map<String, Object> map = JSON.parseObject(json);
-        SpelExpressionCalculator calculator = new SpelExpressionCalculator();
-        System.out.println(calculator.calculate(1L, "#distinct(#uniqueId)", map));
+    public static void main(String[] args) throws Exception {
+//        System.out.println(DateFormatUtils.format(1517403542000L, "yyyy-MM-dd HH:mm:ss"));
+//        String json = "{\"appId\":\"QATestabcdefghQA\",\"bizType\":3,\"completeTime\":1516959226000,\"monitorType\":\"task\",\"status\":1,\"stepCode\":\"\",\"taskId\":141595882901499904,\"uniqueId\":\"test\"}";
+//        Map<String, Object> map = JSON.parseObject(json);
+//        SpelExpressionCalculator calculator = new SpelExpressionCalculator();
+////        System.out.println(calculator.calculate(1L, "#distinct(#uniqueId)", map));
+//
+//        //
+//        json = "{\"accountNo\":\"1$zcR5gBUG1c83qEjS4spSxJAAAAwA\",\"appId\":\"QATestabcdefghQA\",\"bizType\":2,\"createTime\":1517403542000,\"id\":143459355679813632,\"lastUpdateTime\":1517403542000,\"monitorType\":\"task_ecommerce\",\"status\":2,\"taskAttributes\":{\"idCard\":\"1$==QAG4qCG6YqbZ5B7x4jZAAAYTdnqCA1U33ohkj8YTtIGEAAAAwA\",\"mobile\":\"1$h1F8RLAXKjQ/jJTw4YvIjQAAAAwA\",\"name\":\"1$uTiLQUhWyEEnvx/Qv3uilMAAAAwA\"},\"taskSteps\":[{\"stepCode\":\"create\",\"stepIndex\":1,\"stepName\":\"创建任务\"},{\"stepCode\":\"login\",\"stepIndex\":3,\"stepName\":\"登录\"},{\"stepCode\":\"crawl\",\"stepIndex\":4,\"stepName\":\"抓取\"},{\"stepCode\":\"process\",\"stepIndex\":5,\"stepName\":\"洗数\"}],\"uniqueId\":\"test\",\"webSite\":\"taobao.com\"}";
+//        map = JSON.parseObject(json);
+//        System.out.println(calculator.calculate(1L, "(#taskSteps.?[#this[stepCode] == \"create\"]).size()>0?1:0", map));
+//        System.out.println(calculator.calculate(1L, "\"virtual_total_stat_appId\"", map));
+//        System.out.println(calculator.calculate(1L, "#day(#createTime)", map));
 
-        //
-        json = "{\"accountNo\":\"1$zcR5gBUG1c83qEjS4spSxJAAAAwA\",\"appId\":\"QATestabcdefghQA\",\"bizType\":2,\"createTime\":1517403542000,\"id\":143459355679813632,\"lastUpdateTime\":1517403542000,\"monitorType\":\"task_ecommerce\",\"status\":2,\"taskAttributes\":{\"idCard\":\"1$==QAG4qCG6YqbZ5B7x4jZAAAYTdnqCA1U33ohkj8YTtIGEAAAAwA\",\"mobile\":\"1$h1F8RLAXKjQ/jJTw4YvIjQAAAAwA\",\"name\":\"1$uTiLQUhWyEEnvx/Qv3uilMAAAAwA\"},\"taskSteps\":[{\"stepCode\":\"create\",\"stepIndex\":1,\"stepName\":\"创建任务\"},{\"stepCode\":\"login\",\"stepIndex\":3,\"stepName\":\"登录\"},{\"stepCode\":\"crawl\",\"stepIndex\":4,\"stepName\":\"抓取\"},{\"stepCode\":\"process\",\"stepIndex\":5,\"stepName\":\"洗数\"}],\"uniqueId\":\"test\",\"webSite\":\"taobao.com\"}";
-        map = JSON.parseObject(json);
-        System.out.println(calculator.calculate(1L, "(#taskSteps.?[#this[stepCode] == \"create\"]).size()>0?1:0", map));
-        System.out.println(calculator.calculate(1L, "\"virtual_total_stat_appId\"", map));
-        System.out.println(calculator.calculate(1L, "#day(#createTime)", map));
+        String expression = "#attributes[callbackMsg]!=null?\"回调总数\":null";
+
+        String json = "{\n" +
+                "    \"accountNo\":\"aaa@qq.com\",\n" +
+                "    \"appId\":\"QATestabcdefghQA\",\n" +
+                "    \"attributes\":{\n" +
+                "        \"callbackHttpCode\":200,\n" +
+                "        \"callbackCode\":200,\n" +
+                "        \"callbackMsg\":\"回调成功\"\n" +
+                "    },\n" +
+                "    \"bizType\":3,\n" +
+                "    \"completeTime\":1520857590063,\n" +
+                "    \"monitorType\":\"task\",\n" +
+                "    \"status\":2,\n" +
+                "    \"stepCode\":\"\",\n" +
+                "    \"taskId\":141595882901499900,\n" +
+                "    \"uniqueId\":\"test\",\n" +
+                "    \"webSite\":\"qq.com\"\n" +
+                "}";
+
+        String json2 = "{\n" +
+                "    \"accountNo\":\"aaa@qq.com\",\n" +
+                "    \"appId\":\"QATestabcdefghQA\",\n" +
+                "    \"attributes\":{},\n" +
+                "    \"bizType\":3,\n" +
+                "    \"completeTime\":1520857590063,\n" +
+                "    \"monitorType\":\"task\",\n" +
+                "    \"status\":2,\n" +
+                "    \"stepCode\":\"\",\n" +
+                "    \"taskId\":141595882901499900,\n" +
+                "    \"uniqueId\":\"test\",\n" +
+                "    \"webSite\":\"qq.com\"\n" +
+                "}";
+        Map<String, Object> map = JSON.parseObject(json2);
+        StandardEvaluationContext context = new StandardEvaluationContext();
+        map.keySet().forEach(key -> context.setVariable(key, map.get(key)));
+
+        ExpressionParser parser = new SpelExpressionParser();
+        SpelExpression exp = (SpelExpression) parser.parseExpression(expression);
+        exp.setEvaluationContext(context);
+
+        Object message = exp.getValue();
+        System.out.println(message);
     }
 
 }
