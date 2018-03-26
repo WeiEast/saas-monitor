@@ -227,25 +227,15 @@
             <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
         <!--</table>-->
 
-        <table tableName="as_stat_callback" domainObjectName="AsStatCallback"
-               enableSelectPaginationByExample="true"
-               enableInsertOrUpdateBySelective="true"
-               enableBatchInsert="true"
-               enableBatchUpdateByPrimaryKey="true"
-               enableBatchUpdateByPrimaryKeySelective="true">
-            <property name="useActualColumnNames" value="true"/>
-            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
-        </table>
-
-        <table tableName="as_stat_day_callback" domainObjectName="AsStatDayCallback"
-               enableSelectPaginationByExample="true"
-               enableInsertOrUpdateBySelective="true"
-               enableBatchInsert="true"
-               enableBatchUpdateByPrimaryKey="true"
-               enableBatchUpdateByPrimaryKeySelective="true">
-            <property name="useActualColumnNames" value="true"/>
-            <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
-        </table>
+        <!--<table tableName="operator_stat_access" domainObjectName="OperatorStatAccess"-->
+               <!--enableSelectPaginationByExample="true"-->
+               <!--enableInsertOrUpdateBySelective="true"-->
+               <!--enableBatchInsert="true"-->
+               <!--enableBatchUpdateByPrimaryKey="true"-->
+               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+            <!--<property name="useActualColumnNames" value="true"/>-->
+            <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
+        <!--</table>-->
 
         <!--<table tableName="as_stat_item" domainObjectName="StatItem"-->
                <!--enableSelectPaginationByExample="true"-->
@@ -266,6 +256,28 @@
             <!--<property name="useActualColumnNames" value="true"/>-->
             <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
         <!--</table>-->
+
+        <table tableName="email_stat_access" domainObjectName="EmailStatAccess"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+        <table tableName="email_stat_day_access" domainObjectName="EmailStatDayAccess"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="Id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+
 
     </context>
 

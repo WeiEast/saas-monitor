@@ -68,7 +68,7 @@
 			<dependency>
 				<groupId>com.treefinance.saas.monitor</groupId>
 				<artifactId>monitor-facade</artifactId>
-				<version>1.0.2-SNAPSHOT</version>
+				<version>1.0.5-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>

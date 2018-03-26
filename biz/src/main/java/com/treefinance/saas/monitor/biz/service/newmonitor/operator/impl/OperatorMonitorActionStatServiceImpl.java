@@ -8,6 +8,7 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.newmonitor.operator.OperatorMonitorActionStatService;
 import com.treefinance.saas.monitor.biz.service.newmonitor.operator.TaskOperatorMonitorMessageProcessor;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -81,7 +82,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         String configStr = diamondConfig.getOperatorMonitorAlarmConfig();
         List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
         for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
-            if (StringUtils.equals(TaskOperatorMonitorKeyHelper.VIRTUAL_TOTAL_STAT_APP_ID, configDTO.getAppId())
+            if (StringUtils.equals(AlarmConstants.VIRTUAL_TOTAL_STAT_APP_ID, configDTO.getAppId())
                     && configDTO.getAlarmType() == 2) {
                 config = configDTO;
             }
@@ -184,7 +185,7 @@ public class OperatorMonitorActionStatServiceImpl implements OperatorMonitorActi
         String configStr = diamondConfig.getOperatorMonitorAlarmConfig();
         List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
         for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
-            if (StringUtils.equals(TaskOperatorMonitorKeyHelper.VIRTUAL_TOTAL_STAT_APP_ID, configDTO.getAppId())
+            if (StringUtils.equals(AlarmConstants.VIRTUAL_TOTAL_STAT_APP_ID, configDTO.getAppId())
                     && configDTO.getAlarmType() == 1) {
                 config = configDTO;
             }
