@@ -18,6 +18,7 @@ import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
 import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.OperatorAllStatAccessMapper;
@@ -41,7 +42,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.treefinance.saas.monitor.common.domain.Constants.SWITCH_ON;
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
+
 
 /**
  * Created by haojiahong on 2017/11/13.
@@ -160,13 +162,13 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         dataDTO.setCrawlSuccessCount(crawlSuccessCount);
         dataDTO.setProcessSuccessCount(processSuccessCount);
         dataDTO.setCallbackSuccessCount(callbackSuccessCount);
-        dataDTO.setConfirmMobileConversionRate(calcRate(confirmMobileCount, entryCount));
-        dataDTO.setLoginConversionRate(calcRate(startLoginCount, confirmMobileCount));
-        dataDTO.setLoginSuccessRate(calcRate(loginSuccessCount, startLoginCount));
-        dataDTO.setCrawlSuccessRate(calcRate(crawlSuccessCount, loginSuccessCount));
-        dataDTO.setProcessSuccessRate(calcRate(processSuccessCount, crawlSuccessCount));
-        dataDTO.setCallbackSuccessRate(calcRate(callbackSuccessCount, processSuccessCount));
-        dataDTO.setWholeConversionRate(calcRate(callbackSuccessCount, entryCount));
+        dataDTO.setConfirmMobileConversionRate(StatisticCalcUtil.calcRate(confirmMobileCount, entryCount));
+        dataDTO.setLoginConversionRate(StatisticCalcUtil.calcRate(startLoginCount, confirmMobileCount));
+        dataDTO.setLoginSuccessRate(StatisticCalcUtil.calcRate(loginSuccessCount, startLoginCount));
+        dataDTO.setCrawlSuccessRate(StatisticCalcUtil.calcRate(crawlSuccessCount, loginSuccessCount));
+        dataDTO.setProcessSuccessRate(StatisticCalcUtil.calcRate(processSuccessCount, crawlSuccessCount));
+        dataDTO.setCallbackSuccessRate(StatisticCalcUtil.calcRate(callbackSuccessCount, processSuccessCount));
+        dataDTO.setWholeConversionRate(StatisticCalcUtil.calcRate(callbackSuccessCount, entryCount));
         return dataDTO;
     }
 
@@ -679,19 +681,4 @@ public class OperatorMonitorAllAlarmServiceImpl implements OperatorMonitorAllAla
         return compareDto;
     }
 
-    /**
-     * 计算比率
-     *
-     * @param a 分子
-     * @param b 分母
-     * @return
-     */
-    private BigDecimal calcRate(Integer a, Integer b) {
-        if (Integer.valueOf(0).compareTo(b) == 0) {
-            return BigDecimal.ZERO;
-        }
-        return BigDecimal.valueOf(a, 2)
-                .multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(b, 2), 2, BigDecimal.ROUND_HALF_UP);
-    }
 }

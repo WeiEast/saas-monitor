@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @DResource
 public class OperatorMonitorConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(IvrConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(OperatorMonitorConfig.class);
 
     /**
      * 新增的 对运营商监控的ivr开关

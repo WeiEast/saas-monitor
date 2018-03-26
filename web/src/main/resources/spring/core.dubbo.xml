@@ -25,6 +25,11 @@
                    interface="com.treefinance.saas.monitor.facade.service.stat.OperatorStatAccessFacade"
                    version="1.0.0"/>
     <dubbo:service ref="mailFacade" interface="com.treefinance.saas.monitor.facade.service.MailFacade" version="1.0.0"/>
+
+    <dubbo:service ref="emailStatAccessFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.stat.EmailStatAccessFacade"
+                   version="1.0.0"/>
+
     <dubbo:service ref="ecommerceFacade" interface="com.treefinance.saas.monitor.facade.service.EcommerceFacade"
                    version="1.0.0"/>
     <dubbo:service ref="operatorFacade" interface="com.treefinance.saas.monitor.facade.service.OperatorFacade"

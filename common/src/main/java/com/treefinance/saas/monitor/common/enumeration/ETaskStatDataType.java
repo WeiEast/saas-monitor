@@ -31,4 +31,13 @@ public enum ETaskStatDataType {
         this.text = text;
     }
 
+    public static ETaskStatDataType getByValue(int code){
+        for(ETaskStatDataType type :values()){
+            if(type.code == code){
+                return type;
+            }
+        }
+        return null;
+    }
+
 }

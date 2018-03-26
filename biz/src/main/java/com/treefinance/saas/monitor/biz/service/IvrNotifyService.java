@@ -15,7 +15,6 @@ import com.treefinance.saas.monitor.common.utils.HttpClientUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -32,6 +31,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
 
 /**
  * Created by yh-treefinance on 2017/12/6.
@@ -53,7 +54,7 @@ public class IvrNotifyService {
      * 通知ivr
      */
     public void notifyIvr(EAlarmLevel alarmLevel, EAlarmType type, String alarmRule) {
-        if (!"on".equalsIgnoreCase(ivrConfig.getIvrSwitch())) {
+        if (!SWITCH_ON.equalsIgnoreCase(ivrConfig.getIvrSwitch())) {
             logger.info("ivr 服务开关关闭...{}", JSON.toJSONString(ivrConfig));
             return;
         }

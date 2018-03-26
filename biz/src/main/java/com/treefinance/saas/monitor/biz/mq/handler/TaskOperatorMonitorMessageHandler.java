@@ -10,6 +10,7 @@ import com.treefinance.saas.grapserver.facade.model.enums.ETaskOperatorMonitorSt
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.newmonitor.operator.OperatorMonitorActionStatService;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
 
             ETaskOperatorMonitorStatus status = ETaskOperatorMonitorStatus.getMonitorStats(message.getStatus());
             TaskOperatorMonitorMessage virtualTotalMessage = DataConverterUtils.convert(message, TaskOperatorMonitorMessage.class);
-            virtualTotalMessage.setAppId(TaskOperatorMonitorKeyHelper.VIRTUAL_TOTAL_STAT_APP_ID);
+            virtualTotalMessage.setAppId(AlarmConstants.VIRTUAL_TOTAL_STAT_APP_ID);
             virtualTotalMessage.setUniqueId(Joiner.on(":").join(message.getAppId(), message.getUniqueId()));
             List<TaskOperatorMonitorMessage> list = Lists.newArrayList(message, virtualTotalMessage);
             for (TaskOperatorMonitorMessage msg : list) {

@@ -12,13 +12,14 @@ import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
-import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
@@ -40,7 +41,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.treefinance.saas.monitor.common.domain.Constants.SWITCH_ON;
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
 import static java.util.stream.Collectors.groupingBy;
 
 /**
@@ -169,11 +170,11 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             data.setCrawlSuccessCount(crawlSuccessCount);
             data.setProcessSuccessCount(processSuccessCount);
             data.setCallbackSuccessCount(callbackSuccessCount);
-            data.setLoginConversionRate(calcRate(startLoginCount, confirmMobileCount));
-            data.setLoginSuccessRate(calcRate(loginSuccessCount, startLoginCount));
-            data.setCrawlSuccessRate(calcRate(crawlSuccessCount, loginSuccessCount));
-            data.setProcessSuccessRate(calcRate(processSuccessCount, crawlSuccessCount));
-            data.setCallbackSuccessRate(calcRate(callbackSuccessCount, processSuccessCount));
+            data.setLoginConversionRate(StatisticCalcUtil.calcRate(startLoginCount, confirmMobileCount));
+            data.setLoginSuccessRate(StatisticCalcUtil.calcRate(loginSuccessCount, startLoginCount));
+            data.setCrawlSuccessRate(StatisticCalcUtil.calcRate(crawlSuccessCount, loginSuccessCount));
+            data.setProcessSuccessRate(StatisticCalcUtil.calcRate(processSuccessCount, crawlSuccessCount));
+            data.setCallbackSuccessRate(StatisticCalcUtil.calcRate(callbackSuccessCount, processSuccessCount));
             dataList.add(data);
         }
         return DataConverterUtils.convert(dataList, OperatorStatAccessDTO.class);
@@ -684,19 +685,4 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         return true;
     }
 
-    /**
-     * 计算比率
-     *
-     * @param a 分子
-     * @param b 分母
-     * @return
-     */
-    private BigDecimal calcRate(Integer a, Integer b) {
-        if (Integer.valueOf(0).compareTo(b) == 0) {
-            return BigDecimal.ZERO;
-        }
-        return BigDecimal.valueOf(a, 2)
-                .multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(b, 2), 2, BigDecimal.ROUND_HALF_UP);
-    }
 }

@@ -108,11 +108,15 @@ public class MybatisService {
                 }
             }
         }
+        int result = -1;
+        List<DbColumn> dbColumns = null;
+        List<String> columnNames = null;
+        Map<String, Object> paramsMap = Maps.newHashMap();
         try {
             lock.lock();
             logger.info("lock table for batchInsertOrUpdate: tableName={}", tableName);
-            List<DbColumn> dbColumns = getTableColumns(tableName);
-            List<String> columnNames = dbColumns.stream().map(DbColumn::getActualColumnName).collect(Collectors.toList());
+            dbColumns = getTableColumns(tableName);
+            columnNames = dbColumns.stream().map(DbColumn::getActualColumnName).collect(Collectors.toList());
 
             Set<String> dataKeys = Sets.newHashSet();
             dataList.stream().forEach(map -> dataKeys.addAll(map.keySet()));
@@ -120,9 +124,8 @@ public class MybatisService {
             columnNames.retainAll(dataKeys);
 
             List<Object> rows = Lists.newArrayList();
-            Map<String, Object> paramsMap = Maps.newHashMap();
 
-            int result = -1;
+
             paramsMap.put("tableName", tableName);
             paramsMap.put("columns", columnNames);
             paramsMap.put("rows", rows);
@@ -130,19 +133,40 @@ public class MybatisService {
             for (Map<String, Object> data : dataList) {
                 List<Object> row = Lists.newArrayList();
                 for (String column : columnNames) {
+                    boolean existNullVal = false;
+                    for (String dataKey : data.keySet()) {
+                        if (data.get(dataKey) == null) {
+                            existNullVal = true;
+                            break;
+                        }
+                    }
+                    if (existNullVal) {
+                        logger.info("batchInsertOrUpdate error : exist nulls value , tableName={}, dbColumns={}, paramsMap={}, dataList={}",
+                                tableName, JSON.toJSONString(dbColumns), JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
+                        continue;
+                    }
                     row.add(data.get(column));
                 }
                 rows.add(row);
             }
-            result = autoStatMapper.batchInsertOrUpdate(paramsMap);
-            logger.info("batchInsertOrUpdate : result={}, tableName={}, columnNames={}, paramsMap={}, dataList={}",
-                    result, tableName, JSON.toJSONString(columnNames),
-                    JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
-            return result;
+            if (!rows.isEmpty()) {
+                result = autoStatMapper.batchInsertOrUpdate(paramsMap);
+                logger.info("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
+                        result, tableName, JSON.toJSONString(dbColumns), JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
+            }
+        } catch (Exception e) {
+            logger.error("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
+                    result, tableName, JSON.toJSONString(dbColumns),
+                    JSON.toJSONString(paramsMap), JSON.toJSONString(dataList), e);
+            throw new RuntimeException(e);
         } finally {
+            logger.info("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
+                    result, tableName, JSON.toJSONString(dbColumns),
+                    JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
             lock.unlock();
             logger.info("unlock table for batchInsertOrUpdate: tableName={}", tableName);
         }
+        return result;
     }
 
 
