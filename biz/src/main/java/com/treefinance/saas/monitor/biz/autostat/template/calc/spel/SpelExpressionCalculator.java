@@ -21,7 +21,10 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -246,8 +249,8 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         return date.getTime();
     }
 
-
     public static void main(String[] args) throws Exception {
+//        System.out.println(SpelExpressionCalculator.class.getDeclaredMethod("exists", Object[].class));
 //        System.out.println(DateFormatUtils.format(1517403542000L, "yyyy-MM-dd HH:mm:ss"));
 //        String json = "{\"appId\":\"QATestabcdefghQA\",\"bizType\":3,\"completeTime\":1516959226000,\"monitorType\":\"task\",\"status\":1,\"stepCode\":\"\",\"taskId\":141595882901499904,\"uniqueId\":\"test\"}";
 //        Map<String, Object> map = JSON.parseObject(json);
@@ -260,6 +263,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
 //        System.out.println(calculator.calculate(1L, "(#taskSteps.?[#this[stepCode] == \"create\"]).size()>0?1:0", map));
 //        System.out.println(calculator.calculate(1L, "\"virtual_total_stat_appId\"", map));
 //        System.out.println(calculator.calculate(1L, "#day(#createTime)", map));
+//        System.out.println(calculator.calculate(1L, "#distinct(#uniqueId)", map));
 
         String expression = "#attributes[callbackMsg]!=null?\"回调总数\":null";
 
