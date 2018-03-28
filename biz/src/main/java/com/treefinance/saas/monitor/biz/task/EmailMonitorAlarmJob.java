@@ -6,6 +6,7 @@ import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.datatrees.toolkits.util.Arrays;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
 import com.treefinance.saas.monitor.biz.service.EmailMonitorAlarmService;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -47,6 +48,12 @@ public class EmailMonitorAlarmJob implements SimpleJob {
 
         try {
             for (EmailMonitorAlarmConfigDTO configDTO : configDTOList) {
+
+                if(!AlarmConstants.SWITCH_ON.equals(configDTO.getAlarmSwitch())){
+                    logger.info(configDTO.getAlarmTypeDesc()+" 邮箱预警开关关闭。。。");
+                    continue;
+                }
+
                 ETaskStatDataType type = ETaskStatDataType.getByValue(configDTO.getAlarmType());
                 List<String> emails = configDTO.getEmails();
                 emailMonitorAlarmService.alarm(now, configDTO, type,emails.toArray(Arrays.newArray(String.class,emails.size())));
