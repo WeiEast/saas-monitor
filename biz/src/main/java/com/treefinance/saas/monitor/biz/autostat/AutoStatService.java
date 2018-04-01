@@ -7,7 +7,6 @@ import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
-import com.dangdang.ddframe.job.lite.spring.api.SpringJobScheduler;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilterContext;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.listener.BasicDataMessageListener;

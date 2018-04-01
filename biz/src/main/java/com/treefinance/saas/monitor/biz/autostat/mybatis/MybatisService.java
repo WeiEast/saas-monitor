@@ -5,24 +5,24 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.model.DbColumn;
+import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.dao.mapper.AutoStatMapper;
 import org.apache.commons.io.IOUtils;
-import org.apache.ibatis.jdbc.SQL;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.util.*;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -37,10 +37,9 @@ public class MybatisService {
 
     @Autowired
     private AutoStatMapper autoStatMapper;
-    /**
-     * conditionMap
-     */
-    private final Map<String, ReentrantLock> lockMap = Maps.newConcurrentMap();
+
+    @Autowired
+    private RedisDao redisDao;
 
     /**
      * 获取表名
@@ -98,62 +97,59 @@ public class MybatisService {
      * @return
      */
     public int batchInsertOrUpdate(String tableName, List<Map<String, Object>> dataList) {
-        // lock by tables 防止并发死锁
-        ReentrantLock lock = lockMap.get(tableName);
-        if (lock == null) {
-            synchronized (this) {
-                if (!lockMap.containsKey(tableName)) {
-                    lock = new ReentrantLock(true);
-                    lockMap.put(tableName, lock);
-                }
-            }
-        }
+        Map<String, Object> lockMap = Maps.newHashMap();
+        List<String> lockKeyList = Lists.newArrayList(AsConstants.REDIS_LOCK_PREFIX, tableName);
+        String lockKey = Joiner.on(":").join(lockKeyList);
         int result = -1;
         List<DbColumn> dbColumns = null;
         List<String> columnNames = null;
         Map<String, Object> paramsMap = Maps.newHashMap();
         try {
-            lock.lock();
-            logger.info("lock table for batchInsertOrUpdate: tableName={}", tableName);
-            dbColumns = getTableColumns(tableName);
-            columnNames = dbColumns.stream().map(DbColumn::getActualColumnName).collect(Collectors.toList());
+            lockMap = redisDao.acquireLock(lockKey, 60 * 1000L, 1000L, 10);
+            if (lockMap != null) {
+                logger.info("lock table for batchInsertOrUpdate: tableName={}", tableName);
+                dbColumns = getTableColumns(tableName);
+                columnNames = dbColumns.stream().map(DbColumn::getActualColumnName).collect(Collectors.toList());
 
-            Set<String> dataKeys = Sets.newHashSet();
-            dataList.stream().forEach(map -> dataKeys.addAll(map.keySet()));
-            // 取交集：仅更新需要字段
-            columnNames.retainAll(dataKeys);
+                Set<String> dataKeys = Sets.newHashSet();
+                dataList.stream().forEach(map -> dataKeys.addAll(map.keySet()));
+                // 取交集：仅更新需要字段
+                columnNames.retainAll(dataKeys);
 
-            List<Object> rows = Lists.newArrayList();
+                List<Object> rows = Lists.newArrayList();
 
+                paramsMap.put("tableName", tableName);
+                paramsMap.put("columns", columnNames);
+                paramsMap.put("rows", rows);
 
-            paramsMap.put("tableName", tableName);
-            paramsMap.put("columns", columnNames);
-            paramsMap.put("rows", rows);
-
-            for (Map<String, Object> data : dataList) {
-                List<Object> row = Lists.newArrayList();
-                for (String column : columnNames) {
-                    boolean existNullVal = false;
-                    for (String dataKey : data.keySet()) {
-                        if (data.get(dataKey) == null) {
-                            existNullVal = true;
-                            break;
+                for (Map<String, Object> data : dataList) {
+                    List<Object> row = Lists.newArrayList();
+                    for (String column : columnNames) {
+                        boolean existNullVal = false;
+                        for (String dataKey : data.keySet()) {
+                            if (data.get(dataKey) == null) {
+                                existNullVal = true;
+                                break;
+                            }
                         }
+                        if (existNullVal) {
+                            logger.info("batchInsertOrUpdate error : exist nulls value , tableName={}, dbColumns={}, paramsMap={}, dataList={}",
+                                    tableName, JSON.toJSONString(dbColumns), JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
+                            continue;
+                        }
+                        row.add(data.get(column));
                     }
-                    if (existNullVal) {
-                        logger.info("batchInsertOrUpdate error : exist nulls value , tableName={}, dbColumns={}, paramsMap={}, dataList={}",
-                                tableName, JSON.toJSONString(dbColumns), JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
-                        continue;
-                    }
-                    row.add(data.get(column));
+                    rows.add(row);
                 }
-                rows.add(row);
+                if (!rows.isEmpty()) {
+                    result = autoStatMapper.batchInsertOrUpdate(paramsMap);
+                    logger.info("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
+                            result, tableName, JSON.toJSONString(dbColumns), JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
+                }
             }
-            if (!rows.isEmpty()) {
-                result = autoStatMapper.batchInsertOrUpdate(paramsMap);
-                logger.info("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
-                        result, tableName, JSON.toJSONString(dbColumns), JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
-            }
+            logger.error("batchInsertOrUpdate:获取分布式锁失败.result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
+                    result, tableName, JSON.toJSONString(dbColumns),
+                    JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
         } catch (Exception e) {
             logger.error("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
                     result, tableName, JSON.toJSONString(dbColumns),
@@ -163,7 +159,7 @@ public class MybatisService {
             logger.info("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
                     result, tableName, JSON.toJSONString(dbColumns),
                     JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
-            lock.unlock();
+            redisDao.releaseLock(lockKey, lockMap, 60 * 1000L);
             logger.info("unlock table for batchInsertOrUpdate: tableName={}", tableName);
         }
         return result;

@@ -60,6 +60,7 @@ public class ElasticSimpleJobServiceImpl implements ElasticSimpleJobService, App
         // 4.bean definition
         List<BeanDefinition> result = new ManagedList<>(2);
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.rootBeanDefinition(SpringJobScheduler.class);
+        // todo  调用init方法,会使作业立马开始调度,导致同时更新多张相同的表,数据库死锁
         beanDefinitionBuilder.setInitMethodName("init");
         beanDefinitionBuilder.addConstructorArgValue(simpleJob);
         beanDefinitionBuilder.addConstructorArgValue(coordinatorRegistryCenter);

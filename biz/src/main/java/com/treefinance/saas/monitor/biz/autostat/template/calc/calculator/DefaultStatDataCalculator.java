@@ -2,10 +2,7 @@ package com.treefinance.saas.monitor.biz.autostat.template.calc.calculator;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.MybatisService;
@@ -224,7 +221,8 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                     redisKey, groupMap, totalMap, JSON.toJSONString(dataList));
         });
         String dataListKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode);
-        redisTemplate.boundSetOps(dataListKey).add(redisMultiMap.keys().toArray(new String[]{}));
+        Multiset<String> keys = redisMultiMap.keys();
+        redisTemplate.boundSetOps(dataListKey).add(keys.toArray(new String[keys.size()]));
         return resultList;
     }
 
@@ -262,7 +260,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         });
         // 移除空数据key
         if (CollectionUtils.isNotEmpty(emptyDataKeys)) {
-            redisTemplate.boundSetOps(dataListKey).remove(emptyDataKeys.toArray(new String[]{}));
+            redisTemplate.boundSetOps(dataListKey).remove(emptyDataKeys.toArray(new String[emptyDataKeys.size()]));
         }
 
         // 二次计算(统计数据来源：0-基础数据，1-统计数据项)
@@ -286,6 +284,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             mybatisService.batchInsertOrUpdate(statTemplate.getDataObject(), resultList);
         }
 
+        //todo 不清除数据的话,刷新db的数据会越来越多吧
 //        // 清除redis数据
 //        redisTemplate.delete(dataKeySet);
         return resultList;
