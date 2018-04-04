@@ -146,10 +146,11 @@ public class MybatisService {
                     logger.info("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
                             result, tableName, JSON.toJSONString(dbColumns), JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
                 }
+            } else {
+                logger.error("batchInsertOrUpdate:获取分布式锁失败.result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
+                        result, tableName, JSON.toJSONString(dbColumns),
+                        JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
             }
-            logger.error("batchInsertOrUpdate:获取分布式锁失败.result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
-                    result, tableName, JSON.toJSONString(dbColumns),
-                    JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
         } catch (Exception e) {
             logger.error("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
                     result, tableName, JSON.toJSONString(dbColumns),

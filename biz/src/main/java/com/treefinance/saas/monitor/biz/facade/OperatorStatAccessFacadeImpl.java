@@ -2,6 +2,8 @@ package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorAllStatAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
@@ -132,9 +134,9 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
         //数据库5分钟一个点,无法用数据库分页,这里手动分页
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
-        List<OperatorStatAccess> changeList = this.changeSumGroupCodeOperatorStatAccess(list, startTime);
+        List<OperatorStatAccessDTO> changeList = this.changeSumGroupCodeOperatorStatAccess(list, startTime);
         changeList = changeList.stream().sorted((o1, o2) -> o2.getConfirmMobileCount().compareTo(o1.getConfirmMobileCount())).collect(Collectors.toList());
-        List<OperatorStatAccess> pageList;
+        List<OperatorStatAccessDTO> pageList;
         int limit = request.getOffset() + request.getPageSize();
         if (limit > changeList.size()) {
             if (request.getOffset() > changeList.size()) {
@@ -145,21 +147,21 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         } else {
             pageList = changeList.subList(request.getOffset(), limit);
         }
-        for (OperatorStatAccess data : pageList) {
+        for (OperatorStatAccessDTO data : pageList) {
             OperatorStatAccessRO ro = DataConverterUtils.convert(data, OperatorStatAccessRO.class);
             result.add(ro);
         }
         return MonitorResultBuilder.pageResult(request, result, changeList.size());
     }
 
-    private List<OperatorStatAccess> changeSumGroupCodeOperatorStatAccess(List<OperatorStatAccess> list, Date startTime) {
+    private List<OperatorStatAccessDTO> changeSumGroupCodeOperatorStatAccess(List<OperatorStatAccess> list, Date startTime) {
         Map<String, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(OperatorStatAccess::getGroupCode));
-        List<OperatorStatAccess> resultList = Lists.newArrayList();
+        List<OperatorStatAccessDTO> resultList = Lists.newArrayList();
         for (Map.Entry<String, List<OperatorStatAccess>> entry : map.entrySet()) {
             if (CollectionUtils.isEmpty(entry.getValue())) {
                 continue;
             }
-            OperatorStatAccess data = new OperatorStatAccess();
+            OperatorStatAccessDTO data = new OperatorStatAccessDTO();
             BeanUtils.copyProperties(entry.getValue().get(0), data);
             data.setDataTime(startTime);
             List<OperatorStatAccess> entryList = entry.getValue();
@@ -245,8 +247,8 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         if (CollectionUtils.isEmpty(list)) {
             return MonitorResultBuilder.build(result);
         }
-        List<OperatorStatAccess> changeList = this.changeIntervalDataTimeOperatorStatAccess(list, request.getIntervalMins());
-        for (OperatorStatAccess data : changeList) {
+        List<OperatorStatAccessDTO> changeList = this.changeIntervalDataTimeOperatorStatAccess(list, request.getIntervalMins());
+        for (OperatorStatAccessDTO data : changeList) {
             OperatorStatAccessRO ro = DataConverterUtils.convert(data, OperatorStatAccessRO.class);
             ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
             result.add(ro);
@@ -256,14 +258,14 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
     }
 
 
-    private List<OperatorStatAccess> changeIntervalDataTimeOperatorStatAccess(List<OperatorStatAccess> list, final Integer intervalMins) {
+    private List<OperatorStatAccessDTO> changeIntervalDataTimeOperatorStatAccess(List<OperatorStatAccess> list, final Integer intervalMins) {
         Map<Date, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
-        List<OperatorStatAccess> resultList = Lists.newArrayList();
+        List<OperatorStatAccessDTO> resultList = Lists.newArrayList();
         for (Map.Entry<Date, List<OperatorStatAccess>> entry : map.entrySet()) {
             if (CollectionUtils.isEmpty(entry.getValue())) {
                 continue;
             }
-            OperatorStatAccess data = new OperatorStatAccess();
+            OperatorStatAccessDTO data = new OperatorStatAccessDTO();
             BeanUtils.copyProperties(entry.getValue().get(0), data);
             data.setDataTime(entry.getKey());
             List<OperatorStatAccess> entryList = entry.getValue();
@@ -363,9 +365,9 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         if (CollectionUtils.isEmpty(list)) {
             return MonitorResultBuilder.build(result);
         }
-        List<OperatorAllStatAccess> changeList = this.changeIntervalDataTimeOperatorAllStatAccess(list, request.getIntervalMins());
+        List<OperatorAllStatAccessDTO> changeList = this.changeIntervalDataTimeOperatorAllStatAccess(list, request.getIntervalMins());
         changeList = changeList.stream().sorted((o1, o2) -> o2.getDataTime().compareTo(o1.getDataTime())).collect(Collectors.toList());
-        for (OperatorAllStatAccess data : changeList) {
+        for (OperatorAllStatAccessDTO data : changeList) {
             OperatorAllStatAccessRO ro = DataConverterUtils.convert(data, OperatorAllStatAccessRO.class);
             ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
             ro.setWholeConversionRate(calcRate(data.getEntryCount(), data.getCallbackSuccessCount()));
@@ -410,14 +412,14 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     }
 
-    private List<OperatorAllStatAccess> changeIntervalDataTimeOperatorAllStatAccess(List<OperatorAllStatAccess> list, final Integer intervalMins) {
+    private List<OperatorAllStatAccessDTO> changeIntervalDataTimeOperatorAllStatAccess(List<OperatorAllStatAccess> list, final Integer intervalMins) {
         Map<Date, List<OperatorAllStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
-        List<OperatorAllStatAccess> resultList = Lists.newArrayList();
+        List<OperatorAllStatAccessDTO> resultList = Lists.newArrayList();
         for (Map.Entry<Date, List<OperatorAllStatAccess>> entry : map.entrySet()) {
             if (CollectionUtils.isEmpty(entry.getValue())) {
                 continue;
             }
-            OperatorAllStatAccess data = new OperatorAllStatAccess();
+            OperatorAllStatAccessDTO data = new OperatorAllStatAccessDTO();
             BeanUtils.copyProperties(entry.getValue().get(0), data);
             data.setDataTime(entry.getKey());
             List<OperatorAllStatAccess> entryList = entry.getValue();

@@ -43,4 +43,14 @@ public class AsConstants {
      * group Index
      */
     public static final String GROUP = "group";
+
+    /**
+     * 设置effectiveTime后人数统计group过滤
+     */
+    public static final String DISTINCT_USER_GROUP = "distinctUserGroup";
+
+    /**
+     * 数据有效期：单位分钟
+     */
+    public static final String EFFECTIVE_TIME = "effectiveTime";
 }

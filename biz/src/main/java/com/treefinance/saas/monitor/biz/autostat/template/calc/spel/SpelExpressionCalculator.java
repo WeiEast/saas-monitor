@@ -75,7 +75,6 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
 
     @Override
     public Object calculate(Long expressionId, String expression, Map<String, Object> dataMap) {
-        long start = System.currentTimeMillis();
         // 初始化
         initContext(AsConstants.EXPRESSION, expression);
         initContext(AsConstants.EXPRESSION_ID, expressionId);
@@ -90,7 +89,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             initContext(AsConstants.DATA, dataMap);
 
             context.registerFunction("count", this.getClass().getDeclaredMethod("count", Object.class));
-            context.registerFunction("distinct", this.getClass().getDeclaredMethod("distinct", Object.class));
+            context.registerFunction("distinct", this.getClass().getDeclaredMethod("distinct", Object[].class));
             context.registerFunction("exists", this.getClass().getDeclaredMethod("exists", Object[].class));
             context.registerFunction("day", this.getClass().getDeclaredMethod("day", Long.class));
             context.registerFunction("contains", this.getClass().getDeclaredMethod("contains", String.class, Object.class));
@@ -106,6 +105,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         } finally {
             destroyContext(AsConstants.EXPRESSION);
             destroyContext(AsConstants.EXPRESSION_ID);
+            destroyContext(AsConstants.GROUP);
             destroyContext(AsConstants.DATA);
             if (logger.isDebugEnabled()) {
                 logger.debug("spel calculate :  expressionId={}, expression={} result={}, dataMap={}, statTemplate={}", expressionId, expression, value, JSON.toJSONString(dataMap), statTemplate.getTemplateCode());
@@ -128,30 +128,35 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
     /**
      * distinct 去重
      *
-     * @param object
+     * @param objects
      * @return
      */
-    public static int distinct(Object object) {
-        if (object == null) {
+    public static int distinct(Object... objects) {
+        if (objects == null || objects.length <= 0) {
             return 0;
         }
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
-        long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        long timeInterval;
+        Object group;
+        if (statTemplate.getEffectiveTime() > 0) {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.DISTINCT_USER_GROUP);
+            timeInterval = statTemplate.getEffectiveTime() * 60 * 1000L;
 
-        Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        } else {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+            timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        }
         String redisKey = Joiner.on(":").useForNull("null").join(group, "distinct", expressionId);
-
-
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
-        String value = object.toString();
-        if (redisTemplate.boundSetOps(redisKey).isMember(value)) {
-            logger.info("distinct : result=0, expressionId={},redisKey={},value={}", expressionId, redisKey, value);
+        String uniqueString = Joiner.on(":").useForNull("null").join(Arrays.asList(objects));
+        if (redisTemplate.boundSetOps(redisKey).isMember(uniqueString)) {
+            logger.info("distinct : result=0, expressionId={},redisKey={},value={}", expressionId, redisKey, uniqueString);
             return 0;
         }
-        redisTemplate.boundSetOps(redisKey).add(value);
+        redisTemplate.boundSetOps(redisKey).add(uniqueString);
         redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
-        logger.info("distinct : result=1, expressionId={},redisKey={},value={}", expressionId, redisKey, value);
+        logger.info("distinct : result=1, expressionId={},redisKey={},value={}", expressionId, redisKey, uniqueString);
         return 1;
     }
 
@@ -167,13 +172,19 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         }
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
-        long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        long timeInterval;
+        Object group;
+        if (statTemplate.getEffectiveTime() > 0) {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.DISTINCT_USER_GROUP);
+            timeInterval = statTemplate.getEffectiveTime() * 60 * 1000L;
 
-        Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        } else {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+            timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        }
+
         List<Object> keys = Lists.newArrayList(group, "exists", expressionId);
-//        keys.addAll(Arrays.asList(objects));
         String redisKey = Joiner.on(":").useForNull("null").join(keys);
-
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         String uniqueString = Joiner.on(":").useForNull("null").join(Arrays.asList(objects));
         if (redisTemplate.boundSetOps(redisKey).isMember(uniqueString)) {
@@ -195,10 +206,17 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
      * @param value
      * @return
      */
+
     public static boolean contains(String key, Object value) {
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
+        StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
+        Object group;
+        if (statTemplate.getEffectiveTime() > 0) {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.DISTINCT_USER_GROUP);
 
-        Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        } else {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        }
         List<Object> keys = Lists.newArrayList(group, "contains", expressionId, key);
         String redisKey = Joiner.on(":").useForNull("null").join(keys);
 
@@ -220,12 +238,20 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
      * @param value
      * @return
      */
+
     public static boolean containsSet(String key, Object value) {
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
-        long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        long timeInterval;
+        Object group;
+        if (statTemplate.getEffectiveTime() > 0) {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.DISTINCT_USER_GROUP);
+            timeInterval = statTemplate.getEffectiveTime() * 60 * 1000L;
 
-        Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        } else {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+            timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        }
         List<Object> keys = Lists.newArrayList(group, "contains", expressionId, key);
         String redisKey = Joiner.on(":").useForNull("null").join(keys);
 

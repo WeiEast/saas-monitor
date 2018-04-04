@@ -18,6 +18,10 @@ public class OperatorStatAccessDTO implements Serializable {
 
     private Byte dataType;
 
+    private Integer userCount;
+
+    private Integer taskCount;
+
     private Integer confirmMobileCount;
 
     private Integer startLoginCount;
@@ -334,5 +338,21 @@ public class OperatorStatAccessDTO implements Serializable {
 
     public void setAppId(String appId) {
         this.appId = appId;
+    }
+
+    public Integer getUserCount() {
+        return userCount;
+    }
+
+    public void setUserCount(Integer userCount) {
+        this.userCount = userCount;
+    }
+
+    public Integer getTaskCount() {
+        return taskCount;
+    }
+
+    public void setTaskCount(Integer taskCount) {
+        this.taskCount = taskCount;
     }
 }
