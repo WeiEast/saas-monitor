@@ -20,7 +20,7 @@ public class OperatorMonitorAlarmConfigDTO implements Serializable {
      */
     private Integer taskTimeoutSecs;
     /**
-     * 此appId是否预警,方便以后开关
+     * 此appId是否预警,方便以后开关(总开关)
      */
     private String alarmSwitch;
     /**

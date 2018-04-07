@@ -8,6 +8,7 @@ import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.ExpressionCalculator;
 import com.treefinance.saas.monitor.biz.autostat.utils.CronUtils;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
@@ -94,6 +96,8 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             context.registerFunction("day", this.getClass().getDeclaredMethod("day", Long.class));
             context.registerFunction("contains", this.getClass().getDeclaredMethod("contains", String.class, Object.class));
             context.registerFunction("containsSet", this.getClass().getDeclaredMethod("containsSet", String.class, Object.class));
+            context.registerFunction("divide", this.getClass().getDeclaredMethod("divide", String.class, String.class, Integer.class));
+            context.registerFunction("subtract", this.getClass().getDeclaredMethod("subtract", String.class, String.class));
 
             SpelExpression spelExpression = (SpelExpression) parser.parseExpression(expression);
             spelExpression.setEvaluationContext(context);
@@ -224,10 +228,10 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
 
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         if (Boolean.TRUE.equals(redisTemplate.boundSetOps(redisKey).isMember(_value))) {
-            logger.info("contains : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey);
+            logger.info("contains : result=true, expressionId={},redisKey={}", expressionId, redisKey);
             return true;
         }
-        logger.info("contains : result=false, expressionId={},redisKey={},value={}", expressionId, redisKey);
+        logger.info("contains : result=false, expressionId={},redisKey={}", expressionId, redisKey);
         return false;
     }
 
@@ -260,7 +264,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         redisTemplate.boundSetOps(redisKey).add(_value);
         redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
-        logger.info("containsSet : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey);
+        logger.info("containsSet : result=true, expressionId={},redisKey={}", expressionId, redisKey);
         return true;
     }
 
@@ -279,6 +283,57 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         return date.getTime();
     }
 
+    /**
+     * 除法
+     *
+     * @param numeratorStr
+     * @param denominatorStr
+     * @param scale          保留小数位数
+     * @return
+     */
+    public static String divide(String numeratorStr, String denominatorStr, Integer scale) {
+        Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
+        BigDecimal result;
+        if (StringUtils.isBlank(numeratorStr) || StringUtils.isBlank(denominatorStr) || Integer.valueOf(denominatorStr) == 0) {
+            result = BigDecimal.valueOf(0, 2);
+            logger.info("divide : result={}, expressionId={},numerator={},denominator={},scale={}",
+                    result, expressionId, numeratorStr, denominatorStr, scale);
+            return result.toString();
+        }
+        Integer numerator = Integer.valueOf(numeratorStr);
+        Integer denominator = Integer.valueOf(denominatorStr);
+        if (scale == null) {
+            scale = 2;
+        }
+        result = BigDecimal.valueOf(numerator)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(denominator), scale, BigDecimal.ROUND_HALF_UP);
+        logger.info("divide : result={}, expressionId={},numerator={},denominator={},scale={}",
+                result, expressionId, numerator, denominator, scale);
+        return result.toString();
+    }
+
+
+    public static String subtract(String aStr, String bStr) {
+        Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
+        if (StringUtils.isBlank(aStr) || StringUtils.isBlank(bStr)) {
+            logger.info("subtract : result=0, expressionId={},a={},b={}",
+                    expressionId, aStr, bStr);
+            return 0 + "";
+        }
+        Integer a = Integer.valueOf(aStr);
+        Integer b = Integer.valueOf(bStr);
+        Integer result = a - b;
+        if (result >= 0) {
+            logger.info("subtract : result={}, expressionId={},a={},b={}",
+                    result, expressionId, aStr, bStr);
+            return result + "";
+        }
+        logger.info("subtract : result=0, expressionId={},a={},b={}",
+                expressionId, aStr, bStr);
+        return 0 + "";
+    }
+
     public static void main(String[] args) throws Exception {
         System.out.println(SpelExpressionCalculator.class.getDeclaredMethod("exists", Object[].class));
         System.out.println(DateFormatUtils.format(1517403542000L, "yyyy-MM-dd HH:mm:ss"));
@@ -289,8 +344,13 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
 
         //
         json = "{\"webSite\":\"china_10010_app\",\"monitorType\":\"task_callback_msg\",\"bizType\":3,\"saasEnv\":\"product\",\"accountNo\":\"4$8ilOHq7Mus2WAcvhEjwgUOCAAAwA\",\"appId\":\"product_JZD7AUYqWogc9U7K\",\"completeTime\":1522123356000,\"taskId\":163256388045922304,\"uniqueId\":\"1002649448\",\"group\":\"saas-monitor:stat:callback-user-time-share:index-1:2018-03-27 12:00:00\"}";
+        json = "{\n" +
+                "\t\"successCount\":\"1\",\n" +
+                "\t\"totalCount\":\"1\",\n" +
+                "\t\"failCount\":\"3\"\n" +
+                "}";
         map = JSON.parseObject(json);
-        System.out.println(calculator.calculate(1L, "(#attributes?:0)!=0?#attributes[callbackMsg]:null", map));
+        System.out.println(calculator.calculate(1L, "#divide(#successCount,#subtract(#totalCount,#failCount),2)", map));
 //        System.out.println(calculator.calculate(1L, "(#taskSteps.?[#this[stepCode] == \"create\"]).size()>0?1:0", map));
 //        System.out.println(calculator.calculate(1L, "\"virtual_total_stat_appId\"", map));
 //        System.out.println(calculator.calculate(1L, "#day(#createTime)", map));
