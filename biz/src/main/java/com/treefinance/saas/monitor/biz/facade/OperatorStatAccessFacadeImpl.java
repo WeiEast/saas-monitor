@@ -44,6 +44,9 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     private final static Logger logger = LoggerFactory.getLogger(OperatorStatAccessFacade.class);
 
+    /**
+     * 所有运营商虚拟groupCode
+     */
     private static final String VIRTUAL_TOTAL_STAT_OPERATOR = "virtual_total_stat_operator";
 
     @Autowired
