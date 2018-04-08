@@ -34,6 +34,8 @@ public class OperatorStatAccessRequest extends PageRequest implements Serializab
      */
     private Integer intervalMins;
 
+    private Byte saasEnv;
+
 
     public Date getDataDate() {
         return dataDate;
@@ -97,5 +99,13 @@ public class OperatorStatAccessRequest extends PageRequest implements Serializab
 
     public void setIntervalMins(Integer intervalMins) {
         this.intervalMins = intervalMins;
+    }
+
+    public Byte getSaasEnv() {
+        return saasEnv;
+    }
+
+    public void setSaasEnv(Byte saasEnv) {
+        this.saasEnv = saasEnv;
     }
 }

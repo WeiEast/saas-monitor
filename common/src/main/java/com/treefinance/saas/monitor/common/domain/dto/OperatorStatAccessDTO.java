@@ -22,6 +22,8 @@ public class OperatorStatAccessDTO implements Serializable {
 
     private Integer taskCount;
 
+    private Integer entryCount;
+
     private Integer confirmMobileCount;
 
     private Integer startLoginCount;
@@ -33,6 +35,8 @@ public class OperatorStatAccessDTO implements Serializable {
     private Integer processSuccessCount;
 
     private Integer callbackSuccessCount;
+
+    private BigDecimal confirmMobileConversionRate;
 
     private BigDecimal loginConversionRate;
 
@@ -71,6 +75,7 @@ public class OperatorStatAccessDTO implements Serializable {
 
     private BigDecimal previousCallbackSuccessAvgCount;
 
+
     /**
      * 前n天的相同时刻登录转化率平均值
      */
@@ -99,6 +104,22 @@ public class OperatorStatAccessDTO implements Serializable {
     private Date lastUpdateTime;
 
     private static final long serialVersionUID = 1L;
+
+    public BigDecimal getConfirmMobileConversionRate() {
+        return confirmMobileConversionRate;
+    }
+
+    public void setConfirmMobileConversionRate(BigDecimal confirmMobileConversionRate) {
+        this.confirmMobileConversionRate = confirmMobileConversionRate;
+    }
+
+    public Integer getEntryCount() {
+        return entryCount;
+    }
+
+    public void setEntryCount(Integer entryCount) {
+        this.entryCount = entryCount;
+    }
 
     public BigDecimal getLoginSuccessRate() {
         return loginSuccessRate;

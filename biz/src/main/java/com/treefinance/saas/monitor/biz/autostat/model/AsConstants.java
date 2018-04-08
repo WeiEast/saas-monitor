@@ -49,8 +49,4 @@ public class AsConstants {
      */
     public static final String DISTINCT_USER_GROUP = "distinctUserGroup";
 
-    /**
-     * 数据有效期：单位分钟
-     */
-    public static final String EFFECTIVE_TIME = "effectiveTime";
 }
