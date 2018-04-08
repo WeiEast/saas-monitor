@@ -87,8 +87,12 @@ public class StatAccessServiceImpl implements StatAccessService {
     public MonitorResult<List<MerchantStatDayAccessRO>> queryAllDayAccessListNoPage(MerchantStatDayAccessRequest request) {
         MerchantStatDayAccessCriteria criteria = new MerchantStatDayAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
-        criteria.createCriteria().andDataTypeEqualTo(request.getDataType())
+        MerchantStatDayAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        if (request.getSaasEnv() != null) {
+            innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
+        }
         List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
         List<MerchantStatDayAccessRO> data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
         return MonitorResultBuilder.build(data);
@@ -110,8 +114,12 @@ public class StatAccessServiceImpl implements StatAccessService {
     public MonitorResult<List<MerchantStatAccessRO>> queryAllAccessList(MerchantStatAccessRequest request) {
         MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
         criteria.setOrderByClause("dataTime asc");
-        criteria.createCriteria().andDataTypeEqualTo(request.getDataType())
+        MerchantStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        if (request.getSaasEnv() != null) {
+            innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
+        }
         List<MerchantStatAccess> list = merchantStatAccessMapper.selectByExample(criteria);
         List<MerchantStatAccessRO> data = DataConverterUtils.convert(list, MerchantStatAccessRO.class);
         return MonitorResultBuilder.build(data);
