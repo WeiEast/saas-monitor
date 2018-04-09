@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -44,10 +45,6 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     private final static Logger logger = LoggerFactory.getLogger(OperatorStatAccessFacade.class);
 
-    /**
-     * 所有运营商虚拟groupCode
-     */
-    private static final String VIRTUAL_TOTAL_STAT_OPERATOR = "virtual_total_stat_operator";
 
     @Autowired
     private OperatorStatAccessMapper operatorStatAccessMapper;
@@ -93,7 +90,8 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         innerCriteria.andAppIdEqualTo(request.getAppId())
                 .andDataTimeEqualTo(request.getDataDate())
                 .andSaasEnvEqualTo(request.getSaasEnv())
-                .andDataTypeEqualTo(request.getStatType());
+                .andDataTypeEqualTo(request.getStatType())
+                .andGroupCodeNotEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
         if (StringUtils.isNotBlank(request.getGroupName())) {
             innerCriteria.andGroupNameLike("%" + request.getGroupName() + "%");
         }
@@ -102,7 +100,13 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
             List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectPaginationByExample(criteria);
             for (OperatorStatDayAccess data : list) {
                 OperatorStatDayAccessRO ro = DataConverterUtils.convert(data, OperatorStatDayAccessRO.class);
+                ro.setLoginConversionRate(calcRate(data.getConfirmMobileCount(), data.getStartLoginCount()));
+                ro.setLoginSuccessRate(calcRate(data.getStartLoginCount(), data.getLoginSuccessCount()));
+                ro.setCrawlSuccessRate(calcRate(data.getLoginSuccessCount(), data.getCrawlSuccessCount()));
+                ro.setProcessSuccessRate(calcRate(data.getCrawlSuccessCount(), data.getProcessSuccessCount()));
+                ro.setCallbackSuccessRate(calcRate(data.getProcessSuccessCount(), data.getCallbackSuccessCount()));
                 ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
+
                 result.add(ro);
             }
         }
@@ -128,7 +132,8 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
                 .andDataTypeEqualTo(request.getStatType())
                 .andSaasEnvEqualTo(request.getSaasEnv())
                 .andDataTimeGreaterThanOrEqualTo(startTime)
-                .andDataTimeLessThan(endTime);
+                .andDataTimeLessThan(endTime)
+                .andGroupCodeNotEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
         if (StringUtils.isNotBlank(request.getGroupName())) {
             innerCriteria.andGroupNameLike("%" + request.getGroupName() + "%");
         }
@@ -227,6 +232,11 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
             for (OperatorStatDayAccess data : list) {
                 OperatorStatDayAccessRO ro = DataConverterUtils.convert(data, OperatorStatDayAccessRO.class);
                 ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
+                ro.setLoginConversionRate(calcRate(data.getConfirmMobileCount(), data.getStartLoginCount()));
+                ro.setLoginSuccessRate(calcRate(data.getStartLoginCount(), data.getLoginSuccessCount()));
+                ro.setCrawlSuccessRate(calcRate(data.getLoginSuccessCount(), data.getCrawlSuccessCount()));
+                ro.setProcessSuccessRate(calcRate(data.getCrawlSuccessCount(), data.getProcessSuccessCount()));
+                ro.setCallbackSuccessRate(calcRate(data.getProcessSuccessCount(), data.getCallbackSuccessCount()));
                 result.add(ro);
             }
         }
@@ -236,7 +246,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     @Override
     public MonitorResult<List<OperatorStatAccessRO>> queryOperatorStatAccessList(OperatorStatAccessRequest request) {
-        if (request == null || request.getStartDate() == null || request.getEndDate() == null || request.getStatType() == null
+        if (request == null || request.getStartDate() == null || request.getEndDate() == null || request.getStatType() == null || request.getSaasEnv() == null
                 || StringUtils.isBlank(request.getGroupCode()) || StringUtils.isBlank(request.getAppId()) || request.getIntervalMins() == null) {
             logger.error("查询各个运营商小时监控统计数据,输入参数为空,request={}", JSON.toJSONString(request));
             throw new ParamCheckerException("请求参数非法");
@@ -249,6 +259,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
                 .andAppIdEqualTo(request.getAppId())
                 .andGroupCodeEqualTo(request.getGroupCode())
                 .andDataTypeEqualTo(request.getStatType())
+                .andSaasEnvEqualTo(request.getSaasEnv())
                 .andDataTimeBetween(MonitorDateUtils.getDayStartTime(request.getStartDate()), MonitorDateUtils.getDayEndTime(request.getEndDate()));
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
         if (CollectionUtils.isEmpty(list)) {
@@ -345,7 +356,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         innerCriteria.andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getStatType())
                 .andSaasEnvEqualTo(request.getSaasEnv())
-                .andGroupCodeEqualTo(VIRTUAL_TOTAL_STAT_OPERATOR)
+                .andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR)
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
 
         long total = operatorStatDayAccessMapper.countByExample(criteria);
@@ -354,6 +365,12 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
             for (OperatorStatDayAccess data : list) {
                 OperatorAllStatDayAccessRO ro = DataConverterUtils.convert(data, OperatorAllStatDayAccessRO.class);
                 ro.setWholeConversionRate(calcRate(data.getEntryCount(), data.getCallbackSuccessCount()));
+                ro.setConfirmMobileConversionRate(calcRate(data.getEntryCount(), data.getConfirmMobileCount()));
+                ro.setLoginConversionRate(calcRate(data.getConfirmMobileCount(), data.getStartLoginCount()));
+                ro.setLoginSuccessRate(calcRate(data.getStartLoginCount(), data.getLoginSuccessCount()));
+                ro.setCrawlSuccessRate(calcRate(data.getLoginSuccessCount(), data.getCrawlSuccessCount()));
+                ro.setProcessSuccessRate(calcRate(data.getCrawlSuccessCount(), data.getProcessSuccessCount()));
+                ro.setCallbackSuccessRate(calcRate(data.getProcessSuccessCount(), data.getCallbackSuccessCount()));
                 ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
                 result.add(ro);
             }
@@ -375,7 +392,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getStatType())
-                .andGroupCodeEqualTo(VIRTUAL_TOTAL_STAT_OPERATOR)
+                .andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR)
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
 
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);

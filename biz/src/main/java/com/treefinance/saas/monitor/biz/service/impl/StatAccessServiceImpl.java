@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.service.StatAccessService;
+import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.*;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 @Service("statAccessService")
 public class StatAccessServiceImpl implements StatAccessService {
+
     @Autowired
     private MerchantStatDayAccessMapper merchantStatDayAccessMapper;
     @Autowired
@@ -115,7 +117,7 @@ public class StatAccessServiceImpl implements StatAccessService {
         MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
         criteria.setOrderByClause("dataTime asc");
         MerchantStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
-        innerCriteria.andDataTypeEqualTo(request.getDataType())
+        innerCriteria.andDataTypeEqualTo(request.getDataType()).andAppIdEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_APP_ID)
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         if (request.getSaasEnv() != null) {
             innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
