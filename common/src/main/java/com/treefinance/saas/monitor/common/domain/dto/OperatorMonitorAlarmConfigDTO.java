@@ -15,19 +15,33 @@ public class OperatorMonitorAlarmConfigDTO implements Serializable {
 
     private String appId;
     private String appName;
+
+    /**
+     * saas环境: 0:所有环境 1:生产环境 2:预发布环境
+     */
+    private Byte saasEnv;
+    private String saasEnvDesc;
+
+    /**
+     * 数据类型: 0:按任务 1:按人数
+     */
+    private Byte dataType;
+    private String dataTypeDesc;
+
+    /**
+     * 预警维度: 1:总运营商 2:分运营商
+     */
+    private Integer alarmType;
+    private String alarmTypeDesc;
+
     /**
      * 任务超时时间
      */
     private Integer taskTimeoutSecs;
     /**
-     * 此appId是否预警,方便以后开关
+     * 此appId是否预警,方便以后开关(总开关)
      */
     private String alarmSwitch;
-    /**
-     * 预警类型:总运营商按人统计预警为1,分运营商按人统计预警为2,总运营商按任务统计为3,分运营商按任务统计为4
-     */
-    private Integer alarmType;
-    private String alarmTypeDesc;
 
     private Integer intervalMins;
     private Integer previousDays;
@@ -57,7 +71,11 @@ public class OperatorMonitorAlarmConfigDTO implements Serializable {
         dto1.setAppId("virtual_total_stat_appId");
         dto1.setAppName("所有商户");
         dto1.setAlarmType(1);
-        dto1.setAlarmTypeDesc("总运营商按人统计预警");
+        dto1.setAlarmTypeDesc("总运营商");
+        dto1.setSaasEnv((byte) 0);
+        dto1.setSaasEnvDesc("所有环境");
+        dto1.setDataType((byte) 1);
+        dto1.setDataTypeDesc("按人数");
         dto1.setIntervalMins(30);
         dto1.setTaskTimeoutSecs(600);
         dto1.setAlarmSwitch("on");
@@ -77,7 +95,11 @@ public class OperatorMonitorAlarmConfigDTO implements Serializable {
         dto2.setAppId("virtual_total_stat_appId");
         dto2.setAppName("所有商户");
         dto2.setAlarmType(2);
-        dto2.setAlarmTypeDesc("分运营商按人统计预警");
+        dto2.setAlarmTypeDesc("分运营商");
+        dto2.setSaasEnv((byte) 0);
+        dto2.setSaasEnvDesc("所有环境");
+        dto2.setDataType((byte) 1);
+        dto2.setDataTypeDesc("按人数");
         dto2.setIntervalMins(30);
         dto2.setTaskTimeoutSecs(600);
         dto2.setAlarmSwitch("on");
@@ -93,6 +115,22 @@ public class OperatorMonitorAlarmConfigDTO implements Serializable {
         list.add(dto2);
         System.out.println(JSON.toJSONString(list));
 
+    }
+
+    public Byte getSaasEnv() {
+        return saasEnv;
+    }
+
+    public void setSaasEnv(Byte saasEnv) {
+        this.saasEnv = saasEnv;
+    }
+
+    public String getSaasEnvDesc() {
+        return saasEnvDesc;
+    }
+
+    public void setSaasEnvDesc(String saasEnvDesc) {
+        this.saasEnvDesc = saasEnvDesc;
     }
 
     public String getAppId() {
@@ -229,5 +267,21 @@ public class OperatorMonitorAlarmConfigDTO implements Serializable {
 
     public void setWeChatAlarmSwitch(String weChatAlarmSwitch) {
         this.weChatAlarmSwitch = weChatAlarmSwitch;
+    }
+
+    public Byte getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(Byte dataType) {
+        this.dataType = dataType;
+    }
+
+    public String getDataTypeDesc() {
+        return dataTypeDesc;
+    }
+
+    public void setDataTypeDesc(String dataTypeDesc) {
+        this.dataTypeDesc = dataTypeDesc;
     }
 }

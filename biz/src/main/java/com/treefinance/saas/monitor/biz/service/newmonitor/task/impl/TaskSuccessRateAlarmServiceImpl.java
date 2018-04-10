@@ -70,30 +70,20 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         Date statTime = DateUtils.addSeconds(jobTime, -config.getTaskTimeoutSecs());
         //取得预警原点时间,如:statTime=14:01分,10分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
         Date beginTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(statTime, intervalMins);
-        int times = config.getTimes();
-        EStatType statType = null;
-        for (EStatType item : EStatType.values()) {
-            if (item.getText().equals(bizType.getText())) {
-                statType = item;
-            }
-        }
-        if (statType == null) {
-            return;
-        }
 
-        String alarmTimeKey = TaskMonitorPerMinKeyHelper.keyOfAlarmTimeLog(beginTime, statType);
+        String alarmTimeKey = TaskMonitorPerMinKeyHelper.keyOfAlarmTimeLog(beginTime, bizType);
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
         if (setOperations.isMember(MonitorDateUtils.format(beginTime))) {
-            logger.info("任务成功率预警,beginTime={},statType={}已预警,不再预警", MonitorDateUtils.format(beginTime), JSON.toJSONString(statType));
+            logger.info("任务成功率预警,beginTime={},bizType={}已预警,不再预警", MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType));
             return;
         }
         setOperations.add(MonitorDateUtils.format(beginTime));
         if (setOperations.getExpire() == -1) {
             setOperations.expire(2, TimeUnit.DAYS);
         }
-        List<SaasStatAccessDTO> list = getNeedAlarmDataList(beginTime, times, intervalMins, statType);
-        logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},beginTime={},statType={},config={}",
-                MonitorDateUtils.format(jobTime), JSON.toJSONString(list), MonitorDateUtils.format(beginTime), JSON.toJSONString(statType), JSON.toJSONString(config));
+        List<SaasStatAccessDTO> list = getNeedAlarmDataList(beginTime, config, intervalMins, bizType);
+        logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},beginTime={},bizType={},config={}",
+                MonitorDateUtils.format(jobTime), JSON.toJSONString(list), MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType), JSON.toJSONString(config));
         boolean isAlarm = isAlarm(list, config);
         if (!isAlarm) {
             logger.info("任务成功率预警,定时任务执行jobTime={},判断所得数据不需要预警,list={},config={}",
@@ -101,13 +91,13 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             return;
         }
         if (StringUtils.equalsIgnoreCase(config.getMailAlarmSwitch(), "on")) {
-            sendMailAlarm(list, statType);
+            sendMailAlarm(list, bizType);
         }
         if (StringUtils.equalsIgnoreCase(config.getWeChatAlarmSwitch(), "on")) {
-            sendWechatAlarm(list, statType);
+            sendWechatAlarm(list, bizType);
         }
         if (StringUtils.equalsIgnoreCase(config.getSmsAlarmSwitch(), "on")) {
-            sendSmsAlarm(list, statType);
+            sendSmsAlarm(list, bizType);
         }
 
         // 增加ivr服务通知
@@ -129,15 +119,17 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         return true;
     }
 
-    private List<SaasStatAccessDTO> getNeedAlarmDataList(Date beginTime, Integer times, Integer intervalMins, EStatType statType) {
+    private List<SaasStatAccessDTO> getNeedAlarmDataList(Date beginTime, TaskSuccessRateAlarmConfigDTO config, Integer intervalMins, EBizType bizType) {
         List<SaasStatAccessDTO> list = Lists.newArrayList();
+        int times = config.getTimes();
         //左闭右开
         for (int i = 0; i < times; i++) {
             Date startTime = DateUtils.addMinutes(beginTime, -((times - i) * intervalMins));
             Date endTime = DateUtils.addMinutes(beginTime, -((times - i - 1) * intervalMins));
 
             SaasStatAccessCriteria saasStatAccessCriteria = new SaasStatAccessCriteria();
-            saasStatAccessCriteria.createCriteria().andDataTypeEqualTo(statType.getType())
+            saasStatAccessCriteria.createCriteria().andDataTypeEqualTo(bizType.getCode())
+                    .andSaasEnvEqualTo(config.getSaasEnv())
                     .andDataTimeGreaterThanOrEqualTo(startTime)
                     .andDataTimeLessThan(endTime);
             List<SaasStatAccess> dataList = saasStatAccessMapper.selectByExample(saasStatAccessCriteria);
@@ -149,7 +141,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 cancelCount = cancelCount + data.getCancelCount();
             }
 
-            SaasStatAccessDTO excludeData = getExcludeAlarmList(statType, startTime, endTime);
+            SaasStatAccessDTO excludeData = getExcludeAlarmList(bizType, startTime, endTime, config);
             if (excludeData != null) {
                 totalCount = totalCount - excludeData.getTotalCount();
                 successCount = successCount - excludeData.getSuccessCount();
@@ -160,7 +152,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
             SaasStatAccessDTO saasStatAccessDTO = new SaasStatAccessDTO();
             saasStatAccessDTO.setDataTime(startTime);
-            saasStatAccessDTO.setDataType(statType.getType());
+            saasStatAccessDTO.setDataType(bizType.getCode());
             saasStatAccessDTO.setTotalCount(totalCount);
             saasStatAccessDTO.setSuccessCount(successCount);
             saasStatAccessDTO.setFailCount(failCount);
@@ -172,7 +164,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         return list;
     }
 
-    private SaasStatAccessDTO getExcludeAlarmList(EStatType statType, Date startTime, Date endTime) {
+    private SaasStatAccessDTO getExcludeAlarmList(EBizType bizType, Date startTime, Date endTime, TaskSuccessRateAlarmConfigDTO config) {
         List<String> excludeAppIds = Lists.newArrayList();
         if (StringUtils.isNotBlank(diamondConfig.getMonitorAlarmExcludeAppIdsAll())) {
             excludeAppIds = Splitter.on(",").trimResults().splitToList(diamondConfig.getMonitorAlarmExcludeAppIdsAll());
@@ -181,7 +173,8 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         if (!CollectionUtils.isEmpty(excludeAppIds)) {
             MerchantStatAccessCriteria merchantCriteria = new MerchantStatAccessCriteria();
             merchantCriteria.createCriteria().andAppIdIn(excludeAppIds)
-                    .andDataTypeEqualTo(statType.getType())
+                    .andDataTypeEqualTo(bizType.getCode())
+                    .andSaasEnvEqualTo(config.getSaasEnv())
                     .andDataTimeGreaterThanOrEqualTo(startTime)
                     .andDataTimeLessThan(endTime);
             List<MerchantStatAccess> merchantStatAccessList = merchantStatAccessMapper.selectByExample(merchantCriteria);
@@ -194,7 +187,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             }
             SaasStatAccessDTO excludeData = new SaasStatAccessDTO();
             excludeData.setDataTime(startTime);
-            excludeData.setDataType(statType.getType());
+            excludeData.setDataType(bizType.getCode());
             excludeData.setTotalCount(totalCount);
             excludeData.setSuccessCount(successCount);
             excludeData.setFailCount(failCount);
@@ -221,27 +214,27 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         return rate;
     }
 
-    private void sendWechatAlarm(List<SaasStatAccessDTO> list, EStatType type) {
+    private void sendWechatAlarm(List<SaasStatAccessDTO> list, EBizType type) {
         String body = this.generateMessageBody(list, type, "wechat");
         alarmMessageProducer.sendWechantAlarm(body);
     }
 
-    private void sendMailAlarm(List<SaasStatAccessDTO> list, EStatType statType) {
-        String title = this.generateTitle(statType);
-        String body = this.generateMessageBody(list, statType, "mail");
+    private void sendMailAlarm(List<SaasStatAccessDTO> list, EBizType bizType) {
+        String title = this.generateTitle(bizType);
+        String body = this.generateMessageBody(list, bizType, "mail");
         alarmMessageProducer.sendMailAlarm(title, body);
     }
 
-    private String generateTitle(EStatType type) {
-        return "saas-" + diamondConfig.getMonitorEnvironment() + "[" + type.getName() + "]任务成功率预警";
+    private String generateTitle(EBizType type) {
+        return "saas-" + diamondConfig.getMonitorEnvironment() + "[" + type.getDesc() + "]任务成功率预警";
     }
 
-    private void sendSmsAlarm(List<SaasStatAccessDTO> list, EStatType statType) {
-        String body = this.generateMessageBody(list, statType, "sms");
+    private void sendSmsAlarm(List<SaasStatAccessDTO> list, EBizType type) {
+        String body = this.generateMessageBody(list, type, "sms");
         smsNotifyService.send(body);
     }
 
-    private String generateMessageBody(List<SaasStatAccessDTO> list, EStatType type, String sendType) {
+    private String generateMessageBody(List<SaasStatAccessDTO> list, EBizType type, String sendType) {
         StringBuffer buffer = new StringBuffer();
         if (StringUtils.equalsIgnoreCase(sendType, "sms")) {//短信的花括号文字是需要备案的
             if (EStatType.OPERATOR.equals(type)) {

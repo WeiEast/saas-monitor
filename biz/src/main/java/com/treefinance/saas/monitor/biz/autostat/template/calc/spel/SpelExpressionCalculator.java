@@ -8,6 +8,7 @@ import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.ExpressionCalculator;
 import com.treefinance.saas.monitor.biz.autostat.utils.CronUtils;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
@@ -75,7 +77,6 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
 
     @Override
     public Object calculate(Long expressionId, String expression, Map<String, Object> dataMap) {
-        long start = System.currentTimeMillis();
         // 初始化
         initContext(AsConstants.EXPRESSION, expression);
         initContext(AsConstants.EXPRESSION_ID, expressionId);
@@ -90,11 +91,13 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             initContext(AsConstants.DATA, dataMap);
 
             context.registerFunction("count", this.getClass().getDeclaredMethod("count", Object.class));
-            context.registerFunction("distinct", this.getClass().getDeclaredMethod("distinct", Object.class));
+            context.registerFunction("distinct", this.getClass().getDeclaredMethod("distinct", Object[].class));
             context.registerFunction("exists", this.getClass().getDeclaredMethod("exists", Object[].class));
             context.registerFunction("day", this.getClass().getDeclaredMethod("day", Long.class));
             context.registerFunction("contains", this.getClass().getDeclaredMethod("contains", String.class, Object.class));
             context.registerFunction("containsSet", this.getClass().getDeclaredMethod("containsSet", String.class, Object.class));
+            context.registerFunction("divide", this.getClass().getDeclaredMethod("divide", String.class, String.class, Integer.class));
+            context.registerFunction("subtract", this.getClass().getDeclaredMethod("subtract", String.class, String.class));
 
             SpelExpression spelExpression = (SpelExpression) parser.parseExpression(expression);
             spelExpression.setEvaluationContext(context);
@@ -105,6 +108,8 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             throw new RuntimeException(e);
         } finally {
             destroyContext(AsConstants.EXPRESSION);
+            destroyContext(AsConstants.EXPRESSION_ID);
+            destroyContext(AsConstants.GROUP);
             destroyContext(AsConstants.DATA);
             if (logger.isDebugEnabled()) {
                 logger.debug("spel calculate :  expressionId={}, expression={} result={}, dataMap={}, statTemplate={}", expressionId, expression, value, JSON.toJSONString(dataMap), statTemplate.getTemplateCode());
@@ -127,30 +132,35 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
     /**
      * distinct 去重
      *
-     * @param object
+     * @param objects
      * @return
      */
-    public static int distinct(Object object) {
-        if (object == null) {
+    public static int distinct(Object... objects) {
+        if (objects == null || objects.length <= 0) {
             return 0;
         }
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
-        long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        long timeInterval;
+        Object group;
+        if (statTemplate.getEffectiveTime() > 0) {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.DISTINCT_USER_GROUP);
+            timeInterval = statTemplate.getEffectiveTime() * 60 * 1000L;
 
-        Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        } else {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+            timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        }
         String redisKey = Joiner.on(":").useForNull("null").join(group, "distinct", expressionId);
-
-
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
-        String value = object.toString();
-        if (redisTemplate.boundSetOps(redisKey).isMember(value)) {
-            logger.info("distinct : result=0, expressionId={},redisKey={},value={}", expressionId, redisKey, value);
+        String uniqueString = Joiner.on(":").useForNull("null").join(Arrays.asList(objects));
+        if (redisTemplate.boundSetOps(redisKey).isMember(uniqueString)) {
+            logger.info("distinct : result=0, expressionId={},redisKey={},value={}", expressionId, redisKey, uniqueString);
             return 0;
         }
-        redisTemplate.boundSetOps(redisKey).add(value);
+        redisTemplate.boundSetOps(redisKey).add(uniqueString);
         redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
-        logger.info("distinct : result=1, expressionId={},redisKey={},value={}", expressionId, redisKey, value);
+        logger.info("distinct : result=1, expressionId={},redisKey={},value={}", expressionId, redisKey, uniqueString);
         return 1;
     }
 
@@ -166,20 +176,29 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         }
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
-        long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        long timeInterval;
+        Object group;
+        if (statTemplate.getEffectiveTime() > 0) {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.DISTINCT_USER_GROUP);
+            timeInterval = statTemplate.getEffectiveTime() * 60 * 1000L;
 
-        Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        } else {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+            timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        }
+
         List<Object> keys = Lists.newArrayList(group, "exists", expressionId);
-        keys.addAll(Arrays.asList(objects));
         String redisKey = Joiner.on(":").useForNull("null").join(keys);
-
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
-        if (Boolean.FALSE.equals(redisTemplate.boundValueOps(redisKey).setIfAbsent("1"))) {
-            logger.info("exists : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey);
+        String uniqueString = Joiner.on(":").useForNull("null").join(Arrays.asList(objects));
+        if (redisTemplate.boundSetOps(redisKey).isMember(uniqueString)) {
+            logger.info("exists : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey, uniqueString);
             return true;
         }
-        redisTemplate.boundValueOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
-        logger.info("exists : result=false, expressionId={},redisKey={},value={}", expressionId, redisKey);
+
+        redisTemplate.boundSetOps(redisKey).add(uniqueString);
+        redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
+        logger.info("exists : result=false, expressionId={},redisKey={},value={}", expressionId, redisKey, uniqueString);
         return false;
     }
 
@@ -191,10 +210,17 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
      * @param value
      * @return
      */
+
     public static boolean contains(String key, Object value) {
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
+        StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
+        Object group;
+        if (statTemplate.getEffectiveTime() > 0) {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.DISTINCT_USER_GROUP);
 
-        Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        } else {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        }
         List<Object> keys = Lists.newArrayList(group, "contains", expressionId, key);
         String redisKey = Joiner.on(":").useForNull("null").join(keys);
 
@@ -202,10 +228,10 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
 
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         if (Boolean.TRUE.equals(redisTemplate.boundSetOps(redisKey).isMember(_value))) {
-            logger.info("contains : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey);
+            logger.info("contains : result=true, expressionId={},redisKey={}", expressionId, redisKey);
             return true;
         }
-        logger.info("contains : result=false, expressionId={},redisKey={},value={}", expressionId, redisKey);
+        logger.info("contains : result=false, expressionId={},redisKey={}", expressionId, redisKey);
         return false;
     }
 
@@ -216,12 +242,20 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
      * @param value
      * @return
      */
+
     public static boolean containsSet(String key, Object value) {
         StatTemplate statTemplate = (StatTemplate) context.get().get(AsConstants.STAT_TEMPLATE);
         Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
-        long timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        long timeInterval;
+        Object group;
+        if (statTemplate.getEffectiveTime() > 0) {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.DISTINCT_USER_GROUP);
+            timeInterval = statTemplate.getEffectiveTime() * 60 * 1000L;
 
-        Object group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+        } else {
+            group = ((Map<String, Object>) context.get().get(AsConstants.DATA)).get(AsConstants.GROUP);
+            timeInterval = CronUtils.getTimeInterval(statTemplate.getStatCron());
+        }
         List<Object> keys = Lists.newArrayList(group, "contains", expressionId, key);
         String redisKey = Joiner.on(":").useForNull("null").join(keys);
 
@@ -230,7 +264,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         redisTemplate.boundSetOps(redisKey).add(_value);
         redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
-        logger.info("containsSet : result=true, expressionId={},redisKey={},value={}", expressionId, redisKey);
+        logger.info("containsSet : result=true, expressionId={},redisKey={}", expressionId, redisKey);
         return true;
     }
 
@@ -249,65 +283,122 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         return date.getTime();
     }
 
+    /**
+     * 除法
+     *
+     * @param numeratorStr
+     * @param denominatorStr
+     * @param scale          保留小数位数
+     * @return
+     */
+    public static String divide(String numeratorStr, String denominatorStr, Integer scale) {
+        Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
+        BigDecimal result;
+        if (StringUtils.isBlank(numeratorStr) || StringUtils.isBlank(denominatorStr) || Integer.valueOf(denominatorStr) == 0) {
+            result = BigDecimal.valueOf(0, 2);
+            logger.info("divide : result={}, expressionId={},numerator={},denominator={},scale={}",
+                    result, expressionId, numeratorStr, denominatorStr, scale);
+            return result.toString();
+        }
+        Integer numerator = Integer.valueOf(numeratorStr);
+        Integer denominator = Integer.valueOf(denominatorStr);
+        if (scale == null) {
+            scale = 2;
+        }
+        result = BigDecimal.valueOf(numerator)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(denominator), scale, BigDecimal.ROUND_HALF_UP);
+        logger.info("divide : result={}, expressionId={},numerator={},denominator={},scale={}",
+                result, expressionId, numerator, denominator, scale);
+        return result.toString();
+    }
+
+
+    public static String subtract(String aStr, String bStr) {
+        Long expressionId = (Long) context.get().get(AsConstants.EXPRESSION_ID);
+        if (StringUtils.isBlank(aStr) || StringUtils.isBlank(bStr)) {
+            logger.info("subtract : result=0, expressionId={},a={},b={}",
+                    expressionId, aStr, bStr);
+            return 0 + "";
+        }
+        Integer a = Integer.valueOf(aStr);
+        Integer b = Integer.valueOf(bStr);
+        Integer result = a - b;
+        if (result >= 0) {
+            logger.info("subtract : result={}, expressionId={},a={},b={}",
+                    result, expressionId, aStr, bStr);
+            return result + "";
+        }
+        logger.info("subtract : result=0, expressionId={},a={},b={}",
+                expressionId, aStr, bStr);
+        return 0 + "";
+    }
+
     public static void main(String[] args) throws Exception {
-//        System.out.println(SpelExpressionCalculator.class.getDeclaredMethod("exists", Object[].class));
-//        System.out.println(DateFormatUtils.format(1517403542000L, "yyyy-MM-dd HH:mm:ss"));
-//        String json = "{\"appId\":\"QATestabcdefghQA\",\"bizType\":3,\"completeTime\":1516959226000,\"monitorType\":\"task\",\"status\":1,\"stepCode\":\"\",\"taskId\":141595882901499904,\"uniqueId\":\"test\"}";
-//        Map<String, Object> map = JSON.parseObject(json);
-//        SpelExpressionCalculator calculator = new SpelExpressionCalculator();
-////        System.out.println(calculator.calculate(1L, "#distinct(#uniqueId)", map));
-//
-//        //
-//        json = "{\"accountNo\":\"1$zcR5gBUG1c83qEjS4spSxJAAAAwA\",\"appId\":\"QATestabcdefghQA\",\"bizType\":2,\"createTime\":1517403542000,\"id\":143459355679813632,\"lastUpdateTime\":1517403542000,\"monitorType\":\"task_ecommerce\",\"status\":2,\"taskAttributes\":{\"idCard\":\"1$==QAG4qCG6YqbZ5B7x4jZAAAYTdnqCA1U33ohkj8YTtIGEAAAAwA\",\"mobile\":\"1$h1F8RLAXKjQ/jJTw4YvIjQAAAAwA\",\"name\":\"1$uTiLQUhWyEEnvx/Qv3uilMAAAAwA\"},\"taskSteps\":[{\"stepCode\":\"create\",\"stepIndex\":1,\"stepName\":\"创建任务\"},{\"stepCode\":\"login\",\"stepIndex\":3,\"stepName\":\"登录\"},{\"stepCode\":\"crawl\",\"stepIndex\":4,\"stepName\":\"抓取\"},{\"stepCode\":\"process\",\"stepIndex\":5,\"stepName\":\"洗数\"}],\"uniqueId\":\"test\",\"webSite\":\"taobao.com\"}";
-//        map = JSON.parseObject(json);
+        System.out.println(SpelExpressionCalculator.class.getDeclaredMethod("exists", Object[].class));
+        System.out.println(DateFormatUtils.format(1517403542000L, "yyyy-MM-dd HH:mm:ss"));
+        String json = "{\"appId\":\"QATestabcdefghQA\",\"bizType\":3,\"completeTime\":1516959226000,\"monitorType\":\"task\",\"status\":1,\"stepCode\":\"\",\"taskId\":141595882901499904,\"uniqueId\":\"test\"}";
+        Map<String, Object> map = JSON.parseObject(json);
+        SpelExpressionCalculator calculator = new SpelExpressionCalculator();
+//        System.out.println(calculator.calculate(1L, "#distinct(#uniqueId)", map));
+
+        //
+        json = "{\"webSite\":\"china_10010_app\",\"monitorType\":\"task_callback_msg\",\"bizType\":3,\"saasEnv\":\"product\",\"accountNo\":\"4$8ilOHq7Mus2WAcvhEjwgUOCAAAwA\",\"appId\":\"product_JZD7AUYqWogc9U7K\",\"completeTime\":1522123356000,\"taskId\":163256388045922304,\"uniqueId\":\"1002649448\",\"group\":\"saas-monitor:stat:callback-user-time-share:index-1:2018-03-27 12:00:00\"}";
+        json = "{\n" +
+                "\t\"successCount\":\"1\",\n" +
+                "\t\"totalCount\":\"1\",\n" +
+                "\t\"failCount\":\"3\"\n" +
+                "}";
+        map = JSON.parseObject(json);
+        System.out.println(calculator.calculate(1L, "#divide(#successCount,#subtract(#totalCount,#failCount),2)", map));
 //        System.out.println(calculator.calculate(1L, "(#taskSteps.?[#this[stepCode] == \"create\"]).size()>0?1:0", map));
 //        System.out.println(calculator.calculate(1L, "\"virtual_total_stat_appId\"", map));
 //        System.out.println(calculator.calculate(1L, "#day(#createTime)", map));
 //        System.out.println(calculator.calculate(1L, "#distinct(#uniqueId)", map));
 
-        String expression = "#attributes[callbackMsg]!=null?\"回调总数\":null";
-
-        String json = "{\n" +
-                "    \"accountNo\":\"aaa@qq.com\",\n" +
-                "    \"appId\":\"QATestabcdefghQA\",\n" +
-                "    \"attributes\":{\n" +
-                "        \"callbackHttpCode\":200,\n" +
-                "        \"callbackCode\":200,\n" +
-                "        \"callbackMsg\":\"回调成功\"\n" +
-                "    },\n" +
-                "    \"bizType\":3,\n" +
-                "    \"completeTime\":1520857590063,\n" +
-                "    \"monitorType\":\"task\",\n" +
-                "    \"status\":2,\n" +
-                "    \"stepCode\":\"\",\n" +
-                "    \"taskId\":141595882901499900,\n" +
-                "    \"uniqueId\":\"test\",\n" +
-                "    \"webSite\":\"qq.com\"\n" +
-                "}";
-
-        String json2 = "{\n" +
-                "    \"accountNo\":\"aaa@qq.com\",\n" +
-                "    \"appId\":\"QATestabcdefghQA\",\n" +
-                "    \"attributes\":{},\n" +
-                "    \"bizType\":3,\n" +
-                "    \"completeTime\":1520857590063,\n" +
-                "    \"monitorType\":\"task\",\n" +
-                "    \"status\":2,\n" +
-                "    \"stepCode\":\"\",\n" +
-                "    \"taskId\":141595882901499900,\n" +
-                "    \"uniqueId\":\"test\",\n" +
-                "    \"webSite\":\"qq.com\"\n" +
-                "}";
-        Map<String, Object> map = JSON.parseObject(json2);
-        StandardEvaluationContext context = new StandardEvaluationContext();
-        map.keySet().forEach(key -> context.setVariable(key, map.get(key)));
-
-        ExpressionParser parser = new SpelExpressionParser();
-        SpelExpression exp = (SpelExpression) parser.parseExpression(expression);
-        exp.setEvaluationContext(context);
-
-        Object message = exp.getValue();
-        System.out.println(message);
+//        String expression = "#attributes[callbackMsg]!=null?#attributes[callbackMsg]:null";
+//
+//        String json = "{\n" +
+//                "    \"accountNo\":\"aaa@qq.com\",\n" +
+//                "    \"appId\":\"QATestabcdefghQA\",\n" +
+//                "    \"attributes\":{\n" +
+//                "        \"callbackHttpCode\":200,\n" +
+//                "        \"callbackCode\":200,\n" +
+//                "        \"callbackMsg\":\"回调成功\"\n" +
+//                "    },\n" +
+//                "    \"bizType\":3,\n" +
+//                "    \"completeTime\":1520857590063,\n" +
+//                "    \"monitorType\":\"task\",\n" +
+//                "    \"status\":2,\n" +
+//                "    \"stepCode\":\"\",\n" +
+//                "    \"taskId\":141595882901499900,\n" +
+//                "    \"uniqueId\":\"test\",\n" +
+//                "    \"webSite\":\"qq.com\"\n" +
+//                "}";
+//
+//        String json2 = "{\n" +
+//                "    \"accountNo\":\"aaa@qq.com\",\n" +
+//                "    \"appId\":\"QATestabcdefghQA\",\n" +
+//                "    \"attributes\":{},\n" +
+//                "    \"bizType\":3,\n" +
+//                "    \"completeTime\":1520857590063,\n" +
+//                "    \"monitorType\":\"task\",\n" +
+//                "    \"status\":2,\n" +
+//                "    \"stepCode\":\"\",\n" +
+//                "    \"taskId\":141595882901499900,\n" +
+//                "    \"uniqueId\":\"test\",\n" +
+//                "    \"webSite\":\"qq.com\"\n" +
+//                "}";
+//        Map<String, Object> map = JSON.parseObject(json2);
+//        StandardEvaluationContext context = new StandardEvaluationContext();
+//        map.keySet().forEach(key -> context.setVariable(key, map.get(key)));
+//
+//        ExpressionParser parser = new SpelExpressionParser();
+//        SpelExpression exp = (SpelExpression) parser.parseExpression(expression);
+//        exp.setEvaluationContext(context);
+//
+//        Object message = exp.getValue();
+//        System.out.println(message);
     }
 
 }

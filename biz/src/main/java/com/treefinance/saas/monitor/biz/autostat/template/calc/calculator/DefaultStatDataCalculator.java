@@ -2,10 +2,7 @@ package com.treefinance.saas.monitor.biz.autostat.template.calc.calculator;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.MybatisService;
@@ -14,6 +11,7 @@ import com.treefinance.saas.monitor.biz.autostat.template.calc.StatDataCalculato
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatGroupService;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatItemService;
 import com.treefinance.saas.monitor.biz.autostat.utils.CronUtils;
+import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.StatGroup;
 import com.treefinance.saas.monitor.dao.entity.StatItem;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
@@ -73,6 +71,8 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             }
             // 1.计算数据
             Multimap<String, Map<String, Object>> redisMultiMap = caculateData(dataList, statTemplate, currentTime, groupIndex, _statGroups);
+            logger.info("计算数据:redisMultiMap={},dataList={},statTemplate={},groupIndex={}",
+                    JSON.toJSONString(redisMultiMap), JSON.toJSONString(dataList), JSON.toJSONString(statTemplate), groupIndex);
             // 2.写入redis（数据合并计算）
             List<Map<String, Object>> _resultList = cacheData2Redis(statTemplate, redisMultiMap, _statGroups);
             // 3.数据结果
@@ -109,6 +109,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             Map<String, Object> data = (Map<String, Object>) dataObj;
             Map<String, Object> dataMap = Maps.newHashMap();
             List<Object> redisGroups = Lists.newArrayList(keyPrefix);
+            List<Object> distinctUserGroups = Lists.newArrayList(keyPrefix, "distinct:user");
 
             // 1.优先计算数据时间
             _statGroups.stream().filter(statGroup -> AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
@@ -135,10 +136,15 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
             // 分组唯一键
             redisGroups.add(dataTimeStr);
+            if (statTemplate.getEffectiveTime() > 0) {
+                distinctUserGroups.add(MonitorDateUtils.format(CronUtils.getStatDate(dataTime, statTemplate.getEffectiveTime())));
+            }
             String redisKey = Joiner.on(":").useForNull("null").join(redisGroups);
+            String distinctUserRedisKey = Joiner.on(":").useForNull("null").join(distinctUserGroups);
 
             // GROUP 的特殊处理: 一个数据项对应多个分组
             data.put(AsConstants.GROUP, redisKey);
+            data.put(AsConstants.DISTINCT_USER_GROUP, distinctUserRedisKey);
             // 3.计算各分组数据项值
             List<Object> groupValueList = Lists.newArrayList();
             _statGroups.stream().filter(statGroup -> !AsConstants.DATA_TIME.equals(statGroup.getGroupCode()))
@@ -150,6 +156,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                         groupValueList.add(groupValue);
                         dataMap.put(groupCode, groupValue);
                         redisGroups.add(groupCode + "-" + groupValue);
+                        distinctUserGroups.add(groupCode + "-" + groupValue);
                     });
             //如果分组处理的groupValue为null,统计null维度没有实际意义.
             if (CollectionUtils.isNotEmpty(groupValueList) && groupValueList.contains(null)) {
@@ -157,7 +164,9 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             }
             // 分组数据项值
             redisKey = Joiner.on(":").useForNull("null").join(redisGroups);
+            distinctUserRedisKey = Joiner.on(":").useForNull("null").join(distinctUserGroups);
             data.put(AsConstants.GROUP, redisKey);
+            data.put(AsConstants.DISTINCT_USER_GROUP, distinctUserRedisKey);
 
             // 4.计算数据项值
             statItems.stream().filter(statItem -> Byte.valueOf("0").equals(statItem.getDataSource())).forEach(statItem -> {
@@ -224,7 +233,10 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                     redisKey, groupMap, totalMap, JSON.toJSONString(dataList));
         });
         String dataListKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode);
-        redisTemplate.boundSetOps(dataListKey).add(redisMultiMap.keys().toArray(new String[]{}));
+        Multiset<String> keys = redisMultiMap.keys();
+        if (keys.size() > 0) {
+            redisTemplate.boundSetOps(dataListKey).add(keys.toArray(new String[keys.size()]));
+        }
         return resultList;
     }
 
@@ -259,10 +271,11 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             } else {
                 emptyDataKeys.add(dataKey);
             }
+            logger.debug("获取数据:dataKey={},dataMap={}", dataKey, JSON.toJSONString(dataMap, true));
         });
         // 移除空数据key
         if (CollectionUtils.isNotEmpty(emptyDataKeys)) {
-            redisTemplate.boundSetOps(dataListKey).remove(emptyDataKeys.toArray(new String[]{}));
+            redisTemplate.boundSetOps(dataListKey).remove(emptyDataKeys.toArray(new String[emptyDataKeys.size()]));
         }
 
         // 二次计算(统计数据来源：0-基础数据，1-统计数据项)
@@ -283,11 +296,10 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
         // 刷新到db
         if (CollectionUtils.isNotEmpty(resultList)) {
+            logger.debug("刷新数据到db:dataList={}", JSON.toJSONString(resultList, true));
             mybatisService.batchInsertOrUpdate(statTemplate.getDataObject(), resultList);
         }
 
-//        // 清除redis数据
-//        redisTemplate.delete(dataKeySet);
         return resultList;
     }
 

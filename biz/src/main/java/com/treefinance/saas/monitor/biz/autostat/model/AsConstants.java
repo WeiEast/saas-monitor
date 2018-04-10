@@ -8,6 +8,12 @@ public class AsConstants {
      * redis key前缀
      */
     public static final String REDIS_PREFIX = "saas-monitor:stat";
+
+    /**
+     *
+     */
+    public static final String REDIS_LOCK_PREFIX = "saas-monitor:stat:lock";
+
     /**
      * redis
      */
@@ -36,5 +42,11 @@ public class AsConstants {
     /**
      * group Index
      */
-    public static final String GROUP= "group";
+    public static final String GROUP = "group";
+
+    /**
+     * 设置effectiveTime后人数统计group过滤
+     */
+    public static final String DISTINCT_USER_GROUP = "distinctUserGroup";
+
 }

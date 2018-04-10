@@ -5,10 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
-import com.treefinance.saas.monitor.biz.service.OperatorMonitorAllAlarmService;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,8 +28,6 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
     private DiamondConfig diamondConfig;
     @Autowired
     private OperatorMonitorGroupAlarmService operatorMonitorGroupAlarmService;
-    @Autowired
-    private OperatorMonitorAllAlarmService operatorMonitorAllAlarmService;
 
 
     @Override
@@ -52,22 +48,7 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
                 if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), "on")) {
                     continue;
                 }
-                if (configDTO.getAlarmType() == 1) {
-                    //总运营商按人统计的预警
-                    operatorMonitorAllAlarmService.alarm(jobTime, configDTO, ETaskStatDataType.USER);
-                }
-                if (configDTO.getAlarmType() == 2) {
-                    //分运营商按人统计的预警
-                    operatorMonitorGroupAlarmService.alarm(jobTime, configDTO, ETaskStatDataType.USER);
-                }
-                if (configDTO.getAlarmType() == 3) {
-                    //总运营商按任务统计的预警
-                    operatorMonitorAllAlarmService.alarm(jobTime, configDTO, ETaskStatDataType.TASK);
-                }
-                if (configDTO.getAlarmType() == 4) {
-                    //分运营商按任务统计的预警
-                    operatorMonitorGroupAlarmService.alarm(jobTime, configDTO, ETaskStatDataType.TASK);
-                }
+                operatorMonitorGroupAlarmService.alarm(jobTime, configDTO);
             }
         } catch (Exception e) {
             logger.error("运营商监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);

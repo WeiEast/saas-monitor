@@ -5,7 +5,6 @@ import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
 import java.util.Date;
 
 /**
- *
  * 商户统计基础对象
  * Created by yh-treefinance on 2017/6/5.
  */
@@ -25,6 +24,16 @@ public class MerchantStatBaseRequest extends PageRequest {
      * 结束时间
      */
     private Date endDate;
+
+    private Byte saasEnv;
+
+    public Byte getSaasEnv() {
+        return saasEnv;
+    }
+
+    public void setSaasEnv(Byte saasEnv) {
+        this.saasEnv = saasEnv;
+    }
 
     public String getAppId() {
         return appId;

@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.service.StatAccessService;
+import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.*;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 @Service("statAccessService")
 public class StatAccessServiceImpl implements StatAccessService {
+
     @Autowired
     private MerchantStatDayAccessMapper merchantStatDayAccessMapper;
     @Autowired
@@ -87,8 +89,12 @@ public class StatAccessServiceImpl implements StatAccessService {
     public MonitorResult<List<MerchantStatDayAccessRO>> queryAllDayAccessListNoPage(MerchantStatDayAccessRequest request) {
         MerchantStatDayAccessCriteria criteria = new MerchantStatDayAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
-        criteria.createCriteria().andDataTypeEqualTo(request.getDataType())
+        MerchantStatDayAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        if (request.getSaasEnv() != null) {
+            innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
+        }
         List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
         List<MerchantStatDayAccessRO> data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
         return MonitorResultBuilder.build(data);
@@ -110,8 +116,12 @@ public class StatAccessServiceImpl implements StatAccessService {
     public MonitorResult<List<MerchantStatAccessRO>> queryAllAccessList(MerchantStatAccessRequest request) {
         MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
         criteria.setOrderByClause("dataTime asc");
-        criteria.createCriteria().andDataTypeEqualTo(request.getDataType())
+        MerchantStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andDataTypeEqualTo(request.getDataType()).andAppIdEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_APP_ID)
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        if (request.getSaasEnv() != null) {
+            innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
+        }
         List<MerchantStatAccess> list = merchantStatAccessMapper.selectByExample(criteria);
         List<MerchantStatAccessRO> data = DataConverterUtils.convert(list, MerchantStatAccessRO.class);
         return MonitorResultBuilder.build(data);
