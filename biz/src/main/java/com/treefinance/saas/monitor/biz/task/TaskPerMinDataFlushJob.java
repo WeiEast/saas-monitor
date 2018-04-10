@@ -39,15 +39,15 @@ public class TaskPerMinDataFlushJob implements SimpleJob {
                 @Override
                 public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
-                    //商户访问统计表 merchant_stat_access
-                    taskPerMinDataFlushService.statMerchantIntervalAccess(redisOperations, jobTime);
-                    //商户日访问统计表 merchant_stat_day_access
-                    taskPerMinDataFlushService.statMerchantDayAccess(redisOperations, jobTime);
-
-                    //saas合计所有商户的访问统计表 saas_stat_access
-                    taskPerMinDataFlushService.statSaasIntervalAccess(redisOperations, jobTime);
-                    //saas合计所有商户的日访问统计表 saas_stat_day_access
-                    taskPerMinDataFlushService.statSaasDayAccess(redisOperations, jobTime);
+//                    //商户访问统计表 merchant_stat_access
+//                    taskPerMinDataFlushService.statMerchantIntervalAccess(redisOperations, jobTime);
+//                    //商户日访问统计表 merchant_stat_day_access
+//                    taskPerMinDataFlushService.statMerchantDayAccess(redisOperations, jobTime);
+//
+//                    //saas合计所有商户的访问统计表 saas_stat_access
+//                    taskPerMinDataFlushService.statSaasIntervalAccess(redisOperations, jobTime);
+//                    //saas合计所有商户的日访问统计表 saas_stat_day_access
+//                    taskPerMinDataFlushService.statSaasDayAccess(redisOperations, jobTime);
 
                     //商户银行访问统计表,商户邮箱访问统计表,商户邮箱访问统计表,商户邮箱访问统计表,以及后续会添加其他业务类型
                     taskPerMinDataFlushService.statMerchantAccessWithType(redisOperations, jobTime);

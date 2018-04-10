@@ -1,27 +1,16 @@
 package com.treefinance.saas.monitor.biz.mq.handler;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.treefinance.saas.assistant.listener.TagBaseMessageHandler;
 import com.treefinance.saas.assistant.model.MonitorTagEnum;
 import com.treefinance.saas.assistant.model.TaskOperatorMonitorMessage;
-import com.treefinance.saas.grapserver.facade.model.enums.ETaskOperatorMonitorStatus;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
-import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.newmonitor.operator.OperatorMonitorActionStatService;
-import com.treefinance.saas.monitor.common.constants.AlarmConstants;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by haojiahong on 2017/10/30.
@@ -45,7 +34,7 @@ public class TaskOperatorMonitorMessageHandler implements TagBaseMessageHandler<
 
     @Override
     public void handleMessage(TaskOperatorMonitorMessage message) {
-        logger.info("运营商监控,消息处理,message={}", JSON.toJSONString(message));
+//        logger.info("运营商监控,消息处理,message={}", JSON.toJSONString(message));
         long start = System.currentTimeMillis();
         try {
 //            Date dataTime = message.getDataTime();

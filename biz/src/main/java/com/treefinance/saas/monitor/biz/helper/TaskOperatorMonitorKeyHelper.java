@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.helper;
 
 import com.google.common.base.Joiner;
 import com.treefinance.saas.grapserver.facade.model.enums.ETaskOperatorMonitorStatus;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -221,9 +222,9 @@ public class TaskOperatorMonitorKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, "template-appIds");
     }
 
-    public static String keyOfAlarmTimeLog(Date baseTime, Integer alarmType, ETaskStatDataType statType) {
+    public static String keyOfAlarmTimeLog(Date baseTime, OperatorMonitorAlarmConfigDTO config) {
         String intervalDateStr = DateFormatUtils.format(baseTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, alarmType, statType);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, config.getAlarmType(), config.getDataType(), config.getSaasEnv());
     }
 
     public static String keyOfTaskUserCountAllIntervalStat(Date intervalTime, String appId, ETaskStatDataType statType) {

@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.helper;
 
 import com.google.common.base.Joiner;
+import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -190,11 +191,11 @@ public class TaskMonitorPerMinKeyHelper {
      * 记录任务成功率预警,今天已已经预警的时刻
      *
      * @param redisKeyTime
-     * @param statType
+     * @param bizType
      * @return
      */
-    public static String keyOfAlarmTimeLog(Date redisKeyTime, EStatType statType) {
+    public static String keyOfAlarmTimeLog(Date redisKeyTime, EBizType bizType) {
         String intervalDateStr = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, statType);
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, bizType);
     }
 }

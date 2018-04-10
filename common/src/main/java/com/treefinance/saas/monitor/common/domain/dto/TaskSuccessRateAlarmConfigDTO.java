@@ -14,6 +14,17 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
     private static final long serialVersionUID = 7938223164128700307L;
 
     /**
+     * saas环境
+     */
+    private Byte saasEnv;
+
+    /**
+     * saas环境描述
+     */
+    private String saasEnvDesc;
+
+
+    /**
      * 任务业务类型
      */
     private String type;
@@ -64,8 +75,10 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
     public static void main(String[] args) {
         List<TaskSuccessRateAlarmConfigDTO> list = Lists.newArrayList();
         TaskSuccessRateAlarmConfigDTO dto1 = new TaskSuccessRateAlarmConfigDTO();
+        dto1.setSaasEnv((byte) 0);
+        dto1.setSaasEnvDesc("所有环境");
         dto1.setType("OPERATOR");
-        dto1.setSuccesThreshold(20);
+        dto1.setSuccesThreshold(40);
         dto1.setIntervalMins(3);
         dto1.setTimes(3);
         dto1.setTaskTimeoutSecs(600);
@@ -76,6 +89,8 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
         dto1.setSmsAlarmSwitch("on");
 
         TaskSuccessRateAlarmConfigDTO dto2 = new TaskSuccessRateAlarmConfigDTO();
+        dto2.setSaasEnv((byte) 0);
+        dto2.setSaasEnvDesc("所有环境");
         dto2.setType("OPERATOR");
         dto2.setSuccesThreshold(40);
         dto2.setIntervalMins(3);
@@ -171,5 +186,21 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
 
     public void setAlarmEndTime(String alarmEndTime) {
         this.alarmEndTime = alarmEndTime;
+    }
+
+    public Byte getSaasEnv() {
+        return saasEnv;
+    }
+
+    public void setSaasEnv(Byte saasEnv) {
+        this.saasEnv = saasEnv;
+    }
+
+    public String getSaasEnvDesc() {
+        return saasEnvDesc;
+    }
+
+    public void setSaasEnvDesc(String saasEnvDesc) {
+        this.saasEnvDesc = saasEnvDesc;
     }
 }

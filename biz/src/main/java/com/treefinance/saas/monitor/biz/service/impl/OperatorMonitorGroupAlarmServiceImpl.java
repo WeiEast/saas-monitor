@@ -11,6 +11,7 @@ import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
+import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
@@ -71,7 +72,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
 
     @Override
-    public void alarm(Date jobTime, OperatorMonitorAlarmConfigDTO config, ETaskStatDataType statType) {
+    public void alarm(Date jobTime, OperatorMonitorAlarmConfigDTO config) {
         try {
 
             Integer intervalMins = config.getIntervalMins();
@@ -83,11 +84,11 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             Date baseTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
             //判断此时刻是否预警预警过
-            String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config.getAlarmType(), statType);
+            String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config);
             BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
             if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
-                logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},statType={},alarmType={}已预警,不再预警",
-                        MonitorDateUtils.format(baseTime), JSON.toJSONString(statType), config.getAlarmType());
+                logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},config={}已预警,不再预警",
+                        MonitorDateUtils.format(baseTime), JSON.toJSONString(config));
                 return;
             }
             setOperations.add(MonitorDateUtils.format(baseTime));
@@ -98,7 +99,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             //获取基础数据
             Date startTime = DateUtils.addMinutes(baseTime, -intervalMins);
             Date endTime = baseTime;
-            List<OperatorStatAccessDTO> dtoList = this.getBaseDataList(jobTime, startTime, endTime, config, statType);
+            List<OperatorStatAccessDTO> dtoList = this.getBaseDataList(jobTime, startTime, endTime, config);
             if (CollectionUtils.isEmpty(dtoList)) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到分运营商的统计数据",
                         MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(endTime));
@@ -107,7 +108,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
             //获取前7天内,相同时刻运营商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
             //<groupCode,OperatorStatAccessDTO>
-            Map<String, OperatorStatAccessDTO> compareMap = getPreviousCompareDataMap(jobTime, baseTime, dtoList, config, statType);
+            Map<String, OperatorStatAccessDTO> compareMap = getPreviousCompareDataMap(jobTime, baseTime, dtoList, config);
             logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},获取前n天内,相同时刻区分运营商统计的平均值compareMap={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(compareMap));
             if (MapUtils.isEmpty(compareMap)) {
@@ -122,14 +123,14 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 return;
             }
             //发送预警
-            alarmMsg(msgList, jobTime, startTime, endTime, config, statType);
+            alarmMsg(msgList, jobTime, startTime, endTime, config);
         } catch (Exception e) {
-            logger.error("运营商监控,预警定时任务执行jobTime={},statType={}异常", MonitorDateUtils.format(jobTime), statType, e);
+            logger.error("运营商监控,预警定时任务执行jobTime={},config={}异常", MonitorDateUtils.format(jobTime), JSON.toJSONString(config), e);
         }
     }
 
     private List<OperatorStatAccessDTO> getBaseDataList(Date jobTime, Date startTime, Date endTime,
-                                                        OperatorMonitorAlarmConfigDTO config, ETaskStatDataType statType) {
+                                                        OperatorMonitorAlarmConfigDTO config) {
         List<String> operatorNameList = Splitter.on(",").splitToList(diamondConfig.getOperatorAlarmOperatorNameList());
         if (CollectionUtils.isEmpty(operatorNameList)) {
             logger.error("运营商监控,预警定时任务执行jobTime={},未配置需要预警的运营商,operator.alarm.operator.name.list未配置",
@@ -137,12 +138,19 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             return Lists.newArrayList();
         }
         OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
-        criteria.createCriteria()
-                .andAppIdEqualTo(config.getAppId())
-                .andDataTypeEqualTo(statType.getCode())
+        OperatorStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andAppIdEqualTo(config.getAppId())
+                .andDataTypeEqualTo(config.getDataType())
+                .andSaasEnvEqualTo(config.getSaasEnv())
                 .andGroupNameIn(operatorNameList)
                 .andDataTimeGreaterThanOrEqualTo(startTime)
                 .andDataTimeLessThan(endTime);
+        //总运营商
+        if (config.getAlarmType() == 1) {
+            innerCriteria.andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
+        } else {
+            innerCriteria.andGroupCodeNotEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
+        }
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
         if (CollectionUtils.isEmpty(list)) {
             logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到区分运营商的统计数据list={}",
@@ -189,20 +197,19 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
      * @param startTime 时间区间的开始时间
      * @param endTime   时间区间的结束时间
      * @param config    配置文件
-     * @param statType  任务类型
      */
     private void alarmMsg(List<TaskStatAccessAlarmMsgDTO> msgList,
                           Date jobTime,
                           Date startTime,
                           Date endTime,
-                          OperatorMonitorAlarmConfigDTO config,
-                          ETaskStatDataType statType) {
+                          OperatorMonitorAlarmConfigDTO config) {
         String baseTitle;
         String mailSwitch = config.getMailAlarmSwitch();
         String weChatSwitch = config.getWeChatAlarmSwitch();
 
         String smsSwitch = operatorMonitorConfig.getSmsSwitch();
         String ivrSwitch = operatorMonitorConfig.getIvrSwitch();
+        ETaskStatDataType statType = ETaskStatDataType.getByValue(config.getDataType());
 
         if (ETaskStatDataType.TASK.equals(statType)) {
             baseTitle = "运营商监控(按任务数统计)";
@@ -397,8 +404,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
      */
     private Map<String, OperatorStatAccessDTO> getPreviousCompareDataMap(Date jobTime, Date baseTime,
                                                                          List<OperatorStatAccessDTO> dtoList,
-                                                                         OperatorMonitorAlarmConfigDTO config,
-                                                                         ETaskStatDataType statType) {
+                                                                         OperatorMonitorAlarmConfigDTO config) {
         List<String> groupCodeList = dtoList.stream().map(OperatorStatAccessDTO::getGroupCode).distinct().collect(Collectors.toList());
         Integer previousDays = config.getPreviousDays();
         List<Date> previousOClockList = MonitorDateUtils.getPreviousOClockTime(baseTime, previousDays);
@@ -406,7 +412,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         for (Date previousOClock : previousOClockList) {
             Date startTime = DateUtils.addMinutes(previousOClock, -config.getIntervalMins());
             Date endTime = previousOClock;
-            List<OperatorStatAccessDTO> list = this.getBaseDataList(jobTime, startTime, endTime, config, statType);
+            List<OperatorStatAccessDTO> list = this.getBaseDataList(jobTime, startTime, endTime, config);
             previousDTOList.addAll(list);
         }
 
@@ -634,7 +640,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             msg.setOffset(BigDecimal.ZERO);
             msg.setAlarmLevel(EAlarmLevel.info);
         } else {
-            BigDecimal value = BigDecimal.ONE.subtract(actualVal.divide(compareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+            BigDecimal value = BigDecimal.valueOf(100).subtract(actualVal.multiply(BigDecimal.valueOf(100)).divide(compareVal, 2, BigDecimal.ROUND_HALF_UP));
             msg.setOffset(value);
             determineLevel(msg, value);
         }
@@ -685,5 +691,6 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         }
         return true;
     }
+
 
 }
