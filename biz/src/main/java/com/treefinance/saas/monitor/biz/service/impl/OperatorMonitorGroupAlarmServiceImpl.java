@@ -88,7 +88,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
             if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},config={}已预警,不再预警",
-                        MonitorDateUtils.format(baseTime), JSON.toJSONString(config));
+                        MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config));
                 return;
             }
             setOperations.add(MonitorDateUtils.format(baseTime));
@@ -142,13 +142,13 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         innerCriteria.andAppIdEqualTo(config.getAppId())
                 .andDataTypeEqualTo(config.getDataType())
                 .andSaasEnvEqualTo(config.getSaasEnv())
-                .andGroupNameIn(operatorNameList)
                 .andDataTimeGreaterThanOrEqualTo(startTime)
                 .andDataTimeLessThan(endTime);
         //总运营商
         if (config.getAlarmType() == 1) {
             innerCriteria.andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
         } else {
+            innerCriteria.andGroupNameIn(operatorNameList);
             innerCriteria.andGroupCodeNotEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
         }
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
