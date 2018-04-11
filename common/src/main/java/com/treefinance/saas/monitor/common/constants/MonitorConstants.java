@@ -17,4 +17,11 @@ public class MonitorConstants {
      * 所有运营商虚拟groupCode
      */
     public static final String VIRTUAL_TOTAL_STAT_OPERATOR = "virtual_total_stat_operator";
+
+    /**
+     * 所有运营商虚拟groupName
+     */
+    public static final String VIRTUAL_TOTAL_STAT_OPERATOR_NAME = "所有运营商";
+
+
 }
