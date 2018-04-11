@@ -117,10 +117,13 @@ public class StatAccessServiceImpl implements StatAccessService {
         MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
         criteria.setOrderByClause("dataTime asc");
         MerchantStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
-        innerCriteria.andDataTypeEqualTo(request.getDataType()).andAppIdEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_APP_ID)
+        innerCriteria.andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         if (request.getSaasEnv() != null) {
             innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
+        }
+        if (StringUtils.isNotBlank(request.getAppId())) {
+            innerCriteria.andAppIdEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_APP_ID);
         }
         List<MerchantStatAccess> list = merchantStatAccessMapper.selectByExample(criteria);
         List<MerchantStatAccessRO> data = DataConverterUtils.convert(list, MerchantStatAccessRO.class);
