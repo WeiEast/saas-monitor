@@ -390,6 +390,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getStatType())
                 .andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR)
+                .andSaasEnvEqualTo(request.getSaasEnv())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
 
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
