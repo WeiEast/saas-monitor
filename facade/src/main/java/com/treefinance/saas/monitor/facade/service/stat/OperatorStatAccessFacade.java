@@ -91,5 +91,13 @@ public interface OperatorStatAccessFacade {
      */
     MonitorResult<List<OperatorStatAccessRO>> queryOperatorStatAccessListByExample(OperatorStatAccessRequest request);
 
+    /**
+     * 废弃了operator_all_stat_access表,将前7天相关历史数据同步到operator_stat_access中
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<Boolean> initHistoryData4OperatorStatAccess(OperatorStatAccessRequest request);
+
 
 }

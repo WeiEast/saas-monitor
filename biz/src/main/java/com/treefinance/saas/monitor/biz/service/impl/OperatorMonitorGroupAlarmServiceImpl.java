@@ -163,9 +163,10 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             OperatorStatAccess data = entry.getValue().get(0);
             OperatorStatAccessDTO dataDTO = DataConverterUtils.convert(data, OperatorStatAccessDTO.class);
             List<OperatorStatAccess> valueList = entry.getValue();
-            int confirmMobileCount = 0, startLoginCount = 0, loginSuccessCount = 0,
+            int entryCount = 0, confirmMobileCount = 0, startLoginCount = 0, loginSuccessCount = 0,
                     crawlSuccessCount = 0, processSuccessCount = 0, callbackSuccessCount = 0;
             for (OperatorStatAccess item : valueList) {
+                entryCount = entryCount + item.getEntryCount();
                 confirmMobileCount = confirmMobileCount + item.getConfirmMobileCount();
                 startLoginCount = startLoginCount + item.getStartLoginCount();
                 loginSuccessCount = loginSuccessCount + item.getLoginSuccessCount();
@@ -173,6 +174,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 processSuccessCount = processSuccessCount + item.getProcessSuccessCount();
                 callbackSuccessCount = callbackSuccessCount + item.getCallbackSuccessCount();
             }
+            dataDTO.setEntryCount(entryCount);
             dataDTO.setConfirmMobileCount(confirmMobileCount);
             dataDTO.setStartLoginCount(startLoginCount);
             dataDTO.setLoginSuccessCount(loginSuccessCount);
@@ -399,7 +401,6 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
      * @param baseTime 任务时间区间的结束时间
      * @param dtoList  基础数据的列表
      * @param config   配置
-     * @param statType @return
      * @return
      */
     private Map<String, OperatorStatAccessDTO> getPreviousCompareDataMap(Date jobTime, Date baseTime,
