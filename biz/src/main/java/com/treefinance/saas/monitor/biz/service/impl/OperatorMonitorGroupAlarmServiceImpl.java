@@ -181,6 +181,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             dataDTO.setCrawlSuccessCount(crawlSuccessCount);
             dataDTO.setProcessSuccessCount(processSuccessCount);
             dataDTO.setCallbackSuccessCount(callbackSuccessCount);
+            dataDTO.setConfirmMobileConversionRate(StatisticCalcUtil.calcRate(confirmMobileCount, entryCount));
             dataDTO.setLoginConversionRate(StatisticCalcUtil.calcRate(startLoginCount, confirmMobileCount));
             dataDTO.setLoginSuccessRate(StatisticCalcUtil.calcRate(loginSuccessCount, startLoginCount));
             dataDTO.setCrawlSuccessRate(StatisticCalcUtil.calcRate(crawlSuccessCount, loginSuccessCount));
@@ -439,14 +440,16 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                         .collect(Collectors.toList());
                 entryList.remove(entryList.size() - 1);
             }
+            BigDecimal previousConfirmMobileConversionRate = BigDecimal.ZERO;
             BigDecimal previousLoginConversionRateCount = BigDecimal.ZERO;
             BigDecimal previousLoginSuccessRateCount = BigDecimal.ZERO;
             BigDecimal previousCrawlSuccessRateCount = BigDecimal.ZERO;
             BigDecimal previousProcessSuccessRateCount = BigDecimal.ZERO;
             BigDecimal previousCallbackSuccessRateCount = BigDecimal.ZERO;
-            Integer previousConfirmMobileCount = 0, previousStartLoginCount = 0, previousLoginSuccessCount = 0,
+            Integer previousEntryCount = 0, previousConfirmMobileCount = 0, previousStartLoginCount = 0, previousLoginSuccessCount = 0,
                     previousCrawlSuccessCount = 0, previousProcessSuccessCount = 0, previousCallbackSuccessCount = 0;
             for (OperatorStatAccessDTO dto : entryList) {
+                previousConfirmMobileConversionRate
                 previousLoginConversionRateCount = previousLoginConversionRateCount.add(dto.getLoginConversionRate());
                 previousLoginSuccessRateCount = previousLoginSuccessRateCount.add(dto.getLoginSuccessRate());
                 previousCrawlSuccessRateCount = previousCrawlSuccessRateCount.add(dto.getCrawlSuccessRate());
@@ -506,6 +509,11 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             BigDecimal crawlCompareVal = compareDTO.getPreviousCrawlSuccessRate().multiply(new BigDecimal(config.getCrawlSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
             BigDecimal processCompareVal = compareDTO.getPreviousProcessSuccessRate().multiply(new BigDecimal(config.getProcessSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
             BigDecimal callbackCompareVal = compareDTO.getPreviousCallbackSuccessRateRate().multiply(new BigDecimal(config.getCallbackSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+
+            if (config.getAlarmType() == 1) {
+                BigDecimal confirmMobileConversionCompareVal = compareDTO.getpreviouscon
+            }
+
 
             //登录转化率小于前7天平均值
             if (isAlarm(dto.getConfirmMobileCount(), dto.getLoginConversionRate(), loginConversionCompareVal)) {
