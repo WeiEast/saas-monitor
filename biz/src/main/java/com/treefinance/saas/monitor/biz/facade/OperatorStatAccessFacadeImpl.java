@@ -6,10 +6,7 @@ import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
-import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
-import com.treefinance.saas.monitor.dao.entity.OperatorStatDayAccess;
-import com.treefinance.saas.monitor.dao.entity.OperatorStatDayAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatDayAccessMapper;
 import com.treefinance.saas.monitor.facade.domain.request.OperatorStatAccessRequest;
@@ -393,6 +390,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.createCriteria().andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getStatType())
                 .andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR)
+                .andSaasEnvEqualTo(request.getSaasEnv())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
 
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
@@ -446,6 +444,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         return MonitorResultBuilder.build(result);
 
     }
+
 
     private List<OperatorStatAccessDTO> changeIntervalDataTimeOperatorAllStatAccess(List<OperatorStatAccess> list, final Integer intervalMins) {
         Map<Date, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
@@ -523,5 +522,17 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         BigDecimal rate = BigDecimal.valueOf(b, 1)
                 .divide(BigDecimal.valueOf(a, 1), 1, BigDecimal.ROUND_HALF_UP);
         return rate;
+    }
+
+
+    @Override
+    public MonitorResult<Boolean> initHistoryData4OperatorStatAccess(OperatorStatAccessRequest request) {
+        Date startDate = request.getStartDate();
+        Date endDate = request.getEndDate();
+        OperatorAllStatDayAccessCriteria criteria = new OperatorAllStatDayAccessCriteria();
+
+
+
+        return null;
     }
 }
