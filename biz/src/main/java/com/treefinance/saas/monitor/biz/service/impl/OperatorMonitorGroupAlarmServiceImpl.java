@@ -88,7 +88,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
             if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},config={}已预警,不再预警",
-                        MonitorDateUtils.format(baseTime), JSON.toJSONString(config));
+                        MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config));
                 return;
             }
             setOperations.add(MonitorDateUtils.format(baseTime));
@@ -142,13 +142,13 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         innerCriteria.andAppIdEqualTo(config.getAppId())
                 .andDataTypeEqualTo(config.getDataType())
                 .andSaasEnvEqualTo(config.getSaasEnv())
-                .andGroupNameIn(operatorNameList)
                 .andDataTimeGreaterThanOrEqualTo(startTime)
                 .andDataTimeLessThan(endTime);
         //总运营商
         if (config.getAlarmType() == 1) {
             innerCriteria.andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
         } else {
+            innerCriteria.andGroupNameIn(operatorNameList);
             innerCriteria.andGroupCodeNotEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
         }
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
@@ -181,11 +181,13 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             dataDTO.setCrawlSuccessCount(crawlSuccessCount);
             dataDTO.setProcessSuccessCount(processSuccessCount);
             dataDTO.setCallbackSuccessCount(callbackSuccessCount);
+            dataDTO.setConfirmMobileConversionRate(StatisticCalcUtil.calcRate(confirmMobileCount, entryCount));
             dataDTO.setLoginConversionRate(StatisticCalcUtil.calcRate(startLoginCount, confirmMobileCount));
             dataDTO.setLoginSuccessRate(StatisticCalcUtil.calcRate(loginSuccessCount, startLoginCount));
             dataDTO.setCrawlSuccessRate(StatisticCalcUtil.calcRate(crawlSuccessCount, loginSuccessCount));
             dataDTO.setProcessSuccessRate(StatisticCalcUtil.calcRate(processSuccessCount, crawlSuccessCount));
             dataDTO.setCallbackSuccessRate(StatisticCalcUtil.calcRate(callbackSuccessCount, processSuccessCount));
+            dataDTO.setWholeConversionRate(StatisticCalcUtil.calcRate(callbackSuccessCount, entryCount));
             dataDTOList.add(dataDTO);
         }
         return dataDTOList;
@@ -439,19 +441,26 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                         .collect(Collectors.toList());
                 entryList.remove(entryList.size() - 1);
             }
+            BigDecimal previousConfirmMobileConversionRateCount = BigDecimal.ZERO;
             BigDecimal previousLoginConversionRateCount = BigDecimal.ZERO;
             BigDecimal previousLoginSuccessRateCount = BigDecimal.ZERO;
             BigDecimal previousCrawlSuccessRateCount = BigDecimal.ZERO;
             BigDecimal previousProcessSuccessRateCount = BigDecimal.ZERO;
             BigDecimal previousCallbackSuccessRateCount = BigDecimal.ZERO;
-            Integer previousConfirmMobileCount = 0, previousStartLoginCount = 0, previousLoginSuccessCount = 0,
+            BigDecimal previousWholeConversionRateCount = BigDecimal.ZERO;
+
+            Integer previousEntryCount = 0, previousConfirmMobileCount = 0, previousStartLoginCount = 0, previousLoginSuccessCount = 0,
                     previousCrawlSuccessCount = 0, previousProcessSuccessCount = 0, previousCallbackSuccessCount = 0;
             for (OperatorStatAccessDTO dto : entryList) {
+                previousConfirmMobileConversionRateCount = previousConfirmMobileConversionRateCount.add(dto.getConfirmMobileConversionRate());
                 previousLoginConversionRateCount = previousLoginConversionRateCount.add(dto.getLoginConversionRate());
                 previousLoginSuccessRateCount = previousLoginSuccessRateCount.add(dto.getLoginSuccessRate());
                 previousCrawlSuccessRateCount = previousCrawlSuccessRateCount.add(dto.getCrawlSuccessRate());
                 previousProcessSuccessRateCount = previousProcessSuccessRateCount.add(dto.getProcessSuccessRate());
                 previousCallbackSuccessRateCount = previousCallbackSuccessRateCount.add(dto.getCallbackSuccessRate());
+                previousWholeConversionRateCount = previousWholeConversionRateCount.add(dto.getWholeConversionRate());
+
+                previousEntryCount = previousEntryCount + dto.getEntryCount();
                 previousConfirmMobileCount = previousConfirmMobileCount + dto.getConfirmMobileCount();
                 previousStartLoginCount = previousStartLoginCount + dto.getStartLoginCount();
                 previousLoginSuccessCount = previousLoginSuccessCount + dto.getLoginSuccessCount();
@@ -461,12 +470,15 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             }
             OperatorStatAccessDTO compareDto = new OperatorStatAccessDTO();
             compareDto.setGroupCode(entry.getKey());
+            compareDto.setPreviousConfirmMobileConversionRate(previousConfirmMobileConversionRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousLoginConversionRate(previousLoginConversionRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousLoginSuccessRate(previousLoginSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousCrawlSuccessRate(previousCrawlSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousProcessSuccessRate(previousProcessSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousCallbackSuccessRateRate(previousCallbackSuccessRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
+            compareDto.setPreviousWholeConversionRate(previousWholeConversionRateCount.divide(BigDecimal.valueOf(entryList.size()), 2, BigDecimal.ROUND_HALF_UP));
 
+            compareDto.setPreviousEntryAvgCount(BigDecimal.valueOf(previousEntryCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousConfirmMobileAvgCount(BigDecimal.valueOf(previousConfirmMobileCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousStartLoginAvgCount(BigDecimal.valueOf(previousStartLoginCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
             compareDto.setPreviousLoginSuccessAvgCount(BigDecimal.valueOf(previousLoginSuccessCount).divide(BigDecimal.valueOf(entryList.size()), 1, BigDecimal.ROUND_HALF_UP));
@@ -506,6 +518,75 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             BigDecimal crawlCompareVal = compareDTO.getPreviousCrawlSuccessRate().multiply(new BigDecimal(config.getCrawlSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
             BigDecimal processCompareVal = compareDTO.getPreviousProcessSuccessRate().multiply(new BigDecimal(config.getProcessSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
             BigDecimal callbackCompareVal = compareDTO.getPreviousCallbackSuccessRateRate().multiply(new BigDecimal(config.getCallbackSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+
+            if (config.getAlarmType() == 1) {
+                BigDecimal confirmMobileCompareVal = compareDTO.getPreviousConfirmMobileConversionRate().multiply(new BigDecimal(config.getConfirmMobileConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+                BigDecimal wholeConversionCompareVal = compareDTO.getPreviousWholeConversionRate().multiply(new BigDecimal(config.getWholeConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+
+                //确认手机转化率小于前7天平均值
+                if (dto.getConfirmMobileConversionRate().compareTo(confirmMobileCompareVal) < 0) {
+                    TaskStatAccessAlarmMsgDTO msg = new TaskStatAccessAlarmMsgDTO();
+                    msg.setGroupCode(dto.getGroupCode());
+                    msg.setGroupName(dto.getGroupName());
+                    msg.setAlarmDesc("确认手机转化率低于前" + previousDays + "天平均值的" + config.getConfirmMobileConversionRate() + "%");
+                    msg.setAlarmSimpleDesc("确认手机");
+                    msg.setAlarmType("确认手机转化率");
+                    msg.setValue(dto.getConfirmMobileConversionRate());
+                    msg.setThreshold(confirmMobileCompareVal);
+                    String valueDesc = new StringBuilder()
+                            .append(dto.getConfirmMobileConversionRate()).append("%").append(" ").append("(")
+                            .append(dto.getConfirmMobileCount()).append("/")
+                            .append(dto.getEntryCount()).append(")").toString();
+                    msg.setValueDesc(valueDesc);
+                    String thresholdDesc = new StringBuilder()
+                            .append(confirmMobileCompareVal).append("%").append(" ").append("(")
+                            .append(compareDTO.getPreviousConfirmMobileAvgCount()).append("/")
+                            .append(compareDTO.getPreviousEntryAvgCount()).append("*")
+                            .append(new BigDecimal(config.getConfirmMobileConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                    msg.setThresholdDesc(thresholdDesc);
+                    if (BigDecimal.ZERO.compareTo(confirmMobileCompareVal) == 0) {
+                        msg.setOffset(BigDecimal.ZERO);
+                    } else {
+                        BigDecimal value = BigDecimal.ONE.subtract(dto.getConfirmMobileConversionRate().divide(confirmMobileCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                        msg.setOffset(value);
+                        determineAllLevel(msg, value);
+                    }
+                    msgList.add(msg);
+                }
+
+                //总转化率小于前7天平均值
+                if (dto.getWholeConversionRate().compareTo(wholeConversionCompareVal) < 0) {
+                    TaskStatAccessAlarmMsgDTO msg = new TaskStatAccessAlarmMsgDTO();
+                    msg.setGroupCode(dto.getGroupCode());
+                    msg.setGroupName(dto.getGroupName());
+                    msg.setAlarmDesc("总转化率低于前" + previousDays + "天平均值的" + config.getWholeConversionRate() + "%");
+                    msg.setAlarmType("总转化率");
+                    msg.setAlarmSimpleDesc("总转化率");
+                    msg.setValue(dto.getWholeConversionRate());
+                    msg.setThreshold(wholeConversionCompareVal);
+                    String valueDesc = new StringBuilder()
+                            .append(dto.getWholeConversionRate()).append("%").append(" ").append("(")
+                            .append(dto.getCallbackSuccessCount()).append("/")
+                            .append(dto.getEntryCount()).append(")").toString();
+                    msg.setValueDesc(valueDesc);
+                    String thresholdDesc = new StringBuilder()
+                            .append(wholeConversionCompareVal).append("%").append(" ").append("(")
+                            .append(compareDTO.getPreviousCallbackSuccessAvgCount()).append("/")
+                            .append(compareDTO.getPreviousEntryAvgCount()).append("*")
+                            .append(new BigDecimal(config.getWholeConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                    msg.setThresholdDesc(thresholdDesc);
+                    if (BigDecimal.ZERO.compareTo(wholeConversionCompareVal) == 0) {
+                        msg.setOffset(BigDecimal.ZERO);
+                    } else {
+                        BigDecimal value = BigDecimal.ONE.subtract(dto.getWholeConversionRate().divide(wholeConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+                        msg.setOffset(value);
+                        determineLevel(msg, value);
+                    }
+                    msgList.add(msg);
+
+                }
+            }
+
 
             //登录转化率小于前7天平均值
             if (isAlarm(dto.getConfirmMobileCount(), dto.getLoginConversionRate(), loginConversionCompareVal)) {
@@ -657,6 +738,23 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0 && "中国联通".equals(msg.getGroupName())) {
             msg.setAlarmLevel(EAlarmLevel.error);
         } else if ("中国联通".equals(msg.getGroupName())) {
+            msg.setAlarmLevel(EAlarmLevel.warning);
+        } else {
+            msg.setAlarmLevel(EAlarmLevel.info);
+        }
+    }
+
+
+    /**
+     * 确定预警等级
+     *
+     * @param msg   预警消息
+     * @param value offset 某一属性的偏转值
+     */
+    private void determineAllLevel(TaskStatAccessAlarmMsgDTO msg, BigDecimal value) {
+        if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0) {
+            msg.setAlarmLevel(EAlarmLevel.error);
+        } else if (value.compareTo(BigDecimal.valueOf(diamondConfig.getWarningLower())) > 0) {
             msg.setAlarmLevel(EAlarmLevel.warning);
         } else {
             msg.setAlarmLevel(EAlarmLevel.info);

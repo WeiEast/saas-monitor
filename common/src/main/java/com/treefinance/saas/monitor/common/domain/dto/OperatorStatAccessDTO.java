@@ -49,6 +49,11 @@ public class OperatorStatAccessDTO implements Serializable {
     private BigDecimal callbackSuccessRate;
 
     /**
+     * 前n天的相同时刻创建任务数平均值
+     */
+    private BigDecimal previousEntryAvgCount;
+
+    /**
      * 前n天的相同时刻确认手机号数平均值
      */
     private BigDecimal previousConfirmMobileAvgCount;
@@ -75,6 +80,10 @@ public class OperatorStatAccessDTO implements Serializable {
 
     private BigDecimal previousCallbackSuccessAvgCount;
 
+    /**
+     *
+     */
+    private BigDecimal previousConfirmMobileConversionRate;
 
     /**
      * 前n天的相同时刻登录转化率平均值
@@ -97,6 +106,10 @@ public class OperatorStatAccessDTO implements Serializable {
     private BigDecimal previousProcessSuccessRate;
 
     private BigDecimal previousCallbackSuccessRateRate;
+
+    private BigDecimal wholeConversionRate;
+
+    private BigDecimal previousWholeConversionRate;
 
 
     private Date createTime;
@@ -375,5 +388,37 @@ public class OperatorStatAccessDTO implements Serializable {
 
     public void setTaskCount(Integer taskCount) {
         this.taskCount = taskCount;
+    }
+
+    public BigDecimal getPreviousEntryAvgCount() {
+        return previousEntryAvgCount;
+    }
+
+    public void setPreviousEntryAvgCount(BigDecimal previousEntryAvgCount) {
+        this.previousEntryAvgCount = previousEntryAvgCount;
+    }
+
+    public BigDecimal getPreviousConfirmMobileConversionRate() {
+        return previousConfirmMobileConversionRate;
+    }
+
+    public void setPreviousConfirmMobileConversionRate(BigDecimal previousConfirmMobileConversionRate) {
+        this.previousConfirmMobileConversionRate = previousConfirmMobileConversionRate;
+    }
+
+    public BigDecimal getWholeConversionRate() {
+        return wholeConversionRate;
+    }
+
+    public void setWholeConversionRate(BigDecimal wholeConversionRate) {
+        this.wholeConversionRate = wholeConversionRate;
+    }
+
+    public BigDecimal getPreviousWholeConversionRate() {
+        return previousWholeConversionRate;
+    }
+
+    public void setPreviousWholeConversionRate(BigDecimal previousWholeConversionRate) {
+        this.previousWholeConversionRate = previousWholeConversionRate;
     }
 }
