@@ -189,6 +189,10 @@ public class TaskMonitorPerMinServiceImpl implements TaskMonitorPerMinService {
             //给merchant商户系统的监控暂时还是使用10分钟
             Date redisKeyTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(taskCreateTime, diamondConfig.getMonitorIntervalMinutes());
             EBizType type = EBizType.getBizType(message.getBizType());
+            if (type == null) {
+                logger.error("任务预警,任务预警消息处理,任务业务类型有误,任务消息message={}", JSON.toJSONString(message));
+                return;
+            }
             String website = message.getWebSite();
             switch (type) {
                 case ECOMMERCE:
@@ -242,6 +246,10 @@ public class TaskMonitorPerMinServiceImpl implements TaskMonitorPerMinService {
         Date redisKeyTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(taskCreateTime, 1);
         taskMonitorPerMinRedisProcessor.updateSaasErrorStepDay(redisKeyTime, message, EStatType.TOTAL);
         EBizType type = EBizType.getBizType(message.getBizType());
+        if (type == null) {
+            logger.error("任务预警,任务预警消息处理,任务业务类型有误,任务消息message={}", JSON.toJSONString(message));
+            return;
+        }
         switch (type) {
             case ECOMMERCE:
                 taskMonitorPerMinRedisProcessor.updateSaasErrorStepDay(redisKeyTime, message, EStatType.ECOMMERCE);

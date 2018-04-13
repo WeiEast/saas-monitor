@@ -27,7 +27,7 @@ public class MonitorAutoStatTest {
 
     @Test
     public void testRedisLock() throws InterruptedException {
-        String key = "monitor:lock:1234567";
+        String key = "monitor:lock:1234567aaa";
         RedisKeyTask redisKeyTask = new RedisKeyTask(key, 20000L);
         Thread thread1 = new Thread(redisKeyTask);
         Thread thread2 = new Thread(redisKeyTask);
@@ -57,7 +57,7 @@ public class MonitorAutoStatTest {
                 lockMap = redisDao.acquireLock(lockKey, expire, 1000L, 20);
                 if (lockMap != null) {
                     System.out.println(Thread.currentThread().getName() + "执行业务逻辑");
-                    Thread.sleep(10 * 1000);//获得锁，执行业务逻辑方法
+                    Thread.sleep(1 * 1000);//获得锁，执行业务逻辑方法
                     System.out.println("业务逻辑执行完成");
                 } else {
                     System.out.println(Thread.currentThread().getName() + "未获取到锁");
