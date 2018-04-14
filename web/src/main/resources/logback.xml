@@ -12,6 +12,9 @@
 			<charset>UTF-8</charset>
 		</encoder>
 		<file>${LOG_FILE}.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<FileNamePattern>${LOG_FILE}-%d{yyyy-MM-dd}-%i.log</FileNamePattern>
 			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
