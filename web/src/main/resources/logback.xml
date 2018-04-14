@@ -19,6 +19,9 @@
 			</timeBasedFileNamingAndTriggeringPolicy>
 			<MaxHistory>10</MaxHistory>
 		</rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
 	</appender>
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
