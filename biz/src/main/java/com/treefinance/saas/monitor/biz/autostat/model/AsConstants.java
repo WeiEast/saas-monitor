@@ -15,6 +15,11 @@ public class AsConstants {
     public static final String REDIS_LOCK_PREFIX = "saas-monitor:stat:lock";
 
     /**
+     * 模板缓存key
+     */
+    public static final String REDIS_AUTO_STAT_TEMPLATE_KEY = "saas-monitor:auto:stat:templates";
+
+    /**
      * redis
      */
     public static final String REDIS = "redis";

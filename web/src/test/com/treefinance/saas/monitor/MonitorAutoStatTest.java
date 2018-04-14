@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor;
 
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
+import com.treefinance.saas.monitor.biz.autostat.AutoStatService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.utils.SpringIocUtils;
 import org.junit.Test;
@@ -24,6 +25,17 @@ public class MonitorAutoStatTest {
 
     @Autowired
     private RedisDao redisDao;
+    @Autowired
+    private AutoStatService autoStatService;
+
+
+    @Test
+    public void testAutoStatService() throws InterruptedException {
+        autoStatService.execute(null);
+        Thread.sleep(2000);
+        autoStatService.execute(null);
+    }
+
 
     @Test
     public void testRedisLock() throws InterruptedException {
