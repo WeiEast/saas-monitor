@@ -17,6 +17,8 @@ import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.template.parser.StatTemplateParser;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatTemplateService;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
+import com.treefinance.saas.monitor.common.domain.dto.StatTemplateDTO;
+import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.dao.entity.BasicData;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.apache.commons.collections.CollectionUtils;
@@ -193,31 +195,35 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
 
     }
 
-    private List<StatTemplate> getNeedUpdateStatTemplates() {
+    public List<StatTemplate> getNeedUpdateStatTemplates() {
         //刷新模板任务有问题,先将模板缓存,未发生变化的模板无需刷新
         List<StatTemplate> statTemplates = statTemplateService.queryAll();
+        List<StatTemplateDTO> statTemplateDTOs = DataConverterUtils.convert(statTemplates, StatTemplateDTO.class);
+
         String templateKey = AsConstants.REDIS_AUTO_STAT_TEMPLATE_KEY;
         String statTemplateStr = redisTemplate.opsForValue().get(templateKey);
 
-        List<StatTemplate> changedStatTemplates = Lists.newArrayList();
+        List<StatTemplateDTO> changedStatTemplateDTOs = Lists.newArrayList();
+        List<StatTemplate> result = Lists.newArrayList();
         if (StringUtils.isBlank(statTemplateStr)) {
-            changedStatTemplates.addAll(statTemplates);
+            changedStatTemplateDTOs.addAll(statTemplateDTOs);
         } else {
-            List<StatTemplate> oldStatTemplates = JSON.parseArray(statTemplateStr, StatTemplate.class);
-            Map<String, StatTemplate> oldStatTemplateMap = oldStatTemplates.stream()
-                    .collect(Collectors.toMap(StatTemplate::getTemplateCode, template -> template));
+            List<StatTemplateDTO> oldStatTemplates = JSON.parseArray(statTemplateStr, StatTemplateDTO.class);
+            Map<String, StatTemplateDTO> oldStatTemplateMap = oldStatTemplates.stream()
+                    .collect(Collectors.toMap(StatTemplateDTO::getTemplateCode, template -> template));
 
-            for (StatTemplate statTemplate : statTemplates) {
-                StatTemplate oldStatTemplate = oldStatTemplateMap.get(statTemplate.getTemplateCode());
+            for (StatTemplateDTO statTemplate : statTemplateDTOs) {
+                StatTemplateDTO oldStatTemplate = oldStatTemplateMap.get(statTemplate.getTemplateCode());
                 if (oldStatTemplate == null || !statTemplate.equals(oldStatTemplate)) {
-                    changedStatTemplates.add(statTemplate);
+                    changedStatTemplateDTOs.add(statTemplate);
                 }
             }
         }
-        if (CollectionUtils.isNotEmpty(changedStatTemplates)) {
-            redisTemplate.opsForValue().set(templateKey, JSON.toJSONString(statTemplates));
+        if (CollectionUtils.isNotEmpty(changedStatTemplateDTOs)) {
+            redisTemplate.opsForValue().set(templateKey, JSON.toJSONString(statTemplateDTOs));
+            result = DataConverterUtils.convert(changedStatTemplateDTOs, StatTemplate.class);
         }
-        return changedStatTemplates;
+        return result;
     }
 
     @Override

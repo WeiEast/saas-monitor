@@ -1,9 +1,12 @@
 package com.treefinance.saas.monitor;
 
+import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.autostat.AutoStatService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
+import com.treefinance.saas.monitor.common.domain.dto.StatTemplateDTO;
 import com.treefinance.saas.monitor.common.utils.SpringIocUtils;
+import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,6 +31,36 @@ public class MonitorAutoStatTest {
     private RedisDao redisDao;
     @Autowired
     private AutoStatService autoStatService;
+
+
+    @Test
+    public void testChangedTemplate() {
+        List<StatTemplate> list = autoStatService.getNeedUpdateStatTemplates();
+        System.out.println(JSON.toJSONString(list));
+        List<StatTemplate> secList = autoStatService.getNeedUpdateStatTemplates();
+        System.out.println("=====" + JSON.toJSONString(secList));
+
+        StatTemplate s1 = new StatTemplate();
+        s1.setTemplateCode("1111");
+
+        StatTemplate s2 = new StatTemplate();
+        s2.setTemplateCode("1111");
+
+        System.out.println("hao=====" + s1.equals(s2));
+    }
+
+    public static void main(String[] args) {
+        StatTemplateDTO s1 = new StatTemplateDTO();
+        s1.setTemplateCode("1111");
+
+        System.out.println(s1.toString());
+
+        StatTemplateDTO s2 = new StatTemplateDTO();
+        s2.setTemplateCode("1111");
+        System.out.println(s2.toString());
+
+        System.out.println("hao=====" + s1.equals(s2));
+    }
 
 
     @Test
