@@ -33,7 +33,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -143,6 +142,8 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
 //        List<StatTemplate> activeTemplates = statTemplateService.queryActiveList();
 //        activeTemplates.stream().map(StatTemplate::getBasicDataId).distinct().forEach(basicDataId -> initListener(basicDataId));
 //        threadPoolTaskExecutor.execute(() -> activeTemplates.forEach(statTemplate -> startTemplate(statTemplate)));
+        //数据库中加载统计模板任务.
+        startTemplates(false);
 
         String autoJobName = "flush-stat-template";
         JobCoreConfiguration statCalculateJobConf = JobCoreConfiguration
@@ -159,41 +160,49 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
     @Override
     public void execute(ShardingContext shardingContext) {
         try {
-
-            List<StatTemplate> statTemplates = getNeedUpdateStatTemplates();
-            if (CollectionUtils.isEmpty(statTemplates)) {
-                logger.info("auto flush stat template : 不需要刷新模板任务");
-                return;
-            }
-            logger.info("auto flush stat template : 需要刷新的模板任务statTemplates={}", JSON.toJSONString(statTemplates));
-
-            // 1.激活状态的模板
-            List<StatTemplate> activeTemplates = statTemplates.stream().filter(statTemplate -> Byte.valueOf("1").equals(statTemplate.getStatus())).collect(Collectors.toList());
-
-            // 2.新增的基础数据源，自动增加数据监停
-            List<Long> basicIds = activeTemplates.stream().map(StatTemplate::getBasicDataId).distinct().collect(Collectors.toList());
-            basicIds.forEach(basicId -> {
-                if (!consumerContext.containsKey(basicId)) {
-                    initListener(basicId);
-                }
-            });
-
-            // # 3.无激活模板的，停止监听 TODO
-
-            // # 4.未启用的模板，停止job
-            statTemplates.stream().filter(statTemplate -> !Byte.valueOf("1").equals(statTemplate.getStatus()))
-                    .forEach(this::stopTemplate);
-
-            // # 5.启用模板，启用job
-            activeTemplates.stream().forEach(statTemplate -> {
-                logger.info("auto flush stat template : start {}", JSON.toJSONString(statTemplate));
-                this.startTemplate(statTemplate);
-            });
-            logger.info("auto flush stat template : activeTemplates={}", JSON.toJSONString(activeTemplates));
+            startTemplates(true);
         } catch (Exception e) {
             logger.error("auto flush stat template error :", e);
         }
 
+    }
+
+    private void startTemplates(boolean cached) {
+        List<StatTemplate> statTemplates;
+        if (cached) {
+            statTemplates = getNeedUpdateStatTemplates();
+        } else {
+            statTemplates = statTemplateService.queryAll();
+        }
+        if (CollectionUtils.isEmpty(statTemplates)) {
+            logger.info("auto flush stat template : 不需要刷新模板任务");
+            return;
+        }
+        logger.info("auto flush stat template : 需要刷新的模板任务cached={},statTemplates={}", cached, JSON.toJSONString(statTemplates));
+
+        // 1.激活状态的模板
+        List<StatTemplate> activeTemplates = statTemplates.stream().filter(statTemplate -> Byte.valueOf("1").equals(statTemplate.getStatus())).collect(Collectors.toList());
+
+        // 2.新增的基础数据源，自动增加数据监停
+        List<Long> basicIds = activeTemplates.stream().map(StatTemplate::getBasicDataId).distinct().collect(Collectors.toList());
+        basicIds.forEach(basicId -> {
+            if (!consumerContext.containsKey(basicId)) {
+                initListener(basicId);
+            }
+        });
+
+        // # 3.无激活模板的，停止监听 TODO
+
+        // # 4.未启用的模板，停止job
+        statTemplates.stream().filter(statTemplate -> !Byte.valueOf("1").equals(statTemplate.getStatus()))
+                .forEach(this::stopTemplate);
+
+        // # 5.启用模板，启用job
+        activeTemplates.stream().forEach(statTemplate -> {
+            logger.info("auto flush stat template : start {}", JSON.toJSONString(statTemplate));
+            this.startTemplate(statTemplate);
+        });
+        logger.info("auto flush stat template : activeTemplates={}", JSON.toJSONString(activeTemplates));
     }
 
     public List<StatTemplate> getNeedUpdateStatTemplates() {
@@ -207,17 +216,18 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
         List<StatTemplateDTO> changedStatTemplateDTOs = Lists.newArrayList();
         List<StatTemplate> result = Lists.newArrayList();
         if (StringUtils.isBlank(statTemplateStr)) {
-            changedStatTemplateDTOs.addAll(statTemplateDTOs);
-        } else {
-            List<StatTemplateDTO> oldStatTemplates = JSON.parseArray(statTemplateStr, StatTemplateDTO.class);
-            Map<String, StatTemplateDTO> oldStatTemplateMap = oldStatTemplates.stream()
-                    .collect(Collectors.toMap(StatTemplateDTO::getTemplateCode, template -> template));
+            redisTemplate.opsForValue().set(templateKey, JSON.toJSONString(statTemplateDTOs));
+            return result;
 
-            for (StatTemplateDTO statTemplate : statTemplateDTOs) {
-                StatTemplateDTO oldStatTemplate = oldStatTemplateMap.get(statTemplate.getTemplateCode());
-                if (oldStatTemplate == null || !statTemplate.equals(oldStatTemplate)) {
-                    changedStatTemplateDTOs.add(statTemplate);
-                }
+        }
+        List<StatTemplateDTO> oldStatTemplates = JSON.parseArray(statTemplateStr, StatTemplateDTO.class);
+        Map<String, StatTemplateDTO> oldStatTemplateMap = oldStatTemplates.stream()
+                .collect(Collectors.toMap(StatTemplateDTO::getTemplateCode, template -> template));
+
+        for (StatTemplateDTO statTemplate : statTemplateDTOs) {
+            StatTemplateDTO oldStatTemplate = oldStatTemplateMap.get(statTemplate.getTemplateCode());
+            if (oldStatTemplate == null || !statTemplate.equals(oldStatTemplate)) {
+                changedStatTemplateDTOs.add(statTemplate);
             }
         }
         if (CollectionUtils.isNotEmpty(changedStatTemplateDTOs)) {
@@ -230,15 +240,5 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-    }
-
-    @PreDestroy
-    public void destroy() {
-        String templateKey = AsConstants.REDIS_AUTO_STAT_TEMPLATE_KEY;
-        String statTemplateStr = redisTemplate.opsForValue().get(templateKey);
-        if (StringUtils.isNotBlank(statTemplateStr)) {
-            redisTemplate.delete(templateKey);
-        }
-        logger.info("清空统计模板定时任务redis缓存");
     }
 }
