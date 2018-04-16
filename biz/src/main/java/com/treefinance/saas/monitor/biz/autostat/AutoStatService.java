@@ -33,6 +33,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -229,5 +230,15 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    @PreDestroy
+    public void destroy() {
+        String templateKey = AsConstants.REDIS_AUTO_STAT_TEMPLATE_KEY;
+        String statTemplateStr = redisTemplate.opsForValue().get(templateKey);
+        if (StringUtils.isNotBlank(statTemplateStr)) {
+            redisTemplate.delete(templateKey);
+        }
+        logger.info("清空统计模板定时任务redis缓存");
     }
 }
