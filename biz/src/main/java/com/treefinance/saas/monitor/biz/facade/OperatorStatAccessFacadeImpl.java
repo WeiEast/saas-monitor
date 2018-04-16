@@ -330,7 +330,9 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.setOrderByClause("dataTime desc");
         criteria.createCriteria().andSaasEnvEqualTo((byte) 0)
                 .andDataTypeEqualTo(request.getStatType())
+                .andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR)
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+
         List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectByExample(criteria);
         if (!CollectionUtils.isEmpty(list)) {
             result = DataConverterUtils.convert(list, OperatorAllStatDayAccessRO.class);
