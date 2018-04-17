@@ -213,7 +213,7 @@
 			<dependency>
 				<groupId>com.treefinance.saas</groupId>
 				<artifactId>assistant-monitor</artifactId>
-				<version>1.0.10</version>
+				<version>1.0.5-SNAPSHOT</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
