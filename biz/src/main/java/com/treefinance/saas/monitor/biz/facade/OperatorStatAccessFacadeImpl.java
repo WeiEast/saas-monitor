@@ -8,6 +8,7 @@ import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.OperatorAllStatAccessMapper;
+import com.treefinance.saas.monitor.dao.mapper.OperatorAllStatDayAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatDayAccessMapper;
 import com.treefinance.saas.monitor.facade.domain.request.OperatorStatAccessRequest;
@@ -50,6 +51,8 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
     private OperatorStatDayAccessMapper operatorStatDayAccessMapper;
     @Autowired
     private OperatorAllStatAccessMapper operatorAllStatAccessMapper;
+    @Autowired
+    private OperatorAllStatDayAccessMapper operatorAllStatDayAccessMapper;
 
 
     @Override
@@ -552,6 +555,28 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
             }
             operatorStatAccessMapper.batchInsert(resultList);
         }
+
+
+        OperatorAllStatDayAccessCriteria criteriaDay = new OperatorAllStatDayAccessCriteria();
+        OperatorAllStatDayAccessCriteria.Criteria innerCriteriaDay = criteriaDay.createCriteria();
+        innerCriteriaDay.andAppIdEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_APP_ID)
+                .andDataTypeEqualTo((byte) 1)
+                .andDataTimeBetween(startDate, endDate);
+        List<OperatorAllStatDayAccess> listDay = operatorAllStatDayAccessMapper.selectByExample(criteriaDay);
+        List<List<OperatorAllStatDayAccess>> dayPartLists = Lists.partition(listDay, 50);
+        for (List<OperatorAllStatDayAccess> parts : dayPartLists) {
+            List<OperatorStatDayAccess> resultList = Lists.newArrayList();
+            for (OperatorAllStatDayAccess operatorAllStatDayAccess : parts) {
+                OperatorStatDayAccess operatorStatAccess = DataConverterUtils.convert(operatorAllStatDayAccess, OperatorStatDayAccess.class);
+                operatorStatAccess.setGroupCode(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
+                operatorStatAccess.setGroupName(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR_NAME);
+                operatorStatAccess.setSaasEnv((byte) 0);
+                resultList.add(operatorStatAccess);
+            }
+            operatorStatDayAccessMapper.batchInsert(resultList);
+        }
+
+
         return MonitorResultBuilder.build(true);
     }
 }
