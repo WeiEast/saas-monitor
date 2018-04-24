@@ -63,7 +63,7 @@ public class BasicDataServiceImpl implements BasicDataService {
 
     @Override
     public int addBasicData(BasicData basicData) {
-      return   basicDataMapper.insert(basicData);
+      return   basicDataMapper.insertSelective(basicData);
 
     }
 

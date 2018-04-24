@@ -8,6 +8,8 @@ import com.treefinance.saas.monitor.facade.domain.base.BaseRequest;
  */
 public class BasicDataRequest extends BaseRequest {
 
+    private long   id;
+
 
     private String dataCode;
 
@@ -63,10 +65,19 @@ public class BasicDataRequest extends BaseRequest {
         this.dataSourceConfigJson = dataSourceConfigJson;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     @Override
     public String toString() {
         return "BasicDataRequest{" +
-                "dataCode='" + dataCode + '\'' +
+                "id=" + id +
+                ", dataCode='" + dataCode + '\'' +
                 ", dataName='" + dataName + '\'' +
                 ", dataJson='" + dataJson + '\'' +
                 ", dataSource=" + dataSource +

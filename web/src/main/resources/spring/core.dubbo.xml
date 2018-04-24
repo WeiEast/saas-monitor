@@ -52,6 +52,8 @@
     <!--消费者-->
     <dubbo:reference interface="com.datatrees.notify.sms.newservice.SmsNewService" id="smsNewService"/>
 
+    <dubbo:reference interface="com.treefinance.commonservice.uid.UidService" id="uidservice"/>
+
 </beans>
 
 
