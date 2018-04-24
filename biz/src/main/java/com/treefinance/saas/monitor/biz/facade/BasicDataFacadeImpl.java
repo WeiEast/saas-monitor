@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.service.BasicDataService;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
@@ -30,6 +31,8 @@ public class BasicDataFacadeImpl implements BasicDataFacade {
 
     @Autowired
     private BasicDataService  basicDataService;
+    @Autowired
+    private UidService uidService;
 
 
     @Override
@@ -58,7 +61,9 @@ public class BasicDataFacadeImpl implements BasicDataFacade {
             throw  new ParamCheckerException("请求参数非法");
         }
         logger.info("新增一个基础数据，传入的基础数据为{]",basicDataRequest.toString());
+        long id = uidService.getId();
         BasicData basicData= new BasicData();
+        basicData.setId(id);
         BeanUtils.convert(basicDataRequest,basicData);
         basicDataService.addBasicData(basicData);
 
