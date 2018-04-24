@@ -8,7 +8,7 @@ import com.treefinance.saas.monitor.facade.domain.base.BaseRequest;
  */
 public class BasicDataRequest extends BaseRequest {
 
-    private long   id;
+    private Long   id;
 
 
     private String dataCode;
@@ -69,7 +69,7 @@ public class BasicDataRequest extends BaseRequest {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
