@@ -78,9 +78,15 @@ public class BasicDataFacadeImpl implements BasicDataFacade {
             logger.error("更新基础数据，请求参数不能为空", JSON.toJSON(basicDataRequest));
             throw  new ParamCheckerException("请求参数非法");
         }
-        logger.info("更新基础数据，传入的基础数据为{}",basicDataRequest.toString());
+        logger.info("更新基础数据，传入的基础数据为为",basicDataRequest.toString());
         BasicData basicData= new BasicData();
-        BeanUtils.convert(basicDataRequest,basicData);
+        basicData.setId(basicDataRequest.getId());
+        basicData.setDataSourceConfigJson(basicDataRequest.getDataSourceConfigJson());
+        basicData.setDataSource(basicDataRequest.getDataSource());
+        basicData.setDataName(basicDataRequest.getDataName());
+        basicData.setDataJson(basicDataRequest.getDataJson());
+        basicData.setDataCode(basicDataRequest.getDataCode());
+
         basicDataService.updateBasicData(basicData);
 
 
