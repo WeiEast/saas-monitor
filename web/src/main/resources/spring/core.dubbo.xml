@@ -45,6 +45,9 @@
     <dubbo:service ref="callbackMsgStatAccessFacade"
                    interface="com.treefinance.saas.monitor.facade.service.stat.CallbackMsgStatAccessFacade"
                    version="1.0.0"/>
+    <dubbo:service ref="basicDataFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.BasicDataFacade"
+                   version="1.0.0"/>
 
     <!--消费者-->
     <dubbo:reference interface="com.datatrees.notify.sms.newservice.SmsNewService" id="smsNewService"/>

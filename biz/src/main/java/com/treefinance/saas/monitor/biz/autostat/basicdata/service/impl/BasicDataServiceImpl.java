@@ -39,4 +39,17 @@ public class BasicDataServiceImpl implements BasicDataService {
     public BasicData queryById(Long id) {
         return basicDataMapper.selectByPrimaryKey(id);
     }
+
+    @Override
+    public  long countBasicData() {
+        BasicDataCriteria basicDataCriteria = new BasicDataCriteria();
+        basicDataCriteria.createCriteria();
+        return basicDataMapper.countByExample(basicDataCriteria);
+    }
+
+    @Override
+    public int addBasicData(BasicData basicData) {
+      return   basicDataMapper.insert(basicData);
+
+    }
 }
