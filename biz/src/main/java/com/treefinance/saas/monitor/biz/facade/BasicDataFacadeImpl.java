@@ -60,7 +60,7 @@ public class BasicDataFacadeImpl implements BasicDataFacade {
             logger.error("新增基础数据，请求参数不能为空", JSON.toJSON(basicDataRequest));
             throw  new ParamCheckerException("请求参数非法");
         }
-        logger.info("新增一个基础数据，传入的基础数据为{]",basicDataRequest.toString());
+        logger.info("新增一个基础数据，传入的基础数据为{}",basicDataRequest.toString());
         long id = uidService.getId();
         BasicData basicData= new BasicData();
         basicData.setId(id);
@@ -78,7 +78,7 @@ public class BasicDataFacadeImpl implements BasicDataFacade {
             logger.error("更新基础数据，请求参数不能为空", JSON.toJSON(basicDataRequest));
             throw  new ParamCheckerException("请求参数非法");
         }
-        logger.info("更新基础数据，传入的基础数据为为",basicDataRequest.toString());
+        logger.info("更新基础数据，传入的基础数据为{}",basicDataRequest.toString());
         BasicData basicData= new BasicData();
         basicData.setId(basicDataRequest.getId());
         basicData.setDataSourceConfigJson(basicDataRequest.getDataSourceConfigJson());
