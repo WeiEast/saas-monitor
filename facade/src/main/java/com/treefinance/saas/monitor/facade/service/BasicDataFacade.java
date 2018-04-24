@@ -15,7 +15,7 @@ import java.util.List;
 public interface BasicDataFacade {
 
     /**
-     * 无条件列表查询所有的basicData
+     * 列表查询所有的basicData(分页)
      * @return  List<BasicDataRO>
      */
     MonitorResult<List<BasicDataRO>> queryAllBasicData(PageRequest pageRequest);
@@ -26,8 +26,17 @@ public interface BasicDataFacade {
      * @param basicDataRequest
      * @return
      */
+    MonitorResult<Boolean> addBasicData(BasicDataRequest basicDataRequest);
 
-    int addBasicData(BasicDataRequest basicDataRequest);
+    /**
+     * 更新basicData
+     * @param basicDataRequest
+     * @return
+     */
+    MonitorResult<Boolean> updateBasicData(BasicDataRequest basicDataRequest);
+
+
+
 
 
 }

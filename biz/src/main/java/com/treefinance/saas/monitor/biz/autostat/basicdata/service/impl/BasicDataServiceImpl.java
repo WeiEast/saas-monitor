@@ -4,6 +4,7 @@ import com.treefinance.saas.monitor.biz.autostat.basicdata.service.BasicDataServ
 import com.treefinance.saas.monitor.dao.entity.BasicData;
 import com.treefinance.saas.monitor.dao.entity.BasicDataCriteria;
 import com.treefinance.saas.monitor.dao.mapper.BasicDataMapper;
+import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,19 @@ public class BasicDataServiceImpl implements BasicDataService {
     public List<BasicData> queryAll() {
         return basicDataMapper.selectByExample(new BasicDataCriteria());
     }
+
+    @Override
+    public List<BasicData> queryAllBasicDataWithPaging(PageRequest pageRequest){
+        BasicDataCriteria basicDataCriteria = new BasicDataCriteria();
+        basicDataCriteria.setLimit(pageRequest.getPageSize());
+        basicDataCriteria.setOffset(pageRequest.getOffset());
+        basicDataCriteria.createCriteria();
+
+        return basicDataMapper.selectByExample(basicDataCriteria);
+
+    }
+
+
 
     @Override
     public BasicData queryByCode(String dataCode) {
@@ -51,5 +65,11 @@ public class BasicDataServiceImpl implements BasicDataService {
     public int addBasicData(BasicData basicData) {
       return   basicDataMapper.insert(basicData);
 
+    }
+
+    @Override
+    public int updateBasicData(BasicData basicData) {
+
+        return basicDataMapper.updateByPrimaryKey(basicData);
     }
 }
