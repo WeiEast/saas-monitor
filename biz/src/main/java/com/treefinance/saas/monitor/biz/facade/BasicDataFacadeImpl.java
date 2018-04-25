@@ -46,7 +46,7 @@ public class BasicDataFacadeImpl implements BasicDataFacade {
             return new MonitorResult(System.currentTimeMillis(),"查询不到基础数据",null);
         }
         List<BasicDataRO> dataROList = DataConverterUtils.convert(dataList,BasicDataRO.class);
-        long totalCount = basicDataService.countBasicData();
+        long totalCount = basicDataService.countBasicData(pageRequest);
         MonitorResult<List<BasicDataRO>>  monitorResult = new MonitorResult(pageRequest,dataROList,totalCount);
         logger.info("返回查询基础数据的result为{}",monitorResult.toString());
        return monitorResult;

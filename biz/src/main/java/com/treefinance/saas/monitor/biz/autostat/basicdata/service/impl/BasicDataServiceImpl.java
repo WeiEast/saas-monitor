@@ -32,7 +32,7 @@ public class BasicDataServiceImpl implements BasicDataService {
         basicDataCriteria.setOffset(pageRequest.getOffset());
         basicDataCriteria.createCriteria();
 
-        return basicDataMapper.selectByExample(basicDataCriteria);
+        return basicDataMapper.selectPaginationByExample(basicDataCriteria);
 
     }
 
@@ -55,7 +55,7 @@ public class BasicDataServiceImpl implements BasicDataService {
     }
 
     @Override
-    public  long countBasicData() {
+    public  long countBasicData(PageRequest pageRequest) {
         BasicDataCriteria basicDataCriteria = new BasicDataCriteria();
         basicDataCriteria.createCriteria();
         return basicDataMapper.countByExample(basicDataCriteria);

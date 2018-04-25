@@ -13,7 +13,7 @@ import java.util.List;
 public interface BasicDataService extends BaseQueryService<BasicData> {
 
 
-    long countBasicData();
+    long countBasicData(PageRequest pageRequest);
 
 
     int addBasicData(BasicData basicData);
