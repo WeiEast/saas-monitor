@@ -220,10 +220,10 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             });
 
             redisTemplate.boundHashOps(redisKey).putAll(groupMap);
-            redisTemplate.boundHashOps(redisKey).expire(expireTime, TimeUnit.MILLISECONDS);
             totalMap.keySet().forEach(key -> redisTemplate
                     .boundHashOps(redisKey)
                     .increment(key, totalMap.get(key)));
+            redisTemplate.boundHashOps(redisKey).expire(expireTime, TimeUnit.MILLISECONDS);
 
             Map<String, Object> resultMap = Maps.newHashMap();
             resultMap.putAll(groupMap);
@@ -324,33 +324,33 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
     }
 
     public static void main(String[] args) throws ParseException {
-//        Date date = new Date();
-//        String cron = "0 0/5 * * * ? ";
-//        System.out.println(getExpireTime(cron));
+        Date date = new Date();
+        String cron = "0 0/5 * * * ? ";
+        System.out.println(getExpireTime(cron));
 
-        Multimap<String, Map<String, Object>> redisMultiMap = ArrayListMultimap.create();
-        String key = "saas-monitor:stat:ecommerce-time-share:index-4:2018-02-24 15:50:00:appId-virtual_total_stat_appId:dataType-0:sourceType-0";
-
-        Map<String, Object> map1 = Maps.newHashMap();
-        map1.put("1", "1");
-
-        Map<String, Object> map2 = Maps.newHashMap();
-        map2.put("2", "2");
-
-        Map<String, Object> map3 = Maps.newHashMap();
-        map3.put("3", "3");
-
-        redisMultiMap.put(key, map1);
-        redisMultiMap.put(key, map2);
-        redisMultiMap.put(key, map3);
-
-        System.out.println("keys =" + JSON.toJSONString(redisMultiMap.keys()));
-        System.out.println("keyset =" + JSON.toJSONString(redisMultiMap.keySet()));
-
-
-        redisMultiMap.keys().forEach(redisKey -> {
-            System.out.println("redisKey=" + redisKey + ",dataMap=" + JSON.toJSONString(redisMultiMap.get(key)));
-        });
+//        Multimap<String, Map<String, Object>> redisMultiMap = ArrayListMultimap.create();
+//        String key = "saas-monitor:stat:ecommerce-time-share:index-4:2018-02-24 15:50:00:appId-virtual_total_stat_appId:dataType-0:sourceType-0";
+//
+//        Map<String, Object> map1 = Maps.newHashMap();
+//        map1.put("1", "1");
+//
+//        Map<String, Object> map2 = Maps.newHashMap();
+//        map2.put("2", "2");
+//
+//        Map<String, Object> map3 = Maps.newHashMap();
+//        map3.put("3", "3");
+//
+//        redisMultiMap.put(key, map1);
+//        redisMultiMap.put(key, map2);
+//        redisMultiMap.put(key, map3);
+//
+//        System.out.println("keys =" + JSON.toJSONString(redisMultiMap.keys()));
+//        System.out.println("keyset =" + JSON.toJSONString(redisMultiMap.keySet()));
+//
+//
+//        redisMultiMap.keys().forEach(redisKey -> {
+//            System.out.println("redisKey=" + redisKey + ",dataMap=" + JSON.toJSONString(redisMultiMap.get(key)));
+//        });
 
     }
 }
