@@ -2,7 +2,6 @@ package com.treefinance.saas.monitor.facade.domain.ro;
 
 import com.treefinance.saas.monitor.facade.domain.base.BaseRO;
 
-import java.util.Date;
 
 /**
  * @author:guoguoyun

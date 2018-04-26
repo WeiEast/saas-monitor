@@ -16,13 +16,15 @@ public interface BasicDataFacade {
 
     /**
      * 列表查询所有的basicData(分页)
-     * @return  List<BasicDataRO>
+     *
+     * @return List<BasicDataRO>
      */
     MonitorResult<List<BasicDataRO>> queryAllBasicData(PageRequest pageRequest);
 
 
     /**
      * 新增basicData
+     *
      * @param basicDataRequest
      * @return
      */
@@ -30,13 +32,29 @@ public interface BasicDataFacade {
 
     /**
      * 更新basicData
+     *
      * @param basicDataRequest
      * @return
      */
     MonitorResult<Boolean> updateBasicData(BasicDataRequest basicDataRequest);
 
 
+    /**
+     * 获取所有的基础数据名字
+     *
+     * @param
+     * @return
+     */
+    MonitorResult<List<String>> queryAllDataName(BaseRequest baseRequest);
 
+
+    /**
+     * 根据ID获取基础数据
+     *
+     * @param basicDataRequest
+     * @return BasicDataRO
+     */
+    MonitorResult<BasicDataRO> getBasicDataById(BasicDataRequest basicDataRequest);
 
 
 }

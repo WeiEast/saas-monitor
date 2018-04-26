@@ -6,6 +6,8 @@ import com.treefinance.saas.monitor.biz.autostat.template.service.StatTemplateSe
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import com.treefinance.saas.monitor.dao.entity.StatTemplateCriteria;
 import com.treefinance.saas.monitor.dao.mapper.StatTemplateMapper;
+import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
+import com.treefinance.saas.monitor.facade.domain.request.TemplateStatRequest;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -55,5 +57,85 @@ public class StatTemplateServiceImpl extends AbstractCacheService<String, StatTe
     @Override
     public Function<String, StatTemplate> dataLoader() {
         return this::queryByCode;
+    }
+
+
+    @Override
+    public List<StatTemplate> queryStatTemplate(PageRequest pageRequest) {
+        StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
+        statTemplateCriteria.setLimit(pageRequest.getPageSize());
+        statTemplateCriteria.setOffset(pageRequest.getOffset());
+        statTemplateCriteria.createCriteria();
+        return statTemplateMapper.selectPaginationByExample(statTemplateCriteria);
+
+    }
+
+
+    @Override
+    public Long countStatTemplate() {
+        StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
+        statTemplateCriteria.createCriteria();
+        return statTemplateMapper.countByExample(statTemplateCriteria);
+    }
+
+    @Override
+    public List<StatTemplate> queryStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest) {
+
+        StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
+        statTemplateCriteria.setOffset(templateStatRequest.getOffset());
+        statTemplateCriteria.setLimit(templateStatRequest.getPageSize());
+        if (templateStatRequest.getStatus() == 2) {
+            if (templateStatRequest.getTemplateName() != null) {
+                statTemplateCriteria.createCriteria();
+            } else {
+                statTemplateCriteria.createCriteria().andTemplateNameLike(templateStatRequest.getTemplateName());
+            }
+
+        } else {
+            if (templateStatRequest.getTemplateName() != null) {
+                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus());
+            } else {
+                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike(templateStatRequest.getTemplateName());
+            }
+
+        }
+        return statTemplateMapper.selectPaginationByExample(statTemplateCriteria);
+
+
+    }
+
+    @Override
+    public Long countStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest) {
+        StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
+        if (templateStatRequest.getStatus() == 2) {
+            if (templateStatRequest.getTemplateName() != null) {
+                statTemplateCriteria.createCriteria();
+            } else {
+                statTemplateCriteria.createCriteria().andTemplateNameLike(templateStatRequest.getTemplateName());
+            }
+
+        } else {
+            if (templateStatRequest.getTemplateName() != null) {
+                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus());
+            } else {
+                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike(templateStatRequest.getTemplateName());
+            }
+
+        }
+
+        return statTemplateMapper.countByExample(statTemplateCriteria);
+
+    }
+
+    @Override
+    public int addStatTemplate(StatTemplate statTemplate) {
+        return statTemplateMapper.insert(statTemplate);
+
+    }
+
+    @Override
+    public int updateStatTemplate(StatTemplate statTemplate) {
+        return statTemplateMapper.updateByPrimaryKey(statTemplate);
+
     }
 }

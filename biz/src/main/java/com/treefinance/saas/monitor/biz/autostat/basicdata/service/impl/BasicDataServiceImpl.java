@@ -9,6 +9,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -71,5 +72,27 @@ public class BasicDataServiceImpl implements BasicDataService {
     public int updateBasicData(BasicData basicData) {
 
         return basicDataMapper.updateByPrimaryKey(basicData);
+    }
+
+
+    @Override
+    public BasicData getBasicDatayId(long id) {
+        return basicDataMapper.selectByPrimaryKey(id);
+
+    }
+
+    @Override
+    public List<String> queryAllDataName() {
+
+        BasicDataCriteria basicDataCriteria = new BasicDataCriteria();
+        basicDataCriteria.createCriteria();
+        List<BasicData> list = basicDataMapper.selectByExample(basicDataCriteria);
+        List<String> stringList = new ArrayList<>();
+        for(BasicData basicData:list)
+        {
+            stringList.add(basicData.getDataName());
+        }
+        return  stringList;
+
     }
 }

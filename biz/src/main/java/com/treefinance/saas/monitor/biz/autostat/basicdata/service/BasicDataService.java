@@ -22,4 +22,8 @@ public interface BasicDataService extends BaseQueryService<BasicData> {
     List<BasicData> queryAllBasicDataWithPaging(PageRequest pageRequest);
 
     int updateBasicData(BasicData basicData);
+
+    BasicData getBasicDatayId(long id);
+
+    List<String> queryAllDataName();
 }
