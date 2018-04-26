@@ -33,6 +33,11 @@ public class TemplateStatRequest extends PageRequest {
     private String statCron;
 
     /**
+     * 表达式类型：0-spel 1-groovy
+     */
+    private Integer expressionType;
+
+    /**
      * 基础数据来源
      */
     private Long basicDataId;
@@ -53,6 +58,14 @@ public class TemplateStatRequest extends PageRequest {
      */
     private String flushDataCron;
 
+
+    public Integer getExpressionType() {
+        return expressionType;
+    }
+
+    public void setExpressionType(Integer expressionType) {
+        this.expressionType = expressionType;
+    }
 
     public String getTemplateName() {
         return templateName;
@@ -134,6 +147,7 @@ public class TemplateStatRequest extends PageRequest {
                 ", status=" + status +
                 ", templateCode='" + templateCode + '\'' +
                 ", statCron='" + statCron + '\'' +
+                ", expressionType=" + expressionType +
                 ", basicDataId=" + basicDataId +
                 ", basicDataFilter='" + basicDataFilter + '\'' +
                 ", effectiveTime=" + effectiveTime +

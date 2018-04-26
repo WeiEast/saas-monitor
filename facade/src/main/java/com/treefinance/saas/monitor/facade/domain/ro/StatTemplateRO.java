@@ -24,6 +24,8 @@ public class StatTemplateRO extends BaseRO {
 
     private String statCron;
 
+    private Integer expressionType;
+
 
     private Long basicDataId;
 
@@ -43,6 +45,14 @@ public class StatTemplateRO extends BaseRO {
 
 
     private Date lastUpdateTime;
+
+    public Integer getExpressionType() {
+        return expressionType;
+    }
+
+    public void setExpressionType(Integer expressionType) {
+        this.expressionType = expressionType;
+    }
 
     public Long getId() {
         return id;
@@ -152,6 +162,7 @@ public class StatTemplateRO extends BaseRO {
                 ", templateName='" + templateName + '\'' +
                 ", status=" + status +
                 ", statCron='" + statCron + '\'' +
+                ", expressionType=" + expressionType +
                 ", basicDataId=" + basicDataId +
                 ", basicDataFilter='" + basicDataFilter + '\'' +
                 ", dataObject='" + dataObject + '\'' +
