@@ -124,7 +124,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             }
             //发送预警
             String alarmTimeMsgKey = TaskOperatorMonitorKeyHelper.keyOfAlarmMsgTimeLog(baseTime, config);
-            if (redisTemplate.hasKey(alarmTimeMsgKey)) {
+            if (!redisTemplate.hasKey(alarmTimeMsgKey)) {
                 alarmMsg(msgList, jobTime, startTime, endTime, config);
                 redisTemplate.opsForValue().set(alarmTimeKey, MonitorDateUtils.format(baseTime));
                 redisTemplate.expire(alarmTimeKey, 1, TimeUnit.DAYS);
