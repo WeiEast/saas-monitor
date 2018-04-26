@@ -25,7 +25,7 @@ public interface StatTemplateService extends BaseQueryService<StatTemplate>, Bas
      *
      * @return
      */
-    List<StatTemplate> queryStatTemplate(PageRequest pageRequest);
+    List<StatTemplate> queryStatTemplate(TemplateStatRequest templateStatRequest);
 
 
     /**
@@ -33,14 +33,14 @@ public interface StatTemplateService extends BaseQueryService<StatTemplate>, Bas
      *
      * @return
      */
-    Long countStatTemplate();
+    Long countStatTemplate(TemplateStatRequest templateStatRequest);
 
-    /**
-     * 根据模板名字或状态返回模板列表（分页）
-     *
-     * @return
-     */
-    List<StatTemplate> queryStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest);
+//    /**
+//     * 根据模板名字或状态返回模板列表（分页）
+//     *
+//     * @return
+//     */
+//    List<StatTemplate> queryStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest);
 
 
     /**

@@ -47,6 +47,11 @@ public class TemplateStatRequest extends PageRequest {
      */
     private String basicDataFilter;
 
+    /**
+     * 数据对象
+     */
+    private String dataObject;
+
 
     /**
      * 数据有效期：单位分钟
@@ -58,6 +63,14 @@ public class TemplateStatRequest extends PageRequest {
      */
     private String flushDataCron;
 
+
+    public String getDataObject() {
+        return dataObject;
+    }
+
+    public void setDataObject(String dataObject) {
+        this.dataObject = dataObject;
+    }
 
     public Integer getExpressionType() {
         return expressionType;
@@ -150,6 +163,7 @@ public class TemplateStatRequest extends PageRequest {
                 ", expressionType=" + expressionType +
                 ", basicDataId=" + basicDataId +
                 ", basicDataFilter='" + basicDataFilter + '\'' +
+                ", dataObject='" + dataObject + '\'' +
                 ", effectiveTime=" + effectiveTime +
                 ", flushDataCron='" + flushDataCron + '\'' +
                 '}';

@@ -34,11 +34,11 @@ public class TemplateStatFacadeImpl implements TemplateStatFacade{
     @Autowired
     UidService uidService;
 
-    @Override
+  /*  @Override
     public MonitorResult<List<StatTemplateRO>> queryStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest) {
 
         logger.info("根据条件查询所有的模板数据，传入的Request为{}",templateStatRequest.toString());
-        List<StatTemplate>  statTemplateList = statTemplateService.queryStatTemplateByNameOrStatus(templateStatRequest);
+        List<StatTemplate>  statTemplateList = statTemplateService.que(templateStatRequest);
         if(CollectionUtils.isEmpty(statTemplateList)){
             logger.error("查不到模板数据");
             return new MonitorResult(System.currentTimeMillis(),"查询不到模板数据",null);
@@ -51,20 +51,20 @@ public class TemplateStatFacadeImpl implements TemplateStatFacade{
         return monitorResult;
 
     }
-
+*/
 
 
     @Override
-    public MonitorResult<List<StatTemplateRO>>  queryStatTemplate(PageRequest pageRequest) {
-        logger.info("查询所有的模板数据，传入的分页数据为{}",pageRequest.toString());
-        List<StatTemplate>  statTemplateList = statTemplateService.queryStatTemplate(pageRequest);
+    public MonitorResult<List<StatTemplateRO>>  queryStatTemplate(TemplateStatRequest templateStatRequest) {
+        logger.info("查询所有的模板数据，传入的分页数据为{}",templateStatRequest.toString());
+        List<StatTemplate>  statTemplateList = statTemplateService.queryStatTemplate(templateStatRequest);
         if(CollectionUtils.isEmpty(statTemplateList)){
             logger.error("查不到模板数据");
             return new MonitorResult(System.currentTimeMillis(),"查询不到模板数据",null);
         }
         List<StatTemplateRO> statTemplateROS = DataConverterUtils.convert(statTemplateList,StatTemplateRO.class);
-        long totalCount = statTemplateService.countStatTemplate();
-        MonitorResult<List<StatTemplateRO>>  monitorResult = new MonitorResult(pageRequest,statTemplateROS,totalCount);
+        long totalCount = statTemplateService.countStatTemplate(templateStatRequest);
+        MonitorResult<List<StatTemplateRO>>  monitorResult = new MonitorResult(templateStatRequest,statTemplateROS,totalCount);
         logger.info("返回查询模板数据的result为{}",monitorResult.toString());
         return monitorResult;
 
@@ -80,8 +80,8 @@ public class TemplateStatFacadeImpl implements TemplateStatFacade{
         logger.info("新增一个模板数据，传入的模板数据为{}",templateStatRequest.toString());
         long id = uidService.getId();
         StatTemplate statTemplate= new StatTemplate();
-        statTemplate.setId(id);
         BeanUtils.convert(templateStatRequest,statTemplate);
+        statTemplate.setId(id);
         statTemplateService.addStatTemplate(statTemplate);
 
 

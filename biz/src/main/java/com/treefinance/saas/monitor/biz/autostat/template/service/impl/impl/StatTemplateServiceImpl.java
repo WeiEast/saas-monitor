@@ -61,48 +61,81 @@ public class StatTemplateServiceImpl extends AbstractCacheService<String, StatTe
 
 
     @Override
-    public List<StatTemplate> queryStatTemplate(PageRequest pageRequest) {
+    public List<StatTemplate> queryStatTemplate(TemplateStatRequest templateStatRequest) {
         StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
-        statTemplateCriteria.setLimit(pageRequest.getPageSize());
-        statTemplateCriteria.setOffset(pageRequest.getOffset());
-        statTemplateCriteria.createCriteria();
-        return statTemplateMapper.selectPaginationByExample(statTemplateCriteria);
 
-    }
-
-
-    @Override
-    public Long countStatTemplate() {
-        StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
-        statTemplateCriteria.createCriteria();
-        return statTemplateMapper.countByExample(statTemplateCriteria);
-    }
-
-    @Override
-    public List<StatTemplate> queryStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest) {
-
-        StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
-        statTemplateCriteria.setOffset(templateStatRequest.getOffset());
         statTemplateCriteria.setLimit(templateStatRequest.getPageSize());
-        if (templateStatRequest.getStatus() == 2) {
-            if (templateStatRequest.getTemplateName() != null) {
+        statTemplateCriteria.setOffset(templateStatRequest.getOffset());
+
+
+        if (templateStatRequest.getStatus() == null||templateStatRequest.getStatus() == 2) {
+            if (templateStatRequest.getTemplateName() == null) {
                 statTemplateCriteria.createCriteria();
             } else {
                 statTemplateCriteria.createCriteria().andTemplateNameLike(templateStatRequest.getTemplateName());
             }
 
         } else {
-            if (templateStatRequest.getTemplateName() != null) {
+            if (templateStatRequest.getTemplateName() == null) {
                 statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus());
             } else {
                 statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike(templateStatRequest.getTemplateName());
             }
 
         }
+
         return statTemplateMapper.selectPaginationByExample(statTemplateCriteria);
 
-
     }
+
+
+    @Override
+    public Long countStatTemplate(TemplateStatRequest templateStatRequest) {
+        StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
+
+        if (templateStatRequest.getStatus() == null||templateStatRequest.getStatus() == 2) {
+            if (templateStatRequest.getTemplateName() == null) {
+                statTemplateCriteria.createCriteria();
+            } else {
+                statTemplateCriteria.createCriteria().andTemplateNameLike(templateStatRequest.getTemplateName());
+            }
+
+        } else {
+            if (templateStatRequest.getTemplateName() == null) {
+                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus());
+            } else {
+                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike(templateStatRequest.getTemplateName());
+            }
+
+        }
+        return statTemplateMapper.countByExample(statTemplateCriteria);
+    }
+
+//    @Override
+//    public List<StatTemplate> queryStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest) {
+//
+//        StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
+//        statTemplateCriteria.setOffset(templateStatRequest.getOffset());
+//        statTemplateCriteria.setLimit(templateStatRequest.getPageSize());
+//        if (templateStatRequest.getStatus() == 2) {
+//            if (templateStatRequest.getTemplateName() != null) {
+//                statTemplateCriteria.createCriteria();
+//            } else {
+//                statTemplateCriteria.createCriteria().andTemplateNameLike(templateStatRequest.getTemplateName());
+//            }
+//
+//        } else {
+//            if (templateStatRequest.getTemplateName() != null) {
+//                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus());
+//            } else {
+//                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike(templateStatRequest.getTemplateName());
+//            }
+//
+//        }
+//        return statTemplateMapper.selectPaginationByExample(statTemplateCriteria);
+//
+//
+//    }
 
     @Override
     public Long countStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest) {
