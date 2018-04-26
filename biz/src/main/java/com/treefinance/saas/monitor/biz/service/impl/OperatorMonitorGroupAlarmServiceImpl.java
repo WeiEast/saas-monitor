@@ -60,7 +60,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     private IvrNotifyService ivrNotifyService;
@@ -85,7 +85,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
             //判断此时刻是否预警预警过
             String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config);
-            BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
+            BoundSetOperations<String, String> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
             logger.info("运营商监控,预警定时任务执行,各个配置,jobTime={},statTime={},baseTime={},config={},alarmTimeKey={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(statTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config), alarmTimeKey);
             if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
@@ -123,7 +123,13 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 return;
             }
             //发送预警
-            alarmMsg(msgList, jobTime, startTime, endTime, config);
+            String alarmTimeMsgKey = TaskOperatorMonitorKeyHelper.keyOfAlarmMsgTimeLog(baseTime, config);
+            if (redisTemplate.hasKey(alarmTimeMsgKey)) {
+                alarmMsg(msgList, jobTime, startTime, endTime, config);
+                redisTemplate.opsForValue().set(alarmTimeKey, MonitorDateUtils.format(baseTime));
+                redisTemplate.expire(alarmTimeKey, 1, TimeUnit.DAYS);
+
+            }
         } catch (Exception e) {
             logger.error("运营商监控,预警定时任务执行jobTime={},config={}异常", MonitorDateUtils.format(jobTime), JSON.toJSONString(config), e);
         }
