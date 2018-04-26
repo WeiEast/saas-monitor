@@ -406,7 +406,7 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
             String thresholdDesc = new StringBuilder()
                     .append(loginConversionCompareVal).append("%").append(" ").append("(")
                     .append(compareDTO.getPreviousStartLoginAvgCount()).append("/")
-                    .append(compareDTO.getPreviousConfirmMobileAvgCount()).append("*")
+                    .append(compareDTO.getPreviousEntryAvgCount()).append("*")
                     .append(new BigDecimal(timeConfigDTO.getLoginConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
             msg.setThresholdDesc(thresholdDesc);
             calcOffsetAndLevel(loginConversionCompareVal, msg, sourceDto.getLoginConversionRate());

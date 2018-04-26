@@ -1,7 +1,6 @@
 package com.treefinance.saas.monitor.biz.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.datatrees.toolkits.util.Arrays;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.service.impl.EmailAlarmTemplateImpl;
 import com.treefinance.saas.monitor.common.domain.dto.EmailMonitorAlarmConfigDTO;
@@ -32,9 +31,11 @@ public class EmailMonitorAlarmServiceTest {
 
     @Test
     public void alarm() throws InterruptedException, ParseException {
-        String dateStr = "2018-03-13 19:30:00";
+        String dateStr = "2018-03-27 21:10:00";
         Date jobTime = DateUtils.parseDate(dateStr, Locale.CHINA, "yyyy-MM-dd hh:mm:ss");
-        String configStr ="[{\"alarmSwitch\":\"on\",\"alarmType\":1,\"alarmTypeDesc\":\"所有邮箱所有商户按人数统计预警\",\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"emails\":[\"virtual_total_stat_email\"],\"fewNum\":5,\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"email\",\"ivr\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"email\",\"sms\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"list\":[{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"18:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":90,\"crawlSuccessRate\":90,\"endTime\":\"18:00:00\",\"inTime\":true,\"loginConversionRate\":90,\"loginSuccessRate\":90,\"processSuccessRate\":90,\"startTime\":\"06:00:00\",\"wholeConversionRate\":90}],\"previousDays\":7,\"switches\":{\"ivr\":\"on\",\"sms\":\"on\",\"wechat\":\"on\",\"email\":\"on\"},\"taskTimeoutSecs\":600,\"threshold\":20},{\"alarmSwitch\":\"on\",\"alarmType\":1,\"alarmTypeDesc\":\"分邮箱所有商户按人数统计预警\",\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"emails\":[\"163.com\",\"126.com\",\"139.com\",\"sina.com\",\"qq.com\"],\"fewNum\":5,\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"email\",\"ivr\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"email\",\"sms\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"list\":[{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"18:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":90,\"crawlSuccessRate\":90,\"endTime\":\"18:00:00\",\"inTime\":true,\"loginConversionRate\":90,\"loginSuccessRate\":90,\"processSuccessRate\":90,\"startTime\":\"06:00:00\",\"wholeConversionRate\":90}],\"previousDays\":7,\"switches\":{\"ivr\":\"on\",\"sms\":\"on\",\"wechat\":\"on\",\"email\":\"on\"},\"taskTimeoutSecs\":600,\"threshold\":20}]\n";
+        String configStr ="[{\"alarmSwitch\":\"off\",\"alarmType\":1,\"alarmTypeDesc\":\"所有邮箱所有商户按人数统计预警\"," +
+                "\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"emails\":[\"virtual_total_stat_email\"],\"fewNum\":5,\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"email\",\"ivr\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"email\",\"sms\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"list\":[{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"18:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":90,\"crawlSuccessRate\":90,\"endTime\":\"18:00:00\",\"inTime\":true,\"loginConversionRate\":90,\"loginSuccessRate\":90,\"processSuccessRate\":90,\"startTime\":\"06:00:00\",\"wholeConversionRate\":90}],\"previousDays\":7,\"switches\":{\"ivr\":\"on\",\"sms\":\"on\",\"wechat\":\"on\",\"email\":\"on\"},\"taskTimeoutSecs\":600,\"threshold\":20},{\"alarmSwitch\":\"on\",\"alarmType\":1,\"alarmTypeDesc\":\"分邮箱所有商户按人数统计预警\",\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"emails\":[\"126.com\",\"163.com\",\"139.com\",\"exmail.qq.com\",\"qq.com\",\"sina.com\",\"其他\"],\"fewNum\":5,\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"email\",\"ivr\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"email\",\"sms\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"list\":[{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"18:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"wholeConversionRate\":70},{\"callbackSuccessRate\":90,\"crawlSuccessRate\":90,\"endTime\":\"18:00:00\",\"inTime\":true,\"loginConversionRate\":90,\"loginSuccessRate\":90,\"processSuccessRate\":90,\"startTime\":\"06:00:00\",\"wholeConversionRate\":90}],\"previousDays\":7,\"switches\":{\"ivr\":\"on\",\"sms\":\"on\",\"wechat\":\"on\",\"email\":\"on\"},\"taskTimeoutSecs\":600,\"threshold\":20}]\n";
+        String emails = "126.com,163.com,139.com,exmail.qq.com,qq.com,sina.com,其他";
         List<EmailMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr,
                 EmailMonitorAlarmConfigDTO.class);
 
@@ -42,11 +43,9 @@ public class EmailMonitorAlarmServiceTest {
             if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), "on")) {
                 continue;
             }
-            List<String> emails = configDTO.getEmails();
             if (configDTO.getAlarmType() == 1) {
                 //总运营商按人统计的预警
-                emailAlarmTemplateImpl.alarm(jobTime, configDTO, ETaskStatDataType.USER, emails.toArray(Arrays
-                        .newArray(String.class,emails.size())));
+                emailAlarmTemplateImpl.alarm(jobTime, configDTO, ETaskStatDataType.USER, emails.split(","));
             }
         }
 
