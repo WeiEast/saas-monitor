@@ -34,29 +34,12 @@ public class TemplateStatFacadeImpl implements TemplateStatFacade{
     @Autowired
     UidService uidService;
 
-  /*  @Override
-    public MonitorResult<List<StatTemplateRO>> queryStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest) {
 
-        logger.info("根据条件查询所有的模板数据，传入的Request为{}",templateStatRequest.toString());
-        List<StatTemplate>  statTemplateList = statTemplateService.que(templateStatRequest);
-        if(CollectionUtils.isEmpty(statTemplateList)){
-            logger.error("查不到模板数据");
-            return new MonitorResult(System.currentTimeMillis(),"查询不到模板数据",null);
-        }
-        List<StatTemplateRO> statTemplateROS = DataConverterUtils.convert(statTemplateList,StatTemplateRO.class);
-
-        long totalCount = statTemplateService.countStatTemplateByNameOrStatus(templateStatRequest);
-        MonitorResult<List<StatTemplateRO>>  monitorResult = new MonitorResult(templateStatRequest,statTemplateROS,totalCount);
-        logger.info("返回查询模板数据的result为{}",monitorResult.toString());
-        return monitorResult;
-
-    }
-*/
 
 
     @Override
     public MonitorResult<List<StatTemplateRO>>  queryStatTemplate(TemplateStatRequest templateStatRequest) {
-        logger.info("查询所有的模板数据，传入的分页数据为{}",templateStatRequest.toString());
+        logger.info("查询模板数据，传入的请求信息为{}",templateStatRequest.toString());
         List<StatTemplate>  statTemplateList = statTemplateService.queryStatTemplate(templateStatRequest);
         if(CollectionUtils.isEmpty(statTemplateList)){
             logger.error("查不到模板数据");

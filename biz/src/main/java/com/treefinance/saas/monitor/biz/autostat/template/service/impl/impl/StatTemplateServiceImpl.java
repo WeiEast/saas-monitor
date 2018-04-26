@@ -72,14 +72,14 @@ public class StatTemplateServiceImpl extends AbstractCacheService<String, StatTe
             if (templateStatRequest.getTemplateName() == null) {
                 statTemplateCriteria.createCriteria();
             } else {
-                statTemplateCriteria.createCriteria().andTemplateNameLike(templateStatRequest.getTemplateName());
+                statTemplateCriteria.createCriteria().andTemplateNameLike("%"+templateStatRequest.getTemplateName()+"%");
             }
 
         } else {
             if (templateStatRequest.getTemplateName() == null) {
                 statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus());
             } else {
-                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike(templateStatRequest.getTemplateName());
+                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike("%"+templateStatRequest.getTemplateName()+"%");
             }
 
         }
@@ -97,45 +97,19 @@ public class StatTemplateServiceImpl extends AbstractCacheService<String, StatTe
             if (templateStatRequest.getTemplateName() == null) {
                 statTemplateCriteria.createCriteria();
             } else {
-                statTemplateCriteria.createCriteria().andTemplateNameLike(templateStatRequest.getTemplateName());
+                statTemplateCriteria.createCriteria().andTemplateNameLike("%"+templateStatRequest.getTemplateName()+"%");
             }
 
         } else {
             if (templateStatRequest.getTemplateName() == null) {
                 statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus());
             } else {
-                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike(templateStatRequest.getTemplateName());
+                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike("%"+templateStatRequest.getTemplateName()+"%");
             }
 
         }
         return statTemplateMapper.countByExample(statTemplateCriteria);
     }
-
-//    @Override
-//    public List<StatTemplate> queryStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest) {
-//
-//        StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
-//        statTemplateCriteria.setOffset(templateStatRequest.getOffset());
-//        statTemplateCriteria.setLimit(templateStatRequest.getPageSize());
-//        if (templateStatRequest.getStatus() == 2) {
-//            if (templateStatRequest.getTemplateName() != null) {
-//                statTemplateCriteria.createCriteria();
-//            } else {
-//                statTemplateCriteria.createCriteria().andTemplateNameLike(templateStatRequest.getTemplateName());
-//            }
-//
-//        } else {
-//            if (templateStatRequest.getTemplateName() != null) {
-//                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus());
-//            } else {
-//                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike(templateStatRequest.getTemplateName());
-//            }
-//
-//        }
-//        return statTemplateMapper.selectPaginationByExample(statTemplateCriteria);
-//
-//
-//    }
 
     @Override
     public Long countStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest) {

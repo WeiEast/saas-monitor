@@ -14,18 +14,10 @@ import java.util.List;
 public interface TemplateStatFacade {
 
 
-    /**
-     * 根据templateName或status 查询统计模板（(分页）
-     * @param templateStatRequest
-     * @return
-     */
-/*
-    MonitorResult<List<StatTemplateRO>>  queryStatTemplateByNameOrStatus(TemplateStatRequest  templateStatRequest);
-*/
 
 
     /**
-     * 无条件查询所有模板（分页）
+     * 列表查询所有模板（分页）
      * @param  templateStatRequest
      * @return
      */

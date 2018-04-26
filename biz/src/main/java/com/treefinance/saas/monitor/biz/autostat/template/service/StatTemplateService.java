@@ -35,14 +35,6 @@ public interface StatTemplateService extends BaseQueryService<StatTemplate>, Bas
      */
     Long countStatTemplate(TemplateStatRequest templateStatRequest);
 
-//    /**
-//     * 根据模板名字或状态返回模板列表（分页）
-//     *
-//     * @return
-//     */
-//    List<StatTemplate> queryStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest);
-
-
     /**
      * 根据模板名字或状态计算所有模板数据数目
      * @param templateStatRequest
