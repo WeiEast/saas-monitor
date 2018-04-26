@@ -86,15 +86,15 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             //判断此时刻是否预警预警过
             String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config);
             BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
+            logger.info("运营商监控,预警定时任务执行,各个配置,jobTime={},baseTime={},config={},alarmTimeKey={}",
+                    MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config), alarmTimeKey);
             if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},config={}已预警,不再预警",
                         MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config));
                 return;
             }
             setOperations.add(MonitorDateUtils.format(baseTime));
-            if (setOperations.getExpire() == -1) {
-                setOperations.expire(2, TimeUnit.DAYS);
-            }
+            setOperations.expire(2, TimeUnit.DAYS);
 
             //获取基础数据
             Date startTime = DateUtils.addMinutes(baseTime, -intervalMins);
@@ -708,7 +708,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                         .append(new BigDecimal(config.getCallbackSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
                 msg.setThresholdDesc(thresholdDesc);
 
-                calcOffsetAndLevel(processCompareVal, msg, dto.getCallbackSuccessRate());
+                calcOffsetAndLevel(callbackCompareVal, msg, dto.getCallbackSuccessRate());
                 msgList.add(msg);
             }
 

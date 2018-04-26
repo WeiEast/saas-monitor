@@ -256,4 +256,5 @@ public class TaskOperatorMonitorKeyHelper {
         String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALL_DAY_TASK_USER_COUNT_UNIQUE_MOBILE, interval, appId, statType);
     }
+
 }
