@@ -43,5 +43,5 @@ public interface TemplateStatFacade {
      * @param templateStatRequest
      * @return
      */
-    MonitorResult<Boolean> updateStatTemplate(TemplateStatRequest templateStatRequest)；
+    MonitorResult<Boolean> updateStatTemplate(TemplateStatRequest templateStatRequest);
 }
