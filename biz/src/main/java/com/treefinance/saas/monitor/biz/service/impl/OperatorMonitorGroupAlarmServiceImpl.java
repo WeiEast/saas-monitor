@@ -86,8 +86,8 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             //判断此时刻是否预警预警过
             String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config);
             BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
-            logger.info("运营商监控,预警定时任务执行,各个配置,jobTime={},baseTime={},config={},alarmTimeKey={}",
-                    MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config), alarmTimeKey);
+            logger.info("运营商监控,预警定时任务执行,各个配置,jobTime={},statTime={},baseTime={},config={},alarmTimeKey={}",
+                    MonitorDateUtils.format(jobTime), MonitorDateUtils.format(statTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config), alarmTimeKey);
             if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},config={}已预警,不再预警",
                         MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config));
