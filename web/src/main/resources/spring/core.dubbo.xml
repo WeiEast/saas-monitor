@@ -53,6 +53,10 @@
                    interface="com.treefinance.saas.monitor.facade.service.stat.TemplateStatFacade"
                    version="1.0.0"/>
 
+    <dubbo:service ref="groupStatFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.stat.GroupStatFacade"
+                   version="1.0.0"/>
+
 
 
 
