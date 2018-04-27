@@ -3,7 +3,6 @@ package com.treefinance.saas.monitor.facade.service.stat;
 import com.treefinance.saas.monitor.facade.domain.base.BaseRequest;
 import com.treefinance.saas.monitor.facade.domain.request.GroupStatRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
-import com.treefinance.saas.monitor.facade.domain.ro.StatTemplateRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.StatGroupRO;
 
 import java.util.List;
@@ -15,11 +14,11 @@ import java.util.List;
 public interface GroupStatFacade {
 
     /**
-     * 根据模板ID返回统计分组列表
-     * @param groupStatRequest templateId
+     * 返回统计分组列表
+     * @param groupStatRequest templateId/groupIndex;
      * @return List<StatGroupRO>
      */
-    MonitorResult<List<StatGroupRO>> queryStatGroupByTemplateId(GroupStatRequest groupStatRequest);
+    MonitorResult<List<StatGroupRO>> queryStatGroup(GroupStatRequest groupStatRequest);
 
 
     /**

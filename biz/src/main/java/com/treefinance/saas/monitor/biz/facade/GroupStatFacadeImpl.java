@@ -37,13 +37,13 @@ public class GroupStatFacadeImpl implements GroupStatFacade{
 
 
     @Override
-    public MonitorResult<List<StatGroupRO>> queryStatGroupByTemplateId(GroupStatRequest groupStatRequest){
-        if(groupStatRequest.getId()==null) {
+    public MonitorResult<List<StatGroupRO>> queryStatGroup(GroupStatRequest groupStatRequest){
+        if(groupStatRequest.getTemplateId()==null) {
             logger.error("根据模板ID返回分组列表，传入的模板ID为空");
             throw new ParamCheckerException("请求参数非法");
         }
-        logger.info("根据模板ID返回分组列表，传入的模板ID为{}",groupStatRequest.toString());
-        List<StatGroup> statGroupList = statGroupService.queryByTemplateId(groupStatRequest.getTemplateId());
+        logger.info("返回模板分组列表，传入的请求参数为{}",groupStatRequest.toString());
+        List<StatGroup> statGroupList = statGroupService.queryStatGroup(groupStatRequest);
         List<StatGroupRO> statTemplateROList = DataConverterUtils.convert(statGroupList, StatGroupRO.class);
         if(StringUtils.isEmpty(statGroupList))
         {
@@ -63,17 +63,18 @@ public class GroupStatFacadeImpl implements GroupStatFacade{
             throw new ParamCheckerException("请求参数非法");
         }
         StatGroup  statGroup = new StatGroup();
+        BeanUtils.copyProperties(groupStatRequest,statGroup);
         if(groupStatRequest.getId()==null)
         {
             logger.info("新增分组数据操作,传入的参数为{}",groupStatRequest.toString());
             statGroup.setId(uidService.getId());
+            statGroupService.addStatGroup(statGroup);
 
         }
         else {
             logger.info("更新分组数据操作,传入的参数为{}",groupStatRequest.toString());
+            statGroupService.updateStatGroup(statGroup);
         }
-        BeanUtils.copyProperties(groupStatRequest,statGroup);
-        statGroupService.addOrUpdateStatGroup(statGroup);
 
         return new MonitorResult<>(true);
 

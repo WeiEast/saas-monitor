@@ -6,6 +6,7 @@ import com.treefinance.saas.monitor.biz.autostat.template.service.StatGroupServi
 import com.treefinance.saas.monitor.dao.entity.StatGroup;
 import com.treefinance.saas.monitor.dao.entity.StatGroupCriteria;
 import com.treefinance.saas.monitor.dao.mapper.StatGroupMapper;
+import com.treefinance.saas.monitor.facade.domain.request.GroupStatRequest;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,19 @@ public class StatGroupServiceImpl extends AbstractCacheService<Long, List<StatGr
     }
 
     @Override
+    public List<StatGroup> queryStatGroup(GroupStatRequest groupStatRequest) {
+        StatGroupCriteria criteria = new StatGroupCriteria();
+        if(groupStatRequest.getGroupIndex()==null||groupStatRequest.getGroupIndex()==0)
+        {
+            criteria.createCriteria().andTemplateIdEqualTo(groupStatRequest.getId());
+        }
+        else{
+            criteria.createCriteria().andTemplateIdEqualTo(groupStatRequest.getId()).andGroupIndexEqualTo(groupStatRequest.getGroupIndex());
+        }
+
+        return statGroupMapper.selectByExample(criteria);
+    }
+    @Override
     public List<StatGroup> queryByTemplateId(Long templateId) {
         StatGroupCriteria criteria = new StatGroupCriteria();
         criteria.createCriteria().andTemplateIdEqualTo(templateId);
@@ -52,8 +66,13 @@ public class StatGroupServiceImpl extends AbstractCacheService<Long, List<StatGr
     }
 
     @Override
-    public int addOrUpdateStatGroup(StatGroup statGroup) {
-        return statGroupMapper.insertOrUpdateBySelective(statGroup);
+    public int addStatGroup(StatGroup statGroup) {
+        return statGroupMapper.insert(statGroup);
+    }
+
+    @Override
+    public int updateStatGroup(StatGroup statGroup) {
+        return statGroupMapper.updateByPrimaryKey(statGroup);
     }
 
 
