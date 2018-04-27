@@ -52,6 +52,13 @@ public class StatGroupServiceImpl extends AbstractCacheService<Long, List<StatGr
     }
 
     @Override
+    public int addOrUpdateStatGroup(StatGroup statGroup) {
+        return statGroupMapper.insertOrUpdateBySelective(statGroup);
+    }
+
+
+
+    @Override
     public Function<Long, List<StatGroup>> dataLoader() {
         return this::queryByTemplateId;
     }

@@ -19,7 +19,7 @@ public interface TemplateStatFacade {
     /**
      * 列表查询所有模板（分页）
      * @param  templateStatRequest
-     * @return
+     * @return List<StatTemplateRO>
      */
     MonitorResult<List<StatTemplateRO>>  queryStatTemplate(TemplateStatRequest templateStatRequest);
 

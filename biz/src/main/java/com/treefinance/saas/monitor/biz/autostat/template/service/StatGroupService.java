@@ -18,4 +18,12 @@ public interface StatGroupService extends BaseQueryService<StatGroup>,BaseCacheS
      * @return
      */
     List<StatGroup> queryByTemplateId(Long templateId);
+
+    /**
+     * 新增或更新统计分组
+     *
+     * @param statGroup
+     */
+    int addOrUpdateStatGroup(StatGroup statGroup);
+
 }
