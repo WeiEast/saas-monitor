@@ -18,8 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author:guoguoyun
@@ -84,15 +85,17 @@ public class GroupStatFacadeImpl implements GroupStatFacade{
 
 
     @Override
-    public MonitorResult<List<Integer>>  queryAllGroupIndex(BaseRequest baseRequest) {
+    public MonitorResult<Set<Integer>>  queryAllGroupIndex(BaseRequest baseRequest) {
         List<StatGroup> statGroupList = statGroupService.queryAll();
         if(CollectionUtils.isEmpty(statGroupList))
         {
             logger.error("查找不到统计分组数据");
             return new MonitorResult(System.currentTimeMillis(), "查不到统计分组", null);
         }
-        List<Integer> integerList = new ArrayList<>();
+        Set<Integer> integerList = new HashSet<>();
         for(StatGroup statGroup:statGroupList){
+
+
             integerList.add(statGroup.getGroupIndex());
         }
         logger.info("返回统计分组序号为{}",integerList.toString());

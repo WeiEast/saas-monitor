@@ -6,6 +6,7 @@ import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.StatGroupRO;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author:guoguoyun
@@ -34,6 +35,6 @@ public interface GroupStatFacade {
      * @param baseRequest
      * @return List<Integer>
      */
-    MonitorResult<List<Integer>>  queryAllGroupIndex(BaseRequest baseRequest);
+    MonitorResult<Set<Integer>>  queryAllGroupIndex(BaseRequest baseRequest);
 
 }
