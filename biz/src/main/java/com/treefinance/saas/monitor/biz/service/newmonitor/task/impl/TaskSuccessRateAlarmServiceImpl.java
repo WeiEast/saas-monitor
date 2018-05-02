@@ -27,7 +27,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -51,7 +51,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private MerchantStatAccessMapper merchantStatAccessMapper;
     @Autowired
@@ -70,12 +70,12 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         Date beginTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
         String alarmTimeKey = TaskMonitorPerMinKeyHelper.keyOfAlarmTimeLog(beginTime, bizType);
-        if (redisTemplate.opsForSet().isMember(alarmTimeKey, MonitorDateUtils.format(beginTime))) {
+        if (stringRedisTemplate.opsForSet().isMember(alarmTimeKey, MonitorDateUtils.format(beginTime))) {
             logger.info("任务成功率预警,beginTime={},bizType={}已预警,不再预警", MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType));
             return;
         }
-        redisTemplate.opsForSet().add(alarmTimeKey, MonitorDateUtils.format(beginTime));
-        redisTemplate.expire(alarmTimeKey, 2, TimeUnit.DAYS);
+        stringRedisTemplate.opsForSet().add(alarmTimeKey, MonitorDateUtils.format(beginTime));
+        stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.DAYS);
         List<SaasStatAccessDTO> list = getNeedAlarmDataList(beginTime, config, intervalMins, bizType);
         logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},beginTime={},bizType={},config={}",
                 MonitorDateUtils.format(jobTime), JSON.toJSONString(list), MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType), JSON.toJSONString(config));

@@ -32,7 +32,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -59,7 +59,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     private IvrNotifyService ivrNotifyService;
@@ -86,13 +86,13 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config);
             logger.info("运营商监控,预警定时任务执行,各个配置,jobTime={},statTime={},baseTime={},config={},alarmTimeKey={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(statTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config), alarmTimeKey);
-            if (redisTemplate.opsForSet().isMember(alarmTimeKey, MonitorDateUtils.format(baseTime))) {
+            if (stringRedisTemplate.opsForSet().isMember(alarmTimeKey, MonitorDateUtils.format(baseTime))) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},config={}已预警,不再预警",
                         MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config));
                 return;
             }
-            redisTemplate.opsForSet().add(alarmTimeKey, MonitorDateUtils.format(baseTime));
-            redisTemplate.expire(alarmTimeKey, 2, TimeUnit.DAYS);
+            stringRedisTemplate.opsForSet().add(alarmTimeKey, MonitorDateUtils.format(baseTime));
+            stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.DAYS);
 
             //获取基础数据
             Date startTime = DateUtils.addMinutes(baseTime, -intervalMins);
@@ -122,10 +122,10 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             }
             //发送预警
             String alarmTimeMsgKey = TaskOperatorMonitorKeyHelper.keyOfAlarmMsgTimeLog(baseTime, config);
-            if (!redisTemplate.hasKey(alarmTimeMsgKey)) {
+            if (!stringRedisTemplate.hasKey(alarmTimeMsgKey)) {
                 alarmMsg(msgList, jobTime, startTime, endTime, config);
-                redisTemplate.opsForValue().set(alarmTimeKey, MonitorDateUtils.format(baseTime));
-                redisTemplate.expire(alarmTimeKey, 1, TimeUnit.DAYS);
+                stringRedisTemplate.opsForValue().set(alarmTimeKey, MonitorDateUtils.format(baseTime));
+                stringRedisTemplate.expire(alarmTimeKey, 1, TimeUnit.DAYS);
 
             }
         } catch (Exception e) {

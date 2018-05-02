@@ -37,7 +37,7 @@ public class TaskMonitorPerMinKeyHelper {
 
     private static final String KEY_MERCHANTS = "key-merchants";
     private static final String KEY_TASKS = "key-task-ids";
-    private static final String KEY_ALARM_TIMES = "key-alarm-times";
+    private static final String KEY_ALARM_TIMES = "key-str-alarm-times";
 
 
     /**

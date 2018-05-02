@@ -28,8 +28,8 @@ public class TaskOperatorMonitorKeyHelper {
 
     private static final String KEY_USERS_GROUP_ON_ACTION = "key-users-group-on-action";
     private static final String KEY_USERS_ALL_ON_ACTION = "key-users-all-on-action";
-    private static final String KEY_ALARM_TIMES = "key-alarm-times";
-    private static final String KEY_ALARM_MSG_TIMES = "key-alarm-msg-times";
+    private static final String KEY_ALARM_TIMES = "key-str-alarm-times";
+    private static final String KEY_ALARM_MSG_TIMES = "key-str-alarm-msg-times";
 
     private static final String KEY_ALL_INTERVAL_TASK_USER_COUNT = "key-all-interval-task-user-count";
     private static final String KEY_ALL_DAY_TASK_USER_COUNT = "key-all-day-task-user-count";
