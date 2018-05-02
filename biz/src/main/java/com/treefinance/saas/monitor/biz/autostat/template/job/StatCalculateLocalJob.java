@@ -10,6 +10,7 @@ import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilte
 import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.ExpressionCalculator;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.StatDataCalculator;
+import com.treefinance.saas.monitor.dao.entity.AsBasicDataHistory;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +24,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 /**
  * Created by yh-treefinance on 2018/1/23.
  */
-public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<Map<String, Object>> {
+public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<AsBasicDataHistory> {
     /**
      * logger
      */
@@ -31,7 +32,7 @@ public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<Map<Str
     /**
      * 数据队列
      */
-    private final ArrayBlockingQueue<Map<String, Object>> dataQueue = Queues.newArrayBlockingQueue(200);
+    private final ArrayBlockingQueue<AsBasicDataHistory> dataQueue = Queues.newArrayBlockingQueue(200);
 
     /**
      * 统计模板
@@ -59,7 +60,10 @@ public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<Map<Str
             List<Map<String, Object>> dataList = Lists.newArrayList();
             if (!dataQueue.isEmpty()) {
                 while (!dataQueue.isEmpty()) {
-                    dataList.add(dataQueue.poll());
+                    AsBasicDataHistory basicData = dataQueue.poll();
+                    String dataJson = basicData.getDataJson();
+                    Map<String, Object> map = JSON.parseObject(dataJson);
+                    dataList.add(map);
                 }
                 // 数据计算
                 statDataCalculator.calculate(statTemplate, dataList);
@@ -71,7 +75,7 @@ public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<Map<Str
     }
 
     @Override
-    public void doFilter(List<Map<String, Object>> data) {
+    public void doFilter(List<AsBasicDataHistory> data) {
         if (logger.isDebugEnabled()) {
             logger.debug("filter data : data={}", JSON.toJSONString(data));
         }
@@ -89,11 +93,13 @@ public class StatCalculateLocalJob implements SimpleJob, BasicDataFilter<Map<Str
 
                 Long expressioId = statTemplate.getId();
                 String expression = statTemplate.getBasicDataFilter();
-                data.forEach(map -> {
+                data.forEach(basicData -> {
+                    String dataJson = basicData.getDataJson();
+                    Map<String, Object> map = JSON.parseObject(dataJson);
                     Map<String, Object> dataMap = Maps.newHashMap();
                     if (StringUtils.isEmpty(expression) || Boolean.TRUE.equals(expressionCalculator.calculate(expressioId, expression, map))) {
                         dataMap.putAll(map);
-                        dataQueue.add(dataMap);
+                        dataQueue.add(basicData);
                     }
                 });
             } catch (Exception e) {

@@ -21,6 +21,7 @@ import com.treefinance.saas.monitor.common.domain.dto.StatTemplateDTO;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.dao.entity.BasicData;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
+import com.treefinance.saas.monitor.dao.mapper.AsBasicDataHistoryMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -65,6 +66,9 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
     @Autowired
     private DiamondConfig diamondConfig;
 
+    @Autowired
+    private AsBasicDataHistoryMapper asBasicDataMapper;
+
     /**
      * 已经启动的监听器
      */
@@ -98,7 +102,7 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
                 consumer.setNamesrvAddr(namesrvAddr);
                 consumer.subscribe(topic, tag);
                 consumer.setMessageModel(MessageModel.CLUSTERING);
-                consumer.registerMessageListener(new BasicDataMessageListener(basicDataId, basicDataCode, basicDataFilterContext));
+                consumer.registerMessageListener(new BasicDataMessageListener(basicDataId, basicDataCode, basicDataFilterContext, asBasicDataMapper));
                 consumer.start();
             } catch (MQClientException e) {
                 throw new RuntimeException("start " + basicDataCode + " consumer error", e);
