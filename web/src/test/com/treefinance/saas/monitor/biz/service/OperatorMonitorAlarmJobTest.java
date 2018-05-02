@@ -37,13 +37,16 @@ public class OperatorMonitorAlarmJobTest {
                 MonitorDateUtils.parse("2016-04-26 00:05:00"),
                 MonitorDateUtils.parse("2016-04-26 00:10:00"),
                 MonitorDateUtils.parse("2016-04-26 00:15:00"),
-                MonitorDateUtils.parse("2016-04-26 00:20:00"));
+                MonitorDateUtils.parse("2016-04-26 00:20:00"),
+                MonitorDateUtils.parse("2016-04-26 00:30:00"),
+                MonitorDateUtils.parse("2016-04-26 00:40:00"),
+                MonitorDateUtils.parse("2016-04-26 00:50:00"));
         String configStr = diamondConfig.getOperatorMonitorAlarmConfig();
         for (Date jobTime : jobTimeList) {
             List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
             for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
                 operatorMonitorGroupAlarmService.alarm(jobTime, configDTO);
-                Thread.sleep(10 * 1000);
+                Thread.sleep(2 * 1000);
             }
         }
         System.out.println("done====");

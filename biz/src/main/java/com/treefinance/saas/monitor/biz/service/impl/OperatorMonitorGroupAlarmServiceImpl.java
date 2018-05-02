@@ -32,7 +32,6 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -60,7 +59,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     private IvrNotifyService ivrNotifyService;
@@ -85,16 +84,15 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
             //判断此时刻是否预警预警过
             String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config);
-            BoundSetOperations<String, String> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
             logger.info("运营商监控,预警定时任务执行,各个配置,jobTime={},statTime={},baseTime={},config={},alarmTimeKey={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(statTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config), alarmTimeKey);
-            if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
+            if (redisTemplate.opsForSet().isMember(alarmTimeKey, MonitorDateUtils.format(baseTime))) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},config={}已预警,不再预警",
                         MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config));
                 return;
             }
-            setOperations.add(MonitorDateUtils.format(baseTime));
-            setOperations.expire(2, TimeUnit.DAYS);
+            redisTemplate.opsForSet().add(alarmTimeKey, MonitorDateUtils.format(baseTime));
+            redisTemplate.expire(alarmTimeKey, 2, TimeUnit.DAYS);
 
             //获取基础数据
             Date startTime = DateUtils.addMinutes(baseTime, -intervalMins);
