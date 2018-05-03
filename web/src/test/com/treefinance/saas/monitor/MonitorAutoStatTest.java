@@ -1,8 +1,10 @@
 package com.treefinance.saas.monitor;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.autostat.AutoStatService;
+import com.treefinance.saas.monitor.biz.autostat.mybatis.MybatisService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.StatTemplateDTO;
 import com.treefinance.saas.monitor.common.utils.SpringIocUtils;
@@ -31,6 +33,8 @@ public class MonitorAutoStatTest {
     private RedisDao redisDao;
     @Autowired
     private AutoStatService autoStatService;
+    @Autowired
+    private MybatisService mybatisService;
 
 
     @Test
@@ -114,6 +118,39 @@ public class MonitorAutoStatTest {
                 redisDao.releaseLock(lockKey, lockMap, expire);
             }
         }
+    }
+
+    @Test
+    public void testMybatisService() {
+        String jsonStr = "[{\n" +
+                "    \"processSuccessCount\": \"0\",\n" +
+                "    \"crawlSuccessCount\": \"0\",\n" +
+                "    \"userCount\": \"1\",\n" +
+                "    \"callbackSuccessCount\": \"0\",\n" +
+                "    \"id\": 176424515785084928\n" +
+                "  },  {\n" +
+                "    \"groupCode\": \"SHANG_HAI_10086\",\n" +
+                "    \"callbackSuccessCount\": \"3\",\n" +
+                "    \"groupName\": \"上海移动\",\n" +
+                "    \"userCount\": \"3\",\n" +
+                "    \"saasEnv\": \"1\",\n" +
+                "    \"startLoginCount\": \"3\",\n" +
+                "    \"confirmMobileCount\": \"3\",\n" +
+                "    \"appId\": \"virtual_total_stat_appId\",\n" +
+                "    \"entryCount\": \"3\",\n" +
+                "    \"crawlSuccessCount\": \"3\",\n" +
+                "    \"dataTime\": 1525262400000,\n" +
+                "    \"group\": \"saas-monitor:stat:operator-time-share:index-8:2018-05-02 20:00:00:appId-virtual_total_stat_appId:dataType-0:groupCode-SHANG_HAI_10086:saasEnv-1:groupName-上海移动\",\n" +
+                "    \"loginSuccessCount\": \"3\",\n" +
+                "    \"processSuccessCount\": \"3\",\n" +
+                "    \"dataType\": \"0\",\n" +
+                "    \"taskCount\": \"3\",\n" +
+                "    \"id\": 176424515848003584\n" +
+                "  }]";
+        List<Map<String, Object>> resultList = JSON.parseObject(jsonStr, new TypeReference<List<Map<String, Object>>>() {
+        });
+        mybatisService.batchInsertOrUpdate("operator_stat_access", resultList);
+        System.out.println("done====");
     }
 
 
