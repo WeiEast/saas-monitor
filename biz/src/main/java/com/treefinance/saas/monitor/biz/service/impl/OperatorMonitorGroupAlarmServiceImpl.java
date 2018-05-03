@@ -83,16 +83,16 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             Date baseTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
             //判断此时刻是否预警预警过
-            String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config);
+            String alarmTimeKey = TaskOperatorMonitorKeyHelper.strKeyOfAlarmTimeLog(baseTime, config);
             logger.info("运营商监控,预警定时任务执行,各个配置,jobTime={},statTime={},baseTime={},config={},alarmTimeKey={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(statTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config), alarmTimeKey);
-            if (stringRedisTemplate.opsForSet().isMember(alarmTimeKey, MonitorDateUtils.format(baseTime))) {
-                logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},config={}已预警,不再预警",
+            if (stringRedisTemplate.hasKey(alarmTimeKey)) {
+                logger.info("运营商监控,预警定时任务执行,已预警,不再预警,jobTime={},baseTime={},config={}",
                         MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config));
                 return;
             }
-            stringRedisTemplate.opsForSet().add(alarmTimeKey, MonitorDateUtils.format(baseTime));
-            stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.DAYS);
+            stringRedisTemplate.opsForValue().set(alarmTimeKey, "1");
+            stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.HOURS);
 
             //获取基础数据
             Date startTime = DateUtils.addMinutes(baseTime, -intervalMins);
@@ -121,13 +121,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 return;
             }
             //发送预警
-            String alarmTimeMsgKey = TaskOperatorMonitorKeyHelper.keyOfAlarmMsgTimeLog(baseTime, config);
-            if (!stringRedisTemplate.hasKey(alarmTimeMsgKey)) {
-                alarmMsg(msgList, jobTime, startTime, endTime, config);
-                stringRedisTemplate.opsForValue().set(alarmTimeKey, MonitorDateUtils.format(baseTime));
-                stringRedisTemplate.expire(alarmTimeKey, 1, TimeUnit.DAYS);
-
-            }
+            alarmMsg(msgList, jobTime, startTime, endTime, config);
         } catch (Exception e) {
             logger.error("运营商监控,预警定时任务执行jobTime={},config={}异常", MonitorDateUtils.format(jobTime), JSON.toJSONString(config), e);
         }

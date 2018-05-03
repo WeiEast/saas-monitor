@@ -69,13 +69,13 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         //取得预警原点时间,如:statTime=14:01分,10分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
         Date beginTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
-        String alarmTimeKey = TaskMonitorPerMinKeyHelper.keyOfAlarmTimeLog(beginTime, bizType);
-        if (stringRedisTemplate.opsForSet().isMember(alarmTimeKey, MonitorDateUtils.format(beginTime))) {
-            logger.info("任务成功率预警,beginTime={},bizType={}已预警,不再预警", MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType));
+        String alarmTimeKey = TaskMonitorPerMinKeyHelper.strKeyOfAlarmTimeLog(beginTime, bizType);
+        if (stringRedisTemplate.hasKey(alarmTimeKey)) {
+            logger.info("任务成功率预警已预警,不再预警,beginTime={},bizType={}", MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType));
             return;
         }
-        stringRedisTemplate.opsForSet().add(alarmTimeKey, MonitorDateUtils.format(beginTime));
-        stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.DAYS);
+        stringRedisTemplate.opsForValue().set(alarmTimeKey, "1");
+        stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.HOURS);
         List<SaasStatAccessDTO> list = getNeedAlarmDataList(beginTime, config, intervalMins, bizType);
         logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},beginTime={},bizType={},config={}",
                 MonitorDateUtils.format(jobTime), JSON.toJSONString(list), MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType), JSON.toJSONString(config));
