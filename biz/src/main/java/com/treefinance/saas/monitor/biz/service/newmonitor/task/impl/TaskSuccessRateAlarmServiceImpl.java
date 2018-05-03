@@ -76,6 +76,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         }
         stringRedisTemplate.opsForValue().set(alarmTimeKey, "1");
         stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.HOURS);
+
         List<SaasStatAccessDTO> list = getNeedAlarmDataList(beginTime, config, intervalMins, bizType);
         logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},beginTime={},bizType={},config={}",
                 MonitorDateUtils.format(jobTime), JSON.toJSONString(list), MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType), JSON.toJSONString(config));

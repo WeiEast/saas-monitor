@@ -25,8 +25,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundSetOperations;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -44,7 +43,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
     private static final Logger logger = LoggerFactory.getLogger(EcommerceMonitorAllAlarmService.class);
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private EcommerceAllStatAccessMapper ecommerceAllStatAccessMapper;
     @Autowired
@@ -64,17 +63,14 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             Date baseTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
             //判断此时刻是否预警预警过
-            String alarmTimeKey = EcommerceAlarmKeyHelper.keyOfAlarmTimeLog(baseTime, config.getAlarmType(), statType);
-            BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
-            if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
+            String alarmTimeKey = EcommerceAlarmKeyHelper.strKeyOfAlarmTimeLog(baseTime, config.getAlarmType(), statType);
+            if (stringRedisTemplate.hasKey(alarmTimeKey)) {
                 logger.info("电商预警,预警定时任务执行jobTime={},baseTime={},statType={},alarmType={}已预警,不再预警",
                         MonitorDateUtils.format(baseTime), JSON.toJSONString(statType), config.getAlarmType());
                 return;
             }
-            setOperations.add(MonitorDateUtils.format(baseTime));
-            if (setOperations.getExpire() == -1) {
-                setOperations.expire(2, TimeUnit.DAYS);
-            }
+            stringRedisTemplate.opsForValue().set(alarmTimeKey, "1");
+            stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.HOURS);
 
             //获取基础数据
             Date startTime = DateUtils.addMinutes(baseTime, -intervalMins);
@@ -510,9 +506,9 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
         private static final String KEY_PREFIX = "saas-monitor-task-ecommerce-monitor";
         private static final String KEY_ALARM_TIMES = "key-alarm-times";
 
-        public static String keyOfAlarmTimeLog(Date baseTime, Integer alarmType, ETaskStatDataType statType) {
+        public static String strKeyOfAlarmTimeLog(Date baseTime, Integer alarmType, ETaskStatDataType statType) {
             String intervalDateStr = DateFormatUtils.format(baseTime, "yyyy-MM-dd");
-            return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, alarmType, statType);
+            return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, alarmType, statType, MonitorDateUtils.format2Hms(baseTime));
         }
     }
 }

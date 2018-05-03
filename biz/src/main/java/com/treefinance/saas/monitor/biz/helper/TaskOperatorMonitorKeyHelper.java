@@ -231,7 +231,7 @@ public class TaskOperatorMonitorKeyHelper {
 
     public static String strKeyOfAlarmTimeLog(Date baseTime, OperatorMonitorAlarmConfigDTO config) {
         String intervalDateStr = DateFormatUtils.format(baseTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, config.getAlarmType(), config.getDataType(), config.getSaasEnv(), MonitorDateUtils.format(baseTime));
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, config.getAlarmType(), config.getDataType(), config.getSaasEnv(), MonitorDateUtils.format2Hms(baseTime));
     }
 
     public static String keyOfAlarmMsgTimeLog(Date baseTime, OperatorMonitorAlarmConfigDTO config) {

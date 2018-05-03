@@ -202,7 +202,7 @@ public class TaskMonitorPerMinKeyHelper {
 
     public static String strKeyOfAlarmTimeLog(Date redisKeyTime, EBizType bizType) {
         String intervalDateStr = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, bizType, MonitorDateUtils.format(redisKeyTime));
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, bizType, MonitorDateUtils.format2Hms(redisKeyTime));
     }
 
 }

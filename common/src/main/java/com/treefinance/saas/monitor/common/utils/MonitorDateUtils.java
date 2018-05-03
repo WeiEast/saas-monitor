@@ -39,6 +39,10 @@ public class MonitorDateUtils {
         return DateFormatUtils.format(date, "yyyy-MM-dd");
     }
 
+    public static String format2Hms(Date date) {
+        return DateFormatUtils.format(date, "HH:mm:ss");
+    }
+
     public static Date parse(String dateStr) {
         Date date = null;
         try {
@@ -182,7 +186,7 @@ public class MonitorDateUtils {
 //        System.out.println(format(getIntervalTime(new Date(), 5)));
         String dateStr = "2018-03-02 23:59:59";
         Date date = parse(dateStr);
-        System.out.println(MonitorDateUtils.isInZone("7:00", "24:00", date));
+        System.out.println(MonitorDateUtils.format2Hms(date));
     }
 
 
