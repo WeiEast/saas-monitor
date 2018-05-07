@@ -52,4 +52,13 @@ public class OperatorMonitorAlarmJobTest {
         System.out.println("done====");
     }
 
+    @Test
+    public void testAlarmJob() {
+        Date jobTime = MonitorDateUtils.parse("2018-05-07 15:15:00");
+        List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(diamondConfig.getOperatorMonitorAlarmConfig(), OperatorMonitorAlarmConfigDTO.class);
+        for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
+            operatorMonitorGroupAlarmService.alarm(jobTime, configDTO);
+        }
+    }
+
 }
