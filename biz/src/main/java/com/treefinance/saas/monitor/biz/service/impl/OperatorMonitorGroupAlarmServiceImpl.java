@@ -542,13 +542,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                             .append(compareDTO.getPreviousEntryAvgCount()).append("*")
                             .append(new BigDecimal(config.getConfirmMobileConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
                     msg.setThresholdDesc(thresholdDesc);
-                    if (BigDecimal.ZERO.compareTo(confirmMobileCompareVal) == 0) {
-                        msg.setOffset(BigDecimal.ZERO);
-                    } else {
-                        BigDecimal value = BigDecimal.ONE.subtract(dto.getConfirmMobileConversionRate().divide(confirmMobileCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
-                        msg.setOffset(value);
-                        determineAllLevel(msg, value);
-                    }
+                    calcOffsetAndLevel(confirmMobileCompareVal, msg, dto.getConfirmMobileConversionRate());
                     msgList.add(msg);
                 }
 
@@ -573,13 +567,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                             .append(compareDTO.getPreviousEntryAvgCount()).append("*")
                             .append(new BigDecimal(config.getWholeConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
                     msg.setThresholdDesc(thresholdDesc);
-                    if (BigDecimal.ZERO.compareTo(wholeConversionCompareVal) == 0) {
-                        msg.setOffset(BigDecimal.ZERO);
-                    } else {
-                        BigDecimal value = BigDecimal.ONE.subtract(dto.getWholeConversionRate().divide(wholeConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
-                        msg.setOffset(value);
-                        determineLevel(msg, value);
-                    }
+                    calcOffsetAndLevel(wholeConversionCompareVal, msg, dto.getWholeConversionRate());
                     msgList.add(msg);
 
                 }
@@ -733,30 +721,27 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
      * @param value offset 某一属性的偏转值
      */
     private void determineLevel(TaskStatAccessAlarmMsgDTO msg, BigDecimal value) {
-        if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0 && "中国联通".equals(msg.getGroupName())) {
-            msg.setAlarmLevel(EAlarmLevel.error);
-        } else if ("中国联通".equals(msg.getGroupName())) {
-            msg.setAlarmLevel(EAlarmLevel.warning);
-        } else {
-            msg.setAlarmLevel(EAlarmLevel.info);
+        //所有运营商预警级别定义
+        if (MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR.equals(msg.getGroupCode())) {
+            if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0) {
+                msg.setAlarmLevel(EAlarmLevel.error);
+            } else if (value.compareTo(BigDecimal.valueOf(diamondConfig.getWarningLower())) > 0) {
+                msg.setAlarmLevel(EAlarmLevel.warning);
+            } else {
+                msg.setAlarmLevel(EAlarmLevel.info);
+            }
+        } else { //分运营商预警级别定义
+            if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0
+                    && "中国联通".equals(msg.getGroupName())) {
+                msg.setAlarmLevel(EAlarmLevel.error);
+            } else if ("中国联通".equals(msg.getGroupName())) {
+                msg.setAlarmLevel(EAlarmLevel.warning);
+            } else {
+                msg.setAlarmLevel(EAlarmLevel.info);
+            }
         }
-    }
 
 
-    /**
-     * 确定预警等级
-     *
-     * @param msg   预警消息
-     * @param value offset 某一属性的偏转值
-     */
-    private void determineAllLevel(TaskStatAccessAlarmMsgDTO msg, BigDecimal value) {
-        if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0) {
-            msg.setAlarmLevel(EAlarmLevel.error);
-        } else if (value.compareTo(BigDecimal.valueOf(diamondConfig.getWarningLower())) > 0) {
-            msg.setAlarmLevel(EAlarmLevel.warning);
-        } else {
-            msg.setAlarmLevel(EAlarmLevel.info);
-        }
     }
 
     /**
