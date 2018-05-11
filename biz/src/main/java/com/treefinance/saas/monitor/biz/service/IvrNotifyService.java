@@ -54,6 +54,19 @@ public class IvrNotifyService {
      * 通知ivr
      */
     public void notifyIvr(EAlarmLevel alarmLevel, EAlarmType type, String alarmRule) {
+        String saasEnvDesc = "saas-" + ivrConfig.getEnvironment();
+        this.notifyIvr(alarmLevel, type, alarmRule, saasEnvDesc);
+    }
+
+    /**
+     * ivr通知
+     *
+     * @param alarmLevel  预警级别
+     * @param type        预警分类
+     * @param alarmRule   预警信息
+     * @param saasEnvDesc 环境描述
+     */
+    public void notifyIvr(EAlarmLevel alarmLevel, EAlarmType type, String alarmRule, String saasEnvDesc) {
         if (!SWITCH_ON.equalsIgnoreCase(ivrConfig.getIvrSwitch())) {
             logger.info("ivr 服务开关关闭...{}", JSON.toJSONString(ivrConfig));
             return;
@@ -80,7 +93,7 @@ public class IvrNotifyService {
         // 2.告警信息
         String alarmInfo = new StringBuffer()
                 .append("【" + alarmLevel.name() + "】")
-                .append("saas-" + ivrConfig.getEnvironment())
+                .append(saasEnvDesc)
                 .append(alarmRule).toString();
         Map<String, Object> jsonMap = initMessageBody(alarmInfo, contactsDTOS);
         // 4.加密参数
