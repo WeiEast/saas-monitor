@@ -188,6 +188,16 @@ public class TaskMonitorPerMinKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_TASKS, intervalDateStr);
     }
 
+    public static void main(String...args){
+        Date statTime = org.apache.commons.lang3.time.DateUtils.addSeconds(new Date(), -600);
+        System.err.println(statTime);
+        Date beginTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(statTime, 3);
+        System.err.println(beginTime);
+        String key = strKeyOfAlarmTimeLog(beginTime,EBizType.OPERATOR);
+        System.err.println(key);
+    }
+
+
     /**
      * 记录任务成功率预警,今天已已经预警的时刻
      *

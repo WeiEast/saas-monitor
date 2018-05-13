@@ -40,11 +40,13 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
             return;
         }
         long start = System.currentTimeMillis();
-        Date jobTime = new Date();//定时任务执行时间
+        //定时任务执行时间
+        Date jobTime = new Date();
         logger.info("任务成功率预警,定时任务执行jobTime={}", MonitorDateUtils.format(jobTime));
         try {
             String configStr = diamondConfig.getTaskSuccessRateAlarmConfig();
             List<TaskSuccessRateAlarmConfigDTO> configList = JSONObject.parseArray(configStr, TaskSuccessRateAlarmConfigDTO.class);
+            //根据任务类型来分配的
             Map<String, List<TaskSuccessRateAlarmConfigDTO>> configMap = configList.stream().collect(Collectors.groupingBy(TaskSuccessRateAlarmConfigDTO::getType));
             if (MapUtils.isEmpty(configMap)) {
                 logger.info("任务成功率预警,定时任务执行jobTime={}任务成功率预警未设置", MonitorDateUtils.format(jobTime));
@@ -52,16 +54,11 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
             }
             for (EBizType bizType : EBizType.values()) {
                 List<TaskSuccessRateAlarmConfigDTO> configDTOList = configMap.get(bizType.getText());
+                logger.info("bizType：{}，config：{}",bizType.getDesc(),configDTOList);
                 if (CollectionUtils.isEmpty(configDTOList)) {
                     continue;
                 }
                 for (TaskSuccessRateAlarmConfigDTO config : configDTOList) {
-                    String startTimeStr = config.getAlarmStartTime();
-                    String endTimeStr = config.getAlarmEndTime();
-                    if (!MonitorDateUtils.isInZone(startTimeStr, endTimeStr, jobTime)) {
-                        logger.info("任务成功率预警,定时任务执行jobTime={}不在此预警设置时间区间内config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(config));
-                        continue;
-                    }
                     logger.info("任务成功率预警,定时任务执行jobTime={}任务成功率预警执行config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(config));
                     taskSuccessRateAlarmService.alarm(bizType, config, jobTime);
                 }

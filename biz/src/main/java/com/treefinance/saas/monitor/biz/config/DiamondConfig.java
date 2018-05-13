@@ -40,6 +40,12 @@ public class DiamondConfig {
 
     /**
      * 任务成功率预警配置(json字符串)
+     * [{"alarmEndTime":"7:00","alarmStartTime":"0:00","intervalMins":3,
+     * "mailAlarmSwitch":"on","saasEnv":0,"saasEnvDesc":"所有环境","smsAlarmSwitch":"on",
+     * "succesThreshold":40,"taskTimeoutSecs":600,"times":3,"type":"OPERATOR","weChatAlarmSwitch":"on"},
+     * {"alarmEndTime":"24:00","alarmStartTime":"7:00","intervalMins":3,
+     * "mailAlarmSwitch":"on","saasEnv":0,"saasEnvDesc":"所有环境","smsAlarmSwitch":"on",
+     * "succesThreshold":40,"taskTimeoutSecs":600,"times":3,"type":"OPERATOR","weChatAlarmSwitch":"on"}]
      */
     @DAttribute(key = "task.success.rate.alarm.config")
     private String taskSuccessRateAlarmConfig;
