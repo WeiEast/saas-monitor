@@ -50,6 +50,17 @@ public class RedisKeyHelper {
     }
 
     /**
+     * 任务存在数,区分环境
+     *
+     * @param date
+     * @return
+     */
+    public static String keyOfTaskExistWithEnv(Date date, String saasEnv) {
+        String timeStr = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(TASK_EXIST, saasEnv, timeStr);
+    }
+
+    /**
      * http 请求总
      *
      * @param date
