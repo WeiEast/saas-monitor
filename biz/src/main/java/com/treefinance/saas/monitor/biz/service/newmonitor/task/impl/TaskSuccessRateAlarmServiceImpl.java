@@ -42,6 +42,7 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -83,7 +84,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         //取得预警原点时间,如:statTime=14:01分,10分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
         Date beginTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
-        String alarmTimeKey = TaskMonitorPerMinKeyHelper.strKeyOfAlarmTimeLog(beginTime, bizType);
+        String alarmTimeKey = TaskMonitorPerMinKeyHelper.strKeyOfAlarmTimeLog(beginTime, bizType,config.getSaasEnv());
         if (stringRedisTemplate.hasKey(alarmTimeKey)) {
             logger.info("任务成功率预警已预警,不再预警,beginTime={},bizType={}", MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType));
             return;
@@ -95,9 +96,13 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},beginTime={},bizType={},config={}",
                 MonitorDateUtils.format(jobTime), JSON.toJSONString(list), MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType), JSON.toJSONString(config));
 
+        if (list.isEmpty()) {
+            return;
+        }
+
         TaskSuccRateCompareDTO compareDTO = getPastData(beginTime, config, intervalMins, bizType);
 
-        if (0 == compareDTO.getTotalCount()) {
+        if (compareDTO.getTotalCount() == null || compareDTO.getTotalCount().equals(0)) {
             logger.info("过去7天内没有找到数据，不预警");
             return;
         }
@@ -105,17 +110,23 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
         EAlarmLevel alarmLevel = isAlarmAndDetermineLevel(list, config, compareDTO);
         if (alarmLevel == null) {
-            logger.info("任务成功率预警,定时任务执行jobTime={},判断所得数据不需要预警,list={},config={}",
-                    MonitorDateUtils.format(jobTime), JSON.toJSONString(list), JSON.toJSONString(config));
+            logger.info("任务成功率预警,定时任务执行jobTime={},判断所得数据不需要预警,list={},config={},compare={}",
+                    MonitorDateUtils.format(jobTime), JSON.toJSONString(list), JSON.toJSONString(config), JSON
+                            .toJSONString(compareDTO));
             return;
         }
 
+        Map<String, String> switches = config.getSwitches();
 
-        if(AlarmConstants.SWITCH_ON.equals(config.getSwitches().get(EAlarmChannel.EMAIL.getValue()))){
-            sendMailAlarm(list, bizType,alarmLevel);
+        if (AlarmConstants.SWITCH_ON.equals(switches.get(EAlarmChannel.EMAIL.getValue()))) {
+            sendMailAlarm(list, bizType, alarmLevel, compareDTO);
         }
-        sendWechatAlarm(list, bizType,alarmLevel);
-        sendSmsAlarm(list, bizType,alarmLevel);
+        if (AlarmConstants.SWITCH_ON.equals(switches.get(EAlarmChannel.WECHAT.getValue()))) {
+            sendWechatAlarm(list, bizType, alarmLevel, compareDTO);
+        }
+        if (AlarmConstants.SWITCH_ON.equals(switches.get(EAlarmChannel.SMS.getValue()))) {
+            sendSmsAlarm(list, bizType, alarmLevel, compareDTO);
+        }
 
         // 增加ivr服务通知
         if (EBizType.OPERATOR == bizType) {
@@ -141,6 +152,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             }
         }
 
+        compareDTO.setEvn(config.getSaasEnvDesc());
 
         return compareDTO;
 
@@ -148,7 +160,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
 
     private EAlarmLevel isAlarmAndDetermineLevel(List<SaasStatAccessDTO> list, TaskSuccessRateAlarmConfigDTO config,
-                                             TaskSuccRateCompareDTO compareDTO) {
+                                                 TaskSuccRateCompareDTO compareDTO) {
         List<TaskSuccRateAlarmTimeListDTO> timeConfigs = config.getTimeConfig();
         BigDecimal errorThresholdRate = null;
         BigDecimal warnThresholdRate = null;
@@ -166,10 +178,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             throw new BizException("任务成功率预警，当前时间没有设定错误、警告级别阈值");
         }
 
-        BigDecimal errorThreshold = errorThresholdRate.multiply(compareDTO.getSuccessRate()).divide(HUNDRED, 2, RoundingMode.HALF_UP);
-        BigDecimal warnThreshold = warnThresholdRate.multiply(compareDTO.getSuccessRate()).divide(HUNDRED, 2, RoundingMode.HALF_UP);
-        BigDecimal infoThreshold = infoThresholdRate.multiply(compareDTO.getSuccessRate()).divide(HUNDRED, 2,
-                RoundingMode.HALF_UP);
+        BigDecimal operand = compareDTO.getSuccessRate().divide(HUNDRED, 2, RoundingMode.HALF_UP);
+
+        BigDecimal errorThreshold = errorThresholdRate.multiply(operand);
+        BigDecimal warnThreshold = warnThresholdRate.multiply(operand);
+        BigDecimal infoThreshold = infoThresholdRate.multiply(operand);
 
         int successCount = 0, total = 0;
 
@@ -178,13 +191,23 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             total += saasStatAccessDTO.getTotalCount();
         }
 
-        BigDecimal averSuccRate = new BigDecimal(successCount).divide(new BigDecimal(total),2,RoundingMode.HALF_UP);
+        BigDecimal averSuccRate = new BigDecimal(successCount).multiply(HUNDRED).divide(new BigDecimal(total), 2,
+                RoundingMode
+                        .HALF_UP);
 
-        if(averSuccRate.compareTo(errorThreshold) <= 0){
+        if (averSuccRate.compareTo(errorThreshold) <= 0) {
+            compareDTO.setThreshold(errorThreshold);
+            compareDTO.setThresholdDecs(errorThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO
+                    .getSuccessRate()
+                    .toPlainString());
             return EAlarmLevel.error;
-        }else if (averSuccRate.compareTo(warnThreshold) <= 0){
+        } else if (averSuccRate.compareTo(warnThreshold) <= 0) {
+            compareDTO.setThreshold(warnThreshold);
+            compareDTO.setThresholdDecs(warnThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO.getSuccessRate().toPlainString());
             return EAlarmLevel.warning;
-        }else if(averSuccRate.compareTo(infoThreshold) <= 0){
+        } else if (averSuccRate.compareTo(infoThreshold) <= 0) {
+            compareDTO.setThreshold(infoThreshold);
+            compareDTO.setThresholdDecs(infoThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO.getSuccessRate().toPlainString());
             return EAlarmLevel.info;
         }
 
@@ -210,7 +233,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
             if (dataList.isEmpty()) {
                 logger.info("该时间段内数据为空，没有任务");
-                return null;
+                continue;
             }
 
             int totalCount = 0, successCount = 0, failCount = 0, cancelCount = 0;
@@ -294,14 +317,15 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         return rate;
     }
 
-    private void sendWechatAlarm(List<SaasStatAccessDTO> list, EBizType type,EAlarmLevel alarmLevel) {
-        String body = this.generateMessageBody(list, type, EAlarmChannel.WECHAT,alarmLevel);
+    private void sendWechatAlarm(List<SaasStatAccessDTO> list, EBizType type, EAlarmLevel alarmLevel, TaskSuccRateCompareDTO compareDTO) {
+        String body = this.generateMessageBody(list, type, EAlarmChannel.WECHAT, alarmLevel, compareDTO);
         alarmMessageProducer.sendWechantAlarm(body);
     }
 
-    private void sendMailAlarm(List<SaasStatAccessDTO> list, EBizType bizType,EAlarmLevel alarmLevel) {
+    private void sendMailAlarm(List<SaasStatAccessDTO> list, EBizType bizType, EAlarmLevel alarmLevel,
+                               TaskSuccRateCompareDTO compareDTO) {
         String title = this.generateTitle(bizType);
-        String body = this.generateMessageBody(list, bizType, EAlarmChannel.EMAIL,alarmLevel);
+        String body = this.generateMessageBody(list, bizType, EAlarmChannel.EMAIL, alarmLevel, compareDTO);
         alarmMessageProducer.sendMailAlarm(title, body);
     }
 
@@ -309,12 +333,13 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         return "saas-" + diamondConfig.getMonitorEnvironment() + "[" + type.getDesc() + "]任务成功率预警";
     }
 
-    private void sendSmsAlarm(List<SaasStatAccessDTO> list, EBizType type,EAlarmLevel alarmLevel) {
-        String body = this.generateMessageBody(list, type, EAlarmChannel.SMS,alarmLevel);
+    private void sendSmsAlarm(List<SaasStatAccessDTO> list, EBizType type, EAlarmLevel alarmLevel, TaskSuccRateCompareDTO compareDTO) {
+        String body = this.generateMessageBody(list, type, EAlarmChannel.SMS, alarmLevel, compareDTO);
         smsNotifyService.send(body);
     }
 
-    private String generateMessageBody(List<SaasStatAccessDTO> list, EBizType type, EAlarmChannel sendType,EAlarmLevel alarmLevel) {
+    private String generateMessageBody(List<SaasStatAccessDTO> list, EBizType type, EAlarmChannel sendType,
+                                       EAlarmLevel alarmLevel, TaskSuccRateCompareDTO compareDTO) {
         StringBuffer buffer = new StringBuffer();
         if (Objects.equals(EAlarmChannel.SMS, sendType)) {
             //短信的花括号文字是需要备案的
@@ -349,9 +374,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             cancelCountList.add(access.getCancelCount());
         });
 
+        buffer.append(" 环境标志: " + compareDTO.getEvn() + "\n");
         buffer.append(" 数据时间: " + Joiner.on(" | ").useForNull(" ").join(dataTimeList) + " \n");
         buffer.append(" 任务总数: " + Joiner.on(" | ").useForNull(" ").join(totalCountList) + " \n");
         buffer.append(" 转化率(%): " + Joiner.on(" | ").useForNull(" ").join(successRateList) + " \n");
+        buffer.append(" 阈值(%): " + compareDTO.getThreshold() + "(" + compareDTO.getThresholdDecs() + ")" + "\n");
         buffer.append(" 成功数: " + Joiner.on(" | ").useForNull(" ").join(successCountList) + " \n");
         buffer.append(" 失败率(%): " + Joiner.on(" | ").useForNull(" ").join(failRateList) + " \n");
         buffer.append(" 失败数: " + Joiner.on(" | ").useForNull(" ").join(failCountList) + " \n");

@@ -20,27 +20,31 @@ public class TaskSuccRateCompareDTO {
     /**
      * 访问用户数
      */
-    private Integer userCount;
+    private Integer userCount = 0;
 
     /**
      * 访问总数
      */
-    private Integer totalCount;
+    private Integer totalCount = 0;
 
     /**
      * 访问成功数
      */
-    private Integer successCount;
+    private Integer successCount=0;
 
     /**
      * 访问失败数
      */
-    private Integer failCount;
+    private Integer failCount=0;
 
     /**
      * 访问取消数
      */
-    private Integer cancelCount;
+    private Integer cancelCount=0;
+
+    private BigDecimal threshold;
+
+    private String thresholdDecs;
 
     /**
      * 访问成功率
@@ -52,6 +56,8 @@ public class TaskSuccRateCompareDTO {
      */
     private BigDecimal failRate;
 
+    private String evn;
+
     /**
      * 转化率
      */
@@ -62,11 +68,12 @@ public class TaskSuccRateCompareDTO {
 
 
     public void add(SaasStatAccessDTO saasStatAccessDTO) {
-        this.totalCount += saasStatAccessDTO.getTotalCount();
-        this.userCount += saasStatAccessDTO.getUserCount();
-        this.failCount += saasStatAccessDTO.getFailCount();
-        this.cancelCount += saasStatAccessDTO.getCancelCount();
-        this.successCount += saasStatAccessDTO.getSuccessCount();
+        this.totalCount +=(saasStatAccessDTO.getTotalCount() == null?0:saasStatAccessDTO
+                .getTotalCount());
+        this.userCount += saasStatAccessDTO.getUserCount() == null?0:saasStatAccessDTO.getUserCount();
+        this.failCount += saasStatAccessDTO.getFailCount() == null?0:saasStatAccessDTO.getFailCount();
+        this.cancelCount += saasStatAccessDTO.getCancelCount()== null?0:saasStatAccessDTO.getCancelCount();
+        this.successCount += saasStatAccessDTO.getSuccessCount()==null?0:saasStatAccessDTO.getSuccessCount();
         this.dataType = saasStatAccessDTO.getDataType();
         days++;
     }
@@ -149,5 +156,29 @@ public class TaskSuccRateCompareDTO {
                 ", conversionRate=" + conversionRate +
                 ", days=" + days +
                 '}';
+    }
+
+    public BigDecimal getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(BigDecimal threshold) {
+        this.threshold = threshold;
+    }
+
+    public String getThresholdDecs() {
+        return thresholdDecs;
+    }
+
+    public void setThresholdDecs(String thresholdDecs) {
+        this.thresholdDecs = thresholdDecs;
+    }
+
+    public String getEvn() {
+        return evn;
+    }
+
+    public void setEvn(String evn) {
+        this.evn = evn;
     }
 }

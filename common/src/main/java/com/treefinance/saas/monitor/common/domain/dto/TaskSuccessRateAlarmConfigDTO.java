@@ -64,9 +64,11 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
         List<TaskSuccessRateAlarmConfigDTO> list = Lists.newArrayList();
         TaskSuccessRateAlarmConfigDTO dto1 = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.PRODUCT);
         TaskSuccessRateAlarmConfigDTO dto2 = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.PRE_PRODUCT);
+        TaskSuccessRateAlarmConfigDTO dto3 = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.ALL);
 
         list.add(dto1);
         list.add(dto2);
+        list.add(dto3);
 
         System.out.println(JSON.toJSONString(list));
     }
@@ -92,22 +94,25 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
         List<TaskSuccRateAlarmTimeListDTO> listDTOS = Lists.newArrayList();
 
         TaskSuccRateAlarmTimeListDTO timeListDTO = new TaskSuccRateAlarmTimeListDTO();
-        timeListDTO.setEndTime("24:00:00");
+        timeListDTO.setEndTime("23:59:59");
         timeListDTO.setStartTime("19:00:00");
         timeListDTO.setThresholdError(new BigDecimal("70"));
         timeListDTO.setThresholdWarning(new BigDecimal("80"));
+        timeListDTO.setThresholdInfo(new BigDecimal("90"));
 
         TaskSuccRateAlarmTimeListDTO timeListDTO1 = new TaskSuccRateAlarmTimeListDTO();
-        timeListDTO1.setEndTime("00:00:00");
-        timeListDTO1.setStartTime("06:00:00");
+        timeListDTO1.setEndTime("06:00:00");
+        timeListDTO1.setStartTime("00:00:00");
         timeListDTO1.setThresholdError(new BigDecimal("70"));
         timeListDTO1.setThresholdWarning(new BigDecimal("80"));
+        timeListDTO1.setThresholdInfo(new BigDecimal("90"));
 
         TaskSuccRateAlarmTimeListDTO timeListDTO2 = new TaskSuccRateAlarmTimeListDTO();
-        timeListDTO2.setEndTime("06:00:00");
-        timeListDTO2.setStartTime("19:00:00");
+        timeListDTO2.setEndTime("19:00:00");
+        timeListDTO2.setStartTime("06:00:00");
         timeListDTO2.setThresholdError(new BigDecimal("70"));
         timeListDTO2.setThresholdWarning(new BigDecimal("80"));
+        timeListDTO2.setThresholdInfo(new BigDecimal("90"));
 
 
         listDTOS.add(timeListDTO);
