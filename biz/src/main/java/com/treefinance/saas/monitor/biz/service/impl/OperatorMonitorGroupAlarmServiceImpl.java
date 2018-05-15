@@ -295,7 +295,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
     private void sendMail(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
                           ETaskStatDataType statType, String baseTile, String mailSwitch, EAlarmLevel alarmLevel) {
-        if (StringUtils.equalsIgnoreCase(mailSwitch, SWITCH_ON)) {
+        if (StringUtils.equalsIgnoreCase(mailSwitch, SWITCH_ON))  {
 
             String mailBaseTitle = "【${level}】【${module}】【${type}】发生 ${detail} 预警";
 
