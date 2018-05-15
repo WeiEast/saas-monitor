@@ -1,7 +1,6 @@
 package com.treefinance.saas.monitor.biz.service.newmonitor.task.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.base.Enums;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -84,7 +83,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         //取得预警原点时间,如:statTime=14:01分,10分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
         Date beginTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
-        String alarmTimeKey = TaskMonitorPerMinKeyHelper.strKeyOfAlarmTimeLog(beginTime, bizType,config.getSaasEnv());
+        String alarmTimeKey = TaskMonitorPerMinKeyHelper.strKeyOfAlarmTimeLog(beginTime, bizType, config.getSaasEnv());
         if (stringRedisTemplate.hasKey(alarmTimeKey)) {
             logger.info("任务成功率预警已预警,不再预警,beginTime={},bizType={}", MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType));
             return;
@@ -130,7 +129,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
         // 增加ivr服务通知
         if (EBizType.OPERATOR == bizType) {
-            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.conversion_rate_low, "运营商转化率低于阀值");
+            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.conversion_rate_low, "运营商转化率低于阀值", config.getSaasEnvDesc());
         }
     }
 
@@ -192,8 +191,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         }
 
         BigDecimal averSuccRate = new BigDecimal(successCount).multiply(HUNDRED).divide(new BigDecimal(total), 2,
-                RoundingMode
-                        .HALF_UP);
+                RoundingMode.HALF_UP);
 
         if (averSuccRate.compareTo(errorThreshold) <= 0) {
             compareDTO.setThreshold(errorThreshold);
@@ -324,13 +322,13 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
     private void sendMailAlarm(List<SaasStatAccessDTO> list, EBizType bizType, EAlarmLevel alarmLevel,
                                TaskSuccRateCompareDTO compareDTO) {
-        String title = this.generateTitle(bizType);
+        String title = this.generateTitle(bizType, compareDTO.getEvn());
         String body = this.generateMessageBody(list, bizType, EAlarmChannel.EMAIL, alarmLevel, compareDTO);
         alarmMessageProducer.sendMailAlarm(title, body);
     }
 
-    private String generateTitle(EBizType type) {
-        return "saas-" + diamondConfig.getMonitorEnvironment() + "[" + type.getDesc() + "]任务成功率预警";
+    private String generateTitle(EBizType type, String saasEnvDesc) {
+        return "saas-" + saasEnvDesc + "[" + type.getDesc() + "]任务成功率预警";
     }
 
     private void sendSmsAlarm(List<SaasStatAccessDTO> list, EBizType type, EAlarmLevel alarmLevel, TaskSuccRateCompareDTO compareDTO) {
@@ -355,7 +353,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 buffer.append("【").append(alarmLevel).append("】");
             }
         }
-        buffer.append("您好，").append(generateTitle(type)).append("，监控数据如下，请及时处理：").append("\n");
+        buffer.append("您好，").append(generateTitle(type, compareDTO.getEvn())).append("，监控数据如下，请及时处理：").append("\n");
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         List<String> dataTimeList = Lists.newArrayList();
         List<Integer> totalCountList = Lists.newArrayList();
