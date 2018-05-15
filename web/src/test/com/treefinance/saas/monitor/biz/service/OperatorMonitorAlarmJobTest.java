@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
+import com.treefinance.saas.monitor.biz.task.NoTaskAlarmJob;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.junit.Test;
@@ -29,6 +30,8 @@ public class OperatorMonitorAlarmJobTest {
     private DiamondConfig diamondConfig;
     @Autowired
     private OperatorMonitorGroupAlarmService operatorMonitorGroupAlarmService;
+    @Autowired
+    private NoTaskAlarmJob noTaskAlarmJob;
 
     @Test
     public void testAlarmJobTest() throws InterruptedException {
@@ -60,5 +63,12 @@ public class OperatorMonitorAlarmJobTest {
             operatorMonitorGroupAlarmService.alarm(jobTime, configDTO);
         }
     }
+
+    @Test
+    public void testNoTaskAlarmJob() {
+        noTaskAlarmJob.execute(null);
+
+    }
+
 
 }

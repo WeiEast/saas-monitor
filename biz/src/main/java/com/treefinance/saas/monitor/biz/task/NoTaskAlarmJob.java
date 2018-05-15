@@ -71,7 +71,6 @@ public class NoTaskAlarmJob implements SimpleJob {
         try {
             String config = diamondConfig.getTaskExistAlarmNoSuccessTaskConfig();
             List<TaskExistAlarmNoSuccessTaskConfigDTO> configList = JSONObject.parseArray(config, TaskExistAlarmNoSuccessTaskConfigDTO.class);
-
             redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
                 @Override
                 public Object execute(RedisOperations redisOperations) throws DataAccessException {
