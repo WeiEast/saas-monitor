@@ -141,24 +141,26 @@ public class TaskExistAlarmNoTaskConfigDTO implements Serializable {
         config1.setAlarmSwitch("on");
         config1.setMailAlarmSwitch("on");
         config1.setWeChatAlarmSwitch("on");
-        config1.setBizType(null);
+        config1.setSmsAlarmSwitch("on");
+        config1.setBizType((byte) 0);
         config1.setBizTypeDesc("所有业务类型");
         config1.setSaasEnv((byte) 0);
         config1.setSaasEnvDesc("所有环境");
-        config1.setDayMins(10);
-        config1.setNightMins(30);
+        config1.setDayMins(5);
+        config1.setNightMins(15);
         list.add(config1);
 
         TaskExistAlarmNoTaskConfigDTO config2 = new TaskExistAlarmNoTaskConfigDTO();
         config2.setAlarmSwitch("on");
         config2.setMailAlarmSwitch("on");
         config2.setWeChatAlarmSwitch("on");
-        config2.setBizType((byte) 3);
-        config2.setBizTypeDesc("运营商");
-        config2.setSaasEnv((byte) 0);
-        config2.setSaasEnvDesc("所有环境");
-        config2.setDayMins(10);
-        config2.setNightMins(20);
+        config2.setSmsAlarmSwitch("on");
+        config2.setBizType((byte) 0);
+        config2.setBizTypeDesc("所有业务类型");
+        config2.setSaasEnv((byte) 1);
+        config2.setSaasEnvDesc("生产环境");
+        config2.setDayMins(5);
+        config2.setNightMins(15);
         list.add(config2);
 
         System.out.println(JSON.toJSONString(list));
