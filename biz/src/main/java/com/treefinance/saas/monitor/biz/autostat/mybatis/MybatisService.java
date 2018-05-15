@@ -102,14 +102,14 @@ public class MybatisService {
         String lockKey = Joiner.on(":").join(lockKeyList);
         int result = -1;
         List<DbColumn> dbColumns = null;
-        List<String> columnNames = null;
         Map<String, Object> paramsMap = Maps.newHashMap();
         try {
             lockMap = redisDao.acquireLock(lockKey, 60 * 1000L, 1000L, 10);
             if (lockMap != null) {
                 logger.info("lock table for batchInsertOrUpdate: tableName={}", tableName);
                 dbColumns = getTableColumns(tableName);
-                columnNames = dbColumns.stream().map(DbColumn::getActualColumnName).collect(Collectors.toList());
+                List<String> columnNames = dbColumns.stream().map(DbColumn::getActualColumnName).collect(Collectors.toList());
+
 
                 Set<String> dataKeys = Sets.newHashSet();
                 dataList.stream().forEach(map -> dataKeys.addAll(map.keySet()));
@@ -124,6 +124,18 @@ public class MybatisService {
 
                 for (Map<String, Object> data : dataList) {
                     List<Object> row = Lists.newArrayList();
+                    //数据中存在必填字段无对应值的情况,需过滤
+                    boolean existNullColumn = false;
+                    for (String notNullColumn : columnNames) {
+                        if (data.get(notNullColumn) == null) {
+                            existNullColumn = true;
+                            break;
+                        }
+                    }
+                    if (existNullColumn) {
+                        continue;
+                    }
+
                     for (String column : columnNames) {
                         boolean existNullVal = false;
                         for (String dataKey : data.keySet()) {

@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.helper;
 import com.google.common.base.Joiner;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
+import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
 
@@ -37,7 +38,7 @@ public class TaskMonitorPerMinKeyHelper {
 
     private static final String KEY_MERCHANTS = "key-merchants";
     private static final String KEY_TASKS = "key-task-ids";
-    private static final String KEY_ALARM_TIMES = "key-alarm-times";
+    private static final String KEY_ALARM_TIMES = "key-str-alarm-times";
 
 
     /**
@@ -198,4 +199,10 @@ public class TaskMonitorPerMinKeyHelper {
         String intervalDateStr = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd");
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, bizType);
     }
+
+    public static String strKeyOfAlarmTimeLog(Date redisKeyTime, EBizType bizType) {
+        String intervalDateStr = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, bizType, MonitorDateUtils.format2Hms(redisKeyTime));
+    }
+
 }

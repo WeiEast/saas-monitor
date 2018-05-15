@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.treefinance.saas.grapserver.facade.model.enums.ETaskOperatorMonitorStatus;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
+import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
 
@@ -28,7 +29,8 @@ public class TaskOperatorMonitorKeyHelper {
 
     private static final String KEY_USERS_GROUP_ON_ACTION = "key-users-group-on-action";
     private static final String KEY_USERS_ALL_ON_ACTION = "key-users-all-on-action";
-    private static final String KEY_ALARM_TIMES = "key-alarm-times";
+    private static final String KEY_ALARM_TIMES = "key-str-alarm-times";
+    private static final String KEY_ALARM_MSG_TIMES = "key-str-alarm-msg-times";
 
     private static final String KEY_ALL_INTERVAL_TASK_USER_COUNT = "key-all-interval-task-user-count";
     private static final String KEY_ALL_DAY_TASK_USER_COUNT = "key-all-day-task-user-count";
@@ -227,6 +229,16 @@ public class TaskOperatorMonitorKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, config.getAlarmType(), config.getDataType(), config.getSaasEnv());
     }
 
+    public static String strKeyOfAlarmTimeLog(Date baseTime, OperatorMonitorAlarmConfigDTO config) {
+        String intervalDateStr = DateFormatUtils.format(baseTime, "yyyy-MM-dd");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, config.getAlarmType(), config.getDataType(), config.getSaasEnv(), MonitorDateUtils.format2Hms(baseTime));
+    }
+
+    public static String keyOfAlarmMsgTimeLog(Date baseTime, OperatorMonitorAlarmConfigDTO config) {
+        String interval = DateFormatUtils.format(baseTime, "yyyy-MM-dd HH:mm:ss");
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_MSG_TIMES, interval, config.getAlarmType(), config.getDataType(), config.getSaasEnv());
+    }
+
     public static String keyOfTaskUserCountAllIntervalStat(Date intervalTime, String appId, ETaskStatDataType statType) {
         String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd HH:mm:ss");
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALL_INTERVAL_TASK_USER_COUNT, interval, appId, statType);
@@ -256,4 +268,5 @@ public class TaskOperatorMonitorKeyHelper {
         String interval = DateFormatUtils.format(intervalTime, "yyyy-MM-dd");
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALL_DAY_TASK_USER_COUNT_UNIQUE_MOBILE, interval, appId, statType);
     }
+
 }

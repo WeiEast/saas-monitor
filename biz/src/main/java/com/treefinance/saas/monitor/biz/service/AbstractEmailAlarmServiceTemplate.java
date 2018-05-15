@@ -192,6 +192,7 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
      * @return 是否需要预警
      */
     protected Boolean isAlarm(Integer num, BigDecimal rate, BigDecimal compareRate, Integer fewNum, Integer threshold) {
+        //20
         BigDecimal fewThresholdPercent = BigDecimal.valueOf(threshold);
         //上一个环节任务数量=0,不预警
         if (num == 0) {
@@ -204,7 +205,12 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
             }
         }
         //统计数量正常,且大于历史平均阈值,不预警
-        return num < fewNum || rate.compareTo(compareRate) < 0;
+        if (num >= fewNum) {
+            if (rate.compareTo(compareRate) >= 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
 

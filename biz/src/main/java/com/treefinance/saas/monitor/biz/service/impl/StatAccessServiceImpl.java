@@ -44,9 +44,13 @@ public class StatAccessServiceImpl implements StatAccessService {
         criteria.setOrderByClause("dataTime desc");
         criteria.setLimit(request.getPageSize());
         criteria.setOffset(request.getOffset());
-        criteria.createCriteria().andAppIdEqualTo(request.getAppId())
+        MerchantStatDayAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        if (request.getSaasEnv() != null) {
+            innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
+        }
         long totalCount = merchantStatDayAccessMapper.countByExample(criteria);
         List<MerchantStatDayAccessRO> data = Lists.newArrayList();
         if (totalCount > 0) {
@@ -60,9 +64,13 @@ public class StatAccessServiceImpl implements StatAccessService {
     public MonitorResult<List<MerchantStatDayAccessRO>> queryDayAccessListNoPage(MerchantStatDayAccessRequest request) {
         MerchantStatDayAccessCriteria criteria = new MerchantStatDayAccessCriteria();
         criteria.setOrderByClause("dataTime desc");
-        criteria.createCriteria().andAppIdEqualTo(request.getAppId())
+        MerchantStatDayAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        if (request.getSaasEnv() != null) {
+            innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
+        }
         List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
         List<MerchantStatDayAccessRO> data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
         return MonitorResultBuilder.build(data);

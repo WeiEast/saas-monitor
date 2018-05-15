@@ -15,7 +15,6 @@ import com.treefinance.saas.monitor.common.domain.dto.TaskSuccessRateAlarmConfig
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
-import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.MerchantStatAccess;
 import com.treefinance.saas.monitor.dao.entity.MerchantStatAccessCriteria;
@@ -28,8 +27,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundSetOperations;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -53,7 +51,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private MerchantStatAccessMapper merchantStatAccessMapper;
     @Autowired
@@ -71,16 +69,14 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         //取得预警原点时间,如:statTime=14:01分,10分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
         Date beginTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
-        String alarmTimeKey = TaskMonitorPerMinKeyHelper.keyOfAlarmTimeLog(beginTime, bizType);
-        BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
-        if (setOperations.isMember(MonitorDateUtils.format(beginTime))) {
-            logger.info("任务成功率预警,beginTime={},bizType={}已预警,不再预警", MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType));
+        String alarmTimeKey = TaskMonitorPerMinKeyHelper.strKeyOfAlarmTimeLog(beginTime, bizType);
+        if (stringRedisTemplate.hasKey(alarmTimeKey)) {
+            logger.info("任务成功率预警已预警,不再预警,beginTime={},bizType={}", MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType));
             return;
         }
-        setOperations.add(MonitorDateUtils.format(beginTime));
-        if (setOperations.getExpire() == -1) {
-            setOperations.expire(2, TimeUnit.DAYS);
-        }
+        stringRedisTemplate.opsForValue().set(alarmTimeKey, "1");
+        stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.HOURS);
+
         List<SaasStatAccessDTO> list = getNeedAlarmDataList(beginTime, config, intervalMins, bizType);
         logger.info("任务成功率预警,定时任务执行jobTime={},需要预警的数据list={},beginTime={},bizType={},config={}",
                 MonitorDateUtils.format(jobTime), JSON.toJSONString(list), MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType), JSON.toJSONString(config));
@@ -237,13 +233,13 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     private String generateMessageBody(List<SaasStatAccessDTO> list, EBizType type, String sendType) {
         StringBuffer buffer = new StringBuffer();
         if (StringUtils.equalsIgnoreCase(sendType, "sms")) {//短信的花括号文字是需要备案的
-            if (EStatType.OPERATOR.equals(type)) {
+            if (EBizType.OPERATOR.equals(type)) {
                 buffer.append(EAlarmLevel.error).append(",");
             } else {
                 buffer.append(EAlarmLevel.warning).append(",");
             }
         } else {
-            if (EStatType.OPERATOR.equals(type)) {
+            if (EBizType.OPERATOR.equals(type)) {
                 buffer.append("【").append(EAlarmLevel.error).append("】");
             } else {
                 buffer.append("【").append(EAlarmLevel.warning).append("】");

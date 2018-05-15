@@ -54,11 +54,6 @@ public class BaseStatAccessDTO implements Serializable {
     private BigDecimal previousEntryAvgCount;
 
     /**
-     * 前n天的相同时刻确认手机号数平均值
-     */
-    private BigDecimal previousConfirmMobileAvgCount;
-
-    /**
      * 前n天的相同时刻开始登陆数平均值
      */
     private BigDecimal previousStartLoginAvgCount;
@@ -262,14 +257,6 @@ public class BaseStatAccessDTO implements Serializable {
 
     public void setPreviousEntryAvgCount(BigDecimal previousEntryAvgCount) {
         this.previousEntryAvgCount = previousEntryAvgCount;
-    }
-
-    public BigDecimal getPreviousConfirmMobileAvgCount() {
-        return previousConfirmMobileAvgCount;
-    }
-
-    public void setPreviousConfirmMobileAvgCount(BigDecimal previousConfirmMobileAvgCount) {
-        this.previousConfirmMobileAvgCount = previousConfirmMobileAvgCount;
     }
 
     public BigDecimal getPreviousStartLoginAvgCount() {

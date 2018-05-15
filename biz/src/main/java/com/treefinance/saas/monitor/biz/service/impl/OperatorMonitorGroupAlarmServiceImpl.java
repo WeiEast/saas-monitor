@@ -32,8 +32,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundSetOperations;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -60,7 +59,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     private IvrNotifyService ivrNotifyService;
@@ -84,24 +83,23 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             Date baseTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
             //判断此时刻是否预警预警过
-            String alarmTimeKey = TaskOperatorMonitorKeyHelper.keyOfAlarmTimeLog(baseTime, config);
-            BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
-            if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
-                logger.info("运营商监控,预警定时任务执行jobTime={},baseTime={},config={}已预警,不再预警",
+            String alarmTimeKey = TaskOperatorMonitorKeyHelper.strKeyOfAlarmTimeLog(baseTime, config);
+            logger.info("运营商监控,预警定时任务执行,各个配置,jobTime={},statTime={},baseTime={},config={},alarmTimeKey={}",
+                    MonitorDateUtils.format(jobTime), MonitorDateUtils.format(statTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config), alarmTimeKey);
+            if (stringRedisTemplate.hasKey(alarmTimeKey)) {
+                logger.info("运营商监控,预警定时任务执行,已预警,不再预警,jobTime={},baseTime={},config={}",
                         MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(config));
                 return;
             }
-            setOperations.add(MonitorDateUtils.format(baseTime));
-            if (setOperations.getExpire() == -1) {
-                setOperations.expire(2, TimeUnit.DAYS);
-            }
+            stringRedisTemplate.opsForValue().set(alarmTimeKey, "1");
+            stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.HOURS);
 
             //获取基础数据
             Date startTime = DateUtils.addMinutes(baseTime, -intervalMins);
             Date endTime = baseTime;
             List<OperatorStatAccessDTO> dtoList = this.getBaseDataList(jobTime, startTime, endTime, config);
             if (CollectionUtils.isEmpty(dtoList)) {
-                logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到分运营商的统计数据",
+                logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到运营商的统计数据",
                         MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(endTime));
                 return;
             }
@@ -109,7 +107,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             //获取前7天内,相同时刻运营商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
             //<groupCode,OperatorStatAccessDTO>
             Map<String, OperatorStatAccessDTO> compareMap = getPreviousCompareDataMap(jobTime, baseTime, dtoList, config);
-            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},获取前n天内,相同时刻区分运营商统计的平均值compareMap={}",
+            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},获取前n天内,相同时刻运营商统计的平均值compareMap={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(compareMap));
             if (MapUtils.isEmpty(compareMap)) {
                 return;
@@ -117,7 +115,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
             //获取需要预警的数据信息
             List<TaskStatAccessAlarmMsgDTO> msgList = getAlarmMsgList(jobTime, dtoList, compareMap, config);
-            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},区分运营商统计需要预警的数据信息msgList={}",
+            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},运营商统计需要预警的数据信息msgList={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(msgList));
             if (CollectionUtils.isEmpty(msgList)) {
                 return;
@@ -153,7 +151,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         }
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
         if (CollectionUtils.isEmpty(list)) {
-            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到区分运营商的统计数据list={}",
+            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到运营商的统计数据list={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(endTime), JSON.toJSONString(list));
             return Lists.newArrayList();
         }
@@ -421,7 +419,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
 
         if (CollectionUtils.isEmpty(previousDTOList)) {
-            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},在此时间前{}天内,未查询到区分运营商统计数据groupCodeList={},previousOClockList={},list={}",
+            logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},在此时间前{}天内,未查询到运营商统计数据groupCodeList={},previousOClockList={},list={}",
                     MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), previousDays, JSON.toJSONString(groupCodeList),
                     JSON.toJSONString(previousOClockList), JSON.toJSONString(previousDTOList));
             return Maps.newHashMap();
@@ -544,13 +542,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                             .append(compareDTO.getPreviousEntryAvgCount()).append("*")
                             .append(new BigDecimal(config.getConfirmMobileConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
                     msg.setThresholdDesc(thresholdDesc);
-                    if (BigDecimal.ZERO.compareTo(confirmMobileCompareVal) == 0) {
-                        msg.setOffset(BigDecimal.ZERO);
-                    } else {
-                        BigDecimal value = BigDecimal.ONE.subtract(dto.getConfirmMobileConversionRate().divide(confirmMobileCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
-                        msg.setOffset(value);
-                        determineAllLevel(msg, value);
-                    }
+                    calcOffsetAndLevel(confirmMobileCompareVal, msg, dto.getConfirmMobileConversionRate());
                     msgList.add(msg);
                 }
 
@@ -575,13 +567,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                             .append(compareDTO.getPreviousEntryAvgCount()).append("*")
                             .append(new BigDecimal(config.getWholeConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
                     msg.setThresholdDesc(thresholdDesc);
-                    if (BigDecimal.ZERO.compareTo(wholeConversionCompareVal) == 0) {
-                        msg.setOffset(BigDecimal.ZERO);
-                    } else {
-                        BigDecimal value = BigDecimal.ONE.subtract(dto.getWholeConversionRate().divide(wholeConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
-                        msg.setOffset(value);
-                        determineLevel(msg, value);
-                    }
+                    calcOffsetAndLevel(wholeConversionCompareVal, msg, dto.getWholeConversionRate());
                     msgList.add(msg);
 
                 }
@@ -708,7 +694,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                         .append(new BigDecimal(config.getCallbackSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
                 msg.setThresholdDesc(thresholdDesc);
 
-                calcOffsetAndLevel(processCompareVal, msg, dto.getCallbackSuccessRate());
+                calcOffsetAndLevel(callbackCompareVal, msg, dto.getCallbackSuccessRate());
                 msgList.add(msg);
             }
 
@@ -735,30 +721,27 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
      * @param value offset 某一属性的偏转值
      */
     private void determineLevel(TaskStatAccessAlarmMsgDTO msg, BigDecimal value) {
-        if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0 && "中国联通".equals(msg.getGroupName())) {
-            msg.setAlarmLevel(EAlarmLevel.error);
-        } else if ("中国联通".equals(msg.getGroupName())) {
-            msg.setAlarmLevel(EAlarmLevel.warning);
-        } else {
-            msg.setAlarmLevel(EAlarmLevel.info);
+        //所有运营商预警级别定义
+        if (MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR.equals(msg.getGroupCode())) {
+            if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0) {
+                msg.setAlarmLevel(EAlarmLevel.error);
+            } else if (value.compareTo(BigDecimal.valueOf(diamondConfig.getWarningLower())) > 0) {
+                msg.setAlarmLevel(EAlarmLevel.warning);
+            } else {
+                msg.setAlarmLevel(EAlarmLevel.info);
+            }
+        } else { //分运营商预警级别定义
+            if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0
+                    && "中国联通".equals(msg.getGroupName())) {
+                msg.setAlarmLevel(EAlarmLevel.error);
+            } else if ("中国联通".equals(msg.getGroupName())) {
+                msg.setAlarmLevel(EAlarmLevel.warning);
+            } else {
+                msg.setAlarmLevel(EAlarmLevel.info);
+            }
         }
-    }
 
 
-    /**
-     * 确定预警等级
-     *
-     * @param msg   预警消息
-     * @param value offset 某一属性的偏转值
-     */
-    private void determineAllLevel(TaskStatAccessAlarmMsgDTO msg, BigDecimal value) {
-        if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0) {
-            msg.setAlarmLevel(EAlarmLevel.error);
-        } else if (value.compareTo(BigDecimal.valueOf(diamondConfig.getWarningLower())) > 0) {
-            msg.setAlarmLevel(EAlarmLevel.warning);
-        } else {
-            msg.setAlarmLevel(EAlarmLevel.info);
-        }
     }
 
     /**
