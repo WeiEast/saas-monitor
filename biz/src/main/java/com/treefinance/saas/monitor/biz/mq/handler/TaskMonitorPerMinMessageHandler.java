@@ -15,6 +15,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,7 +27,7 @@ public class TaskMonitorPerMinMessageHandler implements TagBaseMessageHandler<Ta
     private static final Logger logger = LoggerFactory.getLogger(TaskMonitorPerMinMessageHandler.class);
 
     @Autowired
-    private TaskExistMonitorService taskExistMonitorService;
+    private List<TaskExistMonitorService> taskExistMonitorServiceList;
     @Autowired
     private TaskMonitorPerMinService taskMonitorPerMinService;
     @Autowired
@@ -54,7 +55,7 @@ public class TaskMonitorPerMinMessageHandler implements TagBaseMessageHandler<Ta
         }
 
         //任务是否存在处理
-        taskExistMonitorService.doService(message);
+        taskExistMonitorServiceList.forEach(taskExistMonitorService -> taskExistMonitorService.doService(message));
 
         //商户银行访问统计表,商户邮箱访问统计表,商户邮箱访问统计表,商户邮箱访问统计表,以及后续会添加其他业务类型
         taskMonitorPerMinService.statMerchantAccessWithType(message);

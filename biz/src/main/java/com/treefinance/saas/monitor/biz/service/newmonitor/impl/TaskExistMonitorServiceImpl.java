@@ -6,7 +6,6 @@ import com.treefinance.saas.assistant.model.TaskMonitorMessage;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.service.newmonitor.TaskExistMonitorService;
-import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by haojiahong on 2017/11/17.
+ * Good Luck Bro , No Bug !
+ * <p>
+ * 无任务,无成功任务所有环境统计
+ *
+ * @author haojiahong
+ * @date 2017/11/17
  */
 @Service
 public class TaskExistMonitorServiceImpl implements TaskExistMonitorService {
@@ -45,13 +49,8 @@ public class TaskExistMonitorServiceImpl implements TaskExistMonitorService {
     }
 
     private void statTaskExistWithType(TaskMonitorMessage message, Date redisKeyTime) {
-        EBizType type = EBizType.getBizType(message.getBizType());
-        if (type == null) {
-            logger.error("任务预警,任务预警消息处理,任务业务类型有误,任务消息message={}", JSON.toJSONString(message));
-            return;
-        }
         Map<String, String> map = Maps.newHashMap();
-        String redisKey = RedisKeyHelper.keyOfTaskExistWithType(redisKeyTime, type);
+        String redisKey = RedisKeyHelper.keyOfTaskExistWithTypeAndEnv(redisKeyTime, message.getBizType() + "", "0");
         map.put("key", redisKey);
         BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(redisKey);
         Long totalCount = hashOperations.increment("totalCount", 1);
@@ -68,7 +67,7 @@ public class TaskExistMonitorServiceImpl implements TaskExistMonitorService {
 
     private void statAllTaskExist(TaskMonitorMessage message, Date redisKeyTime) {
         Map<String, String> map = Maps.newHashMap();
-        String redisKey = RedisKeyHelper.keyOfTaskExist(redisKeyTime);
+        String redisKey = RedisKeyHelper.keyOfTaskExistWithTypeAndEnv(redisKeyTime, "0", "0");
         map.put("key", redisKey);
         BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(redisKey);
         Long totalCount = hashOperations.increment("totalCount", 1);
@@ -78,7 +77,7 @@ public class TaskExistMonitorServiceImpl implements TaskExistMonitorService {
             map.put("successCount", successCount + "");
         }
         if (hashOperations.getExpire() == -1) {
-            hashOperations.expire(1, TimeUnit.HOURS);
+            hashOperations.expire(1, TimeUnit.DAYS);
         }
         logger.info("任务预警,任务预警消息处理完成,预警处理的任务消息message={},map={}", JSON.toJSONString(message), JSON.toJSONString(map));
     }
