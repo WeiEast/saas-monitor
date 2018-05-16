@@ -135,6 +135,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             logger.info("过去7天内没有找到数据，不预警");
             return;
         }
+        if(BigDecimal.ZERO.equals(compareDTO.getSuccessRate())){
+            logger.info("过去7天内平均值为零，不预警");
+            return;
+        }
+
 
         TaskSuccRateAlarmTimeListDTO taskSuccRateAlarmTimeConfig = findActiveTimeConfig(config);
 
@@ -275,6 +280,8 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         BigDecimal averSuccRate = new BigDecimal(successCount).multiply(HUNDRED).divide(new BigDecimal(total), 2,
                 RoundingMode
                         .HALF_UP);
+
+        compareDTO.setAverSuccRate(averSuccRate);
 
         if (averSuccRate.compareTo(errorThreshold) <= 0) {
             compareDTO.setThreshold(errorThreshold);
@@ -455,7 +462,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         buffer.append("<tr>");
         buffer.append("<td>阈值</td>");
         buffer.append("<td colspan ='3'>").append(compareDTO.getThreshold()).append("(").append(compareDTO
-                .getThresholdDecs()).append(")").append("</td>");
+                .getThresholdDecs()).append(")").append(compareDTO.getAverSuccRate()).append("</td>");
         buffer.append("</tr>");
 
         buffer.append("<tr>");
@@ -466,11 +473,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         buffer.append("<tr>");
         buffer.append("<td>任务总数</td>");
         buffer.append("<td>").append(Joiner.on("</td><td>").useForNull(" ").join(totalCountList)).append("</td>");
-        buffer.append("</tr>");
-
-        buffer.append("<tr>");
-        buffer.append("<td>转化率(%)</td>");
-        buffer.append("<td>").append(Joiner.on("</td><td>").useForNull(" ").join(successRateList)).append("</td>");
         buffer.append("</tr>");
 
         buffer.append("<tr>");
@@ -540,10 +542,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         });
 
         buffer.append(" 环境标志: " + compareDTO.getEvn() + "\n");
+        buffer.append(" 阈值(%): " + compareDTO.getThreshold() + "(" + compareDTO.getThresholdDecs() + ")" + compareDTO
+                .getAverSuccRate().toPlainString() + "\n");
         buffer.append(" 数据时间: " + Joiner.on(" | ").useForNull(" ").join(dataTimeList) + " \n");
         buffer.append(" 任务总数: " + Joiner.on(" | ").useForNull(" ").join(totalCountList) + " \n");
         buffer.append(" 转化率(%): " + Joiner.on(" | ").useForNull(" ").join(successRateList) + " \n");
-        buffer.append(" 阈值(%): " + compareDTO.getThreshold() + "(" + compareDTO.getThresholdDecs() + ")" + "\n");
         buffer.append(" 成功数: " + Joiner.on(" | ").useForNull(" ").join(successCountList) + " \n");
         buffer.append(" 失败率(%): " + Joiner.on(" | ").useForNull(" ").join(failRateList) + " \n");
         buffer.append(" 失败数: " + Joiner.on(" | ").useForNull(" ").join(failCountList) + " \n");
