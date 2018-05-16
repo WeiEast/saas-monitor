@@ -49,7 +49,7 @@ public class TaskSuccRateCompareDTO {
     /**
      * 访问成功率
      */
-    private BigDecimal successRate;
+    private BigDecimal successRate = null;
 
     /**
      * 访问失败率

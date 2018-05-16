@@ -135,7 +135,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             logger.info("过去7天内没有找到数据，不预警");
             return;
         }
-        if(BigDecimal.ZERO.equals(compareDTO.getSuccessRate())){
+        if(BigDecimal.ZERO.compareTo(compareDTO.getSuccessRate()) == 0){
             logger.info("过去7天内平均值为零，不预警");
             return;
         }
@@ -160,14 +160,13 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             logger.error("没有配置{}预警等级的渠道！levelConfigMap={}", alarmLevel.name(), JSON.toJSONString(levelConfigMap));
             return;
         }
-
+        logger.info("任务成功率预警,定时任务执行jobTim={},list={},config={},compare={}",jobTime,list,config,compareDTO);
         doAlarm(bizType, list, compareDTO, taskSuccRateAlarmTimeConfig, alarmLevel, levelConfigDTO);
 
-
         // 增加ivr服务通知
-        if (EBizType.OPERATOR == bizType) {
-            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.conversion_rate_low, "运营商转化率低于阀值");
-        }
+//        if (EBizType.OPERATOR == bizType) {
+//            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.conversion_rate_low, "运营商转化率低于阀值");
+//        }
     }
 
     private void doAlarm(EBizType bizType, List<SaasStatAccessDTO> list, TaskSuccRateCompareDTO compareDTO, TaskSuccRateAlarmTimeListDTO taskSuccRateAlarmTimeConfig, EAlarmLevel alarmLevel, MonitorAlarmLevelConfigDTO levelConfigDTO) {
@@ -283,17 +282,17 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
         compareDTO.setAverSuccRate(averSuccRate);
 
-        if (averSuccRate.compareTo(errorThreshold) <= 0) {
+        if (averSuccRate.compareTo(errorThreshold) < 0) {
             compareDTO.setThreshold(errorThreshold);
             compareDTO.setThresholdDecs(errorThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO
                     .getSuccessRate()
                     .toPlainString());
             return EAlarmLevel.error;
-        } else if (averSuccRate.compareTo(warnThreshold) <= 0) {
+        } else if (averSuccRate.compareTo(warnThreshold) < 0) {
             compareDTO.setThreshold(warnThreshold);
             compareDTO.setThresholdDecs(warnThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO.getSuccessRate().toPlainString());
             return EAlarmLevel.warning;
-        } else if (averSuccRate.compareTo(infoThreshold) <= 0) {
+        } else if (averSuccRate.compareTo(infoThreshold) < 0) {
             compareDTO.setThreshold(infoThreshold);
             compareDTO.setThresholdDecs(infoThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO.getSuccessRate().toPlainString());
             return EAlarmLevel.info;
