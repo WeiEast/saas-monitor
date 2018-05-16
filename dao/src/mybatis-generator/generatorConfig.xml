@@ -154,7 +154,7 @@
             <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
         <!--</table>-->
 
-        <table tableName="operator_all_stat_access" domainObjectName="OperatorAllStatAccess"
+        <table tableName="ecommerce_all_stat_access" domainObjectName="EcommerceAllStatAccess"
         enableSelectPaginationByExample="true"
         enableInsertOrUpdateBySelective="true"
         enableBatchInsert="true"
@@ -164,7 +164,7 @@
         <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
         </table>
 
-        <table tableName="operator_all_stat_day_access" domainObjectName="OperatorAllStatDayAccess"
+        <table tableName="ecommerce_all_stat_day_access" domainObjectName="EcommerceAllStatDayAccess"
         enableSelectPaginationByExample="true"
         enableInsertOrUpdateBySelective="true"
         enableBatchInsert="true"
