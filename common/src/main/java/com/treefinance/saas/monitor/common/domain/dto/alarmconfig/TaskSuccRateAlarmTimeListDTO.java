@@ -1,23 +1,15 @@
-package com.treefinance.saas.monitor.common.domain.dto;
+package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.HashMap;
 
 /**
  * @author chengtong
  * @date 18/5/11 15:20
  */
-public class TaskSuccRateAlarmTimeListDTO implements Serializable{
-
-    /**时间区间开始*/
-    private String startTime;
-
-    /**时间区间结束*/
-    private String endTime;
-
-    /**是否在时间区间*/
-    private boolean inTime;
+public class TaskSuccRateAlarmTimeListDTO extends BaseTimeConfig{
 
     /**转化率的阈值*/
     private BigDecimal thresholdError;
@@ -27,6 +19,8 @@ public class TaskSuccRateAlarmTimeListDTO implements Serializable{
     /**转化率的阈值*/
     private BigDecimal thresholdInfo;
 
+    /**集成的开关配置*/
+    private HashMap<String, String> switches;
 
     public BigDecimal getThresholdInfo() {
         return thresholdInfo;
@@ -34,35 +28,6 @@ public class TaskSuccRateAlarmTimeListDTO implements Serializable{
 
     public void setThresholdInfo(BigDecimal thresholdInfo) {
         this.thresholdInfo = thresholdInfo;
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
-
-    public boolean isInTime() {
-        LocalTime now = LocalTime.now();
-
-        LocalTime start = LocalTime.parse(startTime);
-        LocalTime end = LocalTime.parse(endTime);
-
-        return now.isBefore(end) && now.isAfter(start);
-    }
-
-    public void setInTime(boolean inTime) {
-        this.inTime = inTime;
     }
 
     public BigDecimal getThresholdError() {
@@ -80,4 +45,13 @@ public class TaskSuccRateAlarmTimeListDTO implements Serializable{
     public void setThresholdWarning(BigDecimal thresholdWarning) {
         this.thresholdWarning = thresholdWarning;
     }
+
+    public HashMap<String, String> getSwitches() {
+        return switches;
+    }
+
+    public void setSwitches(HashMap<String, String> switches) {
+        this.switches = switches;
+    }
+
 }

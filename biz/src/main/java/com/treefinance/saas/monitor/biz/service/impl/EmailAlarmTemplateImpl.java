@@ -8,6 +8,9 @@ import com.treefinance.saas.monitor.biz.helper.EmailMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.AbstractEmailAlarmServiceTemplate;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.*;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmTimeConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.MonitorAlarmLevelConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
@@ -455,9 +458,9 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
     protected void sendAlarmMsg(EAlarmLevel alarmLevel, List<BaseAlarmMsgDTO> dtoList, EmailMonitorAlarmConfigDTO
             configDTO, Date startTime, Date endTime, ETaskStatDataType statDataType) {
 
-        EmailMonitorAlarmLevelConfigDTO levelConfig = configDTO.getLevelConfig().stream().filter
-                (emailMonitorAlarmLevelConfigDTO ->
-                        alarmLevel.name().equals(emailMonitorAlarmLevelConfigDTO.getLevel())).findFirst().get();
+        MonitorAlarmLevelConfigDTO levelConfig = configDTO.getLevelConfig().stream().filter
+                (monitorAlarmLevelConfigDTO ->
+                        alarmLevel.name().equals(monitorAlarmLevelConfigDTO.getLevel())).findFirst().get();
 
         HashMap<String, String> switches = configDTO.getSwitches();
         if (switches == null || switches.isEmpty() || switches.values().stream().noneMatch(SWITCH_ON::equals)) {

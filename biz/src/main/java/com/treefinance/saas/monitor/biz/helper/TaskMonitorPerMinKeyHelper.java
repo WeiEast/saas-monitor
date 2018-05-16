@@ -211,12 +211,11 @@ public class TaskMonitorPerMinKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, bizType);
     }
     /**
-     * saas-monitor-task-monitor:key-str-alarm-times:2018-05-14:OPERATOR:0:14:21:00
+     * saas-monitor-task-monitor:key-str-alarm-times:2018-05-14:OPERATOR:0
      * */
     public static String strKeyOfAlarmTimeLog(Date redisKeyTime, EBizType bizType,int saasEnv) {
         String intervalDateStr = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, bizType,saasEnv,
-                MonitorDateUtils.format2Hms(redisKeyTime));
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, bizType,saasEnv);
     }
 
 }

@@ -7,7 +7,7 @@ import com.datatrees.toolkits.util.Arrays;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
 import com.treefinance.saas.monitor.biz.service.EmailMonitorAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
-import com.treefinance.saas.monitor.common.domain.dto.EmailMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;
