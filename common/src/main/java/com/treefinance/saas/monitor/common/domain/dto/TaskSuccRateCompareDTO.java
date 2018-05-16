@@ -49,7 +49,7 @@ public class TaskSuccRateCompareDTO {
     /**
      * 访问成功率
      */
-    private BigDecimal successRate;
+    private BigDecimal successRate = null;
 
     /**
      * 访问失败率
@@ -57,6 +57,9 @@ public class TaskSuccRateCompareDTO {
     private BigDecimal failRate;
 
     private String evn;
+
+    /**当前的平均值*/
+    private BigDecimal averSuccRate;
 
     /**
      * 转化率
@@ -156,6 +159,14 @@ public class TaskSuccRateCompareDTO {
                 ", conversionRate=" + conversionRate +
                 ", days=" + days +
                 '}';
+    }
+
+    public BigDecimal getAverSuccRate() {
+        return averSuccRate;
+    }
+
+    public void setAverSuccRate(BigDecimal averSuccRate) {
+        this.averSuccRate = averSuccRate;
     }
 
     public BigDecimal getThreshold() {

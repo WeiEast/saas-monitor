@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.common.domain.dto;
+package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -8,7 +8,6 @@ import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 
-import java.io.Serializable;
 import java.util.*;
 
 import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
@@ -17,7 +16,7 @@ import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITC
  * @Author: chengtong
  * @Date: 18/3/9 16:36
  */
-public class EmailMonitorAlarmConfigDTO implements Serializable {
+public class EmailMonitorAlarmConfigDTO extends BaseConfig {
 
     static final long serialVersionUID = 42123131212L;
 
@@ -35,10 +34,6 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
      * 任务超时时间
      */
     private Integer taskTimeoutSecs;
-    /**
-     * 此appId是否预警,方便以后开关
-     */
-    private String alarmSwitch;
     /**
      * 预警类型:按人统计预警为1,按任务统计为0
      */
@@ -75,7 +70,7 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
     /**
      * 预警等级-预警渠道的配置
      */
-    private List<EmailMonitorAlarmLevelConfigDTO> levelConfig;
+    private List<MonitorAlarmLevelConfigDTO> levelConfig;
 
 
     /* ======= switch ========*/
@@ -130,13 +125,6 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
         this.taskTimeoutSecs = taskTimeoutSecs;
     }
 
-    public String getAlarmSwitch() {
-        return alarmSwitch;
-    }
-
-    public void setAlarmSwitch(String alarmSwitch) {
-        this.alarmSwitch = alarmSwitch;
-    }
 
     public Integer getAlarmType() {
         return alarmType;
@@ -178,11 +166,11 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
         this.list = list;
     }
 
-    public List<EmailMonitorAlarmLevelConfigDTO> getLevelConfig() {
+    public List<MonitorAlarmLevelConfigDTO> getLevelConfig() {
         return levelConfig;
     }
 
-    public void setLevelConfig(List<EmailMonitorAlarmLevelConfigDTO> levelConfig) {
+    public void setLevelConfig(List<MonitorAlarmLevelConfigDTO> levelConfig) {
         this.levelConfig = levelConfig;
     }
 
@@ -204,7 +192,7 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
 
     public static void main(String... args) {
         EmailMonitorAlarmConfigDTO emailMonitorAlarmConfigDTO = new EmailMonitorAlarmConfigDTO();
-        emailMonitorAlarmConfigDTO.alarmSwitch = "on";
+        emailMonitorAlarmConfigDTO.setAlarmSwitch("on");
         emailMonitorAlarmConfigDTO.alarmType = 1;
         emailMonitorAlarmConfigDTO.alarmTypeDesc = "所有邮箱所有商户按人数统计预警";
         emailMonitorAlarmConfigDTO.appName = "所有商户";
@@ -262,15 +250,15 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
 
         emailMonitorAlarmConfigDTO.setList(list);
 
-        EmailMonitorAlarmLevelConfigDTO errorConfig = new EmailMonitorAlarmLevelConfigDTO();
+        MonitorAlarmLevelConfigDTO errorConfig = new MonitorAlarmLevelConfigDTO();
         errorConfig.setChannels(Arrays.asList("email", "ivr", "wechat"));
         errorConfig.setLevel(EAlarmLevel.error.name());
 
-        EmailMonitorAlarmLevelConfigDTO warning = new EmailMonitorAlarmLevelConfigDTO();
+        MonitorAlarmLevelConfigDTO warning = new MonitorAlarmLevelConfigDTO();
         warning.setChannels(Arrays.asList("email", "sms", "wechat"));
         warning.setLevel(EAlarmLevel.warning.name());
 
-        EmailMonitorAlarmLevelConfigDTO info = new EmailMonitorAlarmLevelConfigDTO();
+        MonitorAlarmLevelConfigDTO info = new MonitorAlarmLevelConfigDTO();
         info.setChannels(Arrays.asList("email", "wechat"));
         info.setLevel(EAlarmLevel.info.name());
 

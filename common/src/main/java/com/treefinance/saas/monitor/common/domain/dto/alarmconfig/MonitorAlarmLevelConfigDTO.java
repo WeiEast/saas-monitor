@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.common.domain.dto;
+package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 
 import java.io.Serializable;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.List;
  * @author chengtong
  * @date 18/3/13 14:20
  */
-public class EmailMonitorAlarmLevelConfigDTO implements Serializable{
+public class MonitorAlarmLevelConfigDTO implements Serializable{
 
     private String level;
 
