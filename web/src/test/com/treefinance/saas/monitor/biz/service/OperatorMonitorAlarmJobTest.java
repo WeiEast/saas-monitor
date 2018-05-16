@@ -4,9 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
-import com.treefinance.saas.monitor.biz.task.NoTaskAlarmJob;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoSuccessTaskConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoTaskConfigDTO;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +33,7 @@ public class OperatorMonitorAlarmJobTest {
     @Autowired
     private OperatorMonitorGroupAlarmService operatorMonitorGroupAlarmService;
     @Autowired
-    private NoTaskAlarmJob noTaskAlarmJob;
+    private TaskExistMonitorAlarmService taskExistMonitorAlarmService;
 
     @Test
     public void testAlarmJobTest() throws InterruptedException {
@@ -66,8 +68,18 @@ public class OperatorMonitorAlarmJobTest {
 
     @Test
     public void testNoTaskAlarmJob() {
-        noTaskAlarmJob.execute(null);
+        Date startTime = new Date();
+        Date endTime = DateUtils.addMinutes(startTime, 5);
+        List<TaskExistAlarmNoSuccessTaskConfigDTO> noSuccessTaskConfigList
+                = JSONObject.parseArray(diamondConfig.getTaskExistAlarmNoSuccessTaskConfig(), TaskExistAlarmNoSuccessTaskConfigDTO.class);
+        for (TaskExistAlarmNoSuccessTaskConfigDTO configDTO : noSuccessTaskConfigList)
+            taskExistMonitorAlarmService.alarmNoSuccessTaskWithConfig(startTime, endTime, configDTO);
 
+        List<TaskExistAlarmNoTaskConfigDTO> noTaskConfigList
+                = JSONObject.parseArray(diamondConfig.getTaskExistAlarmNoTaskConfig(), TaskExistAlarmNoTaskConfigDTO.class);
+        for (TaskExistAlarmNoTaskConfigDTO configDTO : noTaskConfigList) {
+            taskExistMonitorAlarmService.alarmNoTaskWithConfig(startTime, endTime, configDTO);
+        }
     }
 
 

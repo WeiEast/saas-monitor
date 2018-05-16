@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
@@ -33,6 +34,8 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
     private IvrNotifyService ivrNotifyService;
     @Autowired
     private SmsNotifyService smsNotifyService;
+    @Autowired
+    private DiamondConfig diamondConfig;
 
 
     @Override
@@ -45,7 +48,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
         EBizType bizType = EBizType.getBizType(config.getBizType());
         if (StringUtils.equalsIgnoreCase(config.getMailAlarmSwitch(), "on")) {
             String mailDataBody = generateNoSuccessTaskWithTypeMailDataBody(startTime, endTime, config);
-            String title = "saas-" + config.getSaasEnvDesc() + "【" + config.getBizTypeDesc() + "】" + "无成功任务预警";
+            String title = diamondConfig.getSaasMonitorEnvironment() + "【" + config.getSaasEnvDesc() + "】" + "【" + config.getBizTypeDesc() + "】" + "无成功任务预警";
             alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
         } else {
             logger.info("无成功任务预警,发送邮件开关已关闭");
@@ -73,7 +76,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
 
         if (StringUtils.equalsIgnoreCase(config.getMailAlarmSwitch(), "on")) {
             String mailDataBody = generateNoTaskMailDataBody(startTime, endTime, config);
-            String title = "saas-" + config.getSaasEnvDesc() + "无任务预警";
+            String title = diamondConfig.getSaasMonitorEnvironment() + "【" + config.getSaasEnvDesc() + "】" + "【" + config.getBizTypeDesc() + "】" + "无任务预警";
             alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
         } else {
             logger.info("无任务预警,发送邮件开关已关闭");
@@ -104,7 +107,8 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
         } else {
             buffer.append("【").append(EAlarmLevel.warning).append("】");
         }
-        buffer.append("您好,").append("saas-").append(config.getSaasEnvDesc())
+        buffer.append("您好,").append(diamondConfig.getSaasMonitorEnvironment())
+                .append("【").append(config.getSaasEnvDesc()).append("】")
                 .append("发生任务预警,在")
                 .append(MonitorDateUtils.format(startTime))
                 .append("--")
@@ -126,7 +130,8 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
         } else {
             buffer.append("【").append(EAlarmLevel.warning).append("】");
         }
-        buffer.append("您好,").append("saas-").append(config.getSaasEnvDesc())
+        buffer.append("您好,").append(diamondConfig.getSaasMonitorEnvironment())
+                .append("【").append(config.getSaasEnvDesc()).append("】")
                 .append("发生任务预警,在")
                 .append(MonitorDateUtils.format(startTime))
                 .append("--")
@@ -143,7 +148,8 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
     private String generateNoTaskWeChatBody(Date startTime, Date endTime, TaskExistAlarmNoTaskConfigDTO config) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("【").append(EAlarmLevel.error).append("】");
-        buffer.append("您好,").append("saas-").append(config.getSaasEnvDesc())
+        buffer.append("您好,").append(diamondConfig.getSaasMonitorEnvironment())
+                .append("【").append(config.getSaasEnvDesc()).append("】")
                 .append("发生任务预警,在")
                 .append(MonitorDateUtils.format(startTime))
                 .append("--")
@@ -159,7 +165,8 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
     private String generateNoTaskSmsBody(Date startTime, Date endTime, TaskExistAlarmNoTaskConfigDTO config) {
         StringBuffer buffer = new StringBuffer();
         buffer.append(EAlarmLevel.error).append(",");
-        buffer.append("您好,").append("saas-").append(config.getSaasEnvDesc())
+        buffer.append("您好,").append(diamondConfig.getSaasMonitorEnvironment())
+                .append("【").append(config.getSaasEnvDesc()).append("】")
                 .append("发生任务预警,在")
                 .append(MonitorDateUtils.format(startTime))
                 .append("--")
@@ -176,7 +183,8 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
     private String generateNoTaskMailDataBody(Date startTime, Date endTime, TaskExistAlarmNoTaskConfigDTO config) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("【").append(EAlarmLevel.error).append("】");
-        buffer.append("您好,").append("saas-").append(config.getSaasEnvDesc())
+        buffer.append("您好,").append(diamondConfig.getSaasMonitorEnvironment())
+                .append("【").append(config.getSaasEnvDesc()).append("】")
                 .append("发生任务预警,在")
                 .append(MonitorDateUtils.format(startTime))
                 .append("--")

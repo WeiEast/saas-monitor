@@ -194,6 +194,10 @@ public class DiamondConfig {
         return monitorEnvironment;
     }
 
+    public String getSaasMonitorEnvironment() {
+        return "saas-" + monitorEnvironment;
+    }
+
     public void setMonitorEnvironment(String monitorEnvironment) {
         this.monitorEnvironment = monitorEnvironment;
     }

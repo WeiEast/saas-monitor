@@ -253,7 +253,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             List<TaskStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(TaskStatAccessAlarmMsgDTO ->
                     EAlarmLevel.warning.equals(TaskStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
 
-            String type = saasEnvDesc + "-" + (ETaskStatDataType.TASK.equals(statType) ? "运营商-分时任务" : "运营商-分时人数");
+            String type = diamondConfig.getSaasMonitorEnvironment() + "-" + saasEnvDesc + "-" + (ETaskStatDataType.TASK.equals(statType) ? "运营商-分时任务" : "运营商-分时人数");
 
             String format = "yyyy-MM-dd HH:mm:SS";
             String startTimeStr = new SimpleDateFormat(format).format(startTime);
@@ -296,12 +296,13 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                           ETaskStatDataType statType, String baseTile, String mailSwitch, EAlarmLevel alarmLevel, String saasEnvDesc) {
         if (StringUtils.equalsIgnoreCase(mailSwitch, SWITCH_ON)) {
 
-            String mailBaseTitle = "【${level}】【${module}】【${type}】发生 ${detail} 预警";
+            String mailBaseTitle = "【${level}】【${module}】【${saasEnv}】【${type}】发生 ${detail} 预警";
 
             Map<String, Object> map = new HashMap<>(4);
             map.put("type", ETaskStatDataType.TASK.equals(statType) ? "运营商-任务" : "运营商-人数");
             map.put("level", alarmLevel.name());
-            map.put("module", saasEnvDesc);
+            map.put("module", diamondConfig.getSaasMonitorEnvironment());
+            map.put("saasEnv", saasEnvDesc);
 
             String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile, map, alarmLevel);
 
@@ -345,8 +346,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         detailsStr += "】";
 
         pageHtml.append("<br>").append("【").append(eAlarmLevel.name()).append("】").append
-                ("您好，").append
-                (map.get("module"))
+                ("您好，").append(map.get("module")).append("【").append(map.get("saasEnv")).append("】")
                 .append(baseTitle)
                 .append("预警,在")
                 .append(MonitorDateUtils.format(startTime))
@@ -374,7 +374,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                                       String baseTitle, EAlarmLevel alarmLevel, String saasEnvDesc) {
         StringBuilder buffer = new StringBuilder();
         buffer.append("【").append(alarmLevel.name()).append("】")
-                .append("您好，").append(saasEnvDesc)
+                .append("您好，").append(diamondConfig.getSaasMonitorEnvironment()).append("【").append(saasEnvDesc).append("】")
                 .append(baseTitle)
                 .append("预警,在")
                 .append(MonitorDateUtils.format(startTime))
