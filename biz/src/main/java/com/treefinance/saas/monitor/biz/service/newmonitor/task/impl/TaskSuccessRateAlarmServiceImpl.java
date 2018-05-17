@@ -86,11 +86,9 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
             return true;
         }
-        logger.info("add time to redis:{}",MonitorDateUtils.format(baseTime));
-        setOperations.add(MonitorDateUtils.format(baseTime));
 
-        for(int i=0;i<times-1;i++){
-            baseTime = MonitorDateUtils.addTimeUnit(baseTime,Calendar.MINUTE,intervals);
+        for(int i=0;i<=times-1;i++){
+            baseTime = MonitorDateUtils.addTimeUnit(baseTime,Calendar.MINUTE, - intervals);
             setOperations.add(MonitorDateUtils.format(baseTime));
             logger.info("add time to redis:{}",MonitorDateUtils.format(baseTime));
         }
