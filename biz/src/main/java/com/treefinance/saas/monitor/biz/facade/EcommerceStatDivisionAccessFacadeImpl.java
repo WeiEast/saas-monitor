@@ -70,7 +70,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
         for (EcommerceAllStatAccess ecommerceAllStatAccess : changeList) {
 
             EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatAccess, EcommerceAllDetailRO.class);
-            ecommerceAllDetailRO.setOneClickConversionRate(calcRate(ecommerceAllStatAccess.getEntryCount(), ecommerceAllStatAccess.getOneClickLoginCount()));
+            ecommerceAllDetailRO.setOneClickLoginConversionRate(calcRate(ecommerceAllStatAccess.getEntryCount(), ecommerceAllStatAccess.getOneClickLoginCount()));
             ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatAccess.getOneClickLoginCount(), ecommerceAllStatAccess.getStartLoginCount()));
             ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatAccess.getStartLoginCount(), ecommerceAllStatAccess.getLoginSuccessCount()));
             ecommerceAllDetailRO.setCrawlSuccessRate(calcRate(ecommerceAllStatAccess.getLoginSuccessCount(), ecommerceAllStatAccess.getCrawlSuccessCount()));
@@ -152,7 +152,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
             for (EcommerceAllStatDayAccess ecommerceAllStatDayAccess : allStatAccessList) {
 
                 EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatDayAccess, EcommerceAllDetailRO.class);
-                ecommerceAllDetailRO.setOneClickConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getOneClickLoginCount()));
+                ecommerceAllDetailRO.setOneClickLoginConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getOneClickLoginCount()));
                 ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatDayAccess.getOneClickLoginCount(), ecommerceAllStatDayAccess.getStartLoginCount()));
                 ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatDayAccess.getStartLoginCount(), ecommerceAllStatDayAccess.getLoginSuccessCount()));
                 ecommerceAllDetailRO.setCrawlSuccessRate(calcRate(ecommerceAllStatDayAccess.getLoginSuccessCount(), ecommerceAllStatDayAccess.getCrawlSuccessCount()));
