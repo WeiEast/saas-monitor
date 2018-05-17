@@ -191,7 +191,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                     sendMailAlarm(list, bizType, alarmLevel, compareDTO);
                     break;
                 case IVR:
-                    // TODO: 18/5/16
                     sendIvr(list, alarmLevel, "");
                     break;
                 case SMS:
@@ -461,7 +460,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         buffer.append("<tr>");
         buffer.append("<td>阈值</td>");
         buffer.append("<td colspan ='3'>").append(compareDTO.getThreshold()).append("(").append(compareDTO
-                .getThresholdDecs()).append(")").append(compareDTO.getAverSuccRate()).append("</td>");
+                .getThresholdDecs()).append(")").append(">").append(compareDTO.getAverSuccRate()).append("</td>");
         buffer.append("</tr>");
 
         buffer.append("<tr>");
@@ -541,7 +540,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         });
 
         buffer.append(" 环境标志: " + compareDTO.getEvn() + "\n");
-        buffer.append(" 阈值(%): " + compareDTO.getThreshold() + "(" + compareDTO.getThresholdDecs() + ")" + compareDTO
+        buffer.append(" 阈值(%): " + compareDTO.getThreshold() + "(" + compareDTO.getThresholdDecs() + ") >" + compareDTO
                 .getAverSuccRate().toPlainString() + "\n");
         buffer.append(" 数据时间: " + Joiner.on(" | ").useForNull(" ").join(dataTimeList) + " \n");
         buffer.append(" 任务总数: " + Joiner.on(" | ").useForNull(" ").join(totalCountList) + " \n");
