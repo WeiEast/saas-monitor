@@ -15,9 +15,11 @@ public class EcommerceAllDetailRO implements Serializable {
     private static final long serialVersionUID = 5060857382565181030L;
     private Long id;
 
+    private Date dataTime;
+
     private Integer entryCount;
 
-    private Date dataTime;
+    private Integer oneClickLoginCount;
 
     private Integer startLoginCount;
 
@@ -28,6 +30,8 @@ public class EcommerceAllDetailRO implements Serializable {
     private Integer processSuccessCount;
 
     private Integer callbackSuccessCount;
+
+    private BigDecimal oneClickConversionRate;
 
     private BigDecimal loginConversionRate;
 
@@ -182,6 +186,22 @@ public class EcommerceAllDetailRO implements Serializable {
 
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public Integer getOneClickLoginCount() {
+        return oneClickLoginCount;
+    }
+
+    public void setOneClickLoginCount(Integer oneClickLoginCount) {
+        this.oneClickLoginCount = oneClickLoginCount;
+    }
+
+    public BigDecimal getOneClickConversionRate() {
+        return oneClickConversionRate;
+    }
+
+    public void setOneClickConversionRate(BigDecimal oneClickConversionRate) {
+        this.oneClickConversionRate = oneClickConversionRate;
     }
 
     @Override
