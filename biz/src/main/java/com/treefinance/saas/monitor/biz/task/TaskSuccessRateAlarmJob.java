@@ -6,6 +6,7 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskSuccessRateAlarmService;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccessRateAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -59,6 +60,11 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
                     continue;
                 }
                 for (TaskSuccessRateAlarmConfigDTO config : configDTOList) {
+                    if(!AlarmConstants.SWITCH_ON.equals(config.getAlarmSwitch())){
+                        logger.info("任务成功率总开关关闭。。{}不预警",jobTime);
+                        continue;
+                    }
+
                     logger.info("任务成功率预警,定时任务执行jobTime={}任务成功率预警执行config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(config));
                     taskSuccessRateAlarmService.alarm(bizType, config, jobTime);
                 }
