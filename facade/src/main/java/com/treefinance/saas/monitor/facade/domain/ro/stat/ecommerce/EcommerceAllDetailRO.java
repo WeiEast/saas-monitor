@@ -15,9 +15,11 @@ public class EcommerceAllDetailRO implements Serializable {
     private static final long serialVersionUID = 5060857382565181030L;
     private Long id;
 
+    private Date dataTime;
+
     private Integer entryCount;
 
-    private Date dataTime;
+    private Integer oneClickLoginCount;
 
     private Integer startLoginCount;
 
@@ -28,6 +30,8 @@ public class EcommerceAllDetailRO implements Serializable {
     private Integer processSuccessCount;
 
     private Integer callbackSuccessCount;
+
+    private BigDecimal oneClickLoginConversionRate;
 
     private BigDecimal loginConversionRate;
 
@@ -184,26 +188,19 @@ public class EcommerceAllDetailRO implements Serializable {
         this.lastUpdateTime = lastUpdateTime;
     }
 
-    @Override
-    public String toString() {
-        return "EcommerceAllDetailRO{" +
-                "id=" + id +
-                ", entryCount=" + entryCount +
-                ", dataTime=" + dataTime +
-                ", startLoginCount=" + startLoginCount +
-                ", loginSuccessCount=" + loginSuccessCount +
-                ", crawlSuccessCount=" + crawlSuccessCount +
-                ", processSuccessCount=" + processSuccessCount +
-                ", callbackSuccessCount=" + callbackSuccessCount +
-                ", loginConversionRate=" + loginConversionRate +
-                ", loginSuccessRate=" + loginSuccessRate +
-                ", crawlSuccessRate=" + crawlSuccessRate +
-                ", processSuccessRate=" + processSuccessRate +
-                ", callbackSuccessRate=" + callbackSuccessRate +
-                ", wholeConversionRate=" + wholeConversionRate +
-                ", taskUserRatio=" + taskUserRatio +
-                ", createTime=" + createTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+    public Integer getOneClickLoginCount() {
+        return oneClickLoginCount;
+    }
+
+    public void setOneClickLoginCount(Integer oneClickLoginCount) {
+        this.oneClickLoginCount = oneClickLoginCount;
+    }
+
+    public BigDecimal getOneClickLoginConversionRate() {
+        return oneClickLoginConversionRate;
+    }
+
+    public void setOneClickLoginConversionRate(BigDecimal oneClickLoginConversionRate) {
+        this.oneClickLoginConversionRate = oneClickLoginConversionRate;
     }
 }

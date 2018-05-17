@@ -20,13 +20,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * Good Luck Bro , No Bug !
  * <p>
- * 无任务,无成功任务所有环境统计
+ * 无任务,无成功任务区分环境统计
  *
  * @author haojiahong
- * @date 2017/11/17
+ * @date 2018/5/14
  */
 @Service
-public class TaskExistMonitorServiceImpl implements TaskExistMonitorService {
+public class TaskExistEnvMonitorServiceImpl implements TaskExistMonitorService {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskExistMonitorService.class);
 
@@ -50,7 +50,7 @@ public class TaskExistMonitorServiceImpl implements TaskExistMonitorService {
 
     private void statTaskExistWithType(TaskMonitorMessage message, Date redisKeyTime) {
         Map<String, String> map = Maps.newHashMap();
-        String redisKey = RedisKeyHelper.keyOfTaskExistWithTypeAndEnv(redisKeyTime, message.getBizType() + "", "0");
+        String redisKey = RedisKeyHelper.keyOfTaskExistWithTypeAndEnv(redisKeyTime, message.getBizType() + "", message.getSaasEnv());
         map.put("key", redisKey);
         BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(redisKey);
         Long totalCount = hashOperations.increment("totalCount", 1);
@@ -67,7 +67,7 @@ public class TaskExistMonitorServiceImpl implements TaskExistMonitorService {
 
     private void statAllTaskExist(TaskMonitorMessage message, Date redisKeyTime) {
         Map<String, String> map = Maps.newHashMap();
-        String redisKey = RedisKeyHelper.keyOfTaskExistWithTypeAndEnv(redisKeyTime, "0", "0");
+        String redisKey = RedisKeyHelper.keyOfTaskExistWithTypeAndEnv(redisKeyTime, "0", message.getSaasEnv());
         map.put("key", redisKey);
         BoundHashOperations<String, String, String> hashOperations = redisTemplate.boundHashOps(redisKey);
         Long totalCount = hashOperations.increment("totalCount", 1);

@@ -218,6 +218,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         } else {
             baseTitle = "运营商监控(按人数统计)";
         }
+        String saasEnvDesc = config.getSaasEnvDesc();
 
         Map<String, List<TaskStatAccessAlarmMsgDTO>> operatorNameGroup = msgList.stream().collect(Collectors
                 .groupingBy(TaskStatAccessAlarmMsgDTO::getGroupName));
@@ -228,21 +229,21 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
                 .getAlarmLevel().equals(EAlarmLevel.warning)) || operatorNameGroup.keySet().size() >= 3;
 
         if (isError) {
-            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.error);
-            sendIvr(msgList, jobTime, ivrSwitch);
-            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.error);
+            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.error, saasEnvDesc);
+            sendIvr(msgList, jobTime, ivrSwitch, saasEnvDesc);
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.error, saasEnvDesc);
         } else if (isWarning) {
-            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.warning);
-            sendSms(msgList, jobTime, startTime, endTime, statType, smsSwitch, EAlarmLevel.warning);
-            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.warning);
+            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.warning, saasEnvDesc);
+            sendSms(msgList, jobTime, startTime, endTime, statType, smsSwitch, EAlarmLevel.warning, saasEnvDesc);
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.warning, saasEnvDesc);
         } else {
-            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.info);
-            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.info);
+            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.info, saasEnvDesc);
+            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.info, saasEnvDesc);
         }
     }
 
     private void sendSms(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
-                         ETaskStatDataType statType, String smsSwitch, EAlarmLevel alarmLevel) {
+                         ETaskStatDataType statType, String smsSwitch, EAlarmLevel alarmLevel, String saasEnvDesc) {
         if (StringUtils.equalsIgnoreCase(smsSwitch, SWITCH_ON)) {
 
             String template = "${level} ${type} 时间段:${startTime}至${endTime},运营商:${groupName} " +
@@ -252,7 +253,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
             List<TaskStatAccessAlarmMsgDTO> warningMsg = msgList.stream().filter(TaskStatAccessAlarmMsgDTO ->
                     EAlarmLevel.warning.equals(TaskStatAccessAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
 
-            String type = "SAAS-" + diamondConfig.getMonitorEnvironment() + "-" + (ETaskStatDataType.TASK.equals(statType) ? "运营商-分时任务" : "运营商-分时人数");
+            String type = diamondConfig.getSaasMonitorEnvironment() + "-" + saasEnvDesc + "-" + (ETaskStatDataType.TASK.equals(statType) ? "运营商-分时任务" : "运营商-分时人数");
 
             String format = "yyyy-MM-dd HH:mm:SS";
             String startTimeStr = new SimpleDateFormat(format).format(startTime);
@@ -276,7 +277,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         }
     }
 
-    private void sendIvr(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, String ivrSwitch) {
+    private void sendIvr(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, String ivrSwitch, String saasEnvDesc) {
         if (StringUtils.equalsIgnoreCase(ivrSwitch, SWITCH_ON)) {
 
             List<TaskStatAccessAlarmMsgDTO> errorMsgs = msgList.stream().filter(TaskStatAccessAlarmMsgDTO ->
@@ -284,7 +285,7 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
 
             logger.info("特定运营商预警 发送ivr请求 {}", errorMsgs.get(0).getAlarmDesc());
 
-            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm, errorMsgs.get(0).getAlarmDesc());
+            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm, errorMsgs.get(0).getAlarmDesc(), saasEnvDesc);
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},发送ivr开关已关闭", MonitorDateUtils.format(jobTime));
         }
@@ -292,14 +293,16 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     }
 
     private void sendMail(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
-                          ETaskStatDataType statType, String baseTile, String mailSwitch, EAlarmLevel alarmLevel) {
+                          ETaskStatDataType statType, String baseTile, String mailSwitch, EAlarmLevel alarmLevel, String saasEnvDesc) {
         if (StringUtils.equalsIgnoreCase(mailSwitch, SWITCH_ON)) {
 
-            String mailBaseTitle = "【${level}】【${module}】【${type}】发生 ${detail} 预警";
+            String mailBaseTitle = "【${level}】【${module}】【${saasEnv}】【${type}】发生 ${detail} 预警";
 
             Map<String, Object> map = new HashMap<>(4);
             map.put("type", ETaskStatDataType.TASK.equals(statType) ? "运营商-任务" : "运营商-人数");
             map.put("level", alarmLevel.name());
+            map.put("module", diamondConfig.getSaasMonitorEnvironment());
+            map.put("saasEnv", saasEnvDesc);
 
             String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile, map, alarmLevel);
 
@@ -310,9 +313,9 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
     }
 
     private void sendWeChat(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
-                            String baseTile, String weChatSwitch, EAlarmLevel alarmLevel) {
+                            String baseTile, String weChatSwitch, EAlarmLevel alarmLevel, String saasEnvDesc) {
         if (StringUtils.equalsIgnoreCase(weChatSwitch, SWITCH_ON)) {
-            String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile, alarmLevel);
+            String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile, alarmLevel, saasEnvDesc);
             alarmMessageProducer.sendWebChart4OperatorMonitor(weChatBody, jobTime);
         } else {
             logger.info("运营商监控,预警定时任务执行jobTime={},发送微信开关已关闭", MonitorDateUtils.format(jobTime));
@@ -342,10 +345,8 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         String detailsStr = detail.substring(0, detail.length() - 1);
         detailsStr += "】";
 
-        String module = "saas-" + diamondConfig.getMonitorEnvironment();
         pageHtml.append("<br>").append("【").append(eAlarmLevel.name()).append("】").append
-                ("您好，").append
-                (module)
+                ("您好，").append(map.get("module")).append("【").append(map.get("saasEnv")).append("】")
                 .append(baseTitle)
                 .append("预警,在")
                 .append(MonitorDateUtils.format(startTime))
@@ -365,17 +366,15 @@ public class OperatorMonitorGroupAlarmServiceImpl implements OperatorMonitorGrou
         pageHtml.append("</table>");
 
 
-        map.put("module", module);
         map.put("detail", detailsStr);
-
         return pageHtml.toString();
     }
 
     private String generateWeChatBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime,
-                                      String baseTitle, EAlarmLevel alarmLevel) {
+                                      String baseTitle, EAlarmLevel alarmLevel, String saasEnvDesc) {
         StringBuilder buffer = new StringBuilder();
         buffer.append("【").append(alarmLevel.name()).append("】")
-                .append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
+                .append("您好，").append(diamondConfig.getSaasMonitorEnvironment()).append("【").append(saasEnvDesc).append("】")
                 .append(baseTitle)
                 .append("预警,在")
                 .append(MonitorDateUtils.format(startTime))

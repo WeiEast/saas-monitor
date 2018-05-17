@@ -9,14 +9,6 @@ import java.util.Date;
  */
 public interface TaskPerMinDataFlushService {
 
-    void statMerchantIntervalAccess(RedisOperations redisOperations, Date jobTime);
-
-    void statMerchantDayAccess(RedisOperations redisOperations, Date jobTime);
-
-    void statSaasIntervalAccess(RedisOperations redisOperations, Date jobTime);
-
-    void statSaasDayAccess(RedisOperations redisOperations, Date jobTime);
-
     void statSaasErrorStepDay(RedisOperations redisOperations, Date jobTime);
 
     void statMerchantAccessWithType(RedisOperations redisOperations, Date jobTime);
