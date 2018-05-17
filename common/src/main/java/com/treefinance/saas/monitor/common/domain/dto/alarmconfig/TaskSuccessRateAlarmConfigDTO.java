@@ -80,7 +80,7 @@ public class TaskSuccessRateAlarmConfigDTO extends BaseConfig {
         dto1.setSaasEnv((byte)saasEnv.getValue());
         dto1.setSaasEnvDesc(saasEnv.getDesc());
         dto1.setType("OPERATOR");
-        dto1.setIntervalMins(3);
+        dto1.setIntervalMins(5);
         dto1.setTimes(3);
         dto1.setTaskTimeoutSecs(600);
         dto1.setSuccesThreshold(40);

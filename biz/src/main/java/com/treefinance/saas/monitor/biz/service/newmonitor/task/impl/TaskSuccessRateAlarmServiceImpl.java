@@ -82,8 +82,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
      * */
     private boolean ifAlarmed(Date baseTime, String alarmTimeKey,int times,int intervals) {
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
-        logger.info("任务成功率预警检查key:{}",alarmTimeKey);
-        if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
+
+        Date keyTime = MonitorDateUtils.addTimeUnit(baseTime,Calendar.MINUTE, - intervals*times);
+
+        logger.info("任务成功率预警检查数据时间{}是否在key:{} 列表中",MonitorDateUtils.format(keyTime),alarmTimeKey);
+        if (setOperations.isMember(MonitorDateUtils.format(keyTime))) {
             return true;
         }
 
