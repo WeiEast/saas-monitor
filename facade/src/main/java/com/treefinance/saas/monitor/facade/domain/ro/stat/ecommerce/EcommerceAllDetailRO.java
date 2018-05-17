@@ -31,7 +31,7 @@ public class EcommerceAllDetailRO implements Serializable {
 
     private Integer callbackSuccessCount;
 
-    private BigDecimal oneClickConversionRate;
+    private BigDecimal oneClickLoginConversionRate;
 
     private BigDecimal loginConversionRate;
 
@@ -196,34 +196,11 @@ public class EcommerceAllDetailRO implements Serializable {
         this.oneClickLoginCount = oneClickLoginCount;
     }
 
-    public BigDecimal getOneClickConversionRate() {
-        return oneClickConversionRate;
+    public BigDecimal getOneClickLoginConversionRate() {
+        return oneClickLoginConversionRate;
     }
 
-    public void setOneClickConversionRate(BigDecimal oneClickConversionRate) {
-        this.oneClickConversionRate = oneClickConversionRate;
-    }
-
-    @Override
-    public String toString() {
-        return "EcommerceAllDetailRO{" +
-                "id=" + id +
-                ", entryCount=" + entryCount +
-                ", dataTime=" + dataTime +
-                ", startLoginCount=" + startLoginCount +
-                ", loginSuccessCount=" + loginSuccessCount +
-                ", crawlSuccessCount=" + crawlSuccessCount +
-                ", processSuccessCount=" + processSuccessCount +
-                ", callbackSuccessCount=" + callbackSuccessCount +
-                ", loginConversionRate=" + loginConversionRate +
-                ", loginSuccessRate=" + loginSuccessRate +
-                ", crawlSuccessRate=" + crawlSuccessRate +
-                ", processSuccessRate=" + processSuccessRate +
-                ", callbackSuccessRate=" + callbackSuccessRate +
-                ", wholeConversionRate=" + wholeConversionRate +
-                ", taskUserRatio=" + taskUserRatio +
-                ", createTime=" + createTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+    public void setOneClickLoginConversionRate(BigDecimal oneClickLoginConversionRate) {
+        this.oneClickLoginConversionRate = oneClickLoginConversionRate;
     }
 }
