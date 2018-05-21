@@ -166,7 +166,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
         StringBuffer buffer = new StringBuffer();
         buffer.append(EAlarmLevel.error).append(",");
         buffer.append("您好,").append(diamondConfig.getSaasMonitorEnvironment())
-                .append("【").append(config.getSaasEnvDesc()).append("】")
+                .append(",").append(config.getSaasEnvDesc())
                 .append("发生任务预警,在")
                 .append(MonitorDateUtils.format(startTime))
                 .append("--")
