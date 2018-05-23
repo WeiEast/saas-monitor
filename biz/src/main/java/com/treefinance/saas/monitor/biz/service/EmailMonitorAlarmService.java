@@ -16,8 +16,7 @@ public interface EmailMonitorAlarmService {
      * @param now 当前时间
      * @param configDTO 相关配置
      * @param type  数据类型
-     * @param emails 邮箱类型的列表
      */
-    void alarm(Date now, EmailMonitorAlarmConfigDTO configDTO, ETaskStatDataType type, String... emails);
+    void alarm(Date now, EmailMonitorAlarmConfigDTO configDTO, ETaskStatDataType type);
 
 }

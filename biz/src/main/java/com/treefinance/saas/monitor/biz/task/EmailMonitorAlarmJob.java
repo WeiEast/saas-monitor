@@ -55,8 +55,7 @@ public class EmailMonitorAlarmJob implements SimpleJob {
                 }
 
                 ETaskStatDataType type = ETaskStatDataType.getByValue(configDTO.getAlarmType());
-                List<String> emails = configDTO.getEmails();
-                emailMonitorAlarmService.alarm(now, configDTO, type,emails.toArray(Arrays.newArray(String.class,emails.size())));
+                emailMonitorAlarmService.alarm(now, configDTO, type);
             }
         } catch (Exception e) {
             logger.error("邮箱监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(now), e);

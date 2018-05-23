@@ -66,7 +66,11 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
 
 
     @Override
-    public void alarm(Date now, EmailMonitorAlarmConfigDTO configDTO, ETaskStatDataType type, String... emails) {
+    public void alarm(Date now, EmailMonitorAlarmConfigDTO configDTO, ETaskStatDataType type) {
+
+        // TODO: 18/5/23 reactor abstract super class
+        String[] emails = configDTO.getEmails().toArray(new String[configDTO.getEmails().size()]);
+
         //获取时间
         Date baseTime = getBaseTime(now, JSON.parseObject(JSON.toJSONString(configDTO)));
         //是否预警过?
