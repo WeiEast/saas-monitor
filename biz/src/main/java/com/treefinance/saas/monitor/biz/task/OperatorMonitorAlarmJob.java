@@ -6,6 +6,7 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;
@@ -45,7 +46,7 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
             List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
             for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
                 logger.info("运营商监控,预警定时任务执行时间jobTime={},config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(configDTO));
-                if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), "on")) {
+                if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), AlarmConstants.SWITCH_ON)) {
                     continue;
                 }
                 operatorMonitorGroupAlarmService.alarm(jobTime, configDTO);

@@ -204,7 +204,7 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
 
     public static void main(String... args) {
         EmailMonitorAlarmConfigDTO emailMonitorAlarmConfigDTO = new EmailMonitorAlarmConfigDTO();
-        emailMonitorAlarmConfigDTO.alarmSwitch = "on";
+        emailMonitorAlarmConfigDTO.alarmSwitch = AlarmConstants.SWITCH_ON;
         emailMonitorAlarmConfigDTO.alarmType = 1;
         emailMonitorAlarmConfigDTO.alarmTypeDesc = "所有邮箱所有商户按人数统计预警";
         emailMonitorAlarmConfigDTO.appName = "所有商户";

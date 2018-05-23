@@ -10,6 +10,7 @@ import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskSuccessRateAlarmService;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.SaasStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskSuccessRateAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
@@ -86,13 +87,13 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                     MonitorDateUtils.format(jobTime), JSON.toJSONString(list), JSON.toJSONString(config));
             return;
         }
-        if (StringUtils.equalsIgnoreCase(config.getMailAlarmSwitch(), "on")) {
+        if (StringUtils.equalsIgnoreCase(config.getMailAlarmSwitch(), AlarmConstants.SWITCH_ON)) {
             sendMailAlarm(list, bizType);
         }
-        if (StringUtils.equalsIgnoreCase(config.getWeChatAlarmSwitch(), "on")) {
+        if (StringUtils.equalsIgnoreCase(config.getWeChatAlarmSwitch(), AlarmConstants.SWITCH_ON)) {
             sendWechatAlarm(list, bizType);
         }
-        if (StringUtils.equalsIgnoreCase(config.getSmsAlarmSwitch(), "on")) {
+        if (StringUtils.equalsIgnoreCase(config.getSmsAlarmSwitch(), AlarmConstants.SWITCH_ON)) {
             sendSmsAlarm(list, bizType);
         }
 

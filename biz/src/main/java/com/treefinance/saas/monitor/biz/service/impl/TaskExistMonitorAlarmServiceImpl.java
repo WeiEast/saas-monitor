@@ -5,6 +5,7 @@ import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.biz.service.TaskExistMonitorAlarmService;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
@@ -40,7 +41,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
         String mailSwitch = diamondConfig.getTaskExistAlarmMailSwitch();
         String weChatSwitch = diamondConfig.getTaskExistAlarmWechatSwitch();
         String smsSwitch = diamondConfig.getTaskExistAlarmSmsSwitch();
-        if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
+        if (StringUtils.equalsIgnoreCase(mailSwitch, AlarmConstants.SWITCH_ON)) {
             String mailDataBody = generateNoTaskMailDataBody(startTime, endTime);
             String title = generateNoTaskTitle();
             alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
@@ -48,14 +49,14 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
             logger.info("任务预警,发送邮件开关已关闭");
         }
 
-        if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
+        if (StringUtils.equalsIgnoreCase(weChatSwitch, AlarmConstants.SWITCH_ON)) {
             String weChatBody = generateNoTaskWeChatBody(startTime, endTime);
             alarmMessageProducer.sendWebChart4TaskExistMonitor(weChatBody);
         } else {
             logger.info("任务预警,发送微信开关已关闭");
         }
 
-        if (StringUtils.equalsIgnoreCase(smsSwitch, "on")) {
+        if (StringUtils.equalsIgnoreCase(smsSwitch, AlarmConstants.SWITCH_ON)) {
             String smsBody = generateNoTaskSmsBody(startTime, endTime);
             smsNotifyService.send(smsBody);
         } else {
@@ -73,7 +74,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
         String mailSwitch = diamondConfig.getTaskExistAlarmMailSwitch();
         String weChatSwitch = diamondConfig.getTaskExistAlarmWechatSwitch();
         String smsSwitch = diamondConfig.getTaskExistAlarmSmsSwitch();
-        if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
+        if (StringUtils.equalsIgnoreCase(mailSwitch, AlarmConstants.SWITCH_ON)) {
             String mailDataBody = generateNoSuccessTaskMailDataBody(startTime, endTime);
             String title = generateNoSuccessTaskTitle();
             alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
@@ -81,14 +82,14 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
             logger.info("任务预警,发送邮件开关已关闭");
         }
 
-        if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
+        if (StringUtils.equalsIgnoreCase(weChatSwitch, AlarmConstants.SWITCH_ON)) {
             String weChatBody = generateNoSuccessWeChatBody(startTime, endTime);
             alarmMessageProducer.sendWebChart4TaskExistMonitor(weChatBody);
         } else {
             logger.info("任务预警,发送微信开关已关闭");
         }
 
-        if (StringUtils.equalsIgnoreCase(smsSwitch, "on")) {
+        if (StringUtils.equalsIgnoreCase(smsSwitch, AlarmConstants.SWITCH_ON)) {
             String smsBody = generateNoSuccessSmsBody(startTime, endTime);
             smsNotifyService.send(smsBody);
         } else {
@@ -103,7 +104,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
     public void alarmNoSuccessTaskWithType(Date startTime, Date endTime, EBizType bizType) {
         String mailSwitch = diamondConfig.getTaskExistAlarmMailSwitch();
         String weChatSwitch = diamondConfig.getTaskExistAlarmWechatSwitch();
-        if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
+        if (StringUtils.equalsIgnoreCase(mailSwitch, AlarmConstants.SWITCH_ON)) {
             String mailDataBody = generateNoSuccessTaskWithTypeMailDataBody(startTime, endTime, bizType);
             String title = generateNoSuccessTaskWithTypeTitle(bizType);
             alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
@@ -111,7 +112,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
             logger.info("任务预警,发送邮件开关已关闭");
         }
 
-        if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
+        if (StringUtils.equalsIgnoreCase(weChatSwitch, AlarmConstants.SWITCH_ON)) {
             String weChatBody = generateNoSuccessWithTypeWeChatBody(startTime, endTime, bizType);
             alarmMessageProducer.sendWebChart4TaskExistMonitor(weChatBody);
         } else {

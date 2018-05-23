@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.service;
 import com.alibaba.fastjson.JSONObject;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.service.impl.EmailAlarmTemplateImpl;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +41,7 @@ public class EmailMonitorAlarmServiceTest {
                 EmailMonitorAlarmConfigDTO.class);
 
         for (EmailMonitorAlarmConfigDTO configDTO : configList) {
-            if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), "on")) {
+            if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), AlarmConstants.SWITCH_ON)) {
                 continue;
             }
             if (configDTO.getAlarmType() == 1) {

@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.common.domain.dto;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 
 import java.io.Serializable;
 import java.util.List;
@@ -78,7 +79,7 @@ public class OperatorMonitorAlarmConfigDTO implements Serializable {
         dto1.setDataTypeDesc("按人数");
         dto1.setIntervalMins(30);
         dto1.setTaskTimeoutSecs(600);
-        dto1.setAlarmSwitch("on");
+        dto1.setAlarmSwitch(AlarmConstants.SWITCH_ON);
         dto1.setPreviousDays(7);
         dto1.setConfirmMobileConversionRate(70);
         dto1.setLoginConversionRate(70);
@@ -87,8 +88,8 @@ public class OperatorMonitorAlarmConfigDTO implements Serializable {
         dto1.setProcessSuccessRate(70);
         dto1.setCallbackSuccessRate(70);
         dto1.setWholeConversionRate(90);
-        dto1.setMailAlarmSwitch("on");
-        dto1.setWeChatAlarmSwitch("on");
+        dto1.setMailAlarmSwitch(AlarmConstants.SWITCH_ON);
+        dto1.setWeChatAlarmSwitch(AlarmConstants.SWITCH_ON);
         list.add(dto1);
 
         OperatorMonitorAlarmConfigDTO dto2 = new OperatorMonitorAlarmConfigDTO();
@@ -102,7 +103,7 @@ public class OperatorMonitorAlarmConfigDTO implements Serializable {
         dto2.setDataTypeDesc("按人数");
         dto2.setIntervalMins(30);
         dto2.setTaskTimeoutSecs(600);
-        dto2.setAlarmSwitch("on");
+        dto2.setAlarmSwitch(AlarmConstants.SWITCH_ON);
         dto2.setPreviousDays(7);
         dto2.setConfirmMobileConversionRate(70);
         dto2.setLoginConversionRate(70);
@@ -110,8 +111,8 @@ public class OperatorMonitorAlarmConfigDTO implements Serializable {
         dto2.setCrawlSuccessRate(70);
         dto2.setProcessSuccessRate(70);
         dto2.setCallbackSuccessRate(70);
-        dto2.setMailAlarmSwitch("on");
-        dto2.setWeChatAlarmSwitch("on");
+        dto2.setMailAlarmSwitch(AlarmConstants.SWITCH_ON);
+        dto2.setWeChatAlarmSwitch(AlarmConstants.SWITCH_ON);
         list.add(dto2);
         System.out.println(JSON.toJSONString(list));
 
