@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -63,7 +64,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
-    private RedisTemplate redisTemplate;
+    private StringRedisTemplate redisTemplate;
     @Autowired
     private MerchantStatAccessMapper merchantStatAccessMapper;
     @Autowired
@@ -81,23 +82,21 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
      * 修改预警的频次，将连续的 @param times 个 间隔 @param intervals 时间都放入同一个redis key中作为是否预警的标志；
      * */
     private boolean ifAlarmed(Date baseTime, String alarmTimeKey,int times,int intervals) {
-        BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
 
         Date keyTime = MonitorDateUtils.addTimeUnit(baseTime,Calendar.MINUTE, - intervals*times);
 
-        logger.info("任务成功率预警检查数据时间{}是否在key:{} 列表中",MonitorDateUtils.format(keyTime),alarmTimeKey);
-        if (setOperations.isMember(MonitorDateUtils.format(keyTime))) {
+        String newKey = alarmTimeKey + ":" + keyTime;
+
+        logger.info("任务成功率预警检查数据时间{}是否在redis中");
+        if (redisTemplate.hasKey(newKey)){
             return true;
         }
 
         for(int i=0;i<=times-1;i++){
             baseTime = MonitorDateUtils.addTimeUnit(baseTime,Calendar.MINUTE, - intervals);
-            setOperations.add(MonitorDateUtils.format(baseTime));
+            newKey = alarmTimeKey +":"+baseTime;
             logger.info("add time to redis:{}",MonitorDateUtils.format(baseTime));
-        }
-
-        if (setOperations.getExpire() == -1) {
-            setOperations.expire(2, TimeUnit.DAYS);
+            redisTemplate.opsForValue().set(newKey,"1",2,TimeUnit.DAYS);
         }
 
         return false;
