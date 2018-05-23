@@ -85,16 +85,16 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
         Date keyTime = MonitorDateUtils.addTimeUnit(baseTime,Calendar.MINUTE, - intervals*times);
 
-        String newKey = alarmTimeKey + ":" + keyTime;
+        String newKey = alarmTimeKey + ":" + MonitorDateUtils.format(keyTime);
 
-        logger.info("任务成功率预警检查数据时间{}是否在redis中");
+        logger.info("任务成功率预警检查key：{}是否在redis中",newKey);
         if (redisTemplate.hasKey(newKey)){
             return true;
         }
 
         for(int i=0;i<=times-1;i++){
             baseTime = MonitorDateUtils.addTimeUnit(baseTime,Calendar.MINUTE, - intervals);
-            newKey = alarmTimeKey +":"+baseTime;
+            newKey = alarmTimeKey +":"+MonitorDateUtils.format(baseTime);
             logger.info("add time to redis:{}",MonitorDateUtils.format(baseTime));
             redisTemplate.opsForValue().set(newKey,"1",2,TimeUnit.DAYS);
         }
