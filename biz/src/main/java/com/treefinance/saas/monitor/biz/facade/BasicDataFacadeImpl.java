@@ -12,7 +12,7 @@ import com.treefinance.saas.monitor.facade.domain.request.BasicDataRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.BasicDataRO;
 import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
-import com.treefinance.saas.monitor.facade.service.BasicDataFacade;
+import com.treefinance.saas.monitor.facade.service.autostat.BasicDataFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,11 +63,10 @@ public class BasicDataFacadeImpl implements BasicDataFacade {
         logger.info("新增一个基础数据，传入的基础数据为{}", basicDataRequest.toString());
         long id = uidService.getId();
         BasicData basicData = new BasicData();
-        basicData.setId(id);
         BeanUtils.convert(basicDataRequest, basicData);
+
+        basicData.setId(id);
         basicDataService.addBasicData(basicData);
-
-
         return new MonitorResult<>(true);
     }
 

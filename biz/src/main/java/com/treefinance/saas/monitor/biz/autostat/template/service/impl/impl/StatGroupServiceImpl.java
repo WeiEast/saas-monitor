@@ -6,7 +6,7 @@ import com.treefinance.saas.monitor.biz.autostat.template.service.StatGroupServi
 import com.treefinance.saas.monitor.dao.entity.StatGroup;
 import com.treefinance.saas.monitor.dao.entity.StatGroupCriteria;
 import com.treefinance.saas.monitor.dao.mapper.StatGroupMapper;
-import com.treefinance.saas.monitor.facade.domain.request.GroupStatRequest;
+import com.treefinance.saas.monitor.facade.domain.request.StatGroupRequest;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,18 +46,17 @@ public class StatGroupServiceImpl extends AbstractCacheService<Long, List<StatGr
     }
 
     @Override
-    public List<StatGroup> queryStatGroup(GroupStatRequest groupStatRequest) {
+    public List<StatGroup> queryStatGroup(StatGroupRequest groupStatRequest) {
+        Long templateId = groupStatRequest.getTemplateId();
         StatGroupCriteria criteria = new StatGroupCriteria();
-        if(groupStatRequest.getGroupIndex()==null||groupStatRequest.getGroupIndex()==0)
-        {
-            criteria.createCriteria().andTemplateIdEqualTo(groupStatRequest.getId());
+        if (groupStatRequest.getGroupIndex() == null || groupStatRequest.getGroupIndex() == 0) {
+            criteria.createCriteria().andTemplateIdEqualTo(templateId);
+        } else {
+            criteria.createCriteria().andTemplateIdEqualTo(templateId).andGroupIndexEqualTo(groupStatRequest.getGroupIndex());
         }
-        else{
-            criteria.createCriteria().andTemplateIdEqualTo(groupStatRequest.getId()).andGroupIndexEqualTo(groupStatRequest.getGroupIndex());
-        }
-
         return statGroupMapper.selectByExample(criteria);
     }
+
     @Override
     public List<StatGroup> queryByTemplateId(Long templateId) {
         StatGroupCriteria criteria = new StatGroupCriteria();
@@ -74,7 +73,6 @@ public class StatGroupServiceImpl extends AbstractCacheService<Long, List<StatGr
     public int updateStatGroup(StatGroup statGroup) {
         return statGroupMapper.updateByPrimaryKey(statGroup);
     }
-
 
 
     @Override

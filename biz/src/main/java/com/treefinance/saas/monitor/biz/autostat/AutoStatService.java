@@ -89,6 +89,10 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
             return;
         }
         BasicData basicData = basicDataService.queryById(basicDataId);
+        if (basicData == null) {
+            logger.info("initListener failed : not exists basicDataId={}", basicDataId);
+            return;
+        }
         String basicDataCode = basicData.getDataCode();
         synchronized (this) {
             Map<String, Object> configMap = JSON.parseObject(basicData.getDataSourceConfigJson());

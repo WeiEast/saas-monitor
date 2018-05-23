@@ -6,8 +6,7 @@ import com.treefinance.saas.monitor.biz.autostat.template.service.StatTemplateSe
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import com.treefinance.saas.monitor.dao.entity.StatTemplateCriteria;
 import com.treefinance.saas.monitor.dao.mapper.StatTemplateMapper;
-import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
-import com.treefinance.saas.monitor.facade.domain.request.TemplateStatRequest;
+import com.treefinance.saas.monitor.facade.domain.request.StatTemplateRequest;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -61,7 +60,7 @@ public class StatTemplateServiceImpl extends AbstractCacheService<String, StatTe
 
 
     @Override
-    public List<StatTemplate> queryStatTemplate(TemplateStatRequest templateStatRequest) {
+    public List<StatTemplate> queryStatTemplate(StatTemplateRequest templateStatRequest) {
         StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
 
         statTemplateCriteria.setLimit(templateStatRequest.getPageSize());
@@ -90,7 +89,7 @@ public class StatTemplateServiceImpl extends AbstractCacheService<String, StatTe
 
 
     @Override
-    public Long countStatTemplate(TemplateStatRequest templateStatRequest) {
+    public Long countStatTemplate(StatTemplateRequest templateStatRequest) {
         StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
 
         if (templateStatRequest.getStatus() == null||templateStatRequest.getStatus() == 2) {
@@ -112,7 +111,7 @@ public class StatTemplateServiceImpl extends AbstractCacheService<String, StatTe
     }
 
     @Override
-    public Long countStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest) {
+    public Long countStatTemplateByNameOrStatus(StatTemplateRequest templateStatRequest) {
         StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
         if (templateStatRequest.getStatus() == 2) {
             if (templateStatRequest.getTemplateName() != null) {

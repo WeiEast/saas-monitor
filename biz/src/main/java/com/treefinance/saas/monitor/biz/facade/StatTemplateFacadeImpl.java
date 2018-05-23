@@ -6,12 +6,11 @@ import com.treefinance.saas.monitor.biz.autostat.template.service.StatTemplateSe
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
-import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
-import com.treefinance.saas.monitor.facade.domain.request.TemplateStatRequest;
+import com.treefinance.saas.monitor.facade.domain.request.StatTemplateRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.StatTemplateRO;
 import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
-import com.treefinance.saas.monitor.facade.service.stat.TemplateStatFacade;
+import com.treefinance.saas.monitor.facade.service.autostat.StatTemplateFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +23,10 @@ import java.util.List;
  * @author:guoguoyun
  * @date:Created in 2018/4/25下午4:09
  */
-@Service("templateStatFacade")
-public class TemplateStatFacadeImpl implements TemplateStatFacade{
+@Service("statTemplateFacade")
+public class StatTemplateFacadeImpl implements StatTemplateFacade {
 
-    private  static  final Logger logger = LoggerFactory.getLogger(TemplateStatFacade.class);
+    private  static  final Logger logger = LoggerFactory.getLogger(StatTemplateFacade.class);
 
     @Autowired
     StatTemplateService statTemplateService;
@@ -38,7 +37,7 @@ public class TemplateStatFacadeImpl implements TemplateStatFacade{
 
 
     @Override
-    public MonitorResult<List<StatTemplateRO>>  queryStatTemplate(TemplateStatRequest templateStatRequest) {
+    public MonitorResult<List<StatTemplateRO>>  queryStatTemplate(StatTemplateRequest templateStatRequest) {
         logger.info("查询模板数据，传入的请求信息为{}",templateStatRequest.toString());
         List<StatTemplate>  statTemplateList = statTemplateService.queryStatTemplate(templateStatRequest);
         if(CollectionUtils.isEmpty(statTemplateList)){
@@ -54,7 +53,7 @@ public class TemplateStatFacadeImpl implements TemplateStatFacade{
     }
 
     @Override
-    public MonitorResult<Boolean>  addStatTemplate(TemplateStatRequest templateStatRequest) {
+    public MonitorResult<Boolean>  addStatTemplate(StatTemplateRequest templateStatRequest) {
         if(templateStatRequest.getStatCron()==null||templateStatRequest.getEffectiveTime()==null||templateStatRequest.getTemplateName()==null||templateStatRequest.getStatus()==null||templateStatRequest.getTemplateCode()==null||templateStatRequest.getBasicDataId()==null||templateStatRequest.getBasicDataFilter()==null||templateStatRequest.getFlushDataCron()==null)
         {
             logger.error("新增模板数据，请求参数不能为空", JSON.toJSON(templateStatRequest));
@@ -72,7 +71,7 @@ public class TemplateStatFacadeImpl implements TemplateStatFacade{
     }
 
     @Override
-    public MonitorResult<Boolean> updateStatTemplate(TemplateStatRequest templateStatRequest) {
+    public MonitorResult<Boolean> updateStatTemplate(StatTemplateRequest templateStatRequest) {
         if(templateStatRequest.getStatCron()==null||templateStatRequest.getEffectiveTime()==null||templateStatRequest.getTemplateName()==null||templateStatRequest.getStatus()==null||templateStatRequest.getTemplateCode()==null||templateStatRequest.getBasicDataId()==null||templateStatRequest.getBasicDataFilter()==null||templateStatRequest.getFlushDataCron()==null)
         {
             logger.error("更新模板数据，请求参数不能为空", JSON.toJSON(templateStatRequest));

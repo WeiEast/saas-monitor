@@ -6,7 +6,7 @@ import com.treefinance.saas.monitor.facade.domain.base.BaseRequest;
  * @author:guoguoyun
  * @date:Created in 2018/4/26下午7:53
  */
-public class GroupStatRequest extends BaseRequest{
+public class StatGroupRequest extends BaseRequest{
 
     /**
      *  主键ID
@@ -88,7 +88,7 @@ public class GroupStatRequest extends BaseRequest{
 
     @Override
     public String toString() {
-        return "GroupStatRequest{" +
+        return "StatGroupRequest{" +
                 "id=" + id +
                 ", groupIndex=" + groupIndex +
                 ", groupCode='" + groupCode + '\'' +

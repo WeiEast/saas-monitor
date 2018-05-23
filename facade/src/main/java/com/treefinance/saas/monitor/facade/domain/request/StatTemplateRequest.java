@@ -6,7 +6,7 @@ import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
  * @author:guoguoyun
  * @date:Created in 2018/4/25下午4:21
  */
-public class TemplateStatRequest extends PageRequest {
+public class StatTemplateRequest extends PageRequest {
     /**
      * 统计模板的ID
      */
@@ -154,7 +154,7 @@ public class TemplateStatRequest extends PageRequest {
 
     @Override
     public String toString() {
-        return "TemplateStatRequest{" +
+        return "StatTemplateRequest{" +
                 "id=" + id +
                 ", templateName='" + templateName + '\'' +
                 ", status=" + status +

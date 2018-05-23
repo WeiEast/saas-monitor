@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.facade.service;
+package com.treefinance.saas.monitor.facade.service.autostat;
 
 import com.treefinance.saas.monitor.facade.domain.base.BaseRequest;
 import com.treefinance.saas.monitor.facade.domain.base.PageRequest;

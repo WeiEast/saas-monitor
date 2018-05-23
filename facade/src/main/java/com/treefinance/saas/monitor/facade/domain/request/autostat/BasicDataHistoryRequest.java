@@ -13,6 +13,11 @@ public class BasicDataHistoryRequest extends PageRequest {
      * 基础数据ID
      */
     private Long basicDataId;
+
+    /**
+     * 基础数据ID
+     */
+    private String dataId;
     /**
      * 开始时间
      */
@@ -22,6 +27,14 @@ public class BasicDataHistoryRequest extends PageRequest {
      * 结束时间
      */
     private Date endTime;
+
+    public String getDataId() {
+        return dataId;
+    }
+
+    public void setDataId(String dataId) {
+        this.dataId = dataId;
+    }
 
     public Long getBasicDataId() {
         return basicDataId;

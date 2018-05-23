@@ -46,19 +46,23 @@
                    interface="com.treefinance.saas.monitor.facade.service.stat.CallbackMsgStatAccessFacade"
                    version="1.0.0"/>
     <dubbo:service ref="basicDataFacade"
-                   interface="com.treefinance.saas.monitor.facade.service.BasicDataFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.autostat.BasicDataFacade"
                    version="1.0.0"/>
 
-    <dubbo:service ref="templateStatFacade"
-                   interface="com.treefinance.saas.monitor.facade.service.stat.TemplateStatFacade"
+    <dubbo:service ref="basicDataHistoryFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.autostat.BasicDataHistoryFacade"
                    version="1.0.0"/>
 
-    <dubbo:service ref="groupStatFacade"
-                   interface="com.treefinance.saas.monitor.facade.service.stat.GroupStatFacade"
+    <dubbo:service ref="statTemplateFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.autostat.StatTemplateFacade"
                    version="1.0.0"/>
 
-
-
+    <dubbo:service ref="statGroupFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.autostat.StatGroupFacade"
+                   version="1.0.0"/>
+    <dubbo:service ref="statItemFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.autostat.StatItemFacade"
+                   version="1.0.0"/>
 
 
     <!--消费者-->

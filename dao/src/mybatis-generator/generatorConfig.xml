@@ -49,14 +49,14 @@
                              targetProject="src/main/java"> <!-- src/generated/java -->
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
-        <table tableName="as_basic_data_history" domainObjectName="AsBasicDataHistory"
-               enableSelectPaginationByExample="true"
-               enableInsertOrUpdateBySelective="true"
-               enableBatchInsert="true"
-               enableBatchUpdateByPrimaryKey="true"
-               enableBatchUpdateByPrimaryKeySelective="true">
-            <property name="useActualColumnNames" value="true"/>
-        </table>
+        <!--<table tableName="as_basic_data_history" domainObjectName="AsBasicDataHistory"-->
+               <!--enableSelectPaginationByExample="true"-->
+               <!--enableInsertOrUpdateBySelective="true"-->
+               <!--enableBatchInsert="true"-->
+               <!--enableBatchUpdateByPrimaryKey="true"-->
+               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+            <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--</table>-->
 
         <table tableName="as_stat_item" domainObjectName="AsStatItem"
                enableSelectPaginationByExample="true"

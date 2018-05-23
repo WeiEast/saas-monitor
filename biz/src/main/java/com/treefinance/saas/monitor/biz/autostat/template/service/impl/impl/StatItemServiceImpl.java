@@ -1,6 +1,8 @@
 package com.treefinance.saas.monitor.biz.autostat.template.service.impl.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.base.Function;
+import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.autostat.base.AbstractCacheService;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatItemService;
 import com.treefinance.saas.monitor.dao.entity.StatItem;
@@ -53,5 +55,20 @@ public class StatItemServiceImpl extends AbstractCacheService<Long, List<StatIte
     @Override
     public Function<Long, List<StatItem>> dataLoader() {
         return this::queryByTemplateId;
+    }
+
+    @Override
+    public long addStatItem(StatItem statItem) {
+        long id = UidGenerator.getId();
+        statItem.setId(id);
+        logger.info("insert statitem : {}", JSON.toJSONString(statItem));
+        statItemMapper.insert(statItem);
+        return id;
+    }
+
+    @Override
+    public int updateStatItem(StatItem statItem) {
+        logger.info("update statitem : {}", JSON.toJSONString(statItem));
+        return statItemMapper.updateByPrimaryKeySelective(statItem);
     }
 }

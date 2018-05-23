@@ -3,8 +3,7 @@ package com.treefinance.saas.monitor.biz.autostat.template.service;
 import com.treefinance.saas.monitor.biz.autostat.base.BaseCacheService;
 import com.treefinance.saas.monitor.biz.autostat.base.BaseQueryService;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
-import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
-import com.treefinance.saas.monitor.facade.domain.request.TemplateStatRequest;
+import com.treefinance.saas.monitor.facade.domain.request.StatTemplateRequest;
 
 import java.util.List;
 
@@ -25,7 +24,7 @@ public interface StatTemplateService extends BaseQueryService<StatTemplate>, Bas
      *
      * @return
      */
-    List<StatTemplate> queryStatTemplate(TemplateStatRequest templateStatRequest);
+    List<StatTemplate> queryStatTemplate(StatTemplateRequest templateStatRequest);
 
 
     /**
@@ -33,14 +32,14 @@ public interface StatTemplateService extends BaseQueryService<StatTemplate>, Bas
      *
      * @return
      */
-    Long countStatTemplate(TemplateStatRequest templateStatRequest);
+    Long countStatTemplate(StatTemplateRequest templateStatRequest);
 
     /**
      * 根据模板名字或状态计算所有模板数据数目
      * @param templateStatRequest
      * @return
      */
-    Long countStatTemplateByNameOrStatus(TemplateStatRequest templateStatRequest);
+    Long countStatTemplateByNameOrStatus(StatTemplateRequest templateStatRequest);
 
 
     /**

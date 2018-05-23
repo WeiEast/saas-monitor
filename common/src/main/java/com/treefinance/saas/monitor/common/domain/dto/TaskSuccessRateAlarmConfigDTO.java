@@ -35,7 +35,7 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
     private Integer succesThreshold;
     /**
      * 预警间隔时间,5分钟,10分钟等
-     */*/
+     */
     private Integer intervalMins;
     /**
      * 低于阀值多少次预警,3次,5次等

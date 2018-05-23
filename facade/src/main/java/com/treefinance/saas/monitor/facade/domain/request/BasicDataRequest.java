@@ -65,7 +65,7 @@ public class BasicDataRequest extends BaseRequest {
         this.dataSourceConfigJson = dataSourceConfigJson;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 

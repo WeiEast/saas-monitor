@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.autostat.template.service;
 import com.treefinance.saas.monitor.biz.autostat.base.BaseCacheService;
 import com.treefinance.saas.monitor.biz.autostat.base.BaseQueryService;
 import com.treefinance.saas.monitor.dao.entity.StatGroup;
-import com.treefinance.saas.monitor.facade.domain.request.GroupStatRequest;
+import com.treefinance.saas.monitor.facade.domain.request.StatGroupRequest;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public interface StatGroupService extends BaseQueryService<StatGroup>,BaseCacheS
      * @param groupStatRequest
      * @return
      */
-    List<StatGroup> queryStatGroup(GroupStatRequest groupStatRequest);
+    List<StatGroup> queryStatGroup(StatGroupRequest groupStatRequest);
 
     /**
      * 新增统计分组
