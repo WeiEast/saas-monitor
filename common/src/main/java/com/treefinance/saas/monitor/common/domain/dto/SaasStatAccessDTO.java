@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.common.domain.dto;
 
 import com.treefinance.saas.monitor.common.domain.BaseDTO;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -60,6 +61,11 @@ public class SaasStatAccessDTO extends BaseDTO {
      * 转化率
      */
     private BigDecimal conversionRate;
+
+    /**
+     * 预警等级
+     * */
+    private EAlarmLevel eAlarmLevel;
 
     public Long getId() {
         return id;
@@ -147,5 +153,13 @@ public class SaasStatAccessDTO extends BaseDTO {
 
     public void setConversionRate(BigDecimal conversionRate) {
         this.conversionRate = conversionRate;
+    }
+
+    public EAlarmLevel geteAlarmLevel() {
+        return eAlarmLevel;
+    }
+
+    public void seteAlarmLevel(EAlarmLevel eAlarmLevel) {
+        this.eAlarmLevel = eAlarmLevel;
     }
 }

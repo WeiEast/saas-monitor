@@ -1,6 +1,6 @@
 package com.treefinance.saas.monitor.biz.service;
 
-import com.treefinance.saas.monitor.common.domain.dto.EmailMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 
 import java.util.Date;

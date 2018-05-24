@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.common.domain.dto;
+package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 
 
 import com.datatrees.common.util.DateUtils;
@@ -13,12 +13,7 @@ import java.util.Date;
  * @Author: chengtong
  * @Date: 18/3/9 17:01
  */
-public class EmailMonitorAlarmTimeConfigDTO implements Serializable {
-
-    /** hh:mm:ss*/
-    private String startTime;
-    /** hh:mm:ss*/
-    private String endTime;
+public class EmailMonitorAlarmTimeConfigDTO extends BaseTimeConfig{
 
     /**
      * 登录转化率
@@ -34,31 +29,6 @@ public class EmailMonitorAlarmTimeConfigDTO implements Serializable {
     private Integer callbackSuccessRate;
 
     private Integer wholeConversionRate;
-
-    public boolean isInTime(){
-        LocalTime start = LocalTime.parse(startTime);
-        LocalTime end = LocalTime.parse(endTime);
-        return LocalTime.now().isAfter(start) && LocalTime.now().isBefore(end);
-    }
-
-
-
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
 
     public Integer getLoginConversionRate() {
         return loginConversionRate;

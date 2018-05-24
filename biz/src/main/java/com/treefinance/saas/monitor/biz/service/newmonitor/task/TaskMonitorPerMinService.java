@@ -7,14 +7,6 @@ import com.treefinance.saas.assistant.model.TaskMonitorMessage;
  */
 public interface TaskMonitorPerMinService {
 
-    void statMerchantIntervalAccess(TaskMonitorMessage message);
-
-    void statMerchantDayAccess(TaskMonitorMessage message);
-
-    void statSaasIntervalAccess(TaskMonitorMessage message);
-
-    void statSaasDayAccess(TaskMonitorMessage message);
-
     void statMerchantAccessWithType(TaskMonitorMessage message);
 
     void statSaasErrorStepDay(TaskMonitorMessage message);
