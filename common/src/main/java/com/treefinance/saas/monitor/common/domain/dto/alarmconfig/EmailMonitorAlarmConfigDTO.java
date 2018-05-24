@@ -16,7 +16,7 @@ import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITC
  * @Author: chengtong
  * @Date: 18/3/9 16:36
  */
-public class EmailMonitorAlarmConfigDTO extends BaseConfig {
+public class EmailMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
 
     static final long serialVersionUID = 42123131212L;
 
@@ -108,15 +108,6 @@ public class EmailMonitorAlarmConfigDTO extends BaseConfig {
     public void setAppName(String appName) {
         this.appName = appName;
     }
-
-    public Integer getTaskTimeoutSecs() {
-        return taskTimeoutSecs;
-    }
-
-    public void setTaskTimeoutSecs(Integer taskTimeoutSecs) {
-        this.taskTimeoutSecs = taskTimeoutSecs;
-    }
-
 
     public Integer getAlarmType() {
         return alarmType;

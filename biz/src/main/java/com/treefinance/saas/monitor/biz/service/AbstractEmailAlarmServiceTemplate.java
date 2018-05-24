@@ -1,15 +1,13 @@
 package com.treefinance.saas.monitor.biz.service;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
-import com.treefinance.saas.monitor.common.constants.AlarmConstants;
-import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
@@ -17,13 +15,11 @@ import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.mapper.EmailStatAccessMapper;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -33,11 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import static com.treefinance.saas.monitor.common.constants.AlarmConstants.ALL_EMAIL;
-import static com.treefinance.saas.monitor.common.constants.AlarmConstants.GROUP_EMAIL;
 
 /**
  * 邮箱预警服务类的模板类
@@ -67,7 +59,7 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
 
 
     @Override
-    public void alarm(Date now, EmailMonitorAlarmConfigDTO configDTO, ETaskStatDataType type) {
+    public void alarm(Date now, BaseAlarmConfigDTO configDTO, ETaskStatDataType type) {
 
         //获取时间
         Date baseTime = getBaseTime(now, configDTO);
@@ -76,7 +68,8 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
         String alarmTimeKey = getKey(type, baseTime, configDTO);
         if (ifAlarmed(baseTime, alarmTimeKey)) {
             logger.info("邮箱监控,预警定时任务执行jobTime={},baseTime={},statType={},alarmType={}已预警,不再预警",
-                    MonitorDateUtils.format(baseTime), JSON.toJSONString(type), configDTO.getAlarmType());
+                    MonitorDateUtils.format(baseTime), JSON.toJSONString(type), ((EmailMonitorAlarmConfigDTO)configDTO)
+                            .getAlarmType());
             return;
         }
         //获取基础数据

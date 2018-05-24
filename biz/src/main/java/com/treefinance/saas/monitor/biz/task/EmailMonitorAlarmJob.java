@@ -3,7 +3,6 @@ package com.treefinance.saas.monitor.biz.task;
 import com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import com.datatrees.toolkits.util.Arrays;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
 import com.treefinance.saas.monitor.biz.service.EmailMonitorAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;

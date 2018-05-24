@@ -18,7 +18,7 @@ import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITC
 /**
  * Created by haojiahong on 2017/11/24.
  */
-public class TaskSuccessRateAlarmConfigDTO extends BaseConfig {
+public class TaskSuccessRateAlarmConfigDTO extends BaseAlarmConfigDTO {
 
     private static final long serialVersionUID = 7938223164128700307L;
 
@@ -39,18 +39,10 @@ public class TaskSuccessRateAlarmConfigDTO extends BaseConfig {
     private int succesThreshold;
 
     /**
-     * 预警间隔时间,5分钟,10分钟等
-     */
-    private Integer intervalMins;
-    /**
      * 低于阀值多少次预警,3次,5次等
      */
     private Integer times;
 
-    /**
-     * 任务超时时间
-     */
-    private Integer taskTimeoutSecs;
 
     /**对不同预警级别的预警渠道配置*/
     private List<MonitorAlarmLevelConfigDTO> levelConfig;
@@ -162,13 +154,6 @@ public class TaskSuccessRateAlarmConfigDTO extends BaseConfig {
         this.type = type;
     }
 
-    public Integer getIntervalMins() {
-        return intervalMins;
-    }
-
-    public void setIntervalMins(Integer intervalMins) {
-        this.intervalMins = intervalMins;
-    }
 
     public Integer getTimes() {
         return times;
@@ -176,14 +161,6 @@ public class TaskSuccessRateAlarmConfigDTO extends BaseConfig {
 
     public void setTimes(Integer times) {
         this.times = times;
-    }
-
-    public Integer getTaskTimeoutSecs() {
-        return taskTimeoutSecs;
-    }
-
-    public void setTaskTimeoutSecs(Integer taskTimeoutSecs) {
-        this.taskTimeoutSecs = taskTimeoutSecs;
     }
 
     public Byte getSaasEnv() {

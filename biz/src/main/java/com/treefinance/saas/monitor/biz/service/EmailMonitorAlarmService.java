@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.service;
 
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 
@@ -17,6 +18,6 @@ public interface EmailMonitorAlarmService {
      * @param configDTO 相关配置
      * @param type  数据类型
      */
-    void alarm(Date now, EmailMonitorAlarmConfigDTO configDTO, ETaskStatDataType type);
+    void alarm(Date now, BaseAlarmConfigDTO configDTO, ETaskStatDataType type);
 
 }

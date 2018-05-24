@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.common.domain.dto;
+package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,13 +8,14 @@ import java.io.Serializable;
 
 /**
  * @author chengtong
- * @date 18/5/24 10:28
+ * @date 18/5/16 10:56
  */
-
-@Setter
 @Getter
+@Setter
 @ToString
 public class BaseAlarmConfigDTO implements Serializable {
+
+    static final long serialVersionUID = 42123131212L;
 
     /**
      * 任务超时时间
@@ -28,7 +29,5 @@ public class BaseAlarmConfigDTO implements Serializable {
      * 分区时间段 表示的是统计的时间段
      */
     private Integer intervalMins;
-
-
 
 }

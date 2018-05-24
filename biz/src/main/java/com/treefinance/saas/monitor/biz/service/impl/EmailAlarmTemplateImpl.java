@@ -8,6 +8,7 @@ import com.treefinance.saas.monitor.biz.helper.EmailMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.AbstractEmailAlarmServiceTemplate;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.*;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmTimeConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.MonitorAlarmLevelConfigDTO;
@@ -498,7 +499,7 @@ public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
 
         EmailMonitorAlarmConfigDTO emailConfig = (EmailMonitorAlarmConfigDTO) configDTO;
         Date startTime = DateUtils.addMinutes(endTime, -configDTO.getIntervalMins());
-        EmailMonitorAlarmLevelConfigDTO levelConfig = emailConfig.getLevelConfig().stream().filter
+        MonitorAlarmLevelConfigDTO levelConfig = emailConfig.getLevelConfig().stream().filter
                 (emailMonitorAlarmLevelConfigDTO ->
                         alarmLevel.name().equals(emailMonitorAlarmLevelConfigDTO.getLevel())).findFirst().get();
 
