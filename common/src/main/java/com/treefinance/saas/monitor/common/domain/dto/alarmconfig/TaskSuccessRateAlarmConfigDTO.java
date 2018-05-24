@@ -7,6 +7,9 @@ import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -18,6 +21,9 @@ import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITC
 /**
  * Created by haojiahong on 2017/11/24.
  */
+@Setter
+@Getter
+@ToString
 public class TaskSuccessRateAlarmConfigDTO extends BaseAlarmConfigDTO {
 
     private static final long serialVersionUID = 7938223164128700307L;
@@ -138,60 +144,4 @@ public class TaskSuccessRateAlarmConfigDTO extends BaseAlarmConfigDTO {
         return dto1;
     }
 
-    public List<MonitorAlarmLevelConfigDTO> getLevelConfig() {
-        return levelConfig;
-    }
-
-    public void setLevelConfig(List<MonitorAlarmLevelConfigDTO> levelConfig) {
-        this.levelConfig = levelConfig;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-
-    public Integer getTimes() {
-        return times;
-    }
-
-    public void setTimes(Integer times) {
-        this.times = times;
-    }
-
-    public Byte getSaasEnv() {
-        return saasEnv;
-    }
-
-    public void setSaasEnv(Byte saasEnv) {
-        this.saasEnv = saasEnv;
-    }
-
-    public String getSaasEnvDesc() {
-        return saasEnvDesc;
-    }
-
-    public void setSaasEnvDesc(String saasEnvDesc) {
-        this.saasEnvDesc = saasEnvDesc;
-    }
-
-    public List<TaskSuccRateAlarmTimeListDTO> getTimeConfig() {
-        return timeConfig;
-    }
-
-    public void setTimeConfig(List<TaskSuccRateAlarmTimeListDTO> timeConfig) {
-        this.timeConfig = timeConfig;
-    }
-
-    public int getSuccesThreshold() {
-        return succesThreshold;
-    }
-
-    public void setSuccesThreshold(int succesThreshold) {
-        this.succesThreshold = succesThreshold;
-    }
 }

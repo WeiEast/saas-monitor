@@ -10,7 +10,7 @@ import java.util.Date;
  * @Author: chengtong
  * @Date: 18/3/9 16:21
  */
-public interface EmailMonitorAlarmService {
+public interface MonitorAlarmService {
 
     /**
      * 邮箱预警

@@ -5,9 +5,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
+import com.treefinance.saas.monitor.biz.service.MonitorAlarmService;
 import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
-import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +30,7 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
     @Autowired
     private DiamondConfig diamondConfig;
     @Autowired
-    private OperatorMonitorGroupAlarmService operatorMonitorGroupAlarmService;
+    private MonitorAlarmService operatorAlarmMonitorService;
 
 
     @Override
@@ -49,7 +51,8 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
                 if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), AlarmConstants.SWITCH_ON)) {
                     continue;
                 }
-                operatorMonitorGroupAlarmService.alarm(jobTime, configDTO);
+                ETaskStatDataType type = ETaskStatDataType.getByValue(configDTO.getAlarmType());
+                operatorAlarmMonitorService.alarm(jobTime, configDTO,type);
             }
         } catch (Exception e) {
             logger.error("运营商监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);

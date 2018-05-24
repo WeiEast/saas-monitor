@@ -2,6 +2,9 @@ package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 
 
 import com.datatrees.common.util.DateUtils;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.beans.Transient;
 import java.io.Serializable;
@@ -13,6 +16,10 @@ import java.util.Date;
  * @Author: chengtong
  * @Date: 18/3/9 17:01
  */
+
+@Setter
+@Getter
+@ToString
 public class EmailMonitorAlarmTimeConfigDTO extends BaseTimeConfig{
 
     /**
@@ -30,51 +37,4 @@ public class EmailMonitorAlarmTimeConfigDTO extends BaseTimeConfig{
 
     private Integer wholeConversionRate;
 
-    public Integer getLoginConversionRate() {
-        return loginConversionRate;
-    }
-
-    public void setLoginConversionRate(Integer loginConversionRate) {
-        this.loginConversionRate = loginConversionRate;
-    }
-
-    public Integer getLoginSuccessRate() {
-        return loginSuccessRate;
-    }
-
-    public void setLoginSuccessRate(Integer loginSuccessRate) {
-        this.loginSuccessRate = loginSuccessRate;
-    }
-
-    public Integer getCrawlSuccessRate() {
-        return crawlSuccessRate;
-    }
-
-    public void setCrawlSuccessRate(Integer crawlSuccessRate) {
-        this.crawlSuccessRate = crawlSuccessRate;
-    }
-
-    public Integer getProcessSuccessRate() {
-        return processSuccessRate;
-    }
-
-    public void setProcessSuccessRate(Integer processSuccessRate) {
-        this.processSuccessRate = processSuccessRate;
-    }
-
-    public Integer getCallbackSuccessRate() {
-        return callbackSuccessRate;
-    }
-
-    public void setCallbackSuccessRate(Integer callbackSuccessRate) {
-        this.callbackSuccessRate = callbackSuccessRate;
-    }
-
-    public Integer getWholeConversionRate() {
-        return wholeConversionRate;
-    }
-
-    public void setWholeConversionRate(Integer wholeConversionRate) {
-        this.wholeConversionRate = wholeConversionRate;
-    }
 }

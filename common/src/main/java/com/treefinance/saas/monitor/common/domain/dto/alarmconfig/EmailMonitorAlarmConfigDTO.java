@@ -7,6 +7,9 @@ import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.*;
 
@@ -16,6 +19,9 @@ import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITC
  * @Author: chengtong
  * @Date: 18/3/9 16:36
  */
+@Setter
+@Getter
+@ToString
 public class EmailMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
 
     static final long serialVersionUID = 42123131212L;
@@ -76,94 +82,6 @@ public class EmailMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
      * 不同时间段 不同阈值的配置
      */
     private List<EmailMonitorAlarmTimeConfigDTO> list;
-
-    public Integer getFewNum() {
-        return fewNum;
-    }
-
-    public void setFewNum(Integer fewNum) {
-        this.fewNum = fewNum;
-    }
-
-    public Integer getThreshold() {
-        return threshold;
-    }
-
-    public void setThreshold(Integer threshold) {
-        this.threshold = threshold;
-    }
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public Integer getAlarmType() {
-        return alarmType;
-    }
-
-    public void setAlarmType(Integer alarmType) {
-        this.alarmType = alarmType;
-    }
-
-    public String getAlarmTypeDesc() {
-        return alarmTypeDesc;
-    }
-
-    public void setAlarmTypeDesc(String alarmTypeDesc) {
-        this.alarmTypeDesc = alarmTypeDesc;
-    }
-
-    public Integer getPreviousDays() {
-        return previousDays;
-    }
-
-    public void setPreviousDays(Integer previousDays) {
-        this.previousDays = previousDays;
-    }
-
-    public List<EmailMonitorAlarmTimeConfigDTO> getList() {
-        return list;
-    }
-
-    public void setList(List<EmailMonitorAlarmTimeConfigDTO> list) {
-        this.list = list;
-    }
-
-    public List<MonitorAlarmLevelConfigDTO> getLevelConfig() {
-        return levelConfig;
-    }
-
-    public void setLevelConfig(List<MonitorAlarmLevelConfigDTO> levelConfig) {
-        this.levelConfig = levelConfig;
-    }
-
-    public HashMap<String, String> getSwitches() {
-        return switches;
-    }
-
-    public void setSwitches(HashMap<String, String> switches) {
-        this.switches = switches;
-    }
-
-    public List<String> getEmails() {
-        return emails;
-    }
-
-    public void setEmails(List<String> emails) {
-        this.emails = emails;
-    }
 
     public static void main(String... args) {
         EmailMonitorAlarmConfigDTO emailMonitorAlarmConfigDTO = new EmailMonitorAlarmConfigDTO();

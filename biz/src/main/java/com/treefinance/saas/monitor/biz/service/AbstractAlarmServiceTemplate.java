@@ -13,7 +13,9 @@ import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
 import com.treefinance.saas.monitor.dao.mapper.EmailStatAccessMapper;
+import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
@@ -38,15 +40,19 @@ import java.util.stream.Collectors;
  * @date 18/3/12 11:20
  */
 @Service
-public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorAlarmService {
+public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractEmailAlarmServiceTemplate.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractAlarmServiceTemplate.class);
 
     @Autowired
     protected RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     protected EmailStatAccessMapper emailStatAccessMapper;
+    @Autowired
+    protected OperatorStatAccessMapper operatorStatAccessMapper;
+
+
     @Autowired
     protected DiamondConfig diamondConfig;
 
@@ -75,7 +81,6 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
         //获取基础数据
 
         List<BaseStatAccessDTO> emailStatAccessDTOS = getBaseData(baseTime, type, configDTO);
-
 
         //获取平均值数据
         Map<String, BaseStatAccessDTO> compareMap = getPreviousCompareDataMap(baseTime, emailStatAccessDTOS,

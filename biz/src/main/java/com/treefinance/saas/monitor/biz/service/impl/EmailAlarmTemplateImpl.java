@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
 import com.treefinance.saas.monitor.biz.helper.EmailMonitorKeyHelper;
-import com.treefinance.saas.monitor.biz.service.AbstractEmailAlarmServiceTemplate;
+import com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.*;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
@@ -45,7 +45,7 @@ import static java.util.stream.Collectors.groupingBy;
  * @date 18/3/13 10:25
  */
 @Service("emailAlarmMonitorService")
-public class EmailAlarmTemplateImpl extends AbstractEmailAlarmServiceTemplate {
+public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailAlarmTemplateImpl.class);
 

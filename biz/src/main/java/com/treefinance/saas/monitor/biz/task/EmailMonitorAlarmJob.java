@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
-import com.treefinance.saas.monitor.biz.service.EmailMonitorAlarmService;
+import com.treefinance.saas.monitor.biz.service.MonitorAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
@@ -29,7 +29,7 @@ public class EmailMonitorAlarmJob implements SimpleJob {
     private EmailAlarmConfig config;
 
     @Autowired
-    private EmailMonitorAlarmService emailMonitorAlarmService;
+    private MonitorAlarmService emailMonitorAlarmService;
 
     @Override
     public void execute(ShardingContext shardingContext) {
