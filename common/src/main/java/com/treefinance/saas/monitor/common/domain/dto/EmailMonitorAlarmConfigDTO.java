@@ -17,7 +17,7 @@ import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITC
  * @Author: chengtong
  * @Date: 18/3/9 16:36
  */
-public class EmailMonitorAlarmConfigDTO implements Serializable {
+public class EmailMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
 
     static final long serialVersionUID = 42123131212L;
 
@@ -32,14 +32,6 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
      */
     private String appName;
     /**
-     * 任务超时时间
-     */
-    private Integer taskTimeoutSecs;
-    /**
-     * 此appId是否预警,方便以后开关
-     */
-    private String alarmSwitch;
-    /**
      * 预警类型:按人统计预警为1,按任务统计为0
      */
     private Integer alarmType;
@@ -47,10 +39,6 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
      * 预警类型描述：
      */
     private String alarmTypeDesc;
-    /**
-     * 分区时间段 表示的是统计的时间段
-     */
-    private Integer intervalMins;
 
     /**
      * 邮箱类型
@@ -122,22 +110,6 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
         this.appName = appName;
     }
 
-    public Integer getTaskTimeoutSecs() {
-        return taskTimeoutSecs;
-    }
-
-    public void setTaskTimeoutSecs(Integer taskTimeoutSecs) {
-        this.taskTimeoutSecs = taskTimeoutSecs;
-    }
-
-    public String getAlarmSwitch() {
-        return alarmSwitch;
-    }
-
-    public void setAlarmSwitch(String alarmSwitch) {
-        this.alarmSwitch = alarmSwitch;
-    }
-
     public Integer getAlarmType() {
         return alarmType;
     }
@@ -152,14 +124,6 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
 
     public void setAlarmTypeDesc(String alarmTypeDesc) {
         this.alarmTypeDesc = alarmTypeDesc;
-    }
-
-    public Integer getIntervalMins() {
-        return intervalMins;
-    }
-
-    public void setIntervalMins(Integer intervalMins) {
-        this.intervalMins = intervalMins;
     }
 
     public Integer getPreviousDays() {
@@ -204,13 +168,13 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
 
     public static void main(String... args) {
         EmailMonitorAlarmConfigDTO emailMonitorAlarmConfigDTO = new EmailMonitorAlarmConfigDTO();
-        emailMonitorAlarmConfigDTO.alarmSwitch = AlarmConstants.SWITCH_ON;
+        emailMonitorAlarmConfigDTO.setAlarmSwitch(AlarmConstants.SWITCH_ON);
         emailMonitorAlarmConfigDTO.alarmType = 1;
         emailMonitorAlarmConfigDTO.alarmTypeDesc = "所有邮箱所有商户按人数统计预警";
         emailMonitorAlarmConfigDTO.appName = "所有商户";
-        emailMonitorAlarmConfigDTO.intervalMins = 30;
+        emailMonitorAlarmConfigDTO.setIntervalMins(30);
         emailMonitorAlarmConfigDTO.previousDays = 7;
-        emailMonitorAlarmConfigDTO.taskTimeoutSecs = 600;
+        emailMonitorAlarmConfigDTO.setTaskTimeoutSecs(600);
         emailMonitorAlarmConfigDTO.appId = "virtual_total_stat_appId";
         emailMonitorAlarmConfigDTO.threshold = 20;
         emailMonitorAlarmConfigDTO.fewNum = 5;
@@ -223,7 +187,7 @@ public class EmailMonitorAlarmConfigDTO implements Serializable {
 
         emailMonitorAlarmConfigDTO.switches = map;
 
-        emailMonitorAlarmConfigDTO.setEmails(Arrays.asList(AlarmConstants.ALL_EMAIL));
+        emailMonitorAlarmConfigDTO.setEmails(Collections.singletonList(AlarmConstants.ALL_EMAIL));
 
         EmailMonitorAlarmTimeConfigDTO timeConfigDTO = new EmailMonitorAlarmTimeConfigDTO();
         timeConfigDTO.setCallbackSuccessRate(70);

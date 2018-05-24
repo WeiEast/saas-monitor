@@ -20,8 +20,6 @@ public class EmailMonitorAlarmTimeConfigDTO implements Serializable {
     /** hh:mm:ss*/
     private String endTime;
 
-
-
     /**
      * 登录转化率
      */

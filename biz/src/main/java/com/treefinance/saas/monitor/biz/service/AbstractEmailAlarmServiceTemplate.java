@@ -7,6 +7,7 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
+import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.EmailMonitorAlarmConfigDTO;
@@ -50,7 +51,7 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
     private static final Logger logger = LoggerFactory.getLogger(AbstractEmailAlarmServiceTemplate.class);
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    protected RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     protected EmailStatAccessMapper emailStatAccessMapper;
@@ -68,40 +69,25 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
     @Override
     public void alarm(Date now, EmailMonitorAlarmConfigDTO configDTO, ETaskStatDataType type) {
 
-        // TODO: 18/5/23 reactor abstract super class
-        String[] emails = configDTO.getEmails().toArray(new String[configDTO.getEmails().size()]);
-
         //获取时间
-        Date baseTime = getBaseTime(now, JSON.parseObject(JSON.toJSONString(configDTO)));
+        Date baseTime = getBaseTime(now, configDTO);
+
         //是否预警过?
-        String alarmTimeKey = getKey(type, baseTime,ALL_EMAIL.equals(emails[0])?ALL_EMAIL:GROUP_EMAIL);
+        String alarmTimeKey = getKey(type, baseTime, configDTO);
         if (ifAlarmed(baseTime, alarmTimeKey)) {
             logger.info("邮箱监控,预警定时任务执行jobTime={},baseTime={},statType={},alarmType={}已预警,不再预警",
                     MonitorDateUtils.format(baseTime), JSON.toJSONString(type), configDTO.getAlarmType());
             return;
         }
         //获取基础数据
-        Date startTime = DateUtils.addMinutes(baseTime, -configDTO.getIntervalMins());
-        List<BaseStatAccessDTO> emailStatAccessDTOS = getBaseData(startTime, baseTime, type, AlarmConstants
-                .VIRTUAL_TOTAL_STAT_APP_ID, emails);
 
-        //是否需要预警？
-        if (emailStatAccessDTOS == null || emailStatAccessDTOS.isEmpty()) {
-            logger.info("邮箱监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有邮箱的统计数据",
-                    MonitorDateUtils.format(now), MonitorDateUtils.format(startTime), MonitorDateUtils.format(baseTime));
-            return;
-        }
+        List<BaseStatAccessDTO> emailStatAccessDTOS = getBaseData(baseTime, type, configDTO);
+
 
         //获取平均值数据
-        Map<String, BaseStatAccessDTO> compareMap = getPreviousCompareDataMap(now, baseTime, emailStatAccessDTOS,
-                configDTO, type, emails);
+        Map<String, BaseStatAccessDTO> compareMap = getPreviousCompareDataMap(baseTime, emailStatAccessDTOS,
+                configDTO, type);
 
-        //是否需要预警？
-        logger.info("邮箱监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},获取前n天内,相同时刻区分邮箱统计的平均值compareMap={}",
-                MonitorDateUtils.format(now), MonitorDateUtils.format(baseTime), JSON.toJSONString(compareMap));
-        if (MapUtils.isEmpty(compareMap)) {
-            return;
-        }
         //计算需要预警的信息
         List<BaseAlarmMsgDTO> msgList = getAlarmMsgList(now, emailStatAccessDTOS, compareMap, configDTO);
 
@@ -112,67 +98,59 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
             return;
         }
         //确定回调预警等级
-        EAlarmLevel level = msgList.stream().anyMatch(baseAlarmMsgDTO -> EAlarmLevel.error.equals(baseAlarmMsgDTO
-                .getAlarmLevel())) ? EAlarmLevel.error : msgList
-                .stream().anyMatch(baseAlarmMsgDTO -> EAlarmLevel.warning.equals(baseAlarmMsgDTO.getAlarmLevel()))
-                ? EAlarmLevel
-                .warning : EAlarmLevel.info;
+        EAlarmLevel level = determineLevel(msgList);
+
         //构建回调内容 发送通知;
+        sendAlarmMsg(level, msgList, configDTO, baseTime, type);
+    }
 
-
-        sendAlarmMsg(level, msgList, configDTO, startTime, baseTime, type);
+    private EAlarmLevel determineLevel(List<BaseAlarmMsgDTO> msgList) {
+        return msgList.stream().anyMatch(baseAlarmMsgDTO -> EAlarmLevel.error.equals(baseAlarmMsgDTO
+                    .getAlarmLevel())) ? EAlarmLevel.error : msgList
+                    .stream().anyMatch(baseAlarmMsgDTO -> EAlarmLevel.warning.equals(baseAlarmMsgDTO.getAlarmLevel()))
+                    ? EAlarmLevel
+                    .warning : EAlarmLevel.info;
     }
 
     /**
      * 获取基础时间
+     * <p>
+     * 距离任务开始时间之前的timeout Seconds
      */
-    private Date getBaseTime(Date jobTime, JSONObject config) {
-        Date statTime = DateUtils.addSeconds(jobTime, -config.getIntValue("taskTimeoutSecs"));
+    private Date getBaseTime(Date jobTime, BaseAlarmConfigDTO config) {
+        Date statTime = DateUtils.addSeconds(jobTime, -config.getTaskTimeoutSecs());
         //取得预警原点时间,如:statTime=14:01分,30分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
-        return TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, config.getInteger("intervalMins"));
+        return TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, config.getIntervalMins());
     }
 
     /**
      * redis的key值判断 是否继续
      */
-    private boolean ifAlarmed(Date baseTime, String alarmTimeKey) {
-        BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
-        if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
-            return true;
-        }
+    protected abstract boolean ifAlarmed(Date baseTime, String alarmTimeKey);
 
-        setOperations.add(MonitorDateUtils.format(baseTime));
-        if (setOperations.getExpire() == -1) {
-            setOperations.expire(2, TimeUnit.DAYS);
-        }
 
-        return false;
-    }
 
     /**
      * 获取基础数据 返回一段时间内的数据
      * 可以用基类作为返回的数据；兼容不同的业务线的数据机构
      * 使用email的数组 兼容分组的或者是大盘的邮箱监控
      *
-     * @param startTime    数据查询的开始时间
-     * @param endTime      数据查询的结束时间
-     * @param statDataType 数据查询的类型
-     * @param appId        数据查询的appid 商户编号
-     * @param email        用于数据查询时 是大盘 or 分组的 （邮箱是 分邮箱提供商（邮箱） 、运营商是分 运营商（10个大的运营商））、以缺省参数配置；
+     * @param baseTime       数据的endTime
+     * @param statDataType   数据查询的类型
+     * @param alarmConfigDTO 预警配置
      * @return 基础数据
      */
-    protected abstract List<BaseStatAccessDTO> getBaseData(Date startTime, Date endTime, ETaskStatDataType statDataType, String
-            appId, String... email);
+    protected abstract List<BaseStatAccessDTO> getBaseData(Date baseTime, ETaskStatDataType statDataType, BaseAlarmConfigDTO alarmConfigDTO);
 
     /**
      * 获取这个预警类型下的redis ke，不同的预警类型可以有不同的实现y
      *
-     * @param type     统计类型
-     * @param baseTime 任务时间
-     * @param alarmType all or group
+     * @param type               统计类型
+     * @param baseAlarmConfigDTO 预警配置
+     * @param jobTime            预警时间
      * @return redis key
      */
-    protected abstract String getKey(ETaskStatDataType type, Date baseTime, String alarmType);
+    protected abstract String getKey(ETaskStatDataType type, Date jobTime, BaseAlarmConfigDTO baseAlarmConfigDTO);
 
     /**
      * 获取预警信息 的列表
@@ -184,7 +162,7 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
      * @return 预警信息的列表
      */
     protected abstract List<BaseAlarmMsgDTO> getAlarmMsgList(Date now, List<BaseStatAccessDTO> dtoList, Map<String,
-            BaseStatAccessDTO> compareMap, EmailMonitorAlarmConfigDTO configDTO);
+            BaseStatAccessDTO> compareMap, BaseAlarmConfigDTO configDTO);
 
 
     /**
@@ -221,18 +199,14 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
     /**
      * 获取前7天内,相同时刻运营商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
      *
-     * @param jobTime   任务时间
-     * @param baseTime  任务时间区间的结束时间
-     * @param dtoList   基础数据的列表
-     * @param configDTO 配置
-     * @param statType  统计类型
-     * @param emails    缺省的参数（邮箱类型、运营商类型）列表
+     * @param baseTime           任务时间区间的结束时间
+     * @param dtoList            基础数据的列表
+     * @param statType           统计类型
+     * @param baseAlarmConfigDTO 预警配置
      * @return Map 已不同（运营商、邮箱）区分的比较值的集合体；
      */
-    protected abstract Map<String, BaseStatAccessDTO> getPreviousCompareDataMap(Date jobTime, Date baseTime,
-                                                                                List<BaseStatAccessDTO> dtoList,
-                                                                                EmailMonitorAlarmConfigDTO configDTO,
-                                                                                ETaskStatDataType statType, String... emails);
+    protected abstract Map<String, BaseStatAccessDTO> getPreviousCompareDataMap(Date baseTime, List<BaseStatAccessDTO>
+            dtoList, BaseAlarmConfigDTO baseAlarmConfigDTO, ETaskStatDataType statType);
 
     /**
      * 发送预警信息
@@ -240,12 +214,10 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
      * @param alarmLevel 预警等级
      * @param dtoList    预警信息
      * @param configDTO  配置
-     * @param startTime  开始时间
      * @param endTime    结束时间
      */
-    protected abstract void sendAlarmMsg(EAlarmLevel alarmLevel, List<BaseAlarmMsgDTO> dtoList,
-                                         EmailMonitorAlarmConfigDTO configDTO, Date startTime, Date endTime,
-                                         ETaskStatDataType statDataType);
+    protected abstract void sendAlarmMsg(EAlarmLevel alarmLevel, List<BaseAlarmMsgDTO> dtoList, BaseAlarmConfigDTO
+            configDTO, Date endTime, ETaskStatDataType statDataType);
 
     protected void sendSms(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime, EAlarmLevel alarmLevel, String alarmBiz) {
 
@@ -294,7 +266,7 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
         map.put("type", alarmBiz);
         map.put("level", alarmLevel.name());
 
-        String mailDataBody = generateMailDataBody(msgList, startTime, endTime, map, alarmLevel,alarmBiz);
+        String mailDataBody = generateMailDataBody(msgList, startTime, endTime, map, alarmLevel, alarmBiz);
 
         alarmMessageProducer.sendMail4OperatorMonitor(StrSubstitutor.replace(mailBaseTitle, map), mailDataBody, jobTime);
     }
@@ -312,7 +284,7 @@ public abstract class AbstractEmailAlarmServiceTemplate implements EmailMonitorA
      * @return 邮件html
      */
     protected abstract String generateMailDataBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
-                                                   Map<String, Object> placeHolder, EAlarmLevel alarmLevel,String
+                                                   Map<String, Object> placeHolder, EAlarmLevel alarmLevel, String
                                                            alarmBiz);
 
 
