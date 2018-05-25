@@ -23,7 +23,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Created by haojiahong on 2017/11/24.
+ *
+ * @author haojiahong
+ * @date 2017/11/24
  */
 public class TaskSuccessRateAlarmJob implements SimpleJob {
 

@@ -19,7 +19,9 @@ import java.util.List;
 import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
 
 /**
- * Created by haojiahong on 2017/11/24.
+ *
+ * @author haojiahong
+ * @date 2017/11/24
  */
 @Setter
 @Getter
@@ -48,7 +50,6 @@ public class TaskSuccessRateAlarmConfigDTO extends BaseAlarmConfigDTO {
      * 低于阀值多少次预警,3次,5次等
      */
     private Integer times;
-
 
     /**对不同预警级别的预警渠道配置*/
     private List<MonitorAlarmLevelConfigDTO> levelConfig;

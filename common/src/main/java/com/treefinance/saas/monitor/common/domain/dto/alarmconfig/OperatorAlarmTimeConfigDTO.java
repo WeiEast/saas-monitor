@@ -1,46 +1,38 @@
 package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 
-
-import com.datatrees.common.util.DateUtils;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
-
-import java.beans.Transient;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Date;
 
 /**
- * @Author: chengtong
- * @Date: 18/3/9 17:01
+ * @author chengtong
+ * @date 18/5/25 11:36
  */
-
 @Setter
 @Getter
-@ToString
-public class EmailMonitorAlarmTimeConfigDTO extends BaseTimeConfig{
+public class OperatorAlarmTimeConfigDTO extends BaseTimeConfig {
 
     /**
+     * 确认手机转化率的阈值百分比
+     * */
+    private Integer confirmMobileConversionRate;
+    /**
      * 登录转化率的阈值百分比
-     *
      */
     private Integer loginConversionRate;
     /**
-     * 登录成功率的阈值百分比
+     * 登录成功转化率的阈值百分比
      */
     private Integer loginSuccessRate;
     /**
-     * 扒数成功率的阈值百分比
+     * 爬树转化率的阈值百分比
      */
     private Integer crawlSuccessRate;
     /**
-     * 洗数成功率的阈值百分比
+     * 洗数转化率的阈值百分比
      */
     private Integer processSuccessRate;
     /**
-     * 回调成功率的阈值百分比
+     * 回调转化率的阈值百分比
      */
     private Integer callbackSuccessRate;
     /**

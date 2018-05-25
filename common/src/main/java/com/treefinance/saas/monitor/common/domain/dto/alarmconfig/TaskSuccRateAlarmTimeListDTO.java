@@ -20,7 +20,6 @@ public class TaskSuccRateAlarmTimeListDTO extends BaseTimeConfig{
 
     /**转化率的阈值*/
     private BigDecimal thresholdError;
-
     /**转化率的阈值*/
     private BigDecimal thresholdWarning;
     /**转化率的阈值*/

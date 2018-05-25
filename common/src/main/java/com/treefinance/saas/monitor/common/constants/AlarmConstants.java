@@ -27,4 +27,12 @@ public interface AlarmConstants {
     /**分邮箱类型*/
     String GROUP_EMAIL = "virtual_group_stat_email";
 
+
+    /**运营商的预警类型*/
+    Integer ALL_OPERATOR = 1;
+
+    Integer GROUP_OPERATOR = 2;
+
+
+
 }
