@@ -26,8 +26,4 @@ public class TaskSuccRateAlarmTimeListDTO extends BaseTimeConfig{
     /**转化率的阈值*/
     private BigDecimal thresholdInfo;
 
-    /**集成的开关配置*/
-    private HashMap<String, String> switches;
-
-
 }
