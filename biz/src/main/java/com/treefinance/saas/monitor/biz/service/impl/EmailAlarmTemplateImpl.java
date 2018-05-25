@@ -14,6 +14,7 @@ import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAl
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.MonitorAlarmLevelConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -23,6 +24,7 @@ import com.treefinance.saas.monitor.dao.entity.EmailStatAccessCriteria;
 import com.treefinance.saas.monitor.exception.BizException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -290,24 +293,24 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                                           compareDTO, BigDecimal wholeConversionCompareVal) {
         if (sourceDto.getWholeConversionRate().compareTo(wholeConversionCompareVal) < 0) {
             EmailAlarmMsgDTO msg = new EmailAlarmMsgDTO();
-            String email = AlarmConstants.ALL_EMAIL.equals(sourceDto.getEmail()) ? "邮箱大盘" : sourceDto.getEmail();
+            String email = AlarmConstants.ALL_EMAIL.equals(sourceDto.getEmail()) ? AlarmConstants.ALL_EMAIL_FLAG : sourceDto
+                    .getEmail();
             msg.setEmail(email);
             msg.setAlarmDesc("总转化率低于前" + previousDays + "天平均值的" + timeConfigDTO.getWholeConversionRate() + "%");
             msg.setAlarmType("总转化率");
             msg.setAlarmSimpleDesc("总转化率");
             msg.setValue(sourceDto.getWholeConversionRate());
             msg.setThreshold(wholeConversionCompareVal);
-            String valueDesc = new StringBuilder()
-                    .append(sourceDto.getWholeConversionRate()).append("%").append(" ").append("(")
-                    .append(sourceDto.getCallbackSuccessCount()).append("/")
-                    .append(sourceDto.getEntryCount()).append(")").toString();
+            String valueDesc = String.valueOf(sourceDto.getWholeConversionRate()) + "%" + " " + "(" +
+                    sourceDto.getCallbackSuccessCount() + "/" +
+                    sourceDto.getEntryCount() + ")";
             msg.setValueDesc(valueDesc);
-            String thresholdDesc = new StringBuilder()
-                    .append(wholeConversionCompareVal).append("%").append(" ").append("(")
-                    .append(compareDTO.getPreviousCallbackSuccessAvgCount()).append("/")
-                    .append(compareDTO.getPreviousEntryAvgCount()).append("*")
-                    .append(new BigDecimal(timeConfigDTO.getWholeConversionRate()).divide(new BigDecimal(100), 1, BigDecimal
-                            .ROUND_HALF_UP)).append(")").toString();
+            String thresholdDesc = String.valueOf(wholeConversionCompareVal) + "%" + " " + "(" +
+                    compareDTO.getPreviousCallbackSuccessAvgCount() + "/" +
+                    compareDTO.getPreviousEntryAvgCount() + "*" +
+                    new BigDecimal(timeConfigDTO.getWholeConversionRate()).divide(new BigDecimal(100), 1, BigDecimal
+                            .ROUND_HALF_UP) +
+                    ")";
             msg.setThresholdDesc(thresholdDesc);
             calcOffsetAndLevel(wholeConversionCompareVal, msg, sourceDto.getWholeConversionRate());
             msgList.add(msg);
@@ -330,16 +333,14 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             msg.setAlarmSimpleDesc("回调");
             msg.setValue(sourceDto.getCallbackSuccessRate());
             msg.setThreshold(callbackCompareVal);
-            String valueDesc = new StringBuilder()
-                    .append(sourceDto.getCallbackSuccessRate()).append("%").append(" ").append("(")
-                    .append(sourceDto.getCallbackSuccessCount()).append("/")
-                    .append(sourceDto.getProcessSuccessCount()).append(")").toString();
+            String valueDesc = String.valueOf(sourceDto.getCallbackSuccessRate()) + "%" + " " + "(" +
+                    sourceDto.getCallbackSuccessCount() + "/" +
+                    sourceDto.getProcessSuccessCount() + ")";
             msg.setValueDesc(valueDesc);
-            String thresholdDesc = new StringBuilder()
-                    .append(callbackCompareVal).append("%").append(" ").append("(")
-                    .append(compareDTO.getPreviousCallbackSuccessAvgCount()).append("/")
-                    .append(compareDTO.getPreviousProcessSuccessAvgCount()).append("*")
-                    .append(new BigDecimal(timeConfigDTO.getCallbackSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+            String thresholdDesc = String.valueOf(callbackCompareVal) + "%" + " " + "(" +
+                    compareDTO.getPreviousCallbackSuccessAvgCount() + "/" +
+                    compareDTO.getPreviousProcessSuccessAvgCount() + "*" +
+                    new BigDecimal(timeConfigDTO.getCallbackSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
             msg.setThresholdDesc(thresholdDesc);
 
             calcOffsetAndLevel(processCompareVal, msg, sourceDto.getCallbackSuccessRate());
@@ -357,16 +358,14 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             msg.setAlarmSimpleDesc("洗数");
             msg.setValue(sourceDto.getProcessSuccessRate());
             msg.setThreshold(processCompareVal);
-            String valueDesc = new StringBuilder()
-                    .append(sourceDto.getProcessSuccessRate()).append("%").append(" ").append("(")
-                    .append(sourceDto.getProcessSuccessCount()).append("/")
-                    .append(sourceDto.getCrawlSuccessCount()).append(")").toString();
+            String valueDesc = String.valueOf(sourceDto.getProcessSuccessRate()) + "%" + " " + "(" +
+                    sourceDto.getProcessSuccessCount() + "/" +
+                    sourceDto.getCrawlSuccessCount() + ")";
             msg.setValueDesc(valueDesc);
-            String thresholdDesc = new StringBuilder()
-                    .append(processCompareVal).append("%").append(" ").append("(")
-                    .append(compareDTO.getPreviousProcessSuccessAvgCount()).append("/")
-                    .append(compareDTO.getPreviousCrawlSuccessAvgCount()).append("*")
-                    .append(new BigDecimal(timeConfigDTO.getProcessSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+            String thresholdDesc = String.valueOf(processCompareVal) + "%" + " " + "(" +
+                    compareDTO.getPreviousProcessSuccessAvgCount() + "/" +
+                    compareDTO.getPreviousCrawlSuccessAvgCount() + "*" +
+                    new BigDecimal(timeConfigDTO.getProcessSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
             msg.setThresholdDesc(thresholdDesc);
 
             calcOffsetAndLevel(processCompareVal, msg, sourceDto.getProcessSuccessRate());
@@ -384,16 +383,14 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             msg.setAlarmSimpleDesc("抓取");
             msg.setValue(sourceDto.getCrawlSuccessRate());
             msg.setThreshold(crawlCompareVal);
-            String valueDesc = new StringBuilder()
-                    .append(sourceDto.getCrawlSuccessRate()).append("%").append(" ").append("(")
-                    .append(sourceDto.getCrawlSuccessCount()).append("/")
-                    .append(sourceDto.getLoginSuccessCount()).append(")").toString();
+            String valueDesc = String.valueOf(sourceDto.getCrawlSuccessRate()) + "%" + " " + "(" +
+                    sourceDto.getCrawlSuccessCount() + "/" +
+                    sourceDto.getLoginSuccessCount() + ")";
             msg.setValueDesc(valueDesc);
-            String thresholdDesc = new StringBuilder()
-                    .append(crawlCompareVal).append("%").append(" ").append("(")
-                    .append(compareDTO.getPreviousCrawlSuccessAvgCount()).append("/")
-                    .append(compareDTO.getPreviousLoginSuccessAvgCount()).append("*")
-                    .append(new BigDecimal(timeConfigDTO.getCrawlSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+            String thresholdDesc = String.valueOf(crawlCompareVal) + "%" + " " + "(" +
+                    compareDTO.getPreviousCrawlSuccessAvgCount() + "/" +
+                    compareDTO.getPreviousLoginSuccessAvgCount() + "*" +
+                    new BigDecimal(timeConfigDTO.getCrawlSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
             msg.setThresholdDesc(thresholdDesc);
 
             calcOffsetAndLevel(crawlCompareVal, msg, sourceDto.getCrawlSuccessRate());
@@ -411,16 +408,14 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             msg.setAlarmSimpleDesc("登陆");
             msg.setValue(sourceDto.getLoginSuccessRate());
             msg.setThreshold(loginSuccessCompareVal);
-            String valueDesc = new StringBuilder()
-                    .append(sourceDto.getLoginSuccessRate()).append("%").append(" ").append("(")
-                    .append(sourceDto.getLoginSuccessCount()).append("/")
-                    .append(sourceDto.getStartLoginCount()).append(")").toString();
+            String valueDesc = String.valueOf(sourceDto.getLoginSuccessRate()) + "%" + " " + "(" +
+                    sourceDto.getLoginSuccessCount() + "/" +
+                    sourceDto.getStartLoginCount() + ")";
             msg.setValueDesc(valueDesc);
-            String thresholdDesc = new StringBuilder()
-                    .append(loginSuccessCompareVal).append("%").append(" ").append("(")
-                    .append(compareDTO.getPreviousLoginSuccessAvgCount()).append("/")
-                    .append(compareDTO.getPreviousStartLoginAvgCount()).append("*")
-                    .append(new BigDecimal(timeConfigDTO.getLoginSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+            String thresholdDesc = String.valueOf(loginSuccessCompareVal) + "%" + " " + "(" +
+                    compareDTO.getPreviousLoginSuccessAvgCount() + "/" +
+                    compareDTO.getPreviousStartLoginAvgCount() + "*" +
+                    new BigDecimal(timeConfigDTO.getLoginSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
             msg.setThresholdDesc(thresholdDesc);
             calcOffsetAndLevel(loginSuccessCompareVal, msg, sourceDto.getLoginSuccessRate());
             msgList.add(msg);
@@ -438,16 +433,14 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             msg.setAlarmSimpleDesc("开始登陆");
             msg.setValue(sourceDto.getLoginConversionRate());
             msg.setThreshold(loginConversionCompareVal);
-            String valueDesc = new StringBuilder()
-                    .append(sourceDto.getLoginConversionRate()).append("%").append(" ").append("(")
-                    .append(sourceDto.getStartLoginCount()).append("/")
-                    .append(sourceDto.getEntryCount()).append(")").toString();
+            String valueDesc = String.valueOf(sourceDto.getLoginConversionRate()) + "%" + " " + "(" +
+                    sourceDto.getStartLoginCount() + "/" +
+                    sourceDto.getEntryCount() + ")";
             msg.setValueDesc(valueDesc);
-            String thresholdDesc = new StringBuilder()
-                    .append(loginConversionCompareVal).append("%").append(" ").append("(")
-                    .append(compareDTO.getPreviousStartLoginAvgCount()).append("/")
-                    .append(compareDTO.getPreviousEntryAvgCount()).append("*")
-                    .append(new BigDecimal(timeConfigDTO.getLoginConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+            String thresholdDesc = String.valueOf(loginConversionCompareVal) + "%" + " " + "(" +
+                    compareDTO.getPreviousStartLoginAvgCount() + "/" +
+                    compareDTO.getPreviousEntryAvgCount() + "*" +
+                    new BigDecimal(timeConfigDTO.getLoginConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
             msg.setThresholdDesc(thresholdDesc);
             calcOffsetAndLevel(loginConversionCompareVal, msg, sourceDto.getLoginConversionRate());
             msgList.add(msg);
@@ -499,7 +492,12 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         Date startTime = DateUtils.addMinutes(endTime, -configDTO.getIntervalMins());
         MonitorAlarmLevelConfigDTO levelConfig = emailConfig.getLevelConfig().stream().filter
                 (emailMonitorAlarmLevelConfigDTO ->
-                        alarmLevel.name().equals(emailMonitorAlarmLevelConfigDTO.getLevel())).findFirst().get();
+                        alarmLevel.name().equals(emailMonitorAlarmLevelConfigDTO.getLevel())).findFirst().orElse(null);
+        if(levelConfig == null){
+            logger.info("邮箱预警配置 预警等级配置 为空");
+            return;
+        }
+
 
         HashMap<String, String> switches = emailConfig.getSwitches();
         if (switches == null || switches.isEmpty() || switches.values().stream().noneMatch(SWITCH_ON::equals)) {
@@ -507,9 +505,10 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             return;
         }
 
+
         List<String> channels = levelConfig.getChannels();
         String alarmBiz;
-        if ("邮箱大盘".equals(((EmailAlarmMsgDTO) dtoList.get(0)).getEmail())) {
+        if (AlarmConstants.ALL_EMAIL_FLAG.equals(((EmailAlarmMsgDTO) dtoList.get(0)).getEmail())) {
             alarmBiz = "邮箱大盘";
         } else {
             alarmBiz = "邮箱分组";
@@ -559,8 +558,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         }
     }
 
-    @Override
-    protected String generateMailDataBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime, Map<String,
+    private String generateMailDataBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime, Map<String,
             Object> placeHolder, EAlarmLevel alarmLevel, String alarmBiz) {
         StringBuilder pageHtml = new StringBuilder();
 
@@ -610,8 +608,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         return pageHtml.toString();
     }
 
-    @Override
-    protected String generateWeChatBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime, EAlarmLevel
+    private String generateWeChatBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime, EAlarmLevel
             alarmLevel, String alarmBiz) {
         StringBuilder buffer = new StringBuilder();
         buffer.append("【").append(alarmLevel.name()).append("】")
@@ -659,5 +656,64 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 .stream().anyMatch(baseAlarmMsgDTO -> EAlarmLevel.warning.equals(baseAlarmMsgDTO.getAlarmLevel()))
                 ? EAlarmLevel
                 .warning : EAlarmLevel.info;
+    }
+
+
+    private void sendWeChat(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
+                            EAlarmLevel alarmLevel, String alarmBiz) {
+        String weChatBody = generateWeChatBody(msgList, startTime, endTime, alarmLevel, alarmBiz);
+        alarmMessageProducer.sendWebChart4OperatorMonitor(weChatBody, new Date());
+    }
+
+    private void sendSms(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime, EAlarmLevel alarmLevel, String alarmBiz) {
+
+        String template = "${level} ${type} 时间段:${startTime}至${endTime},${alarmBiz} " +
+                "预警类型:${alarmDesc},偏离阀值程度${offset}%";
+        Map<String, Object> placeHolder = Maps.newHashMap();
+
+        List<BaseAlarmMsgDTO> warningMsg = msgList.stream().filter(baseAlarmMsgDTO ->
+                EAlarmLevel.warning.equals(baseAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+
+        String type = "SAAS-" + diamondConfig.getMonitorEnvironment() + "-" + alarmBiz;
+
+        String format = "yyyy-MM-dd HH:mm:SS";
+        String startTimeStr = new SimpleDateFormat(format).format(startTime);
+        String endTimeStr = new SimpleDateFormat(format).format(endTime);
+
+        BaseAlarmMsgDTO dto = warningMsg.get(0);
+
+        placeHolder.put("level", alarmLevel.name());
+        placeHolder.put("type", type);
+        placeHolder.put("startTime", startTimeStr);
+        placeHolder.put("endTime", endTimeStr);
+        placeHolder.put("alarmBiz", alarmBiz);
+        placeHolder.put("alarmDesc", dto.getAlarmDesc());
+        placeHolder.put("offset", dto.getOffset());
+
+        smsNotifyService.send(StrSubstitutor.replace(template, placeHolder));
+    }
+
+    private void sendIvr(List<BaseAlarmMsgDTO> msgList, EAlarmLevel level, String alarmBiz) {
+
+        List<BaseAlarmMsgDTO> errorMsgs = msgList.stream().filter(baseAlarmMsgDTO ->
+                level.equals(baseAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+
+        logger.info(alarmBiz + "发送ivr请求 {}", errorMsgs.get(0).getAlarmDesc());
+
+        ivrNotifyService.notifyIvr(level, EAlarmType.operator_alarm, alarmBiz + errorMsgs.get(0).getAlarmDesc());
+    }
+
+    private void sendMail(List<BaseAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
+                          EAlarmLevel alarmLevel, String alarmBiz) {
+
+        String mailBaseTitle = "【${level}】【${module}】【${type}】发生 ${detail} 预警";
+
+        Map<String, Object> map = new HashMap<>(4);
+        map.put("type", alarmBiz);
+        map.put("level", alarmLevel.name());
+
+        String mailDataBody = generateMailDataBody(msgList, startTime, endTime, map, alarmLevel, alarmBiz);
+
+        alarmMessageProducer.sendMail4OperatorMonitor(StrSubstitutor.replace(mailBaseTitle, map), mailDataBody, jobTime);
     }
 }

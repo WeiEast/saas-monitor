@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.treefinance.saas.monitor.biz.config.OperatorMonitorConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
@@ -13,6 +12,7 @@ import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.*;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -22,18 +22,18 @@ import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
 import com.treefinance.saas.monitor.exception.BizException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.treefinance.saas.monitor.common.constants.AlarmConstants.*;
@@ -48,14 +48,13 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
     private static final Logger logger = LoggerFactory.getLogger(OperatorAlarmTemplateImpl.class);
 
+    public static final String CUTC = "中国联通";
+
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
-    @Autowired
-    private OperatorMonitorConfig operatorMonitorConfig;
-
     @Override
-    public String getKey(ETaskStatDataType type,Date jobTime, BaseAlarmConfigDTO baseAlarmConfigDTO) {
+    public String getKey(ETaskStatDataType type, Date jobTime, BaseAlarmConfigDTO baseAlarmConfigDTO) {
         OperatorMonitorAlarmConfigDTO configDTO = (OperatorMonitorAlarmConfigDTO) baseAlarmConfigDTO;
         return TaskOperatorMonitorKeyHelper.strKeyOfAlarmTimeLog(jobTime, configDTO);
     }
@@ -71,7 +70,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         }
 
         Date startTime = DateUtils.addMinutes(baseTime, -config.getIntervalMins());
-        List<BaseStatAccessDTO> dataDTOList = doGetBaseData(baseTime,startTime,config);
+        List<BaseStatAccessDTO> dataDTOList = doGetBaseData(baseTime, startTime, config);
 
         //是否需要预警？
         if (CollectionUtils.isEmpty(dataDTOList)) {
@@ -85,8 +84,8 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         return dataDTOList;
     }
 
-    private List<BaseStatAccessDTO> doGetBaseData(Date baseTime,Date startTime,
-                                                  OperatorMonitorAlarmConfigDTO config){
+    private List<BaseStatAccessDTO> doGetBaseData(Date baseTime, Date startTime,
+                                                  OperatorMonitorAlarmConfigDTO config) {
 
         OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
         OperatorStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
@@ -154,15 +153,14 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             dtoList, BaseAlarmConfigDTO baseAlarmConfigDTO, ETaskStatDataType statType) {
         OperatorMonitorAlarmConfigDTO config = (OperatorMonitorAlarmConfigDTO) baseAlarmConfigDTO;
 
-        List<String> groupCodeList = dtoList.stream().map(baseStatAccess -> ((OperatorStatAccessDTO)baseStatAccess).getGroupCode())
+        List<String> groupCodeList = dtoList.stream().map(baseStatAccess -> ((OperatorStatAccessDTO) baseStatAccess).getGroupCode())
                 .distinct().collect(Collectors.toList());
         Integer previousDays = config.getPreviousDays();
         List<Date> previousOClockList = MonitorDateUtils.getPreviousOClockTime(baseTime, previousDays);
         List<BaseStatAccessDTO> previousDTOList = Lists.newArrayList();
         for (Date previousOClock : previousOClockList) {
             Date startTime = DateUtils.addMinutes(previousOClock, -config.getIntervalMins());
-            Date endTime = previousOClock;
-            List<BaseStatAccessDTO> list = doGetBaseData(endTime, startTime, config);
+            List<BaseStatAccessDTO> list = doGetBaseData(previousOClock, startTime, config);
             previousDTOList.addAll(list);
         }
 
@@ -176,7 +174,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         }
         //<groupCode,List<OperatorStatAccessDTO>>
         Map<String, List<BaseStatAccessDTO>> previousMap = previousDTOList.stream().collect(groupingBy
-                (baseStatAccessDTO -> ((OperatorStatAccessDTO)baseStatAccessDTO).getGroupCode()));
+                (baseStatAccessDTO -> ((OperatorStatAccessDTO) baseStatAccessDTO).getGroupCode()));
         Map<String, BaseStatAccessDTO> compareMap = Maps.newHashMap();
         for (Map.Entry<String, List<BaseStatAccessDTO>> entry : previousMap.entrySet()) {
             List<BaseStatAccessDTO> entryList = entry.getValue();
@@ -186,8 +184,8 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             //如果列表数量大于1,则去掉相同时段最低的数据,再取平均值,排除数据异常情况.
             if (entryList.size() > 1) {
                 entryList = entryList.stream()
-                        .sorted((o1, o2) -> ((OperatorStatAccessDTO)o2).getConfirmMobileCount().compareTo
-                                (((OperatorStatAccessDTO)o1).getConfirmMobileCount()))
+                        .sorted((o1, o2) -> ((OperatorStatAccessDTO) o2).getConfirmMobileCount().compareTo
+                                (((OperatorStatAccessDTO) o1).getConfirmMobileCount()))
                         .collect(Collectors.toList());
                 entryList.remove(entryList.size() - 1);
             }
@@ -202,7 +200,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             Integer previousEntryCount = 0, previousConfirmMobileCount = 0, previousStartLoginCount = 0, previousLoginSuccessCount = 0,
                     previousCrawlSuccessCount = 0, previousProcessSuccessCount = 0, previousCallbackSuccessCount = 0;
             for (BaseStatAccessDTO baseDTO : entryList) {
-                OperatorStatAccessDTO dto = (OperatorStatAccessDTO)baseDTO;
+                OperatorStatAccessDTO dto = (OperatorStatAccessDTO) baseDTO;
                 previousConfirmMobileConversionRateCount = previousConfirmMobileConversionRateCount.add(dto.getConfirmMobileConversionRate());
                 previousLoginConversionRateCount = previousLoginConversionRateCount.add(dto.getLoginConversionRate());
                 previousLoginSuccessRateCount = previousLoginSuccessRateCount.add(dto.getLoginSuccessRate());
@@ -257,8 +255,11 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
         List<BaseAlarmMsgDTO> msgList = Lists.newArrayList();
         Integer previousDays = config.getPreviousDays();
+
+        OperatorAlarmTimeConfigDTO operatorAlarmTimeConfigDTO = config.getInTimeTimeConfig();
+
         for (BaseStatAccessDTO baseDTO : dtoList) {
-            OperatorStatAccessDTO dto = (OperatorStatAccessDTO)baseDTO;
+            OperatorStatAccessDTO dto = (OperatorStatAccessDTO) baseDTO;
 
             if (compareMap.get(dto.getGroupCode()) == null) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},groupCode={}的运营商前{}天未查询到统计数据",
@@ -266,37 +267,35 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 continue;
             }
 
-            OperatorStatAccessDTO compareDTO = (OperatorStatAccessDTO)compareMap.get(dto.getGroupCode());
-            BigDecimal loginConversionCompareVal = compareDTO.getPreviousLoginConversionRate().multiply(new BigDecimal(config.getLoginConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-            BigDecimal loginSuccessCompareVal = compareDTO.getPreviousLoginSuccessRate().multiply(new BigDecimal(config.getLoginSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-            BigDecimal crawlCompareVal = compareDTO.getPreviousCrawlSuccessRate().multiply(new BigDecimal(config.getCrawlSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-            BigDecimal processCompareVal = compareDTO.getPreviousProcessSuccessRate().multiply(new BigDecimal(config.getProcessSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-            BigDecimal callbackCompareVal = compareDTO.getPreviousCallbackSuccessRate().multiply(new BigDecimal(config.getCallbackSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+            OperatorStatAccessDTO compareDTO = (OperatorStatAccessDTO) compareMap.get(dto.getGroupCode());
+            BigDecimal loginConversionCompareVal = compareDTO.getPreviousLoginConversionRate().multiply(new BigDecimal(operatorAlarmTimeConfigDTO.getLoginConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal loginSuccessCompareVal = compareDTO.getPreviousLoginSuccessRate().multiply(new BigDecimal(operatorAlarmTimeConfigDTO.getLoginSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal crawlCompareVal = compareDTO.getPreviousCrawlSuccessRate().multiply(new BigDecimal(operatorAlarmTimeConfigDTO.getCrawlSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal processCompareVal = compareDTO.getPreviousProcessSuccessRate().multiply(new BigDecimal(operatorAlarmTimeConfigDTO.getProcessSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal callbackCompareVal = compareDTO.getPreviousCallbackSuccessRate().multiply(new BigDecimal(operatorAlarmTimeConfigDTO.getCallbackSuccessRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
 
             if (config.getAlarmType() == 1) {
-                BigDecimal confirmMobileCompareVal = compareDTO.getPreviousConfirmMobileConversionRate().multiply(new BigDecimal(config.getConfirmMobileConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-                BigDecimal wholeConversionCompareVal = compareDTO.getPreviousWholeConversionRate().multiply(new BigDecimal(config.getWholeConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+                BigDecimal confirmMobileCompareVal = compareDTO.getPreviousConfirmMobileConversionRate().multiply(new BigDecimal(operatorAlarmTimeConfigDTO.getConfirmMobileConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+                BigDecimal wholeConversionCompareVal = compareDTO.getPreviousWholeConversionRate().multiply(new BigDecimal(operatorAlarmTimeConfigDTO.getWholeConversionRate())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
 
                 //确认手机转化率小于前7天平均值
                 if (dto.getConfirmMobileConversionRate().compareTo(confirmMobileCompareVal) < 0) {
                     OperatorAccessAlarmMsgDTO msg = new OperatorAccessAlarmMsgDTO();
                     msg.setGroupCode(dto.getGroupCode());
                     msg.setGroupName(dto.getGroupName());
-                    msg.setAlarmDesc("确认手机转化率低于前" + previousDays + "天平均值的" + config.getConfirmMobileConversionRate() + "%");
+                    msg.setAlarmDesc("确认手机转化率低于前" + previousDays + "天平均值的" + operatorAlarmTimeConfigDTO.getConfirmMobileConversionRate() + "%");
                     msg.setAlarmSimpleDesc("确认手机");
                     msg.setAlarmType("确认手机转化率");
                     msg.setValue(dto.getConfirmMobileConversionRate());
                     msg.setThreshold(confirmMobileCompareVal);
-                    String valueDesc = new StringBuilder()
-                            .append(dto.getConfirmMobileConversionRate()).append("%").append(" ").append("(")
-                            .append(dto.getConfirmMobileCount()).append("/")
-                            .append(dto.getEntryCount()).append(")").toString();
+                    String valueDesc = String.valueOf(dto.getConfirmMobileConversionRate()) + "%" + " " + "(" +
+                            dto.getConfirmMobileCount() + "/" +
+                            dto.getEntryCount() + ")";
                     msg.setValueDesc(valueDesc);
-                    String thresholdDesc = new StringBuilder()
-                            .append(confirmMobileCompareVal).append("%").append(" ").append("(")
-                            .append(compareDTO.getPreviousConfirmMobileAvgCount()).append("/")
-                            .append(compareDTO.getPreviousEntryAvgCount()).append("*")
-                            .append(new BigDecimal(config.getConfirmMobileConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                    String thresholdDesc = String.valueOf(confirmMobileCompareVal) + "%" + " " + "(" +
+                            compareDTO.getPreviousConfirmMobileAvgCount() + "/" +
+                            compareDTO.getPreviousEntryAvgCount() + "*" +
+                            new BigDecimal(operatorAlarmTimeConfigDTO.getConfirmMobileConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
                     msg.setThresholdDesc(thresholdDesc);
                     calcOffsetAndLevel(confirmMobileCompareVal, msg, dto.getConfirmMobileConversionRate());
                     msgList.add(msg);
@@ -307,21 +306,19 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                     OperatorAccessAlarmMsgDTO msg = new OperatorAccessAlarmMsgDTO();
                     msg.setGroupCode(dto.getGroupCode());
                     msg.setGroupName(dto.getGroupName());
-                    msg.setAlarmDesc("总转化率低于前" + previousDays + "天平均值的" + config.getWholeConversionRate() + "%");
+                    msg.setAlarmDesc("总转化率低于前" + previousDays + "天平均值的" + operatorAlarmTimeConfigDTO.getWholeConversionRate() + "%");
                     msg.setAlarmType("总转化率");
                     msg.setAlarmSimpleDesc("总转化率");
                     msg.setValue(dto.getWholeConversionRate());
                     msg.setThreshold(wholeConversionCompareVal);
-                    String valueDesc = new StringBuilder()
-                            .append(dto.getWholeConversionRate()).append("%").append(" ").append("(")
-                            .append(dto.getCallbackSuccessCount()).append("/")
-                            .append(dto.getEntryCount()).append(")").toString();
+                    String valueDesc = String.valueOf(dto.getWholeConversionRate()) + "%" + " " + "(" +
+                            dto.getCallbackSuccessCount() + "/" +
+                            dto.getEntryCount() + ")";
                     msg.setValueDesc(valueDesc);
-                    String thresholdDesc = new StringBuilder()
-                            .append(wholeConversionCompareVal).append("%").append(" ").append("(")
-                            .append(compareDTO.getPreviousCallbackSuccessAvgCount()).append("/")
-                            .append(compareDTO.getPreviousEntryAvgCount()).append("*")
-                            .append(new BigDecimal(config.getWholeConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                    String thresholdDesc = String.valueOf(wholeConversionCompareVal) + "%" + " " + "(" +
+                            compareDTO.getPreviousCallbackSuccessAvgCount() + "/" +
+                            compareDTO.getPreviousEntryAvgCount() + "*" +
+                            new BigDecimal(operatorAlarmTimeConfigDTO.getWholeConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
                     msg.setThresholdDesc(thresholdDesc);
                     calcOffsetAndLevel(wholeConversionCompareVal, msg, dto.getWholeConversionRate());
                     msgList.add(msg);
@@ -334,21 +331,19 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 OperatorAccessAlarmMsgDTO msg = new OperatorAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
-                msg.setAlarmDesc("登陆转化率低于前" + previousDays + "天平均值的" + config.getLoginConversionRate() + "%");
+                msg.setAlarmDesc("登陆转化率低于前" + previousDays + "天平均值的" + operatorAlarmTimeConfigDTO.getLoginConversionRate() + "%");
                 msg.setAlarmType("登陆转化率");
                 msg.setAlarmSimpleDesc("开始登陆");
                 msg.setValue(dto.getLoginConversionRate());
                 msg.setThreshold(loginConversionCompareVal);
-                String valueDesc = new StringBuilder()
-                        .append(dto.getLoginConversionRate()).append("%").append(" ").append("(")
-                        .append(dto.getStartLoginCount()).append("/")
-                        .append(dto.getConfirmMobileCount()).append(")").toString();
+                String valueDesc = String.valueOf(dto.getLoginConversionRate()) + "%" + " " + "(" +
+                        dto.getStartLoginCount() + "/" +
+                        dto.getConfirmMobileCount() + ")";
                 msg.setValueDesc(valueDesc);
-                String thresholdDesc = new StringBuilder()
-                        .append(loginConversionCompareVal).append("%").append(" ").append("(")
-                        .append(compareDTO.getPreviousStartLoginAvgCount()).append("/")
-                        .append(compareDTO.getPreviousConfirmMobileAvgCount()).append("*")
-                        .append(new BigDecimal(config.getLoginConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                String thresholdDesc = String.valueOf(loginConversionCompareVal) + "%" + " " + "(" +
+                        compareDTO.getPreviousStartLoginAvgCount() + "/" +
+                        compareDTO.getPreviousConfirmMobileAvgCount() + "*" +
+                        new BigDecimal(operatorAlarmTimeConfigDTO.getLoginConversionRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
                 msg.setThresholdDesc(thresholdDesc);
                 calcOffsetAndLevel(loginConversionCompareVal, msg, dto.getLoginConversionRate());
                 msgList.add(msg);
@@ -358,21 +353,19 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 OperatorAccessAlarmMsgDTO msg = new OperatorAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
-                msg.setAlarmDesc("登陆成功率低于前" + previousDays + "天平均值的" + config.getLoginSuccessRate() + "%");
+                msg.setAlarmDesc("登陆成功率低于前" + previousDays + "天平均值的" + operatorAlarmTimeConfigDTO.getLoginSuccessRate() + "%");
                 msg.setAlarmType("登陆成功率");
                 msg.setAlarmSimpleDesc("登陆");
                 msg.setValue(dto.getLoginSuccessRate());
                 msg.setThreshold(loginSuccessCompareVal);
-                String valueDesc = new StringBuilder()
-                        .append(dto.getLoginSuccessRate()).append("%").append(" ").append("(")
-                        .append(dto.getLoginSuccessCount()).append("/")
-                        .append(dto.getStartLoginCount()).append(")").toString();
+                String valueDesc = String.valueOf(dto.getLoginSuccessRate()) + "%" + " " + "(" +
+                        dto.getLoginSuccessCount() + "/" +
+                        dto.getStartLoginCount() + ")";
                 msg.setValueDesc(valueDesc);
-                String thresholdDesc = new StringBuilder()
-                        .append(loginSuccessCompareVal).append("%").append(" ").append("(")
-                        .append(compareDTO.getPreviousLoginSuccessAvgCount()).append("/")
-                        .append(compareDTO.getPreviousStartLoginAvgCount()).append("*")
-                        .append(new BigDecimal(config.getLoginSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                String thresholdDesc = String.valueOf(loginSuccessCompareVal) + "%" + " " + "(" +
+                        compareDTO.getPreviousLoginSuccessAvgCount() + "/" +
+                        compareDTO.getPreviousStartLoginAvgCount() + "*" +
+                        new BigDecimal(operatorAlarmTimeConfigDTO.getLoginSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
                 msg.setThresholdDesc(thresholdDesc);
                 calcOffsetAndLevel(loginSuccessCompareVal, msg, dto.getLoginSuccessRate());
                 msgList.add(msg);
@@ -382,21 +375,19 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 OperatorAccessAlarmMsgDTO msg = new OperatorAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
-                msg.setAlarmDesc("抓取成功率低于前" + previousDays + "天平均值的" + config.getCrawlSuccessRate() + "%");
+                msg.setAlarmDesc("抓取成功率低于前" + previousDays + "天平均值的" + operatorAlarmTimeConfigDTO.getCrawlSuccessRate() + "%");
                 msg.setAlarmType("抓取成功率");
                 msg.setAlarmSimpleDesc("抓取");
                 msg.setValue(dto.getCrawlSuccessRate());
                 msg.setThreshold(crawlCompareVal);
-                String valueDesc = new StringBuilder()
-                        .append(dto.getCrawlSuccessRate()).append("%").append(" ").append("(")
-                        .append(dto.getCrawlSuccessCount()).append("/")
-                        .append(dto.getLoginSuccessCount()).append(")").toString();
+                String valueDesc = String.valueOf(dto.getCrawlSuccessRate()) + "%" + " " + "(" +
+                        dto.getCrawlSuccessCount() + "/" +
+                        dto.getLoginSuccessCount() + ")";
                 msg.setValueDesc(valueDesc);
-                String thresholdDesc = new StringBuilder()
-                        .append(crawlCompareVal).append("%").append(" ").append("(")
-                        .append(compareDTO.getPreviousCrawlSuccessAvgCount()).append("/")
-                        .append(compareDTO.getPreviousLoginSuccessAvgCount()).append("*")
-                        .append(new BigDecimal(config.getCrawlSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                String thresholdDesc = String.valueOf(crawlCompareVal) + "%" + " " + "(" +
+                        compareDTO.getPreviousCrawlSuccessAvgCount() + "/" +
+                        compareDTO.getPreviousLoginSuccessAvgCount() + "*" +
+                        new BigDecimal(operatorAlarmTimeConfigDTO.getCrawlSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
                 msg.setThresholdDesc(thresholdDesc);
 
                 calcOffsetAndLevel(crawlCompareVal, msg, dto.getCrawlSuccessRate());
@@ -407,21 +398,19 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 OperatorAccessAlarmMsgDTO msg = new OperatorAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
-                msg.setAlarmDesc("洗数成功率低于前" + previousDays + "天平均值的" + config.getProcessSuccessRate() + "%");
+                msg.setAlarmDesc("洗数成功率低于前" + previousDays + "天平均值的" + operatorAlarmTimeConfigDTO.getProcessSuccessRate() + "%");
                 msg.setAlarmType("洗数成功率");
                 msg.setAlarmSimpleDesc("洗数");
                 msg.setValue(dto.getProcessSuccessRate());
                 msg.setThreshold(processCompareVal);
-                String valueDesc = new StringBuilder()
-                        .append(dto.getProcessSuccessRate()).append("%").append(" ").append("(")
-                        .append(dto.getProcessSuccessCount()).append("/")
-                        .append(dto.getCrawlSuccessCount()).append(")").toString();
+                String valueDesc = String.valueOf(dto.getProcessSuccessRate()) + "%" + " " + "(" +
+                        dto.getProcessSuccessCount() + "/" +
+                        dto.getCrawlSuccessCount() + ")";
                 msg.setValueDesc(valueDesc);
-                String thresholdDesc = new StringBuilder()
-                        .append(processCompareVal).append("%").append(" ").append("(")
-                        .append(compareDTO.getPreviousProcessSuccessAvgCount()).append("/")
-                        .append(compareDTO.getPreviousCrawlSuccessAvgCount()).append("*")
-                        .append(new BigDecimal(config.getProcessSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                String thresholdDesc = String.valueOf(processCompareVal) + "%" + " " + "(" +
+                        compareDTO.getPreviousProcessSuccessAvgCount() + "/" +
+                        compareDTO.getPreviousCrawlSuccessAvgCount() + "*" +
+                        new BigDecimal(operatorAlarmTimeConfigDTO.getProcessSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
                 msg.setThresholdDesc(thresholdDesc);
 
                 calcOffsetAndLevel(processCompareVal, msg, dto.getProcessSuccessRate());
@@ -432,21 +421,19 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 OperatorAccessAlarmMsgDTO msg = new OperatorAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
-                msg.setAlarmDesc("回调成功率低于前" + previousDays + "天平均值的" + config.getCallbackSuccessRate() + "%");
+                msg.setAlarmDesc("回调成功率低于前" + previousDays + "天平均值的" + operatorAlarmTimeConfigDTO.getCallbackSuccessRate() + "%");
                 msg.setAlarmType("回调成功率");
                 msg.setAlarmSimpleDesc("回调");
                 msg.setValue(dto.getCallbackSuccessRate());
                 msg.setThreshold(callbackCompareVal);
-                String valueDesc = new StringBuilder()
-                        .append(dto.getCallbackSuccessRate()).append("%").append(" ").append("(")
-                        .append(dto.getCallbackSuccessCount()).append("/")
-                        .append(dto.getProcessSuccessCount()).append(")").toString();
+                String valueDesc = String.valueOf(dto.getCallbackSuccessRate()) + "%" + " " + "(" +
+                        dto.getCallbackSuccessCount() + "/" +
+                        dto.getProcessSuccessCount() + ")";
                 msg.setValueDesc(valueDesc);
-                String thresholdDesc = new StringBuilder()
-                        .append(callbackCompareVal).append("%").append(" ").append("(")
-                        .append(compareDTO.getPreviousCallbackSuccessAvgCount()).append("/")
-                        .append(compareDTO.getPreviousProcessSuccessAvgCount()).append("*")
-                        .append(new BigDecimal(config.getCallbackSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP)).append(")").toString();
+                String thresholdDesc = String.valueOf(callbackCompareVal) + "%" + " " + "(" +
+                        compareDTO.getPreviousCallbackSuccessAvgCount() + "/" +
+                        compareDTO.getPreviousProcessSuccessAvgCount() + "*" +
+                        new BigDecimal(operatorAlarmTimeConfigDTO.getCallbackSuccessRate()).divide(new BigDecimal(100), 1, BigDecimal.ROUND_HALF_UP) + ")";
                 msg.setThresholdDesc(thresholdDesc);
 
                 calcOffsetAndLevel(callbackCompareVal, msg, dto.getCallbackSuccessRate());
@@ -455,16 +442,11 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
         }
         msgList = msgList.stream().sorted(Comparator.comparing(baseAlarmMsgDTO
-                -> ((OperatorAccessAlarmMsgDTO)baseAlarmMsgDTO).getGroupName())).collect(Collectors.toList());
+                -> ((OperatorAccessAlarmMsgDTO) baseAlarmMsgDTO).getGroupName())).collect(Collectors.toList());
 
 
         return msgList;
     }
-
-
-
-
-
 
 
     private void calcOffsetAndLevel(BigDecimal compareVal, BaseAlarmMsgDTO msg, BigDecimal actualVal) {
@@ -477,6 +459,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             determineLevel(msg, value);
         }
     }
+
     /**
      * 确定预警等级
      *
@@ -485,7 +468,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
      */
     private void determineLevel(BaseAlarmMsgDTO msg, BigDecimal value) {
         //所有运营商预警级别定义
-        OperatorAccessAlarmMsgDTO msgDTO = (OperatorAccessAlarmMsgDTO)msg;
+        OperatorAccessAlarmMsgDTO msgDTO = (OperatorAccessAlarmMsgDTO) msg;
 
         if (MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR.equals(msgDTO.getGroupCode())) {
             if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0) {
@@ -497,9 +480,9 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             }
         } else { //分运营商预警级别定义
             if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0
-                    && "中国联通".equals(msgDTO.getGroupName())) {
+                    && CUTC.equals(msgDTO.getGroupName())) {
                 msg.setAlarmLevel(EAlarmLevel.error);
-            } else if ("中国联通".equals(msgDTO.getGroupName())) {
+            } else if (CUTC.equals(msgDTO.getGroupName())) {
                 msg.setAlarmLevel(EAlarmLevel.warning);
             } else {
                 msg.setAlarmLevel(EAlarmLevel.info);
@@ -514,15 +497,14 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     protected void sendAlarmMsg(EAlarmLevel alarmLevel, List<BaseAlarmMsgDTO> msgList, BaseAlarmConfigDTO
             configDTO, Date endTime, ETaskStatDataType statDataType) {
 
-        OperatorMonitorAlarmConfigDTO config = (OperatorMonitorAlarmConfigDTO)configDTO;
+        OperatorMonitorAlarmConfigDTO config = (OperatorMonitorAlarmConfigDTO) configDTO;
         Date startTime = DateUtils.addMinutes(endTime, -configDTO.getIntervalMins());
 
         String baseTitle;
-        String mailSwitch = config.getMailAlarmSwitch();
-        String weChatSwitch = config.getWeChatAlarmSwitch();
 
-        String smsSwitch = operatorMonitorConfig.getSmsSwitch();
-        String ivrSwitch = operatorMonitorConfig.getIvrSwitch();
+        OperatorAlarmTimeConfigDTO timeConfigDTO = config.getInTimeTimeConfig();
+
+        Map<String, String> switches = timeConfigDTO.getSwitches();
 
         ETaskStatDataType statType = ETaskStatDataType.getByValue(config.getDataType());
 
@@ -532,97 +514,46 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             baseTitle = "运营商监控(按人数统计)";
         }
         String saasEnvDesc = config.getSaasEnvDesc();
-
-
-//        if (isError) {
-//            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.error, saasEnvDesc);
-//            sendIvr(msgList, jobTime, ivrSwitch, saasEnvDesc);
-//            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.error, saasEnvDesc);
-//        } else if (isWarning) {
-//            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.warning, saasEnvDesc);
-//            sendSms(msgList, jobTime, startTime, endTime, statType, smsSwitch, EAlarmLevel.warning, saasEnvDesc);
-//            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.warning, saasEnvDesc);
-//        } else {
-//            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.info, saasEnvDesc);
-//            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.info, saasEnvDesc);
-//        }
-    }
-
-    @Override
-    protected String generateMailDataBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime, Map<String,
-            Object> placeHolder, EAlarmLevel alarmLevel, String alarmBiz) {
-        StringBuilder pageHtml = new StringBuilder();
-
-        StringBuilder tableTrs = new StringBuilder();
-        //title里面的具体内容
-        StringBuilder detail = new StringBuilder();
-
-        detail.append("【");
-        for (BaseAlarmMsgDTO msg : msgList) {
-            tableTrs.append("<tr>").append("<td>").append(((EmailAlarmMsgDTO) msg).getEmail()).append("</td>")
-                    .append("<td>").append(msg.getAlarmDesc()).append(" ").append("</td>")
-                    .append("<td>").append(msg.getValueDesc()).append(" ").append("</td>")
-                    .append("<td>").append(msg.getThresholdDesc()).append(" ").append("</td>")
-                    .append("<td>").append(msg.getOffset()).append("%").append(" ").append("</td>").append("</tr>");
-            detail.append(((EmailAlarmMsgDTO) msg).getEmail()).append("-").append(msg.getAlarmType()).append("(").append(msg.getOffset
-                    ()).append("%").append(")").append("，");
+        MonitorAlarmLevelConfigDTO levelConfig = config.getLevelConfig().stream().filter
+                (monitorAlarmLevelConfigDTO ->
+                        alarmLevel.name().equals(monitorAlarmLevelConfigDTO.getLevel())).findFirst().orElse(null);
+        if (levelConfig == null) {
+            logger.info("运营商看预警没有配置正确的预警等级参数：{}", JSON.toJSONString(config.getLevelConfig()));
+            return;
         }
-        String detailsStr = detail.substring(0, detail.length() - 1);
-        detailsStr += "】";
 
-        String module = "saas-" + diamondConfig.getMonitorEnvironment();
-        pageHtml.append("<br>").append("【").append(alarmLevel.name()).append("】").append
-                ("您好，").append
-                (module)
-                .append(alarmBiz)
-                .append("预警,在")
-                .append(MonitorDateUtils.format(startTime))
-                .append("--")
-                .append(MonitorDateUtils.format(endTime))
-                .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("</br>");
-        pageHtml.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\" >");
-        pageHtml.append("<tr bgcolor=\"#C9C9C9\">")
-                .append("<th>").append("邮箱").append("</th>")
-                .append("<th>").append("预警描述").append("</th>")
-                .append("<th>").append("当前指标值").append("</th>")
-                .append("<th>").append("指标阀值").append("</th>")
-                .append("<th>").append("偏离阀值程度").append("</th>")
-                .append("</tr>");
+        List<String> channels = levelConfig.getChannels();
 
-        pageHtml.append(tableTrs);
-        pageHtml.append("</table>");
+        for (String channel : channels) {
 
-
-        placeHolder.put("module", module);
-        placeHolder.put("detail", detailsStr);
-
-        return pageHtml.toString();
-    }
-
-    @Override
-    protected String generateWeChatBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime, EAlarmLevel
-            alarmLevel, String alarmBiz) {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append("【").append(alarmLevel.name()).append("】")
-                .append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append(alarmBiz)
-                .append("预警,在")
-                .append(MonitorDateUtils.format(startTime))
-                .append("--")
-                .append(MonitorDateUtils.format(endTime))
-                .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("\n");
-        for (BaseAlarmMsgDTO msg : msgList) {
-            buffer.append("【").append(((EmailAlarmMsgDTO)msg).getEmail()).append("】").append("【").append(msg
-                    .getAlarmSimpleDesc())
-                    .append("】")
-                    .append("当前指标值:").append("【").append(msg.getValueDesc()).append("】")
-                    .append("指标阀值:").append("【").append(msg.getThresholdDesc()).append("】")
-                    .append("偏离阀值程度:").append("【").append(msg.getOffset()).append("】")
-                    .append("\n");
+            EAlarmChannel alarmChannel = EAlarmChannel.getByValue(channel);
+            if (alarmChannel == null) {
+                logger.info("配置错误 无法找到对应的预警渠道");
+                return;
+            }
+            if (!SWITCH_ON.equals(switches.get(alarmChannel.getValue()))) {
+                logger.info("运营商预警配置{}已关闭", alarmChannel.getValue());
+                continue;
+            }
+            switch (alarmChannel) {
+                case IVR:
+                    sendIvr(msgList, saasEnvDesc);
+                    break;
+                case SMS:
+                    sendSms(msgList, startTime, endTime, statType, alarmLevel, saasEnvDesc);
+                    break;
+                case WECHAT:
+                    sendWeChat(msgList, startTime, endTime, baseTitle, alarmLevel, saasEnvDesc);
+                    break;
+                case EMAIL:
+                    sendMail(msgList, startTime, endTime, statType, baseTitle, alarmLevel, saasEnvDesc);
+                    break;
+                default:
+                    logger.info("不支持的邮箱预警渠道" + alarmChannel.getValue());
+                    break;
+            }
         }
-        return buffer.toString();
     }
-
 
     /**
      * 判断当前环节是否出发预警
@@ -630,7 +561,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
      * @param num         上一个环节的数量,分0-5,5-无穷的情况
      * @param rate        当前环节指标值
      * @param compareRate 当前环节阀值
-     * @return
+     * @return boolean ifAlarm?
      */
     private Boolean isAlarm(Integer num, BigDecimal rate, BigDecimal compareRate) {
         Integer fewNum = diamondConfig.getOperatorAlarmFewNum();
@@ -646,16 +577,11 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             }
         }
         //统计数量正常,且大于历史平均阈值,不预警
-        if (num >= fewNum) {
-            if (rate.compareTo(compareRate) >= 0) {
-                return false;
-            }
-        }
-        return true;
+        return num < fewNum || rate.compareTo(compareRate) < 0;
     }
 
     @Override
-    public void ifAlarmed(Date now,Date baseTime, String alarmTimeKey,BaseAlarmConfigDTO baseAlarmConfigDTO) {
+    public void ifAlarmed(Date now, Date baseTime, String alarmTimeKey, BaseAlarmConfigDTO baseAlarmConfigDTO) {
         if (stringRedisTemplate.hasKey(alarmTimeKey)) {
             logger.info("运营商监控,预警定时任务执行,已预警,不再预警,jobTime={},baseTime={},config={}",
                     MonitorDateUtils.format(now), MonitorDateUtils.format(baseTime), JSON.toJSONString
@@ -668,19 +594,19 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
 
     @Override
-    public EAlarmLevel determineLevel(List<BaseAlarmMsgDTO> msgList){
+    public EAlarmLevel determineLevel(List<BaseAlarmMsgDTO> msgList) {
         Map<String, List<BaseAlarmMsgDTO>> operatorNameGroup = msgList.stream().collect(Collectors
-                .groupingBy(operatorAccessAlarmMsgDTO -> ((OperatorAccessAlarmMsgDTO)operatorAccessAlarmMsgDTO).getGroupName()));
+                .groupingBy(operatorAccessAlarmMsgDTO -> ((OperatorAccessAlarmMsgDTO) operatorAccessAlarmMsgDTO).getGroupName()));
 
-        boolean isError = msgList.stream().anyMatch(BaseAlarmMsgDTO -> BaseAlarmMsgDTO
+        boolean isError = msgList.stream().anyMatch(baseAlarmMsgDTO -> baseAlarmMsgDTO
                 .getAlarmLevel().equals(EAlarmLevel.error));
-        if(isError){
+        if (isError) {
             return EAlarmLevel.error;
         }
-        boolean isWarning = msgList.stream().anyMatch(BaseAlarmMsgDTO -> BaseAlarmMsgDTO
+        boolean isWarning = msgList.stream().anyMatch(baseAlarmMsgDTO -> baseAlarmMsgDTO
                 .getAlarmLevel().equals(EAlarmLevel.warning)) || operatorNameGroup.keySet().size() >= 3;
 
-        if(isWarning){
+        if (isWarning) {
             return EAlarmLevel.warning;
         }
 
@@ -688,5 +614,140 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
     }
 
+    private void sendSms(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
+                         ETaskStatDataType statType, EAlarmLevel alarmLevel, String saasEnvDesc) {
+
+        String template = "${level} ${type} 时间段:${startTime}至${endTime},运营商:${groupName} " +
+                "预警类型:${alarmDesc},偏离阀值程度${offset}%";
+        Map<String, Object> map = Maps.newHashMap();
+
+        List<BaseAlarmMsgDTO> warningMsg = msgList.stream().filter(baseAlarmMsgDTO ->
+                EAlarmLevel.warning.equals(baseAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+
+        String type = diamondConfig.getSaasMonitorEnvironment() + "-" + saasEnvDesc + "-" + (ETaskStatDataType.TASK.equals(statType) ? "运营商-分时任务" : "运营商-分时人数");
+
+        String format = "yyyy-MM-dd HH:mm:SS";
+        String startTimeStr = new SimpleDateFormat(format).format(startTime);
+        String endTimeStr = new SimpleDateFormat(format).format(endTime);
+        BaseAlarmMsgDTO dto = msgList.get(0);
+        if (!warningMsg.isEmpty()) {
+            dto = warningMsg.get(0);
+        }
+
+        map.put("level", alarmLevel.name());
+        map.put("type", type);
+        map.put("startTime", startTimeStr);
+        map.put("endTime", endTimeStr);
+        map.put("groupName", ((OperatorAccessAlarmMsgDTO) dto).getGroupName());
+        map.put("alarmDesc", dto.getAlarmDesc());
+        map.put("offset", dto.getOffset());
+
+        smsNotifyService.send(StrSubstitutor.replace(template, map));
+    }
+
+    private void sendIvr(List<BaseAlarmMsgDTO> msgList, String saasEnvDesc) {
+
+        List<BaseAlarmMsgDTO> errorMsgs = msgList.stream().filter(baseAlarmMsgDTO ->
+                EAlarmLevel.error.equals(baseAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
+
+        logger.info("特定运营商预警 发送ivr请求 {}", errorMsgs.get(0).getAlarmDesc());
+
+        ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm, errorMsgs.get(0).getAlarmDesc(), saasEnvDesc);
+
+    }
+
+    private void sendMail(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
+                          ETaskStatDataType statType, String baseTile, EAlarmLevel alarmLevel, String
+                                  saasEnvDesc) {
+        String mailBaseTitle = "【${level}】【${module}】【${saasEnv}】【${type}】发生 ${detail} 预警";
+
+        Map<String, Object> map = new HashMap<>(4);
+        map.put("type", ETaskStatDataType.TASK.equals(statType) ? "运营商-任务" : "运营商-人数");
+        map.put("level", alarmLevel.name());
+        map.put("module", diamondConfig.getSaasMonitorEnvironment());
+        map.put("saasEnv", saasEnvDesc);
+
+        String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile, map, alarmLevel);
+
+        alarmMessageProducer.sendMail4OperatorMonitor(StrSubstitutor.replace(mailBaseTitle, map), mailDataBody, new Date());
+    }
+
+    private void sendWeChat(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
+                            String baseTile, EAlarmLevel alarmLevel, String saasEnvDesc) {
+
+        String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile, alarmLevel, saasEnvDesc);
+        alarmMessageProducer.sendWebChart4OperatorMonitor(weChatBody, new Date());
+    }
+
+
+    private String generateMailDataBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
+                                        String baseTitle, Map<String, Object> map, EAlarmLevel eAlarmLevel) {
+
+        StringBuilder pageHtml = new StringBuilder();
+
+        StringBuilder tableTrs = new StringBuilder();
+        //title里面的具体内容
+        StringBuilder detail = new StringBuilder();
+
+        detail.append("【");
+        for (BaseAlarmMsgDTO msg : msgList) {
+            OperatorAccessAlarmMsgDTO msgDTO = (OperatorAccessAlarmMsgDTO) msg;
+            tableTrs.append("<tr>").append("<td>").append(msgDTO.getGroupName()).append("</td>")
+                    .append("<td>").append(msg.getAlarmDesc()).append(" ").append("</td>")
+                    .append("<td>").append(msg.getValueDesc()).append(" ").append("</td>")
+                    .append("<td>").append(msg.getThresholdDesc()).append(" ").append("</td>")
+                    .append("<td>").append(msg.getOffset()).append("%").append(" ").append("</td>").append("</tr>");
+            detail.append(msgDTO.getGroupName()).append("-").append(msg.getAlarmType()).append("(").append(msg.getOffset
+                    ()).append("%").append(")").append("，");
+        }
+        String detailsStr = detail.substring(0, detail.length() - 1);
+        detailsStr += "】";
+
+        pageHtml.append("<br>").append("【").append(eAlarmLevel.name()).append("】").append
+                ("您好，").append(map.get("module")).append("【").append(map.get("saasEnv")).append("】")
+                .append(baseTitle)
+                .append("预警,在")
+                .append(MonitorDateUtils.format(startTime))
+                .append("--")
+                .append(MonitorDateUtils.format(endTime))
+                .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("</br>");
+        pageHtml.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\" >");
+        pageHtml.append("<tr bgcolor=\"#C9C9C9\">")
+                .append("<th>").append("运营商").append("</th>")
+                .append("<th>").append("预警描述").append("</th>")
+                .append("<th>").append("当前指标值").append("</th>")
+                .append("<th>").append("指标阀值").append("</th>")
+                .append("<th>").append("偏离阀值程度").append("</th>")
+                .append("</tr>");
+
+        pageHtml.append(tableTrs);
+        pageHtml.append("</table>");
+
+
+        map.put("detail", detailsStr);
+        return pageHtml.toString();
+    }
+
+    private String generateWeChatBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
+                                      String baseTitle, EAlarmLevel alarmLevel, String saasEnvDesc) {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("【").append(alarmLevel.name()).append("】")
+                .append("您好，").append(diamondConfig.getSaasMonitorEnvironment()).append("【").append(saasEnvDesc).append("】")
+                .append(baseTitle)
+                .append("预警,在")
+                .append(MonitorDateUtils.format(startTime))
+                .append("--")
+                .append(MonitorDateUtils.format(endTime))
+                .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("\n");
+        for (BaseAlarmMsgDTO msg : msgList) {
+            buffer.append("【").append(((OperatorAccessAlarmMsgDTO) msg).getGroupName()).append("】")
+                    .append("【").append(msg.getAlarmSimpleDesc()).append("】")
+                    .append("当前指标值:").append("【").append(msg.getValueDesc()).append("】")
+                    .append("指标阀值:").append("【").append(msg.getThresholdDesc()).append("】")
+                    .append("偏离阀值程度:").append("【").append(msg.getOffset()).append("%").append("】")
+                    .append("\n");
+        }
+        return buffer.toString();
+    }
 
 }

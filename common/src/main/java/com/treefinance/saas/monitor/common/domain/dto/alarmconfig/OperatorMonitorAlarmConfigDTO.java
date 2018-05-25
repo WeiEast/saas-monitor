@@ -57,6 +57,16 @@ public class OperatorMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
 
     private List<OperatorAlarmTimeConfigDTO> timeConfig;
 
+    public OperatorAlarmTimeConfigDTO getInTimeTimeConfig(){
+        for(OperatorAlarmTimeConfigDTO configDTO:timeConfig){
+            if(configDTO.isInTime()){
+                return configDTO;
+            }
+        }
+        return null;
+    }
+
+
 
     public static void main(String[] args) {
         List<OperatorMonitorAlarmConfigDTO> list = Lists.newArrayList();

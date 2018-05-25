@@ -591,7 +591,7 @@ public class OperatorStatAccessCriteria {
             return (Criteria) this;
         }
 
-        public Criteria andDataTypeEqualTo(Byte value) {
+        public Criteria andDataTypeEqualTo(Integer value) {
             addCriterion("dataType =", value, "dataType");
             return (Criteria) this;
         }
@@ -651,7 +651,7 @@ public class OperatorStatAccessCriteria {
             return (Criteria) this;
         }
 
-        public Criteria andSaasEnvEqualTo(Byte value) {
+        public Criteria andSaasEnvEqualTo(Integer value) {
             addCriterion("saasEnv =", value, "saasEnv");
             return (Criteria) this;
         }

@@ -1,23 +1,16 @@
 package com.treefinance.saas.monitor.biz.service;
 
-import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
 import com.treefinance.saas.monitor.dao.mapper.EmailStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +19,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 邮箱预警服务类的模板类
@@ -99,9 +89,12 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
     }
 
     /**
+     * 通过每个预警信息(BaseAlarmMsgDTO)的等级，来确定本次预警的等级
+     *
      * @param msgList 预警数据
-     * */
-    protected abstract EAlarmLevel determineLevel(List<BaseAlarmMsgDTO> msgList) ;
+     * @return 预警等级
+     */
+    protected abstract EAlarmLevel determineLevel(List<BaseAlarmMsgDTO> msgList);
 
     /**
      * 获取基础时间
@@ -182,12 +175,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             }
         }
         //统计数量正常,且大于历史平均阈值,不预警
-        if (num >= fewNum) {
-            if (rate.compareTo(compareRate) >= 0) {
-                return false;
-            }
-        }
-        return true;
+        return num < fewNum || rate.compareTo(compareRate) < 0;
     }
 
 
@@ -206,102 +194,14 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
     /**
      * 发送预警信息
      *
-     * @param alarmLevel 预警等级
-     * @param dtoList    预警信息
-     * @param configDTO  配置
-     * @param endTime    结束时间
+     * @param alarmLevel   预警等级
+     * @param dtoList      预警信息
+     * @param configDTO    配置
+     * @param endTime      结束时间
+     * @param statDataType 统计类型
      */
     protected abstract void sendAlarmMsg(EAlarmLevel alarmLevel, List<BaseAlarmMsgDTO> dtoList, BaseAlarmConfigDTO
             configDTO, Date endTime, ETaskStatDataType statDataType);
-
-    protected void sendSms(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime, EAlarmLevel alarmLevel, String alarmBiz) {
-
-        String template = "${level} ${type} 时间段:${startTime}至${endTime},${alarmBiz} " +
-                "预警类型:${alarmDesc},偏离阀值程度${offset}%";
-        Map<String, Object> placeHolder = Maps.newHashMap();
-
-        List<BaseAlarmMsgDTO> warningMsg = msgList.stream().filter(baseAlarmMsgDTO ->
-                EAlarmLevel.warning.equals(baseAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
-
-        String type = "SAAS-" + diamondConfig.getMonitorEnvironment() + "-" + alarmBiz;
-
-        String format = "yyyy-MM-dd HH:mm:SS";
-        String startTimeStr = new SimpleDateFormat(format).format(startTime);
-        String endTimeStr = new SimpleDateFormat(format).format(endTime);
-
-        BaseAlarmMsgDTO dto = warningMsg.get(0);
-
-        placeHolder.put("level", alarmLevel.name());
-        placeHolder.put("type", type);
-        placeHolder.put("startTime", startTimeStr);
-        placeHolder.put("endTime", endTimeStr);
-        placeHolder.put("alarmBiz", alarmBiz);
-        placeHolder.put("alarmDesc", dto.getAlarmDesc());
-        placeHolder.put("offset", dto.getOffset());
-
-        smsNotifyService.send(StrSubstitutor.replace(template, placeHolder));
-    }
-
-    protected void sendIvr(List<BaseAlarmMsgDTO> msgList, EAlarmLevel level, String alarmBiz) {
-
-        List<BaseAlarmMsgDTO> errorMsgs = msgList.stream().filter(baseAlarmMsgDTO ->
-                level.equals(baseAlarmMsgDTO.getAlarmLevel())).collect(Collectors.toList());
-
-        logger.info(alarmBiz + "发送ivr请求 {}", errorMsgs.get(0).getAlarmDesc());
-
-        ivrNotifyService.notifyIvr(level, EAlarmType.operator_alarm, alarmBiz + errorMsgs.get(0).getAlarmDesc());
-    }
-
-    protected void sendMail(List<BaseAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime,
-                            EAlarmLevel alarmLevel, String alarmBiz) {
-
-        String mailBaseTitle = "【${level}】【${module}】【${type}】发生 ${detail} 预警";
-
-        Map<String, Object> map = new HashMap<>(4);
-        map.put("type", alarmBiz);
-        map.put("level", alarmLevel.name());
-
-        String mailDataBody = generateMailDataBody(msgList, startTime, endTime, map, alarmLevel, alarmBiz);
-
-        alarmMessageProducer.sendMail4OperatorMonitor(StrSubstitutor.replace(mailBaseTitle, map), mailDataBody, jobTime);
-    }
-
-    /**
-     * 生成邮箱的内容方法
-     * 不同的预警业务生成逻辑不同对此进行了封装，由具体的子类去实现
-     *
-     * @param alarmLevel  预警等级
-     * @param endTime     结束时间
-     * @param startTime   开始时间
-     * @param placeHolder 参数映射类
-     * @param msgList     预警信息
-     * @param alarmBiz    预警业务信息
-     * @return 邮件html
-     */
-    protected abstract String generateMailDataBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
-                                                   Map<String, Object> placeHolder, EAlarmLevel alarmLevel, String
-                                                           alarmBiz);
-
-
-    protected void sendWeChat(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
-                              EAlarmLevel alarmLevel, String alarmBiz) {
-        String weChatBody = generateWeChatBody(msgList, startTime, endTime, alarmLevel, alarmBiz);
-        alarmMessageProducer.sendWebChart4OperatorMonitor(weChatBody, new Date());
-    }
-
-    /**
-     * 生成微信的内容方法
-     * 不同的预警业务生成逻辑不同对此进行了封装，由具体的子类去实现
-     *
-     * @param alarmLevel 预警等级
-     * @param endTime    结束时间
-     * @param startTime  开始时间
-     * @param msgList    预警信息
-     * @param alarmBiz   预警业务信息
-     * @return 微信预警内容
-     */
-    protected abstract String generateWeChatBody(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
-                                                 EAlarmLevel alarmLevel, String alarmBiz);
 
 
 }
