@@ -53,13 +53,12 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     private EmailAlarmConfig emailAlarmConfig;
 
 
-
     @Override
-    public String getKey(ETaskStatDataType type,Date jobTime, BaseAlarmConfigDTO baseAlarmConfigDTO) {
+    public String getKey(ETaskStatDataType type, Date jobTime, BaseAlarmConfigDTO baseAlarmConfigDTO) {
         EmailMonitorAlarmConfigDTO configDTO = (EmailMonitorAlarmConfigDTO) baseAlarmConfigDTO;
         String[] emails = configDTO.getEmails().toArray(new String[configDTO.getEmails().size()]);
 
-        return EmailMonitorKeyHelper.genEmailAllKey(jobTime, "virtual_total_stat_appId", type, ALL_EMAIL.equals(emails[0])?ALL_EMAIL:GROUP_EMAIL);
+        return EmailMonitorKeyHelper.genEmailAllKey(jobTime, "virtual_total_stat_appId", type, ALL_EMAIL.equals(emails[0]) ? ALL_EMAIL : GROUP_EMAIL);
     }
 
     @Override
@@ -68,7 +67,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         EmailMonitorAlarmConfigDTO configDTO = (EmailMonitorAlarmConfigDTO) alarmConfigDTO;
         Date startTime = DateUtils.addMinutes(baseTime, -configDTO.getIntervalMins());
 
-        List<BaseStatAccessDTO> result = doGetBaseData(baseTime,startTime,statDataType,configDTO);
+        List<BaseStatAccessDTO> result = doGetBaseData(baseTime, startTime, statDataType, configDTO);
 
         //是否需要预警？
         if (result.isEmpty()) {
@@ -81,8 +80,8 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         return result;
     }
 
-    private List<BaseStatAccessDTO> doGetBaseData(Date baseTime,Date startTime, ETaskStatDataType statDataType,
-                                                  EmailMonitorAlarmConfigDTO configDTO){
+    private List<BaseStatAccessDTO> doGetBaseData(Date baseTime, Date startTime, ETaskStatDataType statDataType,
+                                                  EmailMonitorAlarmConfigDTO configDTO) {
         EmailStatAccessCriteria criteria = new EmailStatAccessCriteria();
         List<String> emails = configDTO.getEmails();
         criteria.createCriteria().andDataTypeEqualTo(statDataType.getCode())
@@ -123,7 +122,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             dataDTO.setCrawlSuccessRate(StatisticCalcUtil.calcRate(crawlSuccessCount, loginSuccessCount));
             dataDTO.setProcessSuccessRate(StatisticCalcUtil.calcRate(processSuccessCount, crawlSuccessCount));
             dataDTO.setCallbackSuccessRate(StatisticCalcUtil.calcRate(callbackSuccessCount, processSuccessCount));
-            dataDTO.setWholeConversionRate(StatisticCalcUtil.calcRate(callbackSuccessCount,entryCount));
+            dataDTO.setWholeConversionRate(StatisticCalcUtil.calcRate(callbackSuccessCount, entryCount));
             result.add(dataDTO);
         }
         return result;
@@ -141,7 +140,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
         for (Date previousOClock : previousOClockList) {
             Date startTime = DateUtils.addMinutes(previousOClock, -configDTO.getIntervalMins());
-            List<BaseStatAccessDTO> list = doGetBaseData(previousOClock,startTime,statType,configDTO);
+            List<BaseStatAccessDTO> list = doGetBaseData(previousOClock, startTime, statType, configDTO);
             if (list.isEmpty()) {
                 continue;
             }
@@ -183,7 +182,6 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             BigDecimal previousCallbackSuccessRateCount = BigDecimal.ZERO;
             BigDecimal previousWholeConversionRateCount = BigDecimal.ZERO;
 
-            
 
             Integer previousEntryCount = 0, previousStartLoginCount = 0, previousLoginSuccessCount = 0,
                     previousCrawlSuccessCount = 0, previousProcessSuccessCount = 0, previousCallbackSuccessCount = 0;
@@ -625,7 +623,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 .append(MonitorDateUtils.format(endTime))
                 .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("\n");
         for (BaseAlarmMsgDTO msg : msgList) {
-            buffer.append("【").append(((EmailAlarmMsgDTO)msg).getEmail()).append("】").append("【").append(msg
+            buffer.append("【").append(((EmailAlarmMsgDTO) msg).getEmail()).append("】").append("【").append(msg
                     .getAlarmSimpleDesc())
                     .append("】")
                     .append("当前指标值:").append("【").append(msg.getValueDesc()).append("】")
@@ -638,17 +636,28 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
 
     @Override
-    public boolean ifAlarmed(Date baseTime, String alarmTimeKey) {
+    public void ifAlarmed(Date now, Date baseTime, String alarmTimeKey, BaseAlarmConfigDTO baseAlarmConfigDTO) {
         BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
         if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
-            return true;
+
+            logger.info("邮箱监控,预警定时任务执行,已预警,不再预警,jobTime={},baseTime={},config={}",
+                    MonitorDateUtils.format(now), MonitorDateUtils.format(baseTime), JSON.toJSONString
+                            (baseAlarmConfigDTO));
+            throw new BizException("该时段已经预警过");
         }
 
         setOperations.add(MonitorDateUtils.format(baseTime));
         if (setOperations.getExpire() == -1) {
             setOperations.expire(2, TimeUnit.DAYS);
         }
+    }
 
-        return false;
+    @Override
+    protected EAlarmLevel determineLevel(List<BaseAlarmMsgDTO> msgList) {
+        return msgList.stream().anyMatch(baseAlarmMsgDTO -> EAlarmLevel.error.equals(baseAlarmMsgDTO
+                .getAlarmLevel())) ? EAlarmLevel.error : msgList
+                .stream().anyMatch(baseAlarmMsgDTO -> EAlarmLevel.warning.equals(baseAlarmMsgDTO.getAlarmLevel()))
+                ? EAlarmLevel
+                .warning : EAlarmLevel.info;
     }
 }

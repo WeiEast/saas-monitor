@@ -2,7 +2,6 @@ package com.treefinance.saas.monitor.common.domain.dto;
 
 import com.alibaba.rocketmq.shade.com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 
 import java.io.Serializable;
 import java.util.List;
@@ -85,9 +84,9 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
         dto1.setTaskTimeoutSecs(600);
         dto1.setAlarmStartTime("0:00");
         dto1.setAlarmEndTime("7:00");
-        dto1.setMailAlarmSwitch(AlarmConstants.SWITCH_ON);
-        dto1.setWeChatAlarmSwitch(AlarmConstants.SWITCH_ON);
-        dto1.setSmsAlarmSwitch(AlarmConstants.SWITCH_ON);
+        dto1.setMailAlarmSwitch("on");
+        dto1.setWeChatAlarmSwitch("on");
+        dto1.setSmsAlarmSwitch("on");
 
         TaskSuccessRateAlarmConfigDTO dto2 = new TaskSuccessRateAlarmConfigDTO();
         dto2.setSaasEnv((byte) 0);
@@ -99,9 +98,9 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
         dto2.setTaskTimeoutSecs(600);
         dto2.setAlarmStartTime("7:00");
         dto2.setAlarmEndTime("24:00");
-        dto2.setMailAlarmSwitch(AlarmConstants.SWITCH_ON);
-        dto2.setWeChatAlarmSwitch(AlarmConstants.SWITCH_ON);
-        dto2.setSmsAlarmSwitch(AlarmConstants.SWITCH_ON);
+        dto2.setMailAlarmSwitch("on");
+        dto2.setWeChatAlarmSwitch("on");
+        dto2.setSmsAlarmSwitch("on");
 
         list.add(dto1);
         list.add(dto2);

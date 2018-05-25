@@ -70,16 +70,13 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         //获取时间
         Date baseTime = getBaseTime(now, configDTO);
 
-        //是否预警过?
+        //获取key
         String alarmTimeKey = getKey(type, baseTime, configDTO);
-        if (ifAlarmed(baseTime, alarmTimeKey)) {
-            logger.info("邮箱监控,预警定时任务执行jobTime={},baseTime={},statType={},alarmType={}已预警,不再预警",
-                    MonitorDateUtils.format(baseTime), JSON.toJSONString(type), ((EmailMonitorAlarmConfigDTO)configDTO)
-                            .getAlarmType());
-            return;
-        }
-        //获取基础数据
 
+        //是否预警过?
+        ifAlarmed(now, baseTime, alarmTimeKey, configDTO);
+
+        //获取基础数据
         List<BaseStatAccessDTO> emailStatAccessDTOS = getBaseData(baseTime, type, configDTO);
 
         //获取平均值数据
@@ -90,11 +87,10 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         List<BaseAlarmMsgDTO> msgList = getAlarmMsgList(now, emailStatAccessDTOS, compareMap, configDTO);
 
         //是否需要预警
-        logger.info("邮箱监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},区分邮箱统计需要预警的数据信息msgList={}",
-                MonitorDateUtils.format(now), MonitorDateUtils.format(baseTime), JSON.toJSONString(msgList));
         if (CollectionUtils.isEmpty(msgList)) {
             return;
         }
+
         //确定回调预警等级
         EAlarmLevel level = determineLevel(msgList);
 
@@ -102,13 +98,10 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         sendAlarmMsg(level, msgList, configDTO, baseTime, type);
     }
 
-    private EAlarmLevel determineLevel(List<BaseAlarmMsgDTO> msgList) {
-        return msgList.stream().anyMatch(baseAlarmMsgDTO -> EAlarmLevel.error.equals(baseAlarmMsgDTO
-                    .getAlarmLevel())) ? EAlarmLevel.error : msgList
-                    .stream().anyMatch(baseAlarmMsgDTO -> EAlarmLevel.warning.equals(baseAlarmMsgDTO.getAlarmLevel()))
-                    ? EAlarmLevel
-                    .warning : EAlarmLevel.info;
-    }
+    /**
+     * @param msgList 预警数据
+     * */
+    protected abstract EAlarmLevel determineLevel(List<BaseAlarmMsgDTO> msgList) ;
 
     /**
      * 获取基础时间
@@ -123,9 +116,13 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
 
     /**
      * redis的key值判断 是否继续
+     *
+     * @param now                预警时间
+     * @param baseTime           预警数据时间
+     * @param alarmTimeKey       预警的key
+     * @param baseAlarmConfigDTO 配置
      */
-    protected abstract boolean ifAlarmed(Date baseTime, String alarmTimeKey);
-
+    protected abstract void ifAlarmed(Date now, Date baseTime, String alarmTimeKey, BaseAlarmConfigDTO baseAlarmConfigDTO);
 
 
     /**

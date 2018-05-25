@@ -21,8 +21,6 @@ public class BaseTimeConfig implements Serializable{
     /** hh:mm:ss*/
     private String endTime;
 
-
-
     public boolean isInTime(){
         LocalTime start = LocalTime.parse(startTime);
         LocalTime end = LocalTime.parse(endTime);

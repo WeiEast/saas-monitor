@@ -13,7 +13,9 @@ import com.treefinance.saas.monitor.common.utils.MonitorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
@@ -28,7 +30,8 @@ public class EmailMonitorAlarmJob implements SimpleJob {
     @Autowired
     private EmailAlarmConfig config;
 
-    @Autowired
+    @Resource
+    @Qualifier("emailAlarmMonitorService")
     private MonitorAlarmService emailMonitorAlarmService;
 
     @Override

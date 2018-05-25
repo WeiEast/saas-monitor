@@ -16,7 +16,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
@@ -29,7 +31,9 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
 
     @Autowired
     private DiamondConfig diamondConfig;
-    @Autowired
+
+    @Resource
+    @Qualifier("operatorAlarmMonitorService")
     private MonitorAlarmService operatorAlarmMonitorService;
 
 

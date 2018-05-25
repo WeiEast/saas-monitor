@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 
+import com.alibaba.fastjson.JSON;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -12,7 +13,6 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@ToString
 public class BaseAlarmConfigDTO implements Serializable {
 
     static final long serialVersionUID = 42123131212L;
@@ -30,4 +30,9 @@ public class BaseAlarmConfigDTO implements Serializable {
      */
     private Integer intervalMins;
 
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
+    }
 }

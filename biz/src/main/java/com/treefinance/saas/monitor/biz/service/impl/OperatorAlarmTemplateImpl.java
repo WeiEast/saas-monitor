@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.saas.monitor.biz.config.OperatorMonitorConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
@@ -24,12 +25,15 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.treefinance.saas.monitor.common.constants.AlarmConstants.*;
@@ -44,7 +48,11 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
     private static final Logger logger = LoggerFactory.getLogger(OperatorAlarmTemplateImpl.class);
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    private OperatorMonitorConfig operatorMonitorConfig;
 
     @Override
     public String getKey(ETaskStatDataType type,Date jobTime, BaseAlarmConfigDTO baseAlarmConfigDTO) {
@@ -503,71 +511,41 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
 
     @Override
-    protected void sendAlarmMsg(EAlarmLevel alarmLevel, List<BaseAlarmMsgDTO> dtoList, BaseAlarmConfigDTO
+    protected void sendAlarmMsg(EAlarmLevel alarmLevel, List<BaseAlarmMsgDTO> msgList, BaseAlarmConfigDTO
             configDTO, Date endTime, ETaskStatDataType statDataType) {
 
-        EmailMonitorAlarmConfigDTO emailConfig = (EmailMonitorAlarmConfigDTO) configDTO;
+        OperatorMonitorAlarmConfigDTO config = (OperatorMonitorAlarmConfigDTO)configDTO;
         Date startTime = DateUtils.addMinutes(endTime, -configDTO.getIntervalMins());
-        MonitorAlarmLevelConfigDTO levelConfig = emailConfig.getLevelConfig().stream().filter
-                (emailMonitorAlarmLevelConfigDTO ->
-                        alarmLevel.name().equals(emailMonitorAlarmLevelConfigDTO.getLevel())).findFirst().get();
 
-        HashMap<String, String> switches = emailConfig.getSwitches();
-        if (switches == null || switches.isEmpty() || switches.values().stream().noneMatch(SWITCH_ON::equals)) {
-            logger.info("邮箱预警配置 为空 或者预警信息发送渠道全部关闭。。");
-            return;
-        }
+        String baseTitle;
+        String mailSwitch = config.getMailAlarmSwitch();
+        String weChatSwitch = config.getWeChatAlarmSwitch();
 
-        List<String> channels = levelConfig.getChannels();
-        String alarmBiz;
-        if ("邮箱大盘".equals(((EmailAlarmMsgDTO) dtoList.get(0)).getEmail())) {
-            alarmBiz = "邮箱大盘";
+        String smsSwitch = operatorMonitorConfig.getSmsSwitch();
+        String ivrSwitch = operatorMonitorConfig.getIvrSwitch();
+
+        ETaskStatDataType statType = ETaskStatDataType.getByValue(config.getDataType());
+
+        if (ETaskStatDataType.TASK.equals(statType)) {
+            baseTitle = "运营商监控(按任务数统计)";
         } else {
-            alarmBiz = "邮箱分组";
+            baseTitle = "运营商监控(按人数统计)";
         }
-        alarmBiz += "-" + statDataType.getText();
+        String saasEnvDesc = config.getSaasEnvDesc();
 
-        for (String channel : channels) {
 
-            EAlarmChannel alarmChannel = EAlarmChannel.getByValue(channel);
-            if (alarmChannel == null) {
-                logger.info("配置错误 无法找到对应的预警渠道");
-                return;
-            }
-            switch (alarmChannel) {
-                case IVR:
-                    if (!SWITCH_ON.equals(switches.get(alarmChannel.getValue()))) {
-                        logger.info("邮箱预警配置 " + alarmChannel.getValue() + "已关闭");
-                        continue;
-                    }
-                    sendIvr(dtoList, alarmLevel, alarmBiz);
-                    break;
-                case SMS:
-                    if (!SWITCH_ON.equals(switches.get(alarmChannel.getValue()))) {
-                        logger.info("邮箱预警配置 " + alarmChannel.getValue() + "已关闭");
-                        continue;
-                    }
-                    sendSms(dtoList, startTime, endTime, alarmLevel, alarmBiz);
-                    break;
-                case WECHAT:
-                    if (!SWITCH_ON.equals(switches.get(alarmChannel.getValue()))) {
-                        logger.info("邮箱预警配置 " + alarmChannel.getValue() + "已关闭");
-                        continue;
-                    }
-                    sendWeChat(dtoList, startTime, endTime, alarmLevel, alarmBiz);
-                    break;
-                case EMAIL:
-                    if (!SWITCH_ON.equals(switches.get(alarmChannel.getValue()))) {
-                        logger.info("邮箱预警配置 " + alarmChannel.getValue() + "已关闭");
-                        continue;
-                    }
-                    sendMail(dtoList, new Date(), startTime, endTime, alarmLevel, alarmBiz);
-                    break;
-                default:
-                    logger.info("不支持的邮箱预警渠道" + alarmChannel.getValue());
-                    break;
-            }
-        }
+//        if (isError) {
+//            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.error, saasEnvDesc);
+//            sendIvr(msgList, jobTime, ivrSwitch, saasEnvDesc);
+//            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.error, saasEnvDesc);
+//        } else if (isWarning) {
+//            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.warning, saasEnvDesc);
+//            sendSms(msgList, jobTime, startTime, endTime, statType, smsSwitch, EAlarmLevel.warning, saasEnvDesc);
+//            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.warning, saasEnvDesc);
+//        } else {
+//            sendMail(msgList, jobTime, startTime, endTime, statType, baseTitle, mailSwitch, EAlarmLevel.info, saasEnvDesc);
+//            sendWeChat(msgList, jobTime, startTime, endTime, baseTitle, weChatSwitch, EAlarmLevel.info, saasEnvDesc);
+//        }
     }
 
     @Override
@@ -677,17 +655,38 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     }
 
     @Override
-    public boolean ifAlarmed(Date baseTime, String alarmTimeKey) {
-        BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
-        if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
-            return true;
+    public void ifAlarmed(Date now,Date baseTime, String alarmTimeKey,BaseAlarmConfigDTO baseAlarmConfigDTO) {
+        if (stringRedisTemplate.hasKey(alarmTimeKey)) {
+            logger.info("运营商监控,预警定时任务执行,已预警,不再预警,jobTime={},baseTime={},config={}",
+                    MonitorDateUtils.format(now), MonitorDateUtils.format(baseTime), JSON.toJSONString
+                            (baseAlarmConfigDTO));
+            throw new BizException("改时间段已经预警");
         }
-
-        setOperations.add(MonitorDateUtils.format(baseTime));
-        if (setOperations.getExpire() == -1) {
-            setOperations.expire(2, TimeUnit.DAYS);
-        }
-
-        return false;
+        stringRedisTemplate.opsForValue().set(alarmTimeKey, "1");
+        stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.HOURS);
     }
+
+
+    @Override
+    public EAlarmLevel determineLevel(List<BaseAlarmMsgDTO> msgList){
+        Map<String, List<BaseAlarmMsgDTO>> operatorNameGroup = msgList.stream().collect(Collectors
+                .groupingBy(operatorAccessAlarmMsgDTO -> ((OperatorAccessAlarmMsgDTO)operatorAccessAlarmMsgDTO).getGroupName()));
+
+        boolean isError = msgList.stream().anyMatch(BaseAlarmMsgDTO -> BaseAlarmMsgDTO
+                .getAlarmLevel().equals(EAlarmLevel.error));
+        if(isError){
+            return EAlarmLevel.error;
+        }
+        boolean isWarning = msgList.stream().anyMatch(BaseAlarmMsgDTO -> BaseAlarmMsgDTO
+                .getAlarmLevel().equals(EAlarmLevel.warning)) || operatorNameGroup.keySet().size() >= 3;
+
+        if(isWarning){
+            return EAlarmLevel.warning;
+        }
+
+        return EAlarmLevel.info;
+
+    }
+
+
 }
