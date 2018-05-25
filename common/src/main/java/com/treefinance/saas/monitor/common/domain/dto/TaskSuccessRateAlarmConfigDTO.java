@@ -2,8 +2,17 @@ package com.treefinance.saas.monitor.common.domain.dto;
 
 import com.alibaba.rocketmq.shade.com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.sun.org.apache.bcel.internal.generic.SWITCH;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
+import com.treefinance.saas.monitor.common.constants.MonitorConstants;
+import com.treefinance.saas.monitor.common.domain.Constants;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccRateAlarmTimeListDTO;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
+import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -22,17 +31,13 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
      * saas环境描述
      */
     private String saasEnvDesc;
-
-
     /**
      * 任务业务类型
      */
     private String type;
 
-    /**
-     * 任务成功率预警阀值
-     */
-    private Integer succesThreshold;
+    private int succesThreshold;
+
     /**
      * 预警间隔时间,5分钟,10分钟等
      */
@@ -47,64 +52,76 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
      */
     private Integer taskTimeoutSecs;
 
-    /**
-     * 此配置生效的预警开始时间,如0:00
-     */
-    private String alarmStartTime;
+    /**集成的开关配置*/
+    private HashMap<String, String> switches;
 
     /**
-     * 此配置生效的预警结束时间,如7:00
-     */
-    private String alarmEndTime;
+     * 时间段配置
+     * */
+    private List<TaskSuccRateAlarmTimeListDTO> timeConfig;
 
-    /**
-     * 邮箱报警开关
-     */
-    private String mailAlarmSwitch;
-
-    /**
-     * 微信报警开关
-     */
-    private String weChatAlarmSwitch;
-
-    /**
-     * 短信预警开关
-     */
-    private String smsAlarmSwitch;
 
     public static void main(String[] args) {
         List<TaskSuccessRateAlarmConfigDTO> list = Lists.newArrayList();
-        TaskSuccessRateAlarmConfigDTO dto1 = new TaskSuccessRateAlarmConfigDTO();
-        dto1.setSaasEnv((byte) 0);
-        dto1.setSaasEnvDesc("所有环境");
-        dto1.setType("OPERATOR");
-        dto1.setSuccesThreshold(40);
-        dto1.setIntervalMins(3);
-        dto1.setTimes(3);
-        dto1.setTaskTimeoutSecs(600);
-        dto1.setAlarmStartTime("0:00");
-        dto1.setAlarmEndTime("7:00");
-        dto1.setMailAlarmSwitch("on");
-        dto1.setWeChatAlarmSwitch("on");
-        dto1.setSmsAlarmSwitch("on");
-
-        TaskSuccessRateAlarmConfigDTO dto2 = new TaskSuccessRateAlarmConfigDTO();
-        dto2.setSaasEnv((byte) 0);
-        dto2.setSaasEnvDesc("所有环境");
-        dto2.setType("OPERATOR");
-        dto2.setSuccesThreshold(40);
-        dto2.setIntervalMins(3);
-        dto2.setTimes(3);
-        dto2.setTaskTimeoutSecs(600);
-        dto2.setAlarmStartTime("7:00");
-        dto2.setAlarmEndTime("24:00");
-        dto2.setMailAlarmSwitch("on");
-        dto2.setWeChatAlarmSwitch("on");
-        dto2.setSmsAlarmSwitch("on");
+        TaskSuccessRateAlarmConfigDTO dto1 = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.PRODUCT);
+        TaskSuccessRateAlarmConfigDTO dto2 = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.PRE_PRODUCT);
+        TaskSuccessRateAlarmConfigDTO dto3 = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.ALL);
 
         list.add(dto1);
         list.add(dto2);
+        list.add(dto3);
+
         System.out.println(JSON.toJSONString(list));
+    }
+
+    private static TaskSuccessRateAlarmConfigDTO getTaskSuccessRateAlarmConfigDTO(ESaasEnv saasEnv) {
+        TaskSuccessRateAlarmConfigDTO dto1 = new TaskSuccessRateAlarmConfigDTO();
+        dto1.setSaasEnv((byte)saasEnv.getValue());
+        dto1.setSaasEnvDesc(saasEnv.getDesc());
+        dto1.setType("OPERATOR");
+        dto1.setIntervalMins(3);
+        dto1.setTimes(3);
+        dto1.setTaskTimeoutSecs(600);
+        dto1.setSuccesThreshold(40);
+
+        HashMap<String,String> map = new HashMap<>();
+        map.put(EAlarmChannel.IVR.getValue(), AlarmConstants.SWITCH_ON);
+        map.put(EAlarmChannel.EMAIL.getValue(),AlarmConstants.SWITCH_ON);
+        map.put(EAlarmChannel.SMS.getValue(),AlarmConstants.SWITCH_ON);
+        map.put(EAlarmChannel.WECHAT.getValue(),AlarmConstants.SWITCH_ON);
+
+        dto1.setSwitches(map);
+
+        List<TaskSuccRateAlarmTimeListDTO> listDTOS = Lists.newArrayList();
+
+        TaskSuccRateAlarmTimeListDTO timeListDTO = new TaskSuccRateAlarmTimeListDTO();
+        timeListDTO.setEndTime("23:59:59");
+        timeListDTO.setStartTime("19:00:00");
+        timeListDTO.setThresholdError(new BigDecimal("70"));
+        timeListDTO.setThresholdWarning(new BigDecimal("80"));
+        timeListDTO.setThresholdInfo(new BigDecimal("90"));
+
+        TaskSuccRateAlarmTimeListDTO timeListDTO1 = new TaskSuccRateAlarmTimeListDTO();
+        timeListDTO1.setEndTime("06:00:00");
+        timeListDTO1.setStartTime("00:00:00");
+        timeListDTO1.setThresholdError(new BigDecimal("70"));
+        timeListDTO1.setThresholdWarning(new BigDecimal("80"));
+        timeListDTO1.setThresholdInfo(new BigDecimal("90"));
+
+        TaskSuccRateAlarmTimeListDTO timeListDTO2 = new TaskSuccRateAlarmTimeListDTO();
+        timeListDTO2.setEndTime("19:00:00");
+        timeListDTO2.setStartTime("06:00:00");
+        timeListDTO2.setThresholdError(new BigDecimal("70"));
+        timeListDTO2.setThresholdWarning(new BigDecimal("80"));
+        timeListDTO2.setThresholdInfo(new BigDecimal("90"));
+
+
+        listDTOS.add(timeListDTO);
+        listDTOS.add(timeListDTO1);
+        listDTOS.add(timeListDTO2);
+
+        dto1.setTimeConfig(listDTOS);
+        return dto1;
     }
 
 
@@ -114,14 +131,6 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public Integer getSuccesThreshold() {
-        return succesThreshold;
-    }
-
-    public void setSuccesThreshold(Integer succesThreshold) {
-        this.succesThreshold = succesThreshold;
     }
 
     public Integer getIntervalMins() {
@@ -148,46 +157,6 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
         this.taskTimeoutSecs = taskTimeoutSecs;
     }
 
-    public String getMailAlarmSwitch() {
-        return mailAlarmSwitch;
-    }
-
-    public void setMailAlarmSwitch(String mailAlarmSwitch) {
-        this.mailAlarmSwitch = mailAlarmSwitch;
-    }
-
-    public String getWeChatAlarmSwitch() {
-        return weChatAlarmSwitch;
-    }
-
-    public void setWeChatAlarmSwitch(String weChatAlarmSwitch) {
-        this.weChatAlarmSwitch = weChatAlarmSwitch;
-    }
-
-    public String getSmsAlarmSwitch() {
-        return smsAlarmSwitch;
-    }
-
-    public void setSmsAlarmSwitch(String smsAlarmSwitch) {
-        this.smsAlarmSwitch = smsAlarmSwitch;
-    }
-
-    public String getAlarmStartTime() {
-        return alarmStartTime;
-    }
-
-    public void setAlarmStartTime(String alarmStartTime) {
-        this.alarmStartTime = alarmStartTime;
-    }
-
-    public String getAlarmEndTime() {
-        return alarmEndTime;
-    }
-
-    public void setAlarmEndTime(String alarmEndTime) {
-        this.alarmEndTime = alarmEndTime;
-    }
-
     public Byte getSaasEnv() {
         return saasEnv;
     }
@@ -202,5 +171,29 @@ public class TaskSuccessRateAlarmConfigDTO implements Serializable {
 
     public void setSaasEnvDesc(String saasEnvDesc) {
         this.saasEnvDesc = saasEnvDesc;
+    }
+
+    public HashMap<String, String> getSwitches() {
+        return switches;
+    }
+
+    public void setSwitches(HashMap<String, String> switches) {
+        this.switches = switches;
+    }
+
+    public List<TaskSuccRateAlarmTimeListDTO> getTimeConfig() {
+        return timeConfig;
+    }
+
+    public void setTimeConfig(List<TaskSuccRateAlarmTimeListDTO> timeConfig) {
+        this.timeConfig = timeConfig;
+    }
+
+    public int getSuccesThreshold() {
+        return succesThreshold;
+    }
+
+    public void setSuccesThreshold(int succesThreshold) {
+        this.succesThreshold = succesThreshold;
     }
 }
