@@ -33,13 +33,13 @@ public class OperatorMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
     /**
      * saas环境: 0:所有环境 1:生产环境 2:预发布环境
      */
-    private Integer saasEnv;
+    private Byte saasEnv;
     private String saasEnvDesc;
 
     /**
      * 数据类型: 0:按任务 1:按人数
      */
-    private Integer dataType;
+    private Byte dataType;
     private String dataTypeDesc;
 
     /**
@@ -100,9 +100,9 @@ public class OperatorMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
         dto1.setAppName("所有商户");
         dto1.setAlarmType(alarmType);
         dto1.setAlarmTypeDesc(typeDesc);
-        dto1.setSaasEnv(eSaasEnv.getValue());
+        dto1.setSaasEnv((byte)eSaasEnv.getValue());
         dto1.setSaasEnvDesc(eSaasEnv.getDesc());
-        dto1.setDataType(1);
+        dto1.setDataType((byte)1);
         dto1.setDataTypeDesc("按人数");
         dto1.setIntervalMins(30);
         dto1.setTaskTimeoutSecs(600);

@@ -7,16 +7,21 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoSuccessTaskConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoTaskConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Buddha Bless , No Bug !
@@ -31,28 +36,22 @@ public class OperatorMonitorAlarmJobTest {
     @Autowired
     private DiamondConfig diamondConfig;
     @Autowired
-    private OperatorMonitorGroupAlarmService operatorMonitorGroupAlarmService;
+    @Qualifier("operatorAlarmMonitorService")
+    private MonitorAlarmService operatorAlarmMonitorService;
     @Autowired
     private TaskExistMonitorAlarmService taskExistMonitorAlarmService;
 
     @Test
-    public void testAlarmJobTest() throws InterruptedException {
-        List<Date> jobTimeList = Lists.newArrayList(MonitorDateUtils.parse("2016-04-25 23:55:00"),
-                MonitorDateUtils.parse("2016-04-26 00:00:00"),
-                MonitorDateUtils.parse("2016-04-26 00:05:00"),
-                MonitorDateUtils.parse("2016-04-26 00:10:00"),
-                MonitorDateUtils.parse("2016-04-26 00:15:00"),
-                MonitorDateUtils.parse("2016-04-26 00:20:00"),
-                MonitorDateUtils.parse("2016-04-26 00:30:00"),
-                MonitorDateUtils.parse("2016-04-26 00:40:00"),
-                MonitorDateUtils.parse("2016-04-26 00:50:00"));
-        String configStr = diamondConfig.getOperatorMonitorAlarmConfig();
-        for (Date jobTime : jobTimeList) {
-            List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
-            for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
-                operatorMonitorGroupAlarmService.alarm(jobTime, configDTO);
-                Thread.sleep(2 * 1000);
-            }
+    public void testAlarmJobTest() throws InterruptedException, ParseException {
+        String configStr = "[{\"alarmSwitch\":\"on\",\"alarmType\":1,\"alarmTypeDesc\":\"总运营商\",\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"dataType\":1,\"dataTypeDesc\":\"按人数\",\"inTimeTimeConfig\":{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"19:00:00\",\"inTime\":true,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"06:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"on\",\"email\":\"on\"},\"wholeConversionRate\":90},\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"ivr\",\"email\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"sms\",\"email\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"previousDays\":7,\"saasEnv\":0,\"saasEnvDesc\":\"所有环境\",\"taskTimeoutSecs\":600,\"timeConfig\":[{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"switches\":{\"$ref\":\"$[0].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90},{\"$ref\":\"$[0].inTimeTimeConfig\"},{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"19:00:00\",\"switches\":{\"$ref\":\"$[0].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90}]},{\"alarmSwitch\":\"on\",\"alarmType\":1,\"alarmTypeDesc\":\"总运营商\",\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"dataType\":1,\"dataTypeDesc\":\"按人数\",\"inTimeTimeConfig\":{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"19:00:00\",\"inTime\":true,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"06:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"on\",\"email\":\"on\"},\"wholeConversionRate\":90},\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"ivr\",\"email\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"sms\",\"email\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"previousDays\":7,\"saasEnv\":1,\"saasEnvDesc\":\"生产环境\",\"taskTimeoutSecs\":600,\"timeConfig\":[{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"switches\":{\"$ref\":\"$[1].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90},{\"$ref\":\"$[1].inTimeTimeConfig\"},{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"19:00:00\",\"switches\":{\"$ref\":\"$[1].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90}]},{\"alarmSwitch\":\"on\",\"alarmType\":1,\"alarmTypeDesc\":\"总运营商\",\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"dataType\":1,\"dataTypeDesc\":\"按人数\",\"inTimeTimeConfig\":{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"19:00:00\",\"inTime\":true,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"06:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"on\",\"email\":\"on\"},\"wholeConversionRate\":90},\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"ivr\",\"email\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"sms\",\"email\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"previousDays\":7,\"saasEnv\":2,\"saasEnvDesc\":\"预发布环境\",\"taskTimeoutSecs\":600,\"timeConfig\":[{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"switches\":{\"$ref\":\"$[2].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90},{\"$ref\":\"$[2].inTimeTimeConfig\"},{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"19:00:00\",\"switches\":{\"$ref\":\"$[2].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90}]},{\"alarmSwitch\":\"on\",\"alarmType\":2,\"alarmTypeDesc\":\"分运营商\",\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"dataType\":1,\"dataTypeDesc\":\"按人数\",\"inTimeTimeConfig\":{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"19:00:00\",\"inTime\":true,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"06:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"on\",\"email\":\"on\"},\"wholeConversionRate\":90},\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"ivr\",\"email\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"sms\",\"email\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"previousDays\":7,\"saasEnv\":0,\"saasEnvDesc\":\"所有环境\",\"taskTimeoutSecs\":600,\"timeConfig\":[{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"switches\":{\"$ref\":\"$[3].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90},{\"$ref\":\"$[3].inTimeTimeConfig\"},{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"19:00:00\",\"switches\":{\"$ref\":\"$[3].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90}]},{\"alarmSwitch\":\"on\",\"alarmType\":2,\"alarmTypeDesc\":\"分运营商\",\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"dataType\":1,\"dataTypeDesc\":\"按人数\",\"inTimeTimeConfig\":{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"19:00:00\",\"inTime\":true,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"06:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"on\",\"email\":\"on\"},\"wholeConversionRate\":90},\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"ivr\",\"email\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"sms\",\"email\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"previousDays\":7,\"saasEnv\":1,\"saasEnvDesc\":\"生产环境\",\"taskTimeoutSecs\":600,\"timeConfig\":[{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"switches\":{\"$ref\":\"$[4].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90},{\"$ref\":\"$[4].inTimeTimeConfig\"},{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"19:00:00\",\"switches\":{\"$ref\":\"$[4].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90}]},{\"alarmSwitch\":\"on\",\"alarmType\":2,\"alarmTypeDesc\":\"分运营商\",\"appId\":\"virtual_total_stat_appId\",\"appName\":\"所有商户\",\"dataType\":1,\"dataTypeDesc\":\"按人数\",\"inTimeTimeConfig\":{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"19:00:00\",\"inTime\":true,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"06:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"on\",\"email\":\"on\"},\"wholeConversionRate\":90},\"intervalMins\":30,\"levelConfig\":[{\"channels\":[\"ivr\",\"email\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"sms\",\"email\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"previousDays\":7,\"saasEnv\":2,\"saasEnvDesc\":\"预发布环境\",\"taskTimeoutSecs\":600,\"timeConfig\":[{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"06:00:00\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"00:00:00\",\"switches\":{\"$ref\":\"$[5].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90},{\"$ref\":\"$[5].inTimeTimeConfig\"},{\"confirmMobileConversionRate\":70,\"crawlSuccessRate\":70,\"endTime\":\"23:59:59\",\"inTime\":false,\"loginConversionRate\":70,\"loginSuccessRate\":70,\"processSuccessRate\":70,\"startTime\":\"19:00:00\",\"switches\":{\"$ref\":\"$[5].inTimeTimeConfig.switches\"},\"wholeConversionRate\":90}]}]\n";
+
+        String dateStr = "2018-03-27 21:10:00";
+        Date jobTime = DateUtils.parseDate(dateStr, Locale.CHINA, "yyyy-MM-dd hh:mm:ss");
+
+        List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
+        for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
+            operatorAlarmMonitorService.alarm(jobTime, configDTO, ETaskStatDataType.USER);
+            Thread.sleep(2 * 1000);
         }
         System.out.println("done====");
     }
@@ -62,7 +61,7 @@ public class OperatorMonitorAlarmJobTest {
         Date jobTime = MonitorDateUtils.parse("2018-05-07 15:15:00");
         List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(diamondConfig.getOperatorMonitorAlarmConfig(), OperatorMonitorAlarmConfigDTO.class);
         for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
-            operatorMonitorGroupAlarmService.alarm(jobTime, configDTO);
+            operatorAlarmMonitorService.alarm(jobTime, configDTO, ETaskStatDataType.USER);
         }
     }
 
