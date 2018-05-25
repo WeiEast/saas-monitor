@@ -2,10 +2,7 @@ package com.treefinance.saas.monitor.common.domain.dto;
 
 import com.alibaba.rocketmq.shade.com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.sun.org.apache.bcel.internal.generic.SWITCH;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
-import com.treefinance.saas.monitor.common.constants.MonitorConstants;
-import com.treefinance.saas.monitor.common.domain.Constants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccRateAlarmTimeListDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
