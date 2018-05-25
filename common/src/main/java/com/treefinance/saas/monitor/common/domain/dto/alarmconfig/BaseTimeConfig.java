@@ -6,6 +6,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalTime;
+import java.util.HashMap;
 
 /**
  * @author chengtong
@@ -20,6 +21,9 @@ public class BaseTimeConfig implements Serializable{
     private String startTime;
     /** hh:mm:ss*/
     private String endTime;
+
+    /**集成的开关配置*/
+    private HashMap<String, String> switches;
 
     public boolean isInTime(){
         LocalTime start = LocalTime.parse(startTime);
