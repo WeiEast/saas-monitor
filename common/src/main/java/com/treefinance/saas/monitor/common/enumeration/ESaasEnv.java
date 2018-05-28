@@ -35,7 +35,7 @@ public enum  ESaasEnv {
         this.desc =desc;
     }
 
-    public ESaasEnv getByValue(int value){
+    public static ESaasEnv getByValue(int value){
         for(ESaasEnv saasEnv:values()){
             if(saasEnv.value == value){
                 return saasEnv;

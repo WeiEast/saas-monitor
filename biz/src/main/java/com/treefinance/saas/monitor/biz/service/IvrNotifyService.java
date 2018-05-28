@@ -27,6 +27,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,19 @@ public class IvrNotifyService {
         String saasEnvDesc = "saas-" + ivrConfig.getEnvironment();
         this.notifyIvr(alarmLevel, type, alarmRule, saasEnvDesc);
     }
+
+
+    public void notifyIvrToDutyMan(String content,String mobile,String name){
+
+        IvrContactsDTO contactsDTO = new IvrContactsDTO();
+
+        contactsDTO.setName(name);
+        contactsDTO.setTelNum(mobile);
+
+        initMessageAndSend(Collections.singletonList(contactsDTO),content);
+
+    }
+
 
     /**
      * ivr通知
@@ -95,6 +109,10 @@ public class IvrNotifyService {
                 .append("【" + alarmLevel.name() + "】")
                 .append(saasEnvDesc)
                 .append(alarmRule).toString();
+        initMessageAndSend(contactsDTOS, alarmInfo);
+    }
+
+    private void initMessageAndSend(List<IvrContactsDTO> contactsDTOS, String alarmInfo) {
         Map<String, Object> jsonMap = initMessageBody(alarmInfo, contactsDTOS);
         // 4.加密参数
         Map<String, String> paramsMessage = encrytMessageBody(jsonMap);

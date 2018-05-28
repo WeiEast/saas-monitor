@@ -1,22 +1,22 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.domain.dto.*;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.*;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
-import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
+import com.treefinance.saas.monitor.common.enumeration.*;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
 import com.treefinance.saas.monitor.exception.BizException;
@@ -494,8 +494,10 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
 
     @Override
-    protected void sendAlarmMsg(EAlarmLevel alarmLevel, List<BaseAlarmMsgDTO> msgList, BaseAlarmConfigDTO
+    protected String sendAlarmMsg(EAlarmLevel alarmLevel, List<BaseAlarmMsgDTO> msgList, BaseAlarmConfigDTO
             configDTO, Date endTime, ETaskStatDataType statDataType) {
+
+        String returnBody = "";
 
         OperatorMonitorAlarmConfigDTO config = (OperatorMonitorAlarmConfigDTO) configDTO;
         Date startTime = DateUtils.addMinutes(endTime, -configDTO.getIntervalMins());
@@ -519,7 +521,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                         alarmLevel.name().equals(monitorAlarmLevelConfigDTO.getLevel())).findFirst().orElse(null);
         if (levelConfig == null) {
             logger.info("运营商看预警没有配置正确的预警等级参数：{}", JSON.toJSONString(config.getLevelConfig()));
-            return;
+            return null;
         }
 
         List<String> channels = levelConfig.getChannels();
@@ -529,7 +531,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             EAlarmChannel alarmChannel = EAlarmChannel.getByValue(channel);
             if (alarmChannel == null) {
                 logger.info("配置错误 无法找到对应的预警渠道");
-                return;
+                return null;
             }
             if (!SWITCH_ON.equals(switches.get(alarmChannel.getValue()))) {
                 logger.info("运营商预警配置{}已关闭", alarmChannel.getValue());
@@ -543,7 +545,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                     sendSms(msgList, startTime, endTime, statType, alarmLevel, saasEnvDesc);
                     break;
                 case WECHAT:
-                    sendWeChat(msgList, startTime, endTime, baseTitle, alarmLevel, saasEnvDesc);
+                    returnBody = sendWeChat(msgList, startTime, endTime, baseTitle, alarmLevel, saasEnvDesc);
                     break;
                 case EMAIL:
                     sendMail(msgList, startTime, endTime, statType, baseTitle, alarmLevel, saasEnvDesc);
@@ -553,6 +555,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                     break;
             }
         }
+        return returnBody;
     }
 
     /**
@@ -653,7 +656,6 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         logger.info("特定运营商预警 发送ivr请求 {}", errorMsgs.get(0).getAlarmDesc());
 
         ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm, errorMsgs.get(0).getAlarmDesc(), saasEnvDesc);
-
     }
 
     private void sendMail(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
@@ -672,11 +674,12 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         alarmMessageProducer.sendMail4OperatorMonitor(StrSubstitutor.replace(mailBaseTitle, map), mailDataBody, new Date());
     }
 
-    private void sendWeChat(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
-                            String baseTile, EAlarmLevel alarmLevel, String saasEnvDesc) {
+    private String sendWeChat(List<BaseAlarmMsgDTO> msgList, Date startTime, Date endTime,
+                              String baseTile, EAlarmLevel alarmLevel, String saasEnvDesc) {
 
         String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile, alarmLevel, saasEnvDesc);
         alarmMessageProducer.sendWebChart4OperatorMonitor(weChatBody, new Date());
+        return weChatBody;
     }
 
 
@@ -748,6 +751,49 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                     .append("\n");
         }
         return buffer.toString();
+    }
+
+    /**
+     * 生成预警记录的summary，不同的预警可能会规则也不一样，具体交给子类自己去实现；
+     *
+     * @param alarmLevel         预警等级 ;
+     * @param env                环境;
+     * @param msgList            预警信息列表;
+     * @return summary字段的信息
+     */
+    @Override
+    protected String generateSummary(EAlarmLevel alarmLevel, ESaasEnv env, List<BaseAlarmMsgDTO> msgList) {
+
+        List<BizSourceAspect> bizSourceAspectList = genBizSourceAspectList(msgList);
+
+        return Joiner.on(":").join(EAlarmType.operator_alarm.getCode(),alarmLevel.name(),EStatType.OPERATOR.getType(),env.getValue(),
+                getBizSourceAspect
+                (bizSourceAspectList));
+    }
+
+    @Override
+    protected String genDutyManAlarmInfo(Long id, Long orderId, List<BaseAlarmMsgDTO> dtoList, EAlarmLevel
+            alarmLevel, Date baseTime, ESaasEnv env,String dutyManName) {
+
+        return dutyManName + "小伙伴，你好" + "运营商预警在:环境：" + env.getDesc() + "时间：" +
+                MonitorDateUtils.format(baseTime) +
+                "发生" + "级别:" + alarmLevel.name() + "预警" +
+                "系统已经生成了id为" + id + "的预警记录和编号为" + orderId + "的工单,请及时处理";
+    }
+
+
+
+
+    private List<BizSourceAspect> genBizSourceAspectList(List<BaseAlarmMsgDTO> msgList) {
+        List<BizSourceAspect> list = Lists.newArrayList();
+
+        for (BaseAlarmMsgDTO msg : msgList){
+            OperatorAccessAlarmMsgDTO opMsg = (OperatorAccessAlarmMsgDTO) msg;
+            BizSourceAspect sourceAspect = new BizSourceAspect(opMsg.getGroupCode(),msg.getAlarmAspectType().getValue());
+            list.add(sourceAspect);
+        }
+
+        return list;
     }
 
 }

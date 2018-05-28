@@ -1,5 +1,7 @@
 package com.treefinance.saas.monitor.common.domain.dto;
 
+import com.treefinance.saas.monitor.common.enumeration.EAlarmAspectType;
+import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -46,5 +48,9 @@ public class BaseAlarmMsgDTO implements Serializable{
 
     /**预警等级*/
     private Enum alarmLevel;
+
+    /**预警指标的类型*/
+    private EAlarmAspectType alarmAspectType;
+
 
 }

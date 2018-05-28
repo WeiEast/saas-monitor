@@ -27,19 +27,15 @@ public class BaseStatAccessDTO implements Serializable {
 
     private Integer taskCount;
 
-
     private Integer entryCount;
 
     private Integer startLoginCount;
 
     private Integer loginSuccessCount;
 
-
     private Integer crawlSuccessCount;
 
-
     private Integer processSuccessCount;
-
 
     private Integer callbackSuccessCount;
 
@@ -111,8 +107,9 @@ public class BaseStatAccessDTO implements Serializable {
     private BigDecimal previousCallbackSuccessRate;
 
 
-    private Date createTime;
 
+
+    private Date createTime;
 
     private Date lastUpdateTime;
 

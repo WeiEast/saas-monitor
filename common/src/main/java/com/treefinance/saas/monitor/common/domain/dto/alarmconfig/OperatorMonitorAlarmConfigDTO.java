@@ -31,12 +31,6 @@ public class OperatorMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
     private String appName;
 
     /**
-     * saas环境: 0:所有环境 1:生产环境 2:预发布环境
-     */
-    private Byte saasEnv;
-    private String saasEnvDesc;
-
-    /**
      * 数据类型: 0:按任务 1:按人数
      */
     private Byte dataType;

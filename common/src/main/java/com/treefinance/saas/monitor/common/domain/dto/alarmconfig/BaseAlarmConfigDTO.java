@@ -30,6 +30,16 @@ public class BaseAlarmConfigDTO implements Serializable {
      */
     private Integer intervalMins;
 
+    /**
+     * saas环境
+     */
+    private Byte saasEnv;
+
+    /**
+     * saas环境描述
+     */
+    private String saasEnvDesc;
+
 
     @Override
     public String toString() {
