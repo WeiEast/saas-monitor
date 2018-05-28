@@ -746,8 +746,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     }
 
     @Override
-    protected String genDutyManAlarmInfo(Long id, Long orderId, List<BaseAlarmMsgDTO> dtoList, EAlarmLevel alarmLevel, Date baseTime, ESaasEnv env) {
+    protected String genDutyManAlarmInfo(Long id, Long orderId, List<BaseAlarmMsgDTO> dtoList, EAlarmLevel alarmLevel, Date baseTime, ESaasEnv env, String dutyManName) {
         return null;
     }
-
 }
