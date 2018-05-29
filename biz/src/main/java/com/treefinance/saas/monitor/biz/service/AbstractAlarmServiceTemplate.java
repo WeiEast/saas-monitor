@@ -391,7 +391,6 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
 
 
     private void sendIvr(String content, SaasWorker saasWorker) {
-        // TODO: 18/5/29 做个ivr开关控制
         if(!AlarmConstants.SWITCH_ON.equals(diamondConfig.getDutyIvrSwitch())){
             logger.info("对值班人员的ivr提醒已经关闭。。");
             return;
