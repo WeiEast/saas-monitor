@@ -40,6 +40,12 @@ public class DiamondConfig {
 
     /**
      * 任务成功率预警配置(json字符串)
+     * [{"alarmEndTime":"7:00","alarmStartTime":"0:00","intervalMins":3,
+     * "mailAlarmSwitch":"on","saasEnv":0,"saasEnvDesc":"所有环境","smsAlarmSwitch":"on",
+     * "succesThreshold":40,"taskTimeoutSecs":600,"times":3,"type":"OPERATOR","weChatAlarmSwitch":"on"},
+     * {"alarmEndTime":"24:00","alarmStartTime":"7:00","intervalMins":3,
+     * "mailAlarmSwitch":"on","saasEnv":0,"saasEnvDesc":"所有环境","smsAlarmSwitch":"on",
+     * "succesThreshold":40,"taskTimeoutSecs":600,"times":3,"type":"OPERATOR","weChatAlarmSwitch":"on"}]
      */
     @DAttribute(key = "task.success.rate.alarm.config")
     private String taskSuccessRateAlarmConfig;
@@ -89,25 +95,15 @@ public class DiamondConfig {
     /**
      * 任务预警,一定时间内无成功任务预警,json字符串格式
      */
-    @DAttribute(key = "task.exist.alarm.no.success.mins.config")
-    private String taskExistAlarmNoSuccessMinsConfig;
+    @DAttribute(key = "task.exist.alarm.no.success.task.config")
+    private String taskExistAlarmNoSuccessTaskConfig;
 
     /**
-     * 任务是否存在,微信通知开关
+     * 任务预警,一定时间内无任务预警,json字符串格式
      */
-    @DAttribute(key = "task.exist.alarm.wechat.switch")
-    private String taskExistAlarmWechatSwitch;
-    /**
-     * 任务是否存在,邮箱通知开关
-     */
-    @DAttribute(key = "task.exist.alarm.mail.switch")
-    private String taskExistAlarmMailSwitch;
+    @DAttribute(key = "task.exist.alarm.no.task.config")
+    private String taskExistAlarmNoTaskConfig;
 
-    /**
-     * 任务是否存在,短信通知开关
-     */
-    @DAttribute(key = "task.exist.alarm.sms.switch")
-    private String taskExistAlarmSmsSwitch;
 
     /**
      * 统计时间间隔:分钟为单位
@@ -196,6 +192,10 @@ public class DiamondConfig {
 
     public String getMonitorEnvironment() {
         return monitorEnvironment;
+    }
+
+    public String getSaasMonitorEnvironment() {
+        return "saas-" + monitorEnvironment;
     }
 
     public void setMonitorEnvironment(String monitorEnvironment) {
@@ -372,23 +372,6 @@ public class DiamondConfig {
         this.operatorMonitorIntervalMinutes = operatorMonitorIntervalMinutes;
     }
 
-
-    public String getTaskExistAlarmWechatSwitch() {
-        return taskExistAlarmWechatSwitch;
-    }
-
-    public void setTaskExistAlarmWechatSwitch(String taskExistAlarmWechatSwitch) {
-        this.taskExistAlarmWechatSwitch = taskExistAlarmWechatSwitch;
-    }
-
-    public String getTaskExistAlarmMailSwitch() {
-        return taskExistAlarmMailSwitch;
-    }
-
-    public void setTaskExistAlarmMailSwitch(String taskExistAlarmMailSwitch) {
-        this.taskExistAlarmMailSwitch = taskExistAlarmMailSwitch;
-    }
-
     public String getOperatorAlarmOperatorNameList() {
         return operatorAlarmOperatorNameList;
     }
@@ -411,14 +394,6 @@ public class DiamondConfig {
 
     public void setOperatorAlarmFewThresholdPercent(Integer operatorAlarmFewThresholdPercent) {
         this.operatorAlarmFewThresholdPercent = operatorAlarmFewThresholdPercent;
-    }
-
-    public String getTaskExistAlarmNoSuccessMinsConfig() {
-        return taskExistAlarmNoSuccessMinsConfig;
-    }
-
-    public void setTaskExistAlarmNoSuccessMinsConfig(String taskExistAlarmNoSuccessMinsConfig) {
-        this.taskExistAlarmNoSuccessMinsConfig = taskExistAlarmNoSuccessMinsConfig;
     }
 
     public String getTaskSuccessRateAlarmConfig() {
@@ -444,15 +419,6 @@ public class DiamondConfig {
     public void setMonitorAlarmMobiles(String monitorAlarmMobiles) {
         this.monitorAlarmMobiles = monitorAlarmMobiles;
     }
-
-    public String getTaskExistAlarmSmsSwitch() {
-        return taskExistAlarmSmsSwitch;
-    }
-
-    public void setTaskExistAlarmSmsSwitch(String taskExistAlarmSmsSwitch) {
-        this.taskExistAlarmSmsSwitch = taskExistAlarmSmsSwitch;
-    }
-
 
     public String getEcommerceMonitorAlarmConfig() {
         return ecommerceMonitorAlarmConfig;
@@ -484,5 +450,21 @@ public class DiamondConfig {
 
     public void setSupportEmails(String supportEmails) {
         this.supportEmails = supportEmails;
+    }
+
+    public String getTaskExistAlarmNoSuccessTaskConfig() {
+        return taskExistAlarmNoSuccessTaskConfig;
+    }
+
+    public void setTaskExistAlarmNoSuccessTaskConfig(String taskExistAlarmNoSuccessTaskConfig) {
+        this.taskExistAlarmNoSuccessTaskConfig = taskExistAlarmNoSuccessTaskConfig;
+    }
+
+    public String getTaskExistAlarmNoTaskConfig() {
+        return taskExistAlarmNoTaskConfig;
+    }
+
+    public void setTaskExistAlarmNoTaskConfig(String taskExistAlarmNoTaskConfig) {
+        this.taskExistAlarmNoTaskConfig = taskExistAlarmNoTaskConfig;
     }
 }

@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.service;
 
-import com.treefinance.saas.monitor.common.enumeration.EBizType;
+import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoSuccessTaskConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoTaskConfigDTO;
 
 import java.util.Date;
 
@@ -9,9 +10,7 @@ import java.util.Date;
  */
 public interface TaskExistMonitorAlarmService {
 
-    void alarmNoTask(Date startTime, Date endTime);
+    void alarmNoSuccessTaskWithConfig(Date startTime, Date endTime, TaskExistAlarmNoSuccessTaskConfigDTO config);
 
-    void alarmNoSuccessTask(Date startTime, Date endTime);
-
-    void alarmNoSuccessTaskWithType(Date startTime, Date endTime, EBizType bizType);
+    void alarmNoTaskWithConfig(Date startTime, Date endTime, TaskExistAlarmNoTaskConfigDTO config);
 }

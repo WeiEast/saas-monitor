@@ -9,7 +9,7 @@ import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
-import com.treefinance.saas.monitor.common.domain.dto.EmailMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;

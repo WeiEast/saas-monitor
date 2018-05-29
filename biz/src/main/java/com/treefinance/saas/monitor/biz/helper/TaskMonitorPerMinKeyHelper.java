@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.helper;
 
 import com.google.common.base.Joiner;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
+import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
@@ -188,6 +189,16 @@ public class TaskMonitorPerMinKeyHelper {
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_TASKS, intervalDateStr);
     }
 
+    public static void main(String...args){
+        Date statTime = org.apache.commons.lang3.time.DateUtils.addSeconds(new Date(), -600);
+        System.err.println(statTime);
+        Date beginTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(statTime, 3);
+        System.err.println(beginTime);
+        String key = strKeyOfAlarmTimeLog(beginTime,EBizType.OPERATOR, ESaasEnv.ALL.getValue());
+        System.err.println(key);
+    }
+
+
     /**
      * 记录任务成功率预警,今天已已经预警的时刻
      *
@@ -199,10 +210,12 @@ public class TaskMonitorPerMinKeyHelper {
         String intervalDateStr = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd");
         return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, bizType);
     }
-
-    public static String strKeyOfAlarmTimeLog(Date redisKeyTime, EBizType bizType) {
+    /**
+     * saas-monitor-task-monitor:key-str-alarm-times:2018-05-14:OPERATOR:0
+     * */
+    public static String strKeyOfAlarmTimeLog(Date redisKeyTime, EBizType bizType,int saasEnv) {
         String intervalDateStr = DateFormatUtils.format(redisKeyTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, bizType, MonitorDateUtils.format2Hms(redisKeyTime));
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, bizType,saasEnv);
     }
 
 }

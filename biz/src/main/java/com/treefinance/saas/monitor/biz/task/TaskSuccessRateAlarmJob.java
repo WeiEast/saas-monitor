@@ -6,7 +6,8 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskSuccessRateAlarmService;
-import com.treefinance.saas.monitor.common.domain.dto.TaskSuccessRateAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccessRateAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;
@@ -40,11 +41,13 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
             return;
         }
         long start = System.currentTimeMillis();
-        Date jobTime = new Date();//定时任务执行时间
+        //定时任务执行时间
+        Date jobTime = new Date();
         logger.info("任务成功率预警,定时任务执行jobTime={}", MonitorDateUtils.format(jobTime));
         try {
             String configStr = diamondConfig.getTaskSuccessRateAlarmConfig();
             List<TaskSuccessRateAlarmConfigDTO> configList = JSONObject.parseArray(configStr, TaskSuccessRateAlarmConfigDTO.class);
+            //根据任务类型来分配的
             Map<String, List<TaskSuccessRateAlarmConfigDTO>> configMap = configList.stream().collect(Collectors.groupingBy(TaskSuccessRateAlarmConfigDTO::getType));
             if (MapUtils.isEmpty(configMap)) {
                 logger.info("任务成功率预警,定时任务执行jobTime={}任务成功率预警未设置", MonitorDateUtils.format(jobTime));
@@ -52,16 +55,16 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
             }
             for (EBizType bizType : EBizType.values()) {
                 List<TaskSuccessRateAlarmConfigDTO> configDTOList = configMap.get(bizType.getText());
+                logger.info("bizType：{}，config：{}",bizType.getDesc(),configDTOList);
                 if (CollectionUtils.isEmpty(configDTOList)) {
                     continue;
                 }
                 for (TaskSuccessRateAlarmConfigDTO config : configDTOList) {
-                    String startTimeStr = config.getAlarmStartTime();
-                    String endTimeStr = config.getAlarmEndTime();
-                    if (!MonitorDateUtils.isInZone(startTimeStr, endTimeStr, jobTime)) {
-                        logger.info("任务成功率预警,定时任务执行jobTime={}不在此预警设置时间区间内config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(config));
+                    if(!AlarmConstants.SWITCH_ON.equals(config.getAlarmSwitch())){
+                        logger.info("任务成功率总开关关闭。。{}不预警",jobTime);
                         continue;
                     }
+
                     logger.info("任务成功率预警,定时任务执行jobTime={}任务成功率预警执行config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(config));
                     taskSuccessRateAlarmService.alarm(bizType, config, jobTime);
                 }

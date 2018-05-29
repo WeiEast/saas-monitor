@@ -137,6 +137,12 @@ public class MonitorDateUtils {
         return result;
     }
 
+    public static Date addTimeUnit(Date date,int type,int amount) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+            calendar.add(type, amount);
+        return calendar.getTime();
+    }
 
     /**
      * 获取当前日期零点时间字符串

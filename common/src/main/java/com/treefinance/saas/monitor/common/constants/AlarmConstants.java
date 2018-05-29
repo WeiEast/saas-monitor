@@ -7,6 +7,7 @@ package com.treefinance.saas.monitor.common.constants;
 public interface AlarmConstants {
 
     String SWITCH_ON = "on";
+    String SWITCH_OFF = "off";
 
     /** 数据库表指所有商户的值*/
     String VIRTUAL_TOTAL_STAT_APP_ID = "virtual_total_stat_appId";

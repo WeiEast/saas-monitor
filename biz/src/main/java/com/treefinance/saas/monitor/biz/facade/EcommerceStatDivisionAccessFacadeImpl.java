@@ -70,7 +70,8 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
         for (EcommerceAllStatAccess ecommerceAllStatAccess : changeList) {
 
             EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatAccess, EcommerceAllDetailRO.class);
-            ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatAccess.getEntryCount(), ecommerceAllStatAccess.getStartLoginCount()));
+            ecommerceAllDetailRO.setOneClickLoginConversionRate(calcRate(ecommerceAllStatAccess.getEntryCount(), ecommerceAllStatAccess.getOneClickLoginCount()));
+            ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatAccess.getOneClickLoginCount(), ecommerceAllStatAccess.getStartLoginCount()));
             ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatAccess.getStartLoginCount(), ecommerceAllStatAccess.getLoginSuccessCount()));
             ecommerceAllDetailRO.setCrawlSuccessRate(calcRate(ecommerceAllStatAccess.getLoginSuccessCount(), ecommerceAllStatAccess.getCrawlSuccessCount()));
             ecommerceAllDetailRO.setProcessSuccessRate(calcRate(ecommerceAllStatAccess.getCrawlSuccessCount(), ecommerceAllStatAccess.getProcessSuccessCount()));
@@ -97,13 +98,14 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
             BeanUtils.copyProperties(entry.getValue().get(0), data);
             data.setDataTime(entry.getKey());
             List<EcommerceAllStatAccess> entryList = entry.getValue();
-            int userCount = 0, taskCount = 0, entryCount = 0, confirmMobileCount = 0,
+            int userCount = 0, taskCount = 0, entryCount = 0, oneClickLoginCount = 0,
                     startLoginCount = 0, loginSuccessCount = 0, crawlSuccessCount = 0,
                     processSuccessCount = 0, callbackSuccessCount = 0;
             for (EcommerceAllStatAccess item : entryList) {
                 userCount = userCount + item.getUserCount();
                 taskCount = taskCount + item.getTaskCount();
                 entryCount = entryCount + item.getEntryCount();
+                oneClickLoginCount = oneClickLoginCount + item.getOneClickLoginCount();
                 startLoginCount = startLoginCount + item.getStartLoginCount();
                 loginSuccessCount = loginSuccessCount + item.getLoginSuccessCount();
                 crawlSuccessCount = crawlSuccessCount + item.getCrawlSuccessCount();
@@ -113,6 +115,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
             data.setUserCount(userCount);
             data.setTaskCount(taskCount);
             data.setEntryCount(entryCount);
+            data.setOneClickLoginCount(oneClickLoginCount);
             data.setStartLoginCount(startLoginCount);
             data.setLoginSuccessCount(loginSuccessCount);
             data.setCrawlSuccessCount(crawlSuccessCount);
@@ -149,7 +152,8 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
             for (EcommerceAllStatDayAccess ecommerceAllStatDayAccess : allStatAccessList) {
 
                 EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatDayAccess, EcommerceAllDetailRO.class);
-                ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getStartLoginCount()));
+                ecommerceAllDetailRO.setOneClickLoginConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getOneClickLoginCount()));
+                ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatDayAccess.getOneClickLoginCount(), ecommerceAllStatDayAccess.getStartLoginCount()));
                 ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatDayAccess.getStartLoginCount(), ecommerceAllStatDayAccess.getLoginSuccessCount()));
                 ecommerceAllDetailRO.setCrawlSuccessRate(calcRate(ecommerceAllStatDayAccess.getLoginSuccessCount(), ecommerceAllStatDayAccess.getCrawlSuccessCount()));
                 ecommerceAllDetailRO.setProcessSuccessRate(calcRate(ecommerceAllStatDayAccess.getCrawlSuccessCount(), ecommerceAllStatDayAccess.getProcessSuccessCount()));
