@@ -52,7 +52,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
 
     @Override
-    public List<Map<String, Object>> calculate(StatTemplate statTemplate, List<?> dataList) {
+    public Map<Integer, List<Map<String, Object>>> calculate(StatTemplate statTemplate, List<?> dataList, Integer... groupIndexs) {
         Long templateId = statTemplate.getId();
         List<StatGroup> statGroups = statGroupService.get(templateId);
 
@@ -61,10 +61,16 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
         // 分组计算
         Map<Integer, List<StatGroup>> statGroupMap = statGroups.stream().collect(Collectors.groupingBy(StatGroup::getGroupIndex));
-        List<Map<String, Object>> resultList = Lists.newArrayList();
+        Map<Integer, List<Map<String, Object>>> resultMap = Maps.newHashMap();
         Date currentTime = new Date();
 
-        for (Integer groupIndex : statGroupMap.keySet()) {
+        Set<Integer> groupIndexSet = statGroupMap.keySet();
+        if (groupIndexs != null && groupIndexs.length != 0) {
+            List<Integer> _groupIndexs = Lists.newArrayList(groupIndexs);
+            groupIndexSet = groupIndexSet.stream().filter(groupIndex -> _groupIndexs.contains(groupIndex)).collect(Collectors.toSet());
+        }
+
+        for (Integer groupIndex : groupIndexSet) {
             List<StatGroup> _statGroups = statGroupMap.get(groupIndex);
             if (CollectionUtils.isEmpty(_statGroups)) {
                 continue;
@@ -76,12 +82,10 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             // 2.写入redis（数据合并计算）
             List<Map<String, Object>> _resultList = cacheData2Redis(statTemplate, redisMultiMap, _statGroups);
             // 3.数据结果
-            if (CollectionUtils.isNotEmpty(_resultList)) {
-                resultList.addAll(_resultList);
-            }
+            resultMap.put(groupIndex, _resultList);
         }
 
-        return resultList;
+        return resultMap;
     }
 
     /**

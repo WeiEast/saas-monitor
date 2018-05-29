@@ -16,4 +16,21 @@ public interface StatItemService extends BaseQueryService<StatItem>, BaseCacheSe
      * @return
      */
     List<StatItem> queryByTemplateId(Long templateId);
+
+
+    /**
+     * 添加数据项
+     *
+     * @param statItem
+     * @return -1为添加失败
+     */
+    long addStatItem(StatItem statItem);
+
+    /**
+     * 更新数据项
+     *
+     * @param statItem
+     * @return
+     */
+    int updateStatItem(StatItem statItem);
 }

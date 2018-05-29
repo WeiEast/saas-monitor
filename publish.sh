@@ -1,6 +1,6 @@
 #!/bin/sh
 
-server_ip="192.168.5.24"
+server_ip="192.168.5.15"
 server_application="/dashu/application/saas-monitor-server"
 server_log_path="/dashu/log/"
 
@@ -23,7 +23,7 @@ fi
 #mvn clean package -DskipTests
 
 # 3.delete old package
-sshpass -p dashu0701 ssh root@192.168.5.24 << EOF
+sshpass -p dashu0701 ssh root@192.168.5.15 << EOF
     if [ ! -d "$server_application" ] ; then mkdir -p $server_application ;fi;
     cd $server_application
     rm -rf *.jar;
@@ -38,14 +38,14 @@ sshpass -p dashu0701 scp  app.sh root@$server_ip:$server_application/
 
 # start
 echo "start app..."
-sshpass -p dashu0701 ssh  root@192.168.5.24 << EOF
+sshpass -p dashu0701 ssh  root@192.168.5.15 << EOF
 	cd $server_application;
 	sh app.sh start;
 	exit;
 EOF
 
 #open new terminal
-sshpass -p dashu0701 ssh  root@192.168.5.24 << EOF
+sshpass -p dashu0701 ssh  root@192.168.5.15 << EOF
 	tail -500f $server_log_path/saas-monitor.log
 EOF
 
