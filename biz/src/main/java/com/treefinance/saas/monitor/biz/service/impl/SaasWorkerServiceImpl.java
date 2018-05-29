@@ -5,8 +5,6 @@ import com.treefinance.saas.monitor.dao.entity.SaasWorker;
 import com.treefinance.saas.monitor.dao.mapper.SaasWorkerMapper;
 import org.quartz.CronExpression;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -30,25 +28,34 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
 
     @Override
     public SaasWorker getDutyWorker(Date baseTime) {
+        if(saasWorker == null){
+            saasWorker = getOnDutyWorker();
+        }
         return saasWorker;
     }
 
 
-    @Scheduled(cron = "1 0 0 * * * ?")
+    @Scheduled(cron = "1 0 0 * * ?")
     private void getDutyWorker(){
 
+        saasWorker = getOnDutyWorker();
+    }
+
+    private SaasWorker getOnDutyWorker() {
         List<SaasWorker> workers = saasWorkerMapper.selectByExample(null);
+        SaasWorker active = null;
         for (SaasWorker worker:workers){
             try {
                 CronExpression cronExpression = new CronExpression(worker.getDutyCorn());
                 cronExpression.setTimeZone(TimeZone.getDefault());
                 if(cronExpression.isSatisfiedBy(new Date())){
-                    saasWorker = worker;
+                    active = worker;
                 }
             } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
+        return active;
     }
 
 }

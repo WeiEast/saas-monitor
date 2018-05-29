@@ -4,6 +4,7 @@ import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
@@ -129,6 +130,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         try {
             alarmRecordService.saveAlarmRecords(workOrder, record, orderLog);
         } catch (Exception e) {
+            logger.error(e.getMessage());
             logger.error("插入工单记录等失败，仍然发送特定信息及群发信息");
         }
 
@@ -389,6 +391,11 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
 
 
     private void sendIvr(String content, SaasWorker saasWorker) {
+        // TODO: 18/5/29 做个ivr开关控制
+        if(!AlarmConstants.SWITCH_ON.equals(diamondConfig.getDutyIvrSwitch())){
+            logger.info("对值班人员的ivr提醒已经关闭。。");
+            return;
+        }
         ivrNotifyService.notifyIvrToDutyMan(content, saasWorker.getMobile(), saasWorker.getName());
     }
 

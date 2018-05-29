@@ -47,22 +47,23 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
         //定时任务执行时间,每5分钟执行一次
         Date jobTime = new Date();
         logger.info("运营商监控,预警定时任务执行时间jobTime={}", MonitorDateUtils.format(jobTime));
-        try {
-            String configStr = diamondConfig.getOperatorMonitorAlarmConfig();
-            List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
-            for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
+
+        String configStr = diamondConfig.getOperatorMonitorAlarmConfig();
+        List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
+        for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
+            try {
                 logger.info("运营商监控,预警定时任务执行时间jobTime={},config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(configDTO));
                 if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), AlarmConstants.SWITCH_ON)) {
                     continue;
                 }
                 ETaskStatDataType type = ETaskStatDataType.getByValue(configDTO.getAlarmType());
-                operatorAlarmMonitorService.alarm(jobTime, configDTO,type);
+                operatorAlarmMonitorService.alarm(jobTime, configDTO, type);
+            } catch (Exception e) {
+                logger.error("运营商监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
+                continue;
             }
-        } catch (Exception e) {
-            logger.error("运营商监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
-        } finally {
-            logger.info("运营商监控,预警定时任务执行jobTime={}完成,耗时{}ms", MonitorDateUtils.format(jobTime), System.currentTimeMillis() - start);
         }
+        logger.info("运营商监控,预警定时任务执行jobTime={}完成,耗时{}ms", MonitorDateUtils.format(jobTime), System.currentTimeMillis() - start);
     }
 
 

@@ -106,9 +106,6 @@ public class BaseStatAccessDTO implements Serializable {
      */
     private BigDecimal previousCallbackSuccessRate;
 
-
-
-
     private Date createTime;
 
     private Date lastUpdateTime;

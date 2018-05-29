@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
@@ -82,8 +83,7 @@ public class OperatorMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
         list.add(dto4);
         list.add(dto5);
 
-
-        System.out.println(JSON.toJSONString(list));
+        System.out.println(JSON.toJSONString(list, SerializerFeature.DisableCircularReferenceDetect));
 
     }
 
@@ -148,6 +148,7 @@ public class OperatorMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
         timeListDTO.setCrawlSuccessRate(70);
         timeListDTO.setProcessSuccessRate(70);
         timeListDTO.setConfirmMobileConversionRate(70);
+        timeListDTO.setCallbackSuccessRate(70);
         timeListDTO.setWholeConversionRate(90);
         timeListDTO.setSwitches(mapEvening);
         return timeListDTO;
