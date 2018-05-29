@@ -34,7 +34,7 @@ function stopApp(){
 
 APP_NAME=`ls *.jar | tail -1`
 APP_HOME=`pwd`
-jvm_opt="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=19543"
+jvm_opt="-Xss256k -Xms700M -Xmx700M -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=19543"
 if test -z "$APP_NAME" 
 then
 	echo "not found any jar in $APP_HOME "

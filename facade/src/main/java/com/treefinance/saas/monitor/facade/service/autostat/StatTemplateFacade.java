@@ -1,6 +1,8 @@
 package com.treefinance.saas.monitor.facade.service.autostat;
 
 import com.treefinance.saas.monitor.facade.domain.request.StatTemplateRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autostat.TemplateExpressionTestRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autostat.TemplateTestRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.StatTemplateRO;
 
@@ -36,4 +38,20 @@ public interface StatTemplateFacade {
      * @return
      */
     MonitorResult<Boolean> updateStatTemplate(StatTemplateRequest templateStatRequest);
+
+    /**
+     * 模板表达式测试
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<String> testTemplateExpression(TemplateExpressionTestRequest request);
+
+    /**
+     * 模板测试
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<String> testTemplate(TemplateTestRequest request);
 }

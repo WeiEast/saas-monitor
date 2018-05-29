@@ -16,9 +16,10 @@ public interface StatDataCalculator {
      *
      * @param statTemplate 统计模板
      * @param data         数据
+     * @param groupIndexs  待计算分组
      * @return
      */
-    List<Map<String, Object>> calculate(StatTemplate statTemplate, List<?> data);
+    Map<Integer, List<Map<String, Object>>> calculate(StatTemplate statTemplate, List<?> data, Integer... groupIndexs);
 
     /**
      * 数据刷新
