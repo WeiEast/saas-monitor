@@ -1,7 +1,6 @@
 package com.treefinance.saas.monitor.common.domain.dto;
 
 import com.treefinance.saas.monitor.common.enumeration.EAlarmAspectType;
-import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

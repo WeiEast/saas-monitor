@@ -4,12 +4,14 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
 import com.treefinance.saas.monitor.biz.helper.EmailMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
-import com.treefinance.saas.monitor.common.domain.dto.*;
+import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
+import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.EmailAlarmMsgDTO;
+import com.treefinance.saas.monitor.common.domain.dto.EmailStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmTimeConfigDTO;
@@ -18,7 +20,6 @@ import com.treefinance.saas.monitor.common.enumeration.*;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
-import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.EmailStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EmailStatAccessCriteria;
 import com.treefinance.saas.monitor.exception.BizException;
@@ -38,9 +39,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.treefinance.saas.monitor.common.constants.AlarmConstants.ALL_EMAIL;
-import static com.treefinance.saas.monitor.common.constants.AlarmConstants.GROUP_EMAIL;
-import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.*;
 import static java.util.stream.Collectors.groupingBy;
 
 /**
@@ -752,5 +751,10 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 MonitorDateUtils.format(baseTime) +
                 "发生" + "级别:" + alarmLevel.name() + "预警" +
                 "系统已经生成了id为" + id + "的预警记录和编号为" + orderId + "的工单,请及时处理";
+    }
+
+    @Override
+    protected EAlarmType getAlarmType() {
+        return EAlarmType.email_alarm;
     }
 }

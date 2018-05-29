@@ -1,19 +1,19 @@
 package com.treefinance.saas.monitor.dao.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
 
-@Getter
-@Setter
+@Data
 public class SaasWorker implements Serializable {
 
-    public static final SaasWorker DEFAULT_WORKER = new SaasWorker();
+    public static SaasWorker DEFAULT_WORKER = new SaasWorker();
+
     static {
-        DEFAULT_WORKER.name = "程通";
-        DEFAULT_WORKER.mobile = "18258265028";
+        DEFAULT_WORKER.setEmail("chengtong@treefinance.com.cn");
+        DEFAULT_WORKER.setMobile("18258265028");
+        DEFAULT_WORKER.setName("程通");
     }
 
 
@@ -22,6 +22,9 @@ public class SaasWorker implements Serializable {
     private String name;
 
     private String mobile;
+
+    private String email;
+
     private String dutyCorn;
 
     private Date createTime;

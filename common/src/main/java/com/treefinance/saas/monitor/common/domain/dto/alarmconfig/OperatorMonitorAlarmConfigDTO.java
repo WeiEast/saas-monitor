@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import lombok.Getter;
 import lombok.Setter;

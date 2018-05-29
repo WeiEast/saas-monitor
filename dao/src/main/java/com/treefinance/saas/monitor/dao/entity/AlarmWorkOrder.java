@@ -1,18 +1,14 @@
 package com.treefinance.saas.monitor.dao.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-
 /**
  * @author chengtong
  */
-@Setter
-@Getter
+@Data
 public class AlarmWorkOrder implements Serializable {
-
     private Long id;
 
     private Long recordId;

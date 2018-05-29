@@ -10,7 +10,10 @@ import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.*;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.*;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
+import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
+import com.treefinance.saas.monitor.dao.entity.SaasWorker;
+import com.treefinance.saas.monitor.dao.entity.WorkOrderLog;
 import com.treefinance.saas.monitor.dao.mapper.EmailStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import lombok.Getter;
@@ -24,11 +27,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 邮箱预警服务类的模板类
@@ -64,6 +65,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
     @Autowired
     protected AlarmMessageProducer alarmMessageProducer;
 
+    protected abstract EAlarmType getAlarmType();
 
     @Override
     public void alarm(Date now, BaseAlarmConfigDTO configDTO, ETaskStatDataType type) {
@@ -331,7 +333,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         alarmRecord.setIsProcessed(isProcessed);
         alarmRecord.setCreateTime(now);
         alarmRecord.setLastUpdateTime(now);
-
+        alarmRecord.setAlarmType(getAlarmType().name());
         return alarmRecord;
     }
 

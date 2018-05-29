@@ -5,19 +5,21 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate;
-import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
-import com.treefinance.saas.monitor.common.domain.dto.*;
-import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.*;
+import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
+import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorAccessAlarmMsgDTO;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.MonitorAlarmLevelConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorAlarmTimeConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.*;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
-import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
 import com.treefinance.saas.monitor.exception.BizException;
@@ -37,7 +39,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.treefinance.saas.monitor.common.constants.AlarmConstants.*;
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
 import static java.util.stream.Collectors.groupingBy;
 
 /**
@@ -815,4 +817,8 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         return list;
     }
 
+    @Override
+    protected EAlarmType getAlarmType() {
+        return EAlarmType.operator_alarm;
+    }
 }

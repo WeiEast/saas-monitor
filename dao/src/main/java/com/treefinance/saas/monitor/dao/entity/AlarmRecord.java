@@ -1,7 +1,6 @@
 package com.treefinance.saas.monitor.dao.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -9,8 +8,7 @@ import java.util.Date;
 /**
  * @author chengtong
  */
-@Setter
-@Getter
+@Data
 public class AlarmRecord implements Serializable {
 
     private Long id;
@@ -21,6 +19,8 @@ public class AlarmRecord implements Serializable {
 
     private String level;
 
+    private String alarmType;
+
     private String summary;
 
     private String content;
@@ -30,5 +30,6 @@ public class AlarmRecord implements Serializable {
     private Date lastUpdateTime;
 
     private static final long serialVersionUID = 1L;
+
 
 }

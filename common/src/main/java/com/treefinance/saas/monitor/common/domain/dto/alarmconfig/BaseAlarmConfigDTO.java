@@ -3,7 +3,6 @@ package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 import com.alibaba.fastjson.JSON;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.io.Serializable;
 

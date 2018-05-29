@@ -1,16 +1,9 @@
 package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 
 
-import com.datatrees.common.util.DateUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.beans.Transient;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Date;
 
 /**
  * @Author: chengtong

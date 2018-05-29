@@ -6,7 +6,6 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.service.MonitorAlarmService;
-import com.treefinance.saas.monitor.biz.service.OperatorMonitorGroupAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
