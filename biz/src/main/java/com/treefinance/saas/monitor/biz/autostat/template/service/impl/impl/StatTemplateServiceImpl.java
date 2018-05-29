@@ -90,7 +90,7 @@ public class StatTemplateServiceImpl extends AbstractCacheService<String, StatTe
             criteria.andTemplateNameLike("%" + templateStatRequest.getTemplateName().trim() + "%");
         }
 
-        if (templateStatRequest.getStatus() != null && templateStatRequest.getStatus() == 2) {
+        if (templateStatRequest.getStatus() != null && templateStatRequest.getStatus() != 2) {
             criteria.andStatusEqualTo(templateStatRequest.getStatus());
         }
 
@@ -108,7 +108,7 @@ public class StatTemplateServiceImpl extends AbstractCacheService<String, StatTe
             criteria.andTemplateNameLike("%" + templateStatRequest.getTemplateName().trim() + "%");
         }
 
-        if (templateStatRequest.getStatus() != null && templateStatRequest.getStatus() == 2) {
+        if (templateStatRequest.getStatus() != null && templateStatRequest.getStatus() != 2) {
             criteria.andStatusEqualTo(templateStatRequest.getStatus());
         }
         return statTemplateMapper.countByExample(statTemplateCriteria);
