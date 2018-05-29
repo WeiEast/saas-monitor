@@ -85,21 +85,13 @@ public class StatTemplateServiceImpl extends AbstractCacheService<String, StatTe
         statTemplateCriteria.setLimit(templateStatRequest.getPageSize());
         statTemplateCriteria.setOffset(templateStatRequest.getOffset());
 
+        StatTemplateCriteria.Criteria criteria = statTemplateCriteria.createCriteria();
+        if (StringUtils.isNotEmpty(templateStatRequest.getTemplateName())) {
+            criteria.andTemplateNameLike("%" + templateStatRequest.getTemplateName().trim() + "%");
+        }
 
-        if (templateStatRequest.getStatus() == null || templateStatRequest.getStatus() == 2) {
-            if (templateStatRequest.getTemplateName() == null) {
-                statTemplateCriteria.createCriteria();
-            } else {
-                statTemplateCriteria.createCriteria().andTemplateNameLike("%" + templateStatRequest.getTemplateName() + "%");
-            }
-
-        } else {
-            if (templateStatRequest.getTemplateName() == null) {
-                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus());
-            } else {
-                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike("%" + templateStatRequest.getTemplateName() + "%");
-            }
-
+        if (templateStatRequest.getStatus() != null && templateStatRequest.getStatus() == 2) {
+            criteria.andStatusEqualTo(templateStatRequest.getStatus());
         }
 
         return statTemplateMapper.selectPaginationByExample(statTemplateCriteria);
@@ -111,20 +103,13 @@ public class StatTemplateServiceImpl extends AbstractCacheService<String, StatTe
     public Long countStatTemplate(StatTemplateRequest templateStatRequest) {
         StatTemplateCriteria statTemplateCriteria = new StatTemplateCriteria();
 
-        if (templateStatRequest.getStatus() == null || templateStatRequest.getStatus() == 2) {
-            if (templateStatRequest.getTemplateName() == null) {
-                statTemplateCriteria.createCriteria();
-            } else {
-                statTemplateCriteria.createCriteria().andTemplateNameLike("%" + templateStatRequest.getTemplateName() + "%");
-            }
+        StatTemplateCriteria.Criteria criteria = statTemplateCriteria.createCriteria();
+        if (StringUtils.isNotEmpty(templateStatRequest.getTemplateName())) {
+            criteria.andTemplateNameLike("%" + templateStatRequest.getTemplateName().trim() + "%");
+        }
 
-        } else {
-            if (templateStatRequest.getTemplateName() == null) {
-                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus());
-            } else {
-                statTemplateCriteria.createCriteria().andStatusEqualTo(templateStatRequest.getStatus()).andTemplateNameLike("%" + templateStatRequest.getTemplateName() + "%");
-            }
-
+        if (templateStatRequest.getStatus() != null && templateStatRequest.getStatus() == 2) {
+            criteria.andStatusEqualTo(templateStatRequest.getStatus());
         }
         return statTemplateMapper.countByExample(statTemplateCriteria);
     }
