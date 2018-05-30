@@ -5,6 +5,9 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * @author chengtong
+ */
 @Data
 public class WorkOrderLog implements Serializable {
     private Long id;
