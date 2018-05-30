@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.service;
 import com.treefinance.saas.monitor.dao.entity.SaasWorker;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author chengtong
@@ -11,5 +12,9 @@ import java.util.Date;
 public interface SaasWorkerService {
 
     SaasWorker getDutyWorker(Date baseTime);
+
+    List<SaasWorker> getAllSaasWorker();
+
+    SaasWorker getWorkerByName(String name);
 
 }

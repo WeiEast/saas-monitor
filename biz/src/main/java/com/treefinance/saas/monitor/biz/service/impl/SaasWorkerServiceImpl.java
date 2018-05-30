@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.dao.entity.SaasWorker;
+import com.treefinance.saas.monitor.dao.entity.SaasWorkerCriteria;
 import com.treefinance.saas.monitor.dao.mapper.SaasWorkerMapper;
 import org.quartz.CronExpression;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +35,14 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
         return saasWorker;
     }
 
+    @Override
+    public List<SaasWorker> getAllSaasWorker() {
+
+        return saasWorkerMapper.selectByExample(null);
+    }
 
     @Scheduled(cron = "1 0 0 * * ?")
     private void getDutyWorker(){
-
         saasWorker = getOnDutyWorker();
     }
 
@@ -58,4 +63,15 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
         return active;
     }
 
+    @Override
+    public SaasWorker getWorkerByName(String name) {
+
+        SaasWorkerCriteria criteria = new SaasWorkerCriteria();
+        criteria.createCriteria().andNameEqualTo(name);
+        List<SaasWorker> list = saasWorkerMapper.selectByExample(criteria);
+        if(list == null|| list.isEmpty()){
+            return null;
+        }
+        return list.get(0);
+    }
 }

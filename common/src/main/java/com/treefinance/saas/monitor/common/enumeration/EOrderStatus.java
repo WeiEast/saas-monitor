@@ -6,11 +6,9 @@ package com.treefinance.saas.monitor.common.enumeration;
  */
 public enum EOrderStatus {
 
-    UNPROCESS(0,"未处理"),
-    PROCESSED(1,"已处理"),
-    WRONG(2,"误报"),
-
-    ;
+    UNPROCESS(0, "未处理"),
+    PROCESSED(1, "已处理"),
+    WRONG(2, "误报"),;
 
     private Integer code;
     private String desc;
@@ -18,6 +16,15 @@ public enum EOrderStatus {
     EOrderStatus(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
+    }
+
+    public static EOrderStatus getByValue(Integer code) {
+        for (EOrderStatus status : values()) {
+            if (status.code.equals(code)) {
+                return status;
+            }
+        }
+        return null;
     }
 
     public Integer getCode() {

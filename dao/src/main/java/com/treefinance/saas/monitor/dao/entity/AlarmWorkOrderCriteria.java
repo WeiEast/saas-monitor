@@ -255,6 +255,10 @@ public class AlarmWorkOrderCriteria {
             addCriterion("id is null");
             return (Criteria) this;
         }
+        public Criteria andIdIsLike(String id) {
+            addCriterion("dutyName like", id, "id");
+            return (Criteria) this;
+        }
 
         public Criteria andIdIsNotNull() {
             addCriterion("id is not null");

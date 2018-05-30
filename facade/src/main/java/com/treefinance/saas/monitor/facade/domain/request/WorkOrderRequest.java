@@ -14,15 +14,29 @@ import java.util.Date;
 @Setter
 @Getter
 public class WorkOrderRequest extends PageRequest {
-
+    /**
+     * 值班人员 模糊查询
+     * */
     private String dutyName;
 
+    /**
+     * 处理人员 模糊查询
+     * */
     private String processorName;
 
+    /**
+     * 对创建时间的范围查询 开始
+     * */
     private Date startTime;
 
+    /**
+     * 对创建时间的范围查询 结束
+     * */
     private Date endTime;
 
+    /**
+     * 编号
+     * */
     private Long id;
 
 }

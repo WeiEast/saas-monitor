@@ -1,6 +1,5 @@
 package com.treefinance.saas.monitor.facade.domain.request;
 
-import com.treefinance.saas.monitor.facade.domain.base.BaseRequest;
 import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,5 +22,6 @@ public class AlarmRecordRequest extends PageRequest {
     private String alarmType;
     /**摘要信息 模糊查询*/
     private String summary;
-
+    /**等级*/
+    private String level;
 }

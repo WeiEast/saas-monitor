@@ -37,7 +37,7 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
 
 
     @Override
-    public List<AlarmRecord> selectByExample(AlarmRecordCriteria criteria) {
+    public List<AlarmRecord> queryByCondition(AlarmRecordCriteria criteria) {
         return alarmRecordMapper.selectByExample(criteria);
     }
 
@@ -46,7 +46,7 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
         AlarmRecordCriteria criteria = new AlarmRecordCriteria();
         criteria.setOrderByClause("dataTime asc");
         criteria.createCriteria().andLevelEqualTo(level.name()).andSummaryEqualTo(summary);
-        List<AlarmRecord> records = selectByExample(criteria);
+        List<AlarmRecord> records = queryByCondition(criteria);
         if(records.isEmpty()){
             return null;
         }
@@ -60,5 +60,10 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
         alarmRecordMapper.insert(record);
         workOrderLogMapper.insert(orderLog);
         workOrderMapper.insert(order);
+    }
+
+    @Override
+    public long countByExample(AlarmRecordCriteria criteria) {
+        return alarmRecordMapper.countByExample(criteria);
     }
 }

@@ -47,9 +47,14 @@ public interface AlarmRecordFacade {
      * @param request 数据参数
      *
      * */
-    MonitorResult<Boolean> updateWorkerOrder(UpdateWorkOrderRequest request);
+    MonitorResult<Boolean> updateWorkerOrderProcessor(UpdateWorkOrderRequest request);
 
-
+    /**
+     * 更新工单的接口
+     * @param request 数据参数
+     *
+     * */
+    MonitorResult<Boolean> updateWorkerOrderStatus(UpdateWorkOrderRequest request);
 
     MonitorResult<List<WorkOrderLogRO>> queryWorkOrderLog(WorkOrderLogRequest request);
 }
