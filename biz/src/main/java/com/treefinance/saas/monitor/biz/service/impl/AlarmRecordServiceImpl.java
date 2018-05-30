@@ -66,4 +66,10 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
     public long countByExample(AlarmRecordCriteria criteria) {
         return alarmRecordMapper.countByExample(criteria);
     }
+
+
+    @Override
+    public AlarmRecord getByPrimaryKey(Long id) {
+        return alarmRecordMapper.selectByPrimaryKey(id);
+    }
 }
