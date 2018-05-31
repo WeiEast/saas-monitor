@@ -375,9 +375,8 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         for (BizSourceAspect bizSourceAspect : bizSourceAspectList) {
             sb.append(bizSourceAspect.bizSource).append(":").append(bizSourceAspect.aspect).append("&");
         }
-        sb.substring(0, sb.length() - 1);
 
-        return sb.toString();
+        return sb.substring(0, sb.length() - 1);
     }
 
 

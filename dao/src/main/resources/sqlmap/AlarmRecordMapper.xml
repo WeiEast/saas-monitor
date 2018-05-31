@@ -333,10 +333,10 @@
       This element was generated on Tue May 29 17:39:33 CST 2018.
     -->
     insert into alarm_record (id,dataTime, isProcessed, level,
-      alarmType, summary, content, 
+      alarmType, summary, content,
       createTime, lastUpdateTime)
     values (#{id},#{dataTime,jdbcType=TIMESTAMP}, #{isProcessed,jdbcType=BIT}, #{level,jdbcType=VARCHAR},
-      #{alarmType,jdbcType=VARCHAR}, #{summary,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, 
+      #{alarmType,jdbcType=VARCHAR}, #{summary,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR},
       #{createTime,jdbcType=TIMESTAMP}, #{lastUpdateTime,jdbcType=TIMESTAMP})
   </insert>
   <insert id="insertSelective" parameterType="com.treefinance.saas.monitor.dao.entity.AlarmRecord">
@@ -545,12 +545,4 @@
     </if>
   </select>
 
-  <insert id="insert" parameterType="com.treefinance.saas.monitor.dao.entity.AlarmRecord">
-    insert into alarm_record (id,dataTime, isProcessed, level,
-      summary, content, createTime, 
-      lastUpdateTime)
-    values (#{id},#{dataTime,jdbcType=TIMESTAMP}, #{isProcessed,jdbcType=BIT}, #{level,jdbcType=VARCHAR},
-      #{summary,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
-      #{lastUpdateTime,jdbcType=TIMESTAMP})
-  </insert>
 </mapper>

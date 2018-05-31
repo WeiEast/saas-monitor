@@ -495,12 +495,4 @@
       order by ${orderByClause}
     </if>
   </select>
-  <insert id="insert" parameterType="com.treefinance.saas.monitor.dao.entity.WorkOrderLog">
-    insert into work_order_log (id, orderId, recordId,
-      opName, opDesc, createTime, 
-      lastUpdateTime)
-    values (#{id,jdbcType=BIGINT}, #{orderId,jdbcType=BIGINT}, #{recordId,jdbcType=BIGINT}, 
-      #{opName,jdbcType=VARCHAR}, #{opDesc,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
-      #{lastUpdateTime,jdbcType=TIMESTAMP})
-  </insert>
 </mapper>

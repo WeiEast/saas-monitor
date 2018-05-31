@@ -787,9 +787,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
         List<BizSourceAspect> bizSourceAspectList = genBizSourceAspectList(msgList);
 
-        return Joiner.on(":").join(EAlarmType.operator_alarm.getCode(),alarmLevel.name(),EStatType.OPERATOR.getType(),env.getValue(),
-                getBizSourceAspect
-                (bizSourceAspectList));
+        return Joiner.on(":").join(EAlarmType.operator_alarm.getCode(),alarmLevel.name(),EStatType.OPERATOR.getType(),env.getValue(), getBizSourceAspect(bizSourceAspectList));
     }
 
     @Override
@@ -808,7 +806,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         for (BaseAlarmMsgDTO msg : msgList){
             OperatorAccessAlarmMsgDTO opMsg = (OperatorAccessAlarmMsgDTO) msg;
 
-            String bizSource = MonitorConstants.VIRTUAL_TOTAL_STAT_APP_ID.equals(opMsg.getGroupCode())?"all":opMsg.getGroupCode();
+            String bizSource = MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR.equals(opMsg.getGroupCode())?"all":opMsg.getGroupCode();
 
             BizSourceAspect sourceAspect = new BizSourceAspect(bizSource,msg.getAlarmAspectType().getValue());
             list.add(sourceAspect);

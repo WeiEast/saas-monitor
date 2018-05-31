@@ -525,12 +525,4 @@
       order by ${orderByClause}
     </if>
   </select>
-  <insert id="insert" parameterType="com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder">
-    insert into alarm_work_order (id, recordId, status,
-      dutyName, processorName, remark, 
-      createTime, lastUpdateTime)
-    values (#{id,jdbcType=BIGINT}, #{recordId,jdbcType=BIGINT}, #{status,jdbcType=BIT}, 
-      #{dutyName,jdbcType=VARCHAR}, #{processorName,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, 
-      #{createTime,jdbcType=TIMESTAMP}, #{lastUpdateTime,jdbcType=TIMESTAMP})
-  </insert>
 </mapper>
