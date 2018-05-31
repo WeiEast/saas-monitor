@@ -9,34 +9,35 @@ public enum EAlarmType {
     /**
      * 无任务预警
      */
-    no_task("A01"),
+    no_task("A01","无任务预警"),
     /**
      * 无成功任务预警
      */
-    no_success_task("A02"),
+    no_success_task("A02","无成功任务预警"),
 
-    conversion_rate_low("A03"),
+    conversion_rate_low("A03","转化率预警"),
 
     /**
      * 运营商预警
      */
-    operator_alarm("operator_alarm"),
+    operator_alarm("operator_alarm","运营商预警"),
 
     /**
      * 邮箱预警
      */
-    email_alarm("A04"),
+    email_alarm("A04","邮箱预警"),
 
     /**
      * 电商预警
      */
-    ecommerce_alarm("A05"),;
+    ecommerce_alarm("A05","电商预警"),;
 
     private String code;
     private String desc;
 
-    EAlarmType(String code) {
+    EAlarmType(String code,String desc) {
         this.code = code;
+        this.desc = desc;
     }
 
 

@@ -46,7 +46,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * Created by haojiahong on 2017/11/24.
+ *
+ * @author haojiahong
+ * @date 2017/11/24
  */
 @Service
 public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmService {

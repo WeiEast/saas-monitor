@@ -4,8 +4,6 @@ import com.treefinance.saas.monitor.facade.domain.base.BaseRO;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
-
 /**
  * @author chengtong
  * @date 18/5/30 11:17
@@ -26,4 +24,5 @@ public class AlarmWorkOrderRO extends BaseRO {
 
     private String remark;
 
+    private String statusDesc;
 }

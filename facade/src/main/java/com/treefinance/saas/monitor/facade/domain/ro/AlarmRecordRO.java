@@ -20,6 +20,8 @@ public class AlarmRecordRO extends BaseRO {
 
     private Boolean isProcessed;
 
+    private String processDesc;
+
     private String level;
 
     private String alarmType;

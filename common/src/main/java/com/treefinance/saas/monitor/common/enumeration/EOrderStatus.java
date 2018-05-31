@@ -1,5 +1,8 @@
 package com.treefinance.saas.monitor.common.enumeration;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author chengtong
  * @date 18/5/28 17:59
@@ -12,6 +15,19 @@ public enum EOrderStatus {
 
     private Integer code;
     private String desc;
+
+
+    private static Map<Integer,String> map = new HashMap<>();
+
+    static {
+        map.put(UNPROCESS.code, UNPROCESS.desc);
+        map.put(PROCESSED.code, PROCESSED.desc);
+        map.put(WRONG.code, WRONG.desc);
+    }
+
+    public static String getDesc(Integer code){
+        return map.get(code);
+    }
 
     EOrderStatus(Integer code, String desc) {
         this.code = code;

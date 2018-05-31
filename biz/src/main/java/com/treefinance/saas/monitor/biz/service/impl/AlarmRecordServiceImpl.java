@@ -38,7 +38,7 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
 
     @Override
     public List<AlarmRecord> queryByCondition(AlarmRecordCriteria criteria) {
-        return alarmRecordMapper.selectByExample(criteria);
+        return alarmRecordMapper.selectPaginationByExample(criteria);
     }
 
     @Override

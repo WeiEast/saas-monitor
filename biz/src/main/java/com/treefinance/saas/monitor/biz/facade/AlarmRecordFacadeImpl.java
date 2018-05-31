@@ -1,10 +1,12 @@
 package com.treefinance.saas.monitor.biz.facade;
 
 import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.saas.monitor.biz.event.AlarmClearEvent;
 import com.treefinance.saas.monitor.biz.service.AlarmRecordService;
 import com.treefinance.saas.monitor.biz.service.AlarmWorkOrderService;
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.biz.service.WorkOrderLogService;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
@@ -23,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -45,6 +48,8 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
     private AlarmWorkOrderService alarmWorkOrderService;
     @Autowired
     private WorkOrderLogService workOrderLogService;
+    @Autowired
+    private ApplicationEventPublisher publisher;
 
     @Override
     public MonitorResult<List<AlarmRecordRO>> queryAlarmRecord(AlarmRecordRequest recordRequest) {
@@ -77,6 +82,8 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         List<AlarmRecord> list = alarmRecordService.queryByCondition(criteria);
 
         List<AlarmRecordRO> alarmRecordROList = DataConverterUtils.convert(list, AlarmRecordRO.class);
+
+        alarmRecordROList.forEach(alarmRecordRO -> alarmRecordRO.setProcessDesc(alarmRecordRO.getIsProcessed() ? "已处理" : "未处理"));
 
         return MonitorResultBuilder.pageResult(recordRequest, alarmRecordROList, count);
     }
@@ -129,6 +136,11 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         List<AlarmWorkOrder> list = alarmWorkOrderService.queryByCondition(criteria);
 
         List<AlarmWorkOrderRO> alarmWorkOrderROS = DataConverterUtils.convert(list, AlarmWorkOrderRO.class);
+
+        alarmWorkOrderROS.forEach(alarmWorkOrderRO -> {
+            alarmWorkOrderRO.setStatusDesc(EOrderStatus.getDesc(alarmWorkOrderRO.getStatus()));
+        });
+
 
         return MonitorResultBuilder.pageResult(recordRequest, alarmWorkOrderROS, count);
     }
@@ -220,7 +232,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         workOrderLog.setId(UidGenerator.getId());
         workOrderLog.setOrderId(alarmWorkOrder.getId());
         workOrderLog.setRecordId(alarmWorkOrder.getRecordId());
-        workOrderLog.setOpDesc(request.getProcessorName() + "处理工单，状态由" + (oldStatus == null ? "未处理" : oldStatus.getDesc()) +
+        workOrderLog.setOpDesc(alarmWorkOrder.getProcessorName() + "处理工单，状态由" + (oldStatus == null ? "未处理" : oldStatus.getDesc()) +
                 "变更到" + status.getDesc());
         workOrderLog.setOpName(alarmWorkOrder.getProcessorName());
         workOrderLog.setLastUpdateTime(now);
@@ -232,6 +244,18 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             logger.error(e.getMessage());
             return MonitorResultBuilder.build(Boolean.FALSE);
         }
+
+        //todo 发送预警clear信息
+        AlarmClearEvent event = new AlarmClearEvent();
+
+        event.setAlarmRecord(alarmRecord);
+        event.setAlarmType(EAlarmType.operator_alarm);
+        event.setDutyMan(alarmWorkOrder.getDutyName());
+        event.setAlarmRecord(alarmRecord);
+        event.setOpDesc(workOrderLog.getOpDesc());
+        event.setProcessor(alarmWorkOrder.getProcessorName());
+
+        publisher.publishEvent(event);
 
         return MonitorResultBuilder.build(Boolean.TRUE);
     }

@@ -56,5 +56,8 @@ public interface AlarmRecordFacade {
      * */
     MonitorResult<Boolean> updateWorkerOrderStatus(UpdateWorkOrderRequest request);
 
+
+
+
     MonitorResult<List<WorkOrderLogRO>> queryWorkOrderLog(WorkOrderLogRequest request);
 }

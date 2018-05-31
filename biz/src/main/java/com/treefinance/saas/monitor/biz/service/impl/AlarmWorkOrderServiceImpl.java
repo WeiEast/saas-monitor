@@ -32,7 +32,7 @@ public class AlarmWorkOrderServiceImpl implements AlarmWorkOrderService {
     @Override
     public List<AlarmWorkOrder> queryByCondition(AlarmWorkOrderCriteria criteria) {
 
-        return alarmWorkOrderMapper.selectByExample(criteria);
+        return alarmWorkOrderMapper.selectPaginationByExample(criteria);
 
     }
 
