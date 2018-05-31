@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.service;
 
+import com.datatrees.notify.async.body.mail.MailEnum;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
@@ -27,6 +28,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -137,10 +139,22 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         }
 
         sendIvr(content, saasWorker);
+        sendSms(content,saasWorker);
+        sendEmail(content,saasWorker);
 
         //构建回调内容 发送通知;
         sendAlarmMsg(level, msgList, configDTO, baseTime, type);
 
+    }
+
+    private void sendEmail(String content, SaasWorker saasWorker) {
+        String title = "值班人员预警";
+        alarmMessageProducer.sendMail(title,content, MailEnum.SIMPLE_MAIL,saasWorker.getEmail());
+    }
+
+    private void sendSms(String content, SaasWorker saasWorker){
+        String mobile = saasWorker.getMobile();
+        smsNotifyService.send(content, Collections.singletonList(mobile));
     }
 
     private WorkOrderLog getWorkOrderLog(Date now, Long recordId, Long orderId) {

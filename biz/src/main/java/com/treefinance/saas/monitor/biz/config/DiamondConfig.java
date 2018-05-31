@@ -66,6 +66,12 @@ public class DiamondConfig {
     private Integer operatorMonitorIntervalMinutes;
 
     /**
+     * (运营商监控)统计时间间隔:分钟为单位
+     */
+    @DAttribute(key = "console.address")
+    private String consoleAddress;
+
+    /**
      * 运营商预警,需要预警的运营商列表
      */
     @DAttribute(key = "operator.alarm.operator.name.list")
@@ -477,5 +483,14 @@ public class DiamondConfig {
 
     public void setDutyIvrSwitch(String dutyIvrSwitch) {
         this.dutyIvrSwitch = dutyIvrSwitch;
+    }
+
+
+    public String getConsoleAddress() {
+        return consoleAddress;
+    }
+
+    public void setConsoleAddress(String consoleAddress) {
+        this.consoleAddress = consoleAddress;
     }
 }
