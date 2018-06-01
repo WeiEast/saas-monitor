@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.facade;
 
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.event.AlarmClearEvent;
+import com.treefinance.saas.monitor.biz.event.OrderDelegateEvent;
 import com.treefinance.saas.monitor.biz.service.AlarmRecordService;
 import com.treefinance.saas.monitor.biz.service.AlarmWorkOrderService;
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
@@ -36,7 +37,7 @@ import java.util.Objects;
  * @author chengtong
  * @date 18/5/30 14:46
  */
-@Service
+@Service("alarmRecordFacade")
 public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(AlarmRecordFacadeImpl.class);
@@ -156,7 +157,9 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         Date now = new Date();
 
-        if (saasWorkerService.getWorkerByName(request.getProcessorName()) == null) {
+        SaasWorker processor = saasWorkerService.getWorkerByName(request.getProcessorName());
+
+        if (processor == null) {
             logger.error("不存在的工作人员,processName:{}", request.getProcessorName());
             return MonitorResultBuilder.build("不存在的工作人员，" + request.getProcessorName());
         }
@@ -180,6 +183,15 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             logger.error("更新工单失败");
             logger.error(e.getMessage());
             return MonitorResultBuilder.build(Boolean.FALSE);
+        }
+        //todo 给processor发送信息
+        if(!alarmWorkOrder.getProcessorName().equals(alarmWorkOrder.getDutyName())){
+            OrderDelegateEvent event = new OrderDelegateEvent();
+
+            event.setAlarmRecord(alarmRecordService.getByPrimaryKey(alarmWorkOrder.getRecordId()));
+            event.setAlarmWorkOrder(alarmWorkOrder);
+            event.setProcessor(processor);
+            publisher.publishEvent(event);
         }
 
         return MonitorResultBuilder.build(Boolean.TRUE);
@@ -283,6 +295,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         return MonitorResultBuilder.build(workOrderLogROs);
     }
+
 
 
 }
