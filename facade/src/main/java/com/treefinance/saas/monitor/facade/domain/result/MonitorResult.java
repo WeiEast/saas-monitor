@@ -52,9 +52,9 @@ public class MonitorResult<T> implements Serializable {
     }
 
     public MonitorResult(long timestamp, String errorMsg, T data) {
-        this.timestamp = timestamp;
-        this.errorMsg = errorMsg;
-        this.data = data;
+            this.timestamp = timestamp;
+            this.errorMsg = errorMsg;
+            this.data = data;
     }
 
     public MonitorResult(PageRequest request, T data, long totalCount) {
@@ -62,6 +62,8 @@ public class MonitorResult<T> implements Serializable {
         this.request = request;
         this.totalCount = totalCount;
     }
+
+
 
     public long getTimestamp() {
         return timestamp;
