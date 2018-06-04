@@ -6,6 +6,7 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.service.EcommerceMonitorAllAlarmService;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -44,7 +45,7 @@ public class EcommerceMonitorAlarmJob implements SimpleJob {
             List<EcommerceMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, EcommerceMonitorAlarmConfigDTO.class);
             for (EcommerceMonitorAlarmConfigDTO configDTO : configList) {
                 logger.info("电商预警,预警定时任务执行时间jobTime={},config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(configDTO));
-                if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), "on")) {
+                if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), AlarmConstants.SWITCH_ON)) {
                     continue;
                 }
                 if (configDTO.getAlarmType() == 1) {

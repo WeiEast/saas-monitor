@@ -50,6 +50,9 @@ public class DiamondConfig {
     @DAttribute(key = "task.success.rate.alarm.config")
     private String taskSuccessRateAlarmConfig;
 
+    @DAttribute(key = "saas.alarm.monitor.duty.ivr.switch")
+    private String dutyIvrSwitch;
+
     /**
      * 运营商按人数预警配置
      */
@@ -61,6 +64,12 @@ public class DiamondConfig {
      */
     @DAttribute(key = "operator.monitor.interval.minutes")
     private Integer operatorMonitorIntervalMinutes;
+
+    /**
+     * (运营商监控)统计时间间隔:分钟为单位
+     */
+    @DAttribute(key = "console.address")
+    private String consoleAddress;
 
     /**
      * 运营商预警,需要预警的运营商列表
@@ -466,5 +475,22 @@ public class DiamondConfig {
 
     public void setTaskExistAlarmNoTaskConfig(String taskExistAlarmNoTaskConfig) {
         this.taskExistAlarmNoTaskConfig = taskExistAlarmNoTaskConfig;
+    }
+
+    public String getDutyIvrSwitch() {
+        return dutyIvrSwitch;
+    }
+
+    public void setDutyIvrSwitch(String dutyIvrSwitch) {
+        this.dutyIvrSwitch = dutyIvrSwitch;
+    }
+
+
+    public String getConsoleAddress() {
+        return consoleAddress;
+    }
+
+    public void setConsoleAddress(String consoleAddress) {
+        this.consoleAddress = consoleAddress;
     }
 }

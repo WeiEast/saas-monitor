@@ -7,6 +7,9 @@ import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.*;
 
@@ -16,7 +19,10 @@ import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITC
  * @Author: chengtong
  * @Date: 18/3/9 16:36
  */
-public class EmailMonitorAlarmConfigDTO extends BaseConfig {
+@Setter
+@Getter
+@ToString
+public class EmailMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
 
     static final long serialVersionUID = 42123131212L;
 
@@ -31,10 +37,6 @@ public class EmailMonitorAlarmConfigDTO extends BaseConfig {
      */
     private String appName;
     /**
-     * 任务超时时间
-     */
-    private Integer taskTimeoutSecs;
-    /**
      * 预警类型:按人统计预警为1,按任务统计为0
      */
     private Integer alarmType;
@@ -42,10 +44,6 @@ public class EmailMonitorAlarmConfigDTO extends BaseConfig {
      * 预警类型描述：
      */
     private String alarmTypeDesc;
-    /**
-     * 分区时间段 表示的是统计的时间段
-     */
-    private Integer intervalMins;
 
     /**
      * 邮箱类型
@@ -85,120 +83,15 @@ public class EmailMonitorAlarmConfigDTO extends BaseConfig {
      */
     private List<EmailMonitorAlarmTimeConfigDTO> list;
 
-    public Integer getFewNum() {
-        return fewNum;
-    }
-
-    public void setFewNum(Integer fewNum) {
-        this.fewNum = fewNum;
-    }
-
-    public Integer getThreshold() {
-        return threshold;
-    }
-
-    public void setThreshold(Integer threshold) {
-        this.threshold = threshold;
-    }
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public Integer getTaskTimeoutSecs() {
-        return taskTimeoutSecs;
-    }
-
-    public void setTaskTimeoutSecs(Integer taskTimeoutSecs) {
-        this.taskTimeoutSecs = taskTimeoutSecs;
-    }
-
-
-    public Integer getAlarmType() {
-        return alarmType;
-    }
-
-    public void setAlarmType(Integer alarmType) {
-        this.alarmType = alarmType;
-    }
-
-    public String getAlarmTypeDesc() {
-        return alarmTypeDesc;
-    }
-
-    public void setAlarmTypeDesc(String alarmTypeDesc) {
-        this.alarmTypeDesc = alarmTypeDesc;
-    }
-
-    public Integer getIntervalMins() {
-        return intervalMins;
-    }
-
-    public void setIntervalMins(Integer intervalMins) {
-        this.intervalMins = intervalMins;
-    }
-
-    public Integer getPreviousDays() {
-        return previousDays;
-    }
-
-    public void setPreviousDays(Integer previousDays) {
-        this.previousDays = previousDays;
-    }
-
-    public List<EmailMonitorAlarmTimeConfigDTO> getList() {
-        return list;
-    }
-
-    public void setList(List<EmailMonitorAlarmTimeConfigDTO> list) {
-        this.list = list;
-    }
-
-    public List<MonitorAlarmLevelConfigDTO> getLevelConfig() {
-        return levelConfig;
-    }
-
-    public void setLevelConfig(List<MonitorAlarmLevelConfigDTO> levelConfig) {
-        this.levelConfig = levelConfig;
-    }
-
-    public HashMap<String, String> getSwitches() {
-        return switches;
-    }
-
-    public void setSwitches(HashMap<String, String> switches) {
-        this.switches = switches;
-    }
-
-    public List<String> getEmails() {
-        return emails;
-    }
-
-    public void setEmails(List<String> emails) {
-        this.emails = emails;
-    }
-
     public static void main(String... args) {
         EmailMonitorAlarmConfigDTO emailMonitorAlarmConfigDTO = new EmailMonitorAlarmConfigDTO();
-        emailMonitorAlarmConfigDTO.setAlarmSwitch("on");
+        emailMonitorAlarmConfigDTO.setAlarmSwitch(AlarmConstants.SWITCH_ON);
         emailMonitorAlarmConfigDTO.alarmType = 1;
         emailMonitorAlarmConfigDTO.alarmTypeDesc = "所有邮箱所有商户按人数统计预警";
         emailMonitorAlarmConfigDTO.appName = "所有商户";
-        emailMonitorAlarmConfigDTO.intervalMins = 30;
+        emailMonitorAlarmConfigDTO.setIntervalMins(30);
         emailMonitorAlarmConfigDTO.previousDays = 7;
-        emailMonitorAlarmConfigDTO.taskTimeoutSecs = 600;
+        emailMonitorAlarmConfigDTO.setTaskTimeoutSecs(600);
         emailMonitorAlarmConfigDTO.appId = "virtual_total_stat_appId";
         emailMonitorAlarmConfigDTO.threshold = 20;
         emailMonitorAlarmConfigDTO.fewNum = 5;
@@ -211,7 +104,7 @@ public class EmailMonitorAlarmConfigDTO extends BaseConfig {
 
         emailMonitorAlarmConfigDTO.switches = map;
 
-        emailMonitorAlarmConfigDTO.setEmails(Arrays.asList(AlarmConstants.ALL_EMAIL));
+        emailMonitorAlarmConfigDTO.setEmails(Collections.singletonList(AlarmConstants.ALL_EMAIL));
 
         EmailMonitorAlarmTimeConfigDTO timeConfigDTO = new EmailMonitorAlarmTimeConfigDTO();
         timeConfigDTO.setCallbackSuccessRate(70);

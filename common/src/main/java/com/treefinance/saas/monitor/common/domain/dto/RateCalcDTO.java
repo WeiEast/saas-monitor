@@ -2,7 +2,7 @@ package com.treefinance.saas.monitor.common.domain.dto;
 
 import java.math.BigDecimal;
 
-import static java.math.BigDecimal.*;
+import static java.math.BigDecimal.ZERO;
 
 /**
  * 在电商、邮箱、运营商的监控中许多参数都是一样的、比如 创建任务数、开始登陆数、登录成功数 etc.

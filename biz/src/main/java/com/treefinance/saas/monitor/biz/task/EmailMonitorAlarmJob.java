@@ -3,9 +3,8 @@ package com.treefinance.saas.monitor.biz.task;
 import com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import com.datatrees.toolkits.util.Arrays;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
-import com.treefinance.saas.monitor.biz.service.EmailMonitorAlarmService;
+import com.treefinance.saas.monitor.biz.service.MonitorAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
@@ -14,7 +13,9 @@ import com.treefinance.saas.monitor.common.utils.MonitorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
@@ -29,8 +30,9 @@ public class EmailMonitorAlarmJob implements SimpleJob {
     @Autowired
     private EmailAlarmConfig config;
 
-    @Autowired
-    private EmailMonitorAlarmService emailMonitorAlarmService;
+    @Resource
+    @Qualifier("emailAlarmMonitorService")
+    private MonitorAlarmService emailMonitorAlarmService;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -55,8 +57,7 @@ public class EmailMonitorAlarmJob implements SimpleJob {
                 }
 
                 ETaskStatDataType type = ETaskStatDataType.getByValue(configDTO.getAlarmType());
-                List<String> emails = configDTO.getEmails();
-                emailMonitorAlarmService.alarm(now, configDTO, type,emails.toArray(Arrays.newArray(String.class,emails.size())));
+                emailMonitorAlarmService.alarm(now, configDTO, type);
             }
         } catch (Exception e) {
             logger.error("邮箱监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(now), e);
