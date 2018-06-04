@@ -256,7 +256,7 @@ public class AlarmWorkOrderCriteria {
             return (Criteria) this;
         }
         public Criteria andIdIsLike(String id) {
-            addCriterion("dutyName like", id, "id");
+            addCriterion("id like", id, "id");
             return (Criteria) this;
         }
 
