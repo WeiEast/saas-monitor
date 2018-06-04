@@ -154,6 +154,10 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         if (alarmWorkOrder == null) {
             return MonitorResultBuilder.build("不存在的工单");
         }
+        if(!EOrderStatus.UNPROCESS.getCode().equals(alarmWorkOrder.getStatus())){
+            logger.info("工单已经处理");
+            return MonitorResultBuilder.build("该工单已被处理");
+        }
 
         Date now = new Date();
 
@@ -206,6 +210,8 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             logger.error("不支持的状态，status={}", request.getStatus());
             return MonitorResultBuilder.build("不支持的status字段");
         }
+
+
         Date now = new Date();
 
         AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByPrimaryKey(request.getId());
@@ -213,12 +219,20 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         if (alarmWorkOrder == null) {
             return MonitorResultBuilder.build("不存在的工单");
         }
+        if(!EOrderStatus.UNPROCESS.getCode().equals(alarmWorkOrder.getStatus())){
+            logger.info("工单已经处理");
+            return MonitorResultBuilder.build("该工单已被处理");
+        }
 
         AlarmRecord alarmRecord = alarmRecordService.getByPrimaryKey(alarmWorkOrder.getRecordId());
 
         if (alarmRecord == null) {
             logger.error("预警记录id：{}不存在", alarmWorkOrder.getRecordId());
             return MonitorResultBuilder.build("不存在的记录");
+        }
+        if(alarmRecord.getIsProcessed()){
+            logger.info("预警记录已被处理");
+            return MonitorResultBuilder.build("预警记录已被处理");
         }
 
         AlarmRecordCriteria criteria = new AlarmRecordCriteria();
