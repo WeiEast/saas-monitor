@@ -138,9 +138,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         List<AlarmWorkOrderRO> alarmWorkOrderROS = DataConverterUtils.convert(list, AlarmWorkOrderRO.class);
 
-        alarmWorkOrderROS.forEach(alarmWorkOrderRO -> {
-            alarmWorkOrderRO.setStatusDesc(EOrderStatus.getDesc(alarmWorkOrderRO.getStatus()));
-        });
+        alarmWorkOrderROS.forEach(alarmWorkOrderRO -> alarmWorkOrderRO.setStatusDesc(EOrderStatus.getDesc(alarmWorkOrderRO.getStatus())));
 
 
         return MonitorResultBuilder.pageResult(recordRequest, alarmWorkOrderROS, count);
@@ -167,7 +165,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             logger.error("不存在的工作人员,processName:{}", request.getProcessorName());
             return MonitorResultBuilder.build("不存在的工作人员，" + request.getProcessorName());
         }
-        ;
+
 
         alarmWorkOrder.setProcessorName(request.getProcessorName());
         alarmWorkOrder.setLastUpdateTime(now);
@@ -188,7 +186,6 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             logger.error(e.getMessage());
             return MonitorResultBuilder.build(Boolean.FALSE);
         }
-        //todo 给processor发送信息
         if(!alarmWorkOrder.getProcessorName().equals(alarmWorkOrder.getDutyName())){
             OrderDelegateEvent event = new OrderDelegateEvent();
 
