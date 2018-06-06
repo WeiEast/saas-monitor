@@ -30,7 +30,6 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
     @Resource
     private WorkOrderLogMapper workOrderLogMapper;
 
-
     @Override
     public void insert(AlarmRecord alarmRecord) {
         alarmRecordMapper.insert(alarmRecord);
@@ -46,8 +45,8 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
     public AlarmRecord getFirstStatusRecord(EAlarmLevel level, String summary, EAlarmRecordStatus status) {
         AlarmRecordCriteria criteria = new AlarmRecordCriteria();
         criteria.setOrderByClause("dataTime asc");
-        criteria.createCriteria().andLevelEqualTo(level.name()).andSummaryEqualTo(summary).andIsProcessedEqualTo
-                (status.getCode());
+        criteria.setLimit(1);
+        criteria.createCriteria().andLevelEqualTo(level.name()).andSummaryEqualTo(summary).andIsProcessedEqualTo(status.getCode());
         List<AlarmRecord> records = queryByCondition(criteria);
         if (records.isEmpty()) {
             return null;

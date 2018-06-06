@@ -229,7 +229,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
     @Override
     public MonitorResult<Boolean> updateWorkerOrderStatus(UpdateWorkOrderRequest request) {
-        logger.info("更新工单状态");
+        logger.info("更新工单状态id:{}",request.toString());
 
         EOrderStatus newStatus = EOrderStatus.getByValue(request.getStatus());
         if (newStatus == null) {
@@ -274,6 +274,11 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             record.setLastUpdateTime(now);
             record.setEndTime(now);
         });
+
+        //如果是没有processor的工单
+        if(StringUtils.isNotEmpty(alarmWorkOrder.getProcessorName())){
+            alarmWorkOrder.setProcessorName(alarmWorkOrder.getDutyName());
+        }
 
         alarmWorkOrder.setRemark(request.getRemark());
         alarmWorkOrder.setStatus(newStatus.getCode());
