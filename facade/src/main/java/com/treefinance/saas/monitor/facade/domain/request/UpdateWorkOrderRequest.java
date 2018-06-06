@@ -13,6 +13,8 @@ import lombok.Setter;
 @Getter
 public class UpdateWorkOrderRequest extends BaseRequest {
 
+    private String opName;
+
     private String processorName;
 
     private Integer status;

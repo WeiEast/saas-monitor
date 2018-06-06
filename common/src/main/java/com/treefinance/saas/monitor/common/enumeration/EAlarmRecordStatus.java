@@ -5,9 +5,9 @@ import java.util.Map;
 
 /**
  * @author chengtong
- * @date 18/5/28 17:59
+ * @date 18/6/5 14:08
  */
-public enum EOrderStatus {
+public enum  EAlarmRecordStatus {
 
     UNPROCESS(0, "未处理"),
     PROCESSED(2, "已处理"),
@@ -33,13 +33,13 @@ public enum EOrderStatus {
         return map.get(code);
     }
 
-    EOrderStatus(Integer code, String desc) {
+    EAlarmRecordStatus(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
     }
 
-    public static EOrderStatus getByValue(Integer code) {
-        for (EOrderStatus status : values()) {
+    public static EAlarmRecordStatus getByValue(Integer code) {
+        for (EAlarmRecordStatus status : values()) {
             if (status.code.equals(code)) {
                 return status;
             }
@@ -62,4 +62,6 @@ public enum EOrderStatus {
     public void setDesc(String desc) {
         this.desc = desc;
     }
+
+
 }

@@ -79,9 +79,37 @@ public class CronUtils {
     }
 
     public static void main(String[] args) {
-        String statCron = "0 0/5 * * * ?";
-        Date date = CronUtils.getStatDate(new Date(), 0);
-        System.out.println(MonitorDateUtils.format(date));
+        String statCron = "* * * ? * Mon";
+//        Date date = CronUtils.getStatDate(new Date(), (Integer) null);
+//        System.out.println(MonitorDateUtils.format(date));
+
+        getPreMeetDay(statCron,new Date());
+
+    }
+
+    public static Date getNextMeetDay(String corn,Date now){
+        try {
+            CronExpression cronExpression = new CronExpression(corn);
+            return cronExpression.getNextValidTimeAfter(MonitorDateUtils.getDayStartTime(now));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+    public static Date getPreMeetDay(String corn,Date now){
+        try {
+            CronExpression cronExpression = new CronExpression(corn);
+            Date after = cronExpression.getNextValidTimeAfter(MonitorDateUtils.getDayStartTime(now));
+            Date afterAfter = cronExpression.getNextValidTimeAfter(new Date(after.getTime() + 24*60*60*1000));
+
+            Long interval = afterAfter.getTime() - after.getTime();
+
+            return new Date(after.getTime() - interval);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
 
     }
 

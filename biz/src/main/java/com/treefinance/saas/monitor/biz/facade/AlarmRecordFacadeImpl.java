@@ -1,15 +1,18 @@
 package com.treefinance.saas.monitor.biz.facade;
 
 import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.saas.monitor.biz.autostat.utils.CronUtils;
 import com.treefinance.saas.monitor.biz.event.AlarmClearEvent;
 import com.treefinance.saas.monitor.biz.event.OrderDelegateEvent;
 import com.treefinance.saas.monitor.biz.service.AlarmRecordService;
 import com.treefinance.saas.monitor.biz.service.AlarmWorkOrderService;
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.biz.service.WorkOrderLogService;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.facade.domain.request.AlarmRecordRequest;
 import com.treefinance.saas.monitor.facade.domain.request.UpdateWorkOrderRequest;
@@ -74,7 +77,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             criteriaInner.andDataTimeLessThanOrEqualTo(recordRequest.getEndTime());
         }
 
-        criteria.setOrderByClause("dataTime desc,level desc");
+        criteria.setOrderByClause("level asc,dataTime desc,level desc");
         criteria.setLimit(recordRequest.getPageSize());
         criteria.setOffset(recordRequest.getOffset());
 
@@ -84,7 +87,23 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         List<AlarmRecordRO> alarmRecordROList = DataConverterUtils.convert(list, AlarmRecordRO.class);
 
-        alarmRecordROList.forEach(alarmRecordRO -> alarmRecordRO.setProcessDesc(alarmRecordRO.getIsProcessed() ? "已处理" : "未处理"));
+        for (AlarmRecordRO recordRO : alarmRecordROList) {
+            recordRO.setProcessDesc(EAlarmRecordStatus.getDesc(recordRO.getIsProcessed()));
+            Long recordId = recordRO.getId();
+
+            AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByRecordId(recordId);
+            if (alarmWorkOrder == null) {
+                continue;
+            }
+
+            recordRO.setDutyName(alarmWorkOrder.getDutyName());
+            recordRO.setProcessorName(alarmWorkOrder.getProcessorName());
+
+            recordRO.setOrderId(alarmWorkOrder.getId());
+            recordRO.setOrderStatus(alarmWorkOrder.getStatus());
+            recordRO.setOrderStatusDesc(EOrderStatus.getDesc(alarmWorkOrder.getStatus()));
+        }
+
 
         return MonitorResultBuilder.pageResult(recordRequest, alarmRecordROList, count);
     }
@@ -95,6 +114,15 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         List<SaasWorker> workers = saasWorkerService.getAllSaasWorker();
 
         List<SaasWorkerRO> saasWorkerROS = DataConverterUtils.convert(workers, SaasWorkerRO.class);
+
+        Date now = new Date();
+
+        for (SaasWorkerRO ro : saasWorkerROS) {
+            if(StringUtils.isNotEmpty(ro.getDutyCorn())){
+                ro.setNextOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getNextMeetDay(ro.getDutyCorn(), now)));
+                ro.setPreOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getPreMeetDay(ro.getDutyCorn(), now)));
+            }
+        }
 
         return MonitorResultBuilder.build(saasWorkerROS);
     }
@@ -133,7 +161,6 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         criteria.setOrderByClause("createTime desc");
         long count = alarmWorkOrderService.countByCondition(criteria);
 
-
         List<AlarmWorkOrder> list = alarmWorkOrderService.queryByCondition(criteria);
 
         List<AlarmWorkOrderRO> alarmWorkOrderROS = DataConverterUtils.convert(list, AlarmWorkOrderRO.class);
@@ -152,7 +179,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         if (alarmWorkOrder == null) {
             return MonitorResultBuilder.build("不存在的工单");
         }
-        if(!EOrderStatus.UNPROCESS.getCode().equals(alarmWorkOrder.getStatus())){
+        if (!EOrderStatus.UNPROCESS.getCode().equals(alarmWorkOrder.getStatus())) {
             logger.info("工单已经处理");
             return MonitorResultBuilder.build("该工单已被处理");
         }
@@ -170,13 +197,15 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         alarmWorkOrder.setProcessorName(request.getProcessorName());
         alarmWorkOrder.setLastUpdateTime(now);
 
+        String opName = request.getOpName() == null?alarmWorkOrder.getDutyName():request.getOpName();
+
         WorkOrderLog workOrderLog = new WorkOrderLog();
 
         workOrderLog.setId(UidGenerator.getId());
         workOrderLog.setOrderId(alarmWorkOrder.getId());
         workOrderLog.setRecordId(alarmWorkOrder.getRecordId());
         workOrderLog.setOpDesc("指定处理人员" + request.getProcessorName());
-        workOrderLog.setOpName(alarmWorkOrder.getDutyName());
+        workOrderLog.setOpName(opName);
         workOrderLog.setLastUpdateTime(now);
         workOrderLog.setCreateTime(now);
         try {
@@ -186,7 +215,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             logger.error(e.getMessage());
             return MonitorResultBuilder.build(Boolean.FALSE);
         }
-        if(!alarmWorkOrder.getProcessorName().equals(alarmWorkOrder.getDutyName())){
+        if (!alarmWorkOrder.getProcessorName().equals(opName)) {
             OrderDelegateEvent event = new OrderDelegateEvent();
 
             event.setAlarmRecord(alarmRecordService.getByPrimaryKey(alarmWorkOrder.getRecordId()));
@@ -202,9 +231,9 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
     public MonitorResult<Boolean> updateWorkerOrderStatus(UpdateWorkOrderRequest request) {
         logger.info("更新工单状态");
 
-        EOrderStatus status = EOrderStatus.getByValue(request.getStatus());
-        if (status == null) {
-            logger.error("不支持的状态，status={}", request.getStatus());
+        EOrderStatus newStatus = EOrderStatus.getByValue(request.getStatus());
+        if (newStatus == null) {
+            logger.error("不支持的状态，newStatus={}", request.getStatus());
             return MonitorResultBuilder.build("不支持的status字段");
         }
 
@@ -212,42 +241,42 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         Date now = new Date();
 
         AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByPrimaryKey(request.getId());
-
         if (alarmWorkOrder == null) {
             return MonitorResultBuilder.build("不存在的工单");
         }
-        if(!EOrderStatus.UNPROCESS.getCode().equals(alarmWorkOrder.getStatus())){
+        if (!EOrderStatus.UNPROCESS.getCode().equals(alarmWorkOrder.getStatus())) {
             logger.info("工单已经处理");
             return MonitorResultBuilder.build("该工单已被处理");
         }
 
         AlarmRecord alarmRecord = alarmRecordService.getByPrimaryKey(alarmWorkOrder.getRecordId());
-
         if (alarmRecord == null) {
             logger.error("预警记录id：{}不存在", alarmWorkOrder.getRecordId());
             return MonitorResultBuilder.build("不存在的记录");
         }
-        if(alarmRecord.getIsProcessed()){
+        if (!EAlarmRecordStatus.UNPROCESS.getCode().equals(alarmWorkOrder.getStatus())) {
             logger.info("预警记录已被处理");
             return MonitorResultBuilder.build("预警记录已被处理");
         }
 
+        EOrderStatus oldStatus = EOrderStatus.getByValue(alarmWorkOrder.getStatus());
+
         AlarmRecordCriteria criteria = new AlarmRecordCriteria();
-        criteria.createCriteria().andIsProcessedEqualTo(Boolean.FALSE).andSummaryEqualTo(alarmRecord.getSummary())
+        criteria.createCriteria().andIsProcessedEqualTo(EAlarmRecordStatus.UNPROCESS.getCode()).andSummaryEqualTo(alarmRecord
+                .getSummary())
                 .andContentEqualTo(String.valueOf(alarmRecord.getId()));
 
         List<AlarmRecord> unProcessedRecords = alarmRecordService.queryByCondition(criteria);
         unProcessedRecords.add(alarmRecord);
 
         unProcessedRecords.forEach(record -> {
-            record.setIsProcessed(Boolean.TRUE);
+            record.setIsProcessed(newStatus.getCode());
             record.setLastUpdateTime(now);
+            record.setEndTime(now);
         });
 
-        EOrderStatus oldStatus = EOrderStatus.getByValue(alarmWorkOrder.getStatus());
-
         alarmWorkOrder.setRemark(request.getRemark());
-        alarmWorkOrder.setStatus(request.getStatus());
+        alarmWorkOrder.setStatus(newStatus.getCode());
         alarmWorkOrder.setLastUpdateTime(now);
 
         WorkOrderLog workOrderLog = new WorkOrderLog();
@@ -256,7 +285,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         workOrderLog.setOrderId(alarmWorkOrder.getId());
         workOrderLog.setRecordId(alarmWorkOrder.getRecordId());
         workOrderLog.setOpDesc(alarmWorkOrder.getProcessorName() + "处理工单，状态由" + (oldStatus == null ? "未处理" : oldStatus.getDesc()) +
-                "变更到" + status.getDesc());
+                "变更到" + newStatus.getDesc());
         workOrderLog.setOpName(alarmWorkOrder.getProcessorName());
         workOrderLog.setLastUpdateTime(now);
         workOrderLog.setCreateTime(now);
@@ -265,18 +294,16 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         } catch (Exception e) {
             logger.error("更新工单失败");
             logger.error(e.getMessage());
-            return MonitorResultBuilder.build(Boolean.FALSE);
+            return MonitorResultBuilder.build("更新工单失败");
         }
 
-        //todo 发送预警clear信息
         AlarmClearEvent event = new AlarmClearEvent();
-
         event.setAlarmRecord(alarmRecord);
         event.setAlarmType(EAlarmType.operator_alarm);
         event.setDutyMan(alarmWorkOrder.getDutyName());
-        event.setAlarmRecord(alarmRecord);
         event.setOpDesc(workOrderLog.getOpDesc());
         event.setProcessor(alarmWorkOrder.getProcessorName());
+        event.setResult(newStatus);
 
         publisher.publishEvent(event);
 
@@ -296,6 +323,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         }
 
         WorkOrderLogCriteria criteria = new WorkOrderLogCriteria();
+
         criteria.setOrderByClause("createTime desc");
 
         criteria.createCriteria().andOrderIdEqualTo(orderId);
@@ -306,7 +334,6 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         return MonitorResultBuilder.build(workOrderLogROs);
     }
-
 
 
 }

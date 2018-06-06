@@ -15,7 +15,7 @@ public class AlarmRecord implements Serializable {
 
     private Date dataTime;
 
-    private Boolean isProcessed;
+    private Integer isProcessed;
 
     private String level;
 
@@ -29,7 +29,10 @@ public class AlarmRecord implements Serializable {
 
     private Date lastUpdateTime;
 
-    private static final long serialVersionUID = 1L;
+    private Date startTime;
 
+    private Date endTime;
+
+    private static final long serialVersionUID = 1L;
 
 }

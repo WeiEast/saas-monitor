@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.treefinance.saas.monitor.biz.service.AlarmRecordService;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
 import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
@@ -42,12 +43,13 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
     }
 
     @Override
-    public AlarmRecord getUnProcessedRecord(EAlarmLevel level,String summary){
+    public AlarmRecord getFirstStatusRecord(EAlarmLevel level, String summary, EAlarmRecordStatus status) {
         AlarmRecordCriteria criteria = new AlarmRecordCriteria();
         criteria.setOrderByClause("dataTime asc");
-        criteria.createCriteria().andLevelEqualTo(level.name()).andSummaryEqualTo(summary);
+        criteria.createCriteria().andLevelEqualTo(level.name()).andSummaryEqualTo(summary).andIsProcessedEqualTo
+                (status.getCode());
         List<AlarmRecord> records = queryByCondition(criteria);
-        if(records.isEmpty()){
+        if (records.isEmpty()) {
             return null;
         }
         return records.get(0);
