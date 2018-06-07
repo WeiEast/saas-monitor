@@ -50,11 +50,12 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
         String configStr = diamondConfig.getOperatorMonitorAlarmConfig();
         List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
         for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
+            logger.info("运营商监控,预警定时任务执行时间jobTime={},config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(configDTO));
+            if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), AlarmConstants.SWITCH_ON)) {
+                logger.info("运营商监控开关已关闭。。。");
+                continue;
+            }
             try {
-                logger.info("运营商监控,预警定时任务执行时间jobTime={},config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(configDTO));
-                if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), AlarmConstants.SWITCH_ON)) {
-                    continue;
-                }
                 ETaskStatDataType type = ETaskStatDataType.getByValue(configDTO.getAlarmType());
                 operatorAlarmMonitorService.alarm(jobTime, configDTO, type);
             } catch (Exception e) {

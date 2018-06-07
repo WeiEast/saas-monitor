@@ -6,13 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @ServletComponentScan("com.treefinance.saas.monitor.web")
 @ImportResource("classpath:spring/applicationContext.xml")
 @EnableMonitorListener
-@EnableScheduling
 @EnableAsync
 public class SaasMonitorApplication {
 
