@@ -19,7 +19,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = SaasMonitorApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
-public class AlarmRecordFacadeTest extends BaseTest{
+public class AlarmRecordFacadeTest extends BaseTest {
 
     @Autowired
     AlarmRecordFacade alarmRecordFacade;
@@ -36,25 +36,24 @@ public class AlarmRecordFacadeTest extends BaseTest{
 
     @Test
     public void querySaasWorker() {
-
         result = alarmRecordFacade.querySaasWorker();
     }
 
     @Test
     public void queryAlarmWorkerOrder() {
         WorkOrderRequest request = new WorkOrderRequest();
-
-       result = alarmRecordFacade.queryAlarmWorkerOrder(request);
+        result = alarmRecordFacade.queryAlarmWorkerOrder(request);
     }
 
     @Test
     public void updateWorkerOrder() {
 
         UpdateWorkOrderRequest request = new UpdateWorkOrderRequest();
-        request.setId(186791617926033408L);
+        request.setId(188709763599593472L);
         request.setProcessorName("程通");
         result = alarmRecordFacade.updateWorkerOrderProcessor(request);
     }
+
     @Test
     public void updateWorkerOrderStatus() {
 

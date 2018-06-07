@@ -60,6 +60,16 @@ public class AlarmWorkOrderServiceImpl implements AlarmWorkOrderService {
         alarmWorkOrderMapper.updateByPrimaryKey(order);
         workOrderLogMapper.insert(log);
         alarmRecordMapper.batchUpdateByPrimaryKey(records);
+    }
 
+    @Override
+    public AlarmWorkOrder getByRecordId(Long recordId) {
+        AlarmWorkOrderCriteria criteria = new AlarmWorkOrderCriteria();
+
+        criteria.createCriteria().andRecordIdEqualTo(recordId);
+
+        List<AlarmWorkOrder> list = alarmWorkOrderMapper.selectByExample(criteria);
+        if (list.isEmpty()) return null;
+        return list.get(0);
     }
 }

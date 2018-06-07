@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.service;
 
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
 import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
@@ -45,7 +46,7 @@ public interface AlarmRecordService {
      * @param summary 摘要信息
      * @return 满足条件的最早的记录
      */
-    AlarmRecord getUnProcessedRecord(EAlarmLevel level, String summary);
+    AlarmRecord getFirstStatusRecord(EAlarmLevel level, String summary, EAlarmRecordStatus status);
 
     /**
      * 保存预警记录、工单、工单操作记录
@@ -63,4 +64,5 @@ public interface AlarmRecordService {
      * @return 数据记录
      * */
     AlarmRecord getByPrimaryKey(Long id);
+
 }

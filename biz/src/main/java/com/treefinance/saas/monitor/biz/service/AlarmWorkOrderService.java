@@ -23,5 +23,5 @@ public interface AlarmWorkOrderService {
 
     void updateOrder(AlarmWorkOrder order, WorkOrderLog log, List<AlarmRecord> records);
 
-
+    AlarmWorkOrder getByRecordId(Long recordId);
 }

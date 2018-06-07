@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.event;
 
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
+import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,5 +23,7 @@ public class AlarmClearEvent {
     private String processor;
 
     private String dutyMan;
+
+    private EOrderStatus result;
 
 }
