@@ -162,12 +162,16 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
 
     private void sendEmail(String content, SaasWorker saasWorker) {
         String title = "值班人员预警";
+
         alarmMessageProducer.sendMail(title,content, MailEnum.SIMPLE_MAIL,saasWorker.getEmail());
+
     }
 
     private void sendSms(String content, SaasWorker saasWorker){
         String mobile = saasWorker.getMobile();
+
         smsNotifyService.send(content, Collections.singletonList(mobile));
+
     }
 
     private WorkOrderLog getWorkOrderLog(Date now, Long recordId, Long orderId) {
