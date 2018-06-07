@@ -114,7 +114,9 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                             (baseTime), JSON.toJSONString(list));
             return Lists.newArrayList();
         }
+
         List<BaseStatAccessDTO> dataDTOList = Lists.newArrayList();
+
         Map<String, List<OperatorStatAccess>> groupCodeDataMap = list.stream().collect(groupingBy(OperatorStatAccess::getGroupCode));
         for (Map.Entry<String, List<OperatorStatAccess>> entry : groupCodeDataMap.entrySet()) {
             OperatorStatAccess data = entry.getValue().get(0);

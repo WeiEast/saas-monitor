@@ -37,7 +37,6 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
 
     @Override
     public List<SaasWorker> getAllSaasWorker() {
-
         return saasWorkerMapper.selectByExample(null);
     }
 
