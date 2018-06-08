@@ -11,7 +11,7 @@ import java.util.List;
  */
 public interface SaasWorkerService {
 
-    SaasWorker getDutyWorker(Date baseTime);
+    List<SaasWorker> getDutyWorker(Date baseTime);
 
     List<SaasWorker> getAllSaasWorker();
 
