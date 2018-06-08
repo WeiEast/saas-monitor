@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.service;
 
+import com.alibaba.fastjson.JSON;
 import com.datatrees.notify.async.body.mail.MailEnum;
 import com.google.common.base.Joiner;
 import com.treefinance.commonservice.uid.UidGenerator;
@@ -85,13 +86,13 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         List<BaseStatAccessDTO> emailStatAccessDTOS = getBaseData(baseTime, type, configDTO);
 
         //获取平均值数据
-        Map<String, BaseStatAccessDTO> compareMap = getPreviousCompareDataMap(baseTime, emailStatAccessDTOS,
-                configDTO, type);
+        Map<String, BaseStatAccessDTO> compareMap = getPreviousCompareDataMap(baseTime, emailStatAccessDTOS, configDTO, type);
 
         //计算需要预警的信息
         List<BaseAlarmMsgDTO> msgList = getAlarmMsgList(now, emailStatAccessDTOS, compareMap, configDTO);
 
         //是否需要预警
+        logger.info("需要预警的预警信息：{}", JSON.toJSONString(msgList));
         if (CollectionUtils.isEmpty(msgList)) {
             logger.info("需要预警的信息为空，不再继续。");
             return;

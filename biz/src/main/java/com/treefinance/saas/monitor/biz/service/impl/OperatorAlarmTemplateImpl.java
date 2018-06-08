@@ -83,6 +83,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             throw new BizException("没有原始数据 无需预警");
         }
 
+        logger.info("运营商监控，查询数据如下：{}",JSON.toJSONString(dataDTOList));
 
         return dataDTOList;
     }
@@ -411,7 +412,6 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         }
         msgList = msgList.stream().sorted(Comparator.comparing(baseAlarmMsgDTO
                 -> ((OperatorAccessAlarmMsgDTO) baseAlarmMsgDTO).getGroupName())).collect(Collectors.toList());
-
 
         return msgList;
     }
