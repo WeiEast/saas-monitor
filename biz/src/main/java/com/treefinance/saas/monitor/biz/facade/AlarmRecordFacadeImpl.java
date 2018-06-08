@@ -167,7 +167,6 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         alarmWorkOrderROS.forEach(alarmWorkOrderRO -> alarmWorkOrderRO.setStatusDesc(EOrderStatus.getDesc(alarmWorkOrderRO.getStatus())));
 
-
         return MonitorResultBuilder.pageResult(recordRequest, alarmWorkOrderROS, count);
     }
 

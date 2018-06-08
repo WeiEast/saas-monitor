@@ -4,11 +4,15 @@ import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.dao.entity.SaasWorker;
 import com.treefinance.saas.monitor.dao.entity.SaasWorkerCriteria;
 import com.treefinance.saas.monitor.dao.mapper.SaasWorkerMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.CronExpression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -20,13 +24,14 @@ import java.util.TimeZone;
 @Service
 public class SaasWorkerServiceImpl implements SaasWorkerService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SaasWorkerServiceImpl.class);
 
     @Autowired
     private SaasWorkerMapper saasWorkerMapper;
 
 
     @Override
-    public SaasWorker getDutyWorker(Date baseTime) {
+    public List<SaasWorker> getDutyWorker(Date baseTime) {
         return getOnDutyWorker();
     }
 
@@ -35,18 +40,21 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
         return saasWorkerMapper.selectByExample(null);
     }
 
-    private SaasWorker getOnDutyWorker() {
+    private List<SaasWorker> getOnDutyWorker() {
         List<SaasWorker> workers = saasWorkerMapper.selectByExample(null);
-        SaasWorker active = null;
-        for (SaasWorker worker:workers){
+        List<SaasWorker> active = new ArrayList<>();
+        for (SaasWorker worker : workers) {
             try {
+                if (StringUtils.isEmpty(worker.getDutyCorn())) {
+                    continue;
+                }
                 CronExpression cronExpression = new CronExpression(worker.getDutyCorn());
                 cronExpression.setTimeZone(TimeZone.getDefault());
-                if(cronExpression.isSatisfiedBy(new Date())){
-                    active = worker;
+                if (cronExpression.isSatisfiedBy(new Date())) {
+                    active.add(worker);
                 }
             } catch (ParseException e) {
-                e.printStackTrace();
+                logger.error("工作人员corn表达式错误，name：{}",worker.getDutyCorn());
             }
         }
         return active;
@@ -58,7 +66,7 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
         SaasWorkerCriteria criteria = new SaasWorkerCriteria();
         criteria.createCriteria().andNameEqualTo(name);
         List<SaasWorker> list = saasWorkerMapper.selectByExample(criteria);
-        if(list == null|| list.isEmpty()){
+        if (list == null || list.isEmpty()) {
             return null;
         }
         return list.get(0);

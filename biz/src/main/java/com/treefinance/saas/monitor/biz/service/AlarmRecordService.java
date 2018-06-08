@@ -44,6 +44,7 @@ public interface AlarmRecordService {
      *
      * @param level   预警等级
      * @param summary 摘要信息
+     * @param status  状态
      * @return 满足条件的最早的记录
      */
     AlarmRecord getFirstStatusRecord(EAlarmLevel level, String summary, EAlarmRecordStatus status);
@@ -60,9 +61,10 @@ public interface AlarmRecordService {
 
     /**
      * 获取特定的某一条记录
+     *
      * @param id 主键
      * @return 数据记录
-     * */
+     */
     AlarmRecord getByPrimaryKey(Long id);
 
 }
