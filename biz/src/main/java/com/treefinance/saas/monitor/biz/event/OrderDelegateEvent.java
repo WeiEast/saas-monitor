@@ -20,4 +20,5 @@ public class OrderDelegateEvent {
 
     private AlarmWorkOrder alarmWorkOrder;
 
+    private String opName;
 }

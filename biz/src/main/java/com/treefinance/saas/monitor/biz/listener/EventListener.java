@@ -60,14 +60,13 @@ public class EventListener {
     @org.springframework.context.event.EventListener
     public void orderDelegateFire(OrderDelegateEvent event) {
         SaasWorker processor = event.getProcessor();
-        AlarmRecord alarmRecord = event.getAlarmRecord();
         AlarmWorkOrder order = event.getAlarmWorkOrder();
 
         StringBuilder body = new StringBuilder();
 
         body.append("【预警处理】").append("【" + "saas-").append(diamondConfig.getMonitorEnvironment()).append("】");
         body.append("\n").append(processor.getName()).append("小伙伴你好").append("id为").append(order.getId()).append
-                ("的预警工单已由").append(order.getDutyName()).append("转交给你，请及时处理。").append("地址为：").append(diamondConfig
+                ("的预警工单已由").append(event.getOpName()).append("转交给你，请及时处理。").append("地址为：").append(diamondConfig
                 .getConsoleAddress());
         try{
             smsNotifyService.send(body.toString(), Collections.singletonList(processor.getMobile()));
