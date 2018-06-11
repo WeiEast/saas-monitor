@@ -216,7 +216,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         }
         if (!alarmWorkOrder.getProcessorName().equals(opName)) {
             OrderDelegateEvent event = new OrderDelegateEvent();
-
+            event.setOpName(opName);
             event.setAlarmRecord(alarmRecordService.getByPrimaryKey(alarmWorkOrder.getRecordId()));
             event.setAlarmWorkOrder(alarmWorkOrder);
             event.setProcessor(processor);
