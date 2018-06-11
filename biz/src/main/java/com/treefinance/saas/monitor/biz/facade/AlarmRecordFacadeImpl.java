@@ -83,7 +83,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         long count = alarmRecordService.countByExample(criteria);
 
-        List<AlarmRecord> list = alarmRecordService.queryByCondition(criteria);
+        List<AlarmRecord> list = alarmRecordService.queryPaginateByCondition(criteria);
 
         List<AlarmRecordRO> alarmRecordROList = DataConverterUtils.convert(list, AlarmRecordRO.class);
 
@@ -161,7 +161,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         criteria.setOrderByClause("createTime desc");
         long count = alarmWorkOrderService.countByCondition(criteria);
 
-        List<AlarmWorkOrder> list = alarmWorkOrderService.queryByCondition(criteria);
+        List<AlarmWorkOrder> list = alarmWorkOrderService.queryPaginateByCondition(criteria);
 
         List<AlarmWorkOrderRO> alarmWorkOrderROS = DataConverterUtils.convert(list, AlarmWorkOrderRO.class);
 
@@ -235,7 +235,6 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             logger.error("不支持的状态，newStatus={}", request.getStatus());
             return MonitorResultBuilder.build("不支持的status字段");
         }
-
 
         Date now = new Date();
 

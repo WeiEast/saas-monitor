@@ -10,6 +10,8 @@ import com.treefinance.saas.monitor.dao.entity.WorkOrderLog;
 import com.treefinance.saas.monitor.dao.mapper.AlarmRecordMapper;
 import com.treefinance.saas.monitor.dao.mapper.AlarmWorkOrderMapper;
 import com.treefinance.saas.monitor.dao.mapper.WorkOrderLogMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ import java.util.List;
 @Service
 public class AlarmRecordServiceImpl implements AlarmRecordService {
 
+    private static final Logger logger = LoggerFactory.getLogger(AlarmRecordServiceImpl.class);
     @Resource
     private AlarmRecordMapper alarmRecordMapper;
     @Resource
@@ -37,7 +40,7 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
 
 
     @Override
-    public List<AlarmRecord> queryByCondition(AlarmRecordCriteria criteria) {
+    public List<AlarmRecord> queryPaginateByCondition(AlarmRecordCriteria criteria) {
         return alarmRecordMapper.selectPaginationByExample(criteria);
     }
 
@@ -48,6 +51,11 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
                 .getLevel()).andSummaryEqualTo(alarmRecord.getSummary()).andIsProcessedEqualTo(EAlarmRecordStatus.UNPROCESS.getCode());
 
 
+        return alarmRecordMapper.selectByExample(criteria);
+    }
+
+    @Override
+    public List<AlarmRecord> queryByCondition(AlarmRecordCriteria criteria) {
         return alarmRecordMapper.selectByExample(criteria);
     }
 

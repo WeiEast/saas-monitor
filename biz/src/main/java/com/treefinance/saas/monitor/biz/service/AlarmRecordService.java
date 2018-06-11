@@ -29,13 +29,19 @@ public interface AlarmRecordService {
      * @param criteria condition
      * @return 列表数据
      */
-    List<AlarmRecord> queryByCondition(AlarmRecordCriteria criteria);
+    List<AlarmRecord> queryPaginateByCondition(AlarmRecordCriteria criteria);
 
     /**
      *
      *
      * */
     List<AlarmRecord> queryAllUnprocessed(AlarmRecord alarmRecord);
+
+    /**
+     *
+     *
+     * */
+    List<AlarmRecord> queryByCondition(AlarmRecordCriteria criteria);
 
     /**
      * 计数
@@ -63,7 +69,6 @@ public interface AlarmRecordService {
      * @param record   记录
      */
     void saveAlarmRecords(AlarmWorkOrder order, AlarmRecord record, WorkOrderLog orderLog);
-
 
     /**
      * 获取特定的某一条记录
