@@ -24,12 +24,18 @@ public interface AlarmRecordService {
     void insert(AlarmRecord alarmRecord);
 
     /**
-     * 查询
+     * 查询 分页
      *
      * @param criteria condition
      * @return 列表数据
      */
     List<AlarmRecord> queryByCondition(AlarmRecordCriteria criteria);
+
+    /**
+     *
+     *
+     * */
+    List<AlarmRecord> queryAllUnprocessed(AlarmRecord alarmRecord);
 
     /**
      * 计数

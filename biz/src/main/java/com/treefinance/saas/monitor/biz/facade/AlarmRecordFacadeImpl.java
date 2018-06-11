@@ -260,11 +260,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         EOrderStatus oldStatus = EOrderStatus.getByValue(alarmWorkOrder.getStatus());
 
-        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
-        criteria.createCriteria().andIsProcessedEqualTo(EAlarmRecordStatus.UNPROCESS.getCode()).andSummaryEqualTo(alarmRecord
-                .getSummary()).andContentEqualTo(String.valueOf(alarmRecord.getId()));
-
-        List<AlarmRecord> unProcessedRecords = alarmRecordService.queryByCondition(criteria);
+        List<AlarmRecord> unProcessedRecords = getUnProcessedAndSameTypeRecords(alarmRecord);
         unProcessedRecords.add(alarmRecord);
 
         unProcessedRecords.forEach(record -> {
@@ -316,6 +312,10 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         publisher.publishEvent(event);
 
         return MonitorResultBuilder.build(Boolean.TRUE);
+    }
+
+    public List<AlarmRecord> getUnProcessedAndSameTypeRecords(AlarmRecord alarmRecord) {
+        return alarmRecordService.queryAllUnprocessed(alarmRecord);
     }
 
     @Override

@@ -42,6 +42,16 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
     }
 
     @Override
+    public List<AlarmRecord> queryAllUnprocessed(AlarmRecord alarmRecord) {
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+        criteria.createCriteria().andContentEqualTo(String.valueOf(alarmRecord.getId())).andLevelEqualTo(alarmRecord
+                .getLevel()).andSummaryEqualTo(alarmRecord.getSummary()).andIsProcessedEqualTo(EAlarmRecordStatus.UNPROCESS.getCode());
+
+
+        return alarmRecordMapper.selectByExample(criteria);
+    }
+
+    @Override
     public AlarmRecord getFirstStatusRecord(EAlarmLevel level, String summary, EAlarmRecordStatus status) {
         AlarmRecordCriteria criteria = new AlarmRecordCriteria();
         criteria.setOrderByClause("dataTime asc");
