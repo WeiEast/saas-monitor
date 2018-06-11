@@ -28,12 +28,14 @@ public class AlarmWorkOrderServiceImpl implements AlarmWorkOrderService {
     @Autowired
     AlarmRecordMapper alarmRecordMapper;
 
-
     @Override
     public List<AlarmWorkOrder> queryByCondition(AlarmWorkOrderCriteria criteria) {
+        return alarmWorkOrderMapper.selectByExample(criteria);
+    }
 
+    @Override
+    public List<AlarmWorkOrder> queryPaginateByCondition(AlarmWorkOrderCriteria criteria) {
         return alarmWorkOrderMapper.selectPaginationByExample(criteria);
-
     }
 
     @Override

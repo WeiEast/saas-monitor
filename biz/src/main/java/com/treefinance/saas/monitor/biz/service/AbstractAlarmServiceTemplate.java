@@ -13,10 +13,7 @@ import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.*;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
-import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
-import com.treefinance.saas.monitor.dao.entity.SaasWorker;
-import com.treefinance.saas.monitor.dao.entity.WorkOrderLog;
+import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.EmailStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import lombok.Getter;
@@ -45,6 +42,8 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractAlarmServiceTemplate.class);
 
+    private static Long day = 24 * 60 * 60 * 1000L;
+
     @Autowired
     protected RedisTemplate<String, Object> redisTemplate;
     @Autowired
@@ -53,6 +52,8 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
     protected OperatorStatAccessMapper operatorStatAccessMapper;
     @Autowired
     protected AlarmRecordService alarmRecordService;
+    @Autowired
+    protected AlarmWorkOrderService alarmWorkOrderService;
     @Autowired
     protected DiamondConfig diamondConfig;
     @Autowired
@@ -116,12 +117,15 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             return;
         }
 
-        record = alarmRecordService.getFirstStatusRecord(level, summary, EAlarmRecordStatus.DISABLE);
+        AlarmRecordCriteria criteria =new AlarmRecordCriteria();
+        Date oneDayAgo = new Date(now.getTime() - day);
+        criteria.createCriteria().andLevelEqualTo(level.name()).andSummaryEqualTo(summary).andIsProcessedEqualTo(EAlarmRecordStatus.DISABLE.getCode()).andStartTimeGreaterThan(oneDayAgo);
+        List<AlarmRecord> records = alarmRecordService.queryByCondition(criteria);
 
-        if (record != null) {
-            logger.info("已存在{}的记录，不再继续", EAlarmRecordStatus.DISABLE.getDesc());
+        if (records != null) {
+            logger.info("一天之内已存在{}的记录，不再继续", EAlarmRecordStatus.DISABLE.getDesc());
             //save record if has unprocessed same type record
-            saveDisableRecord(env, baseTime, msgList, level, String.valueOf(record.getId()));
+            saveDisableRecord(env, baseTime, msgList, level, String.valueOf(records.get(0).getId()));
             return;
         }
 
@@ -359,8 +363,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
      * @param env        环境;
      * @return 预警信息：
      */
-    protected abstract String genDutyManAlarmInfo(Long id, Long orderId, List<BaseAlarmMsgDTO> dtoList, EAlarmLevel
-            alarmLevel, Date baseTime, ESaasEnv env);
+    protected abstract String genDutyManAlarmInfo(Long id, Long orderId, List<BaseAlarmMsgDTO> dtoList, EAlarmLevel alarmLevel, Date baseTime, ESaasEnv env);
 
     /**
      * 生成预警记录AlarmRecord;
@@ -373,8 +376,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
      * @param msgList     预警信息列表;
      * @return 预警记录entity
      */
-    private AlarmRecord genAlarmRecord(Long id, Date baseTime, EAlarmRecordStatus isProcessed, EAlarmLevel level,
-                                       String content, ESaasEnv eSaasEnv, List<BaseAlarmMsgDTO> msgList) {
+    private AlarmRecord genAlarmRecord(Long id, Date baseTime, EAlarmRecordStatus isProcessed, EAlarmLevel level, String content, ESaasEnv eSaasEnv, List<BaseAlarmMsgDTO> msgList) {
         Date now = new Date();
         AlarmRecord alarmRecord = new AlarmRecord();
         alarmRecord.setId(id == null ? UidGenerator.getId() : id);
@@ -455,7 +457,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         try {
             ivrNotifyService.notifyIvrToDutyMan(content, saasWorker.getMobile(), saasWorker.getName());
         } catch (Exception e) {
-            logger.error("发送ivr失败,{}",e.getMessage());
+            logger.error("发送ivr失败,{}", e.getMessage());
         }
     }
 

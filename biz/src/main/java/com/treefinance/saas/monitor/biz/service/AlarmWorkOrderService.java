@@ -13,7 +13,11 @@ import java.util.List;
  */
 public interface AlarmWorkOrderService {
 
+    List<AlarmWorkOrder> queryPaginateByCondition(AlarmWorkOrderCriteria criteria);
+
     List<AlarmWorkOrder> queryByCondition(AlarmWorkOrderCriteria criteria);
+
+
 
     long countByCondition(AlarmWorkOrderCriteria criteria);
 
