@@ -47,18 +47,14 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
 
     @Autowired
     protected RedisTemplate<String, Object> redisTemplate;
-
     @Autowired
     protected EmailStatAccessMapper emailStatAccessMapper;
     @Autowired
     protected OperatorStatAccessMapper operatorStatAccessMapper;
-
     @Autowired
     protected AlarmRecordService alarmRecordService;
-
     @Autowired
     protected DiamondConfig diamondConfig;
-
     @Autowired
     protected SmsNotifyService smsNotifyService;
     @Autowired

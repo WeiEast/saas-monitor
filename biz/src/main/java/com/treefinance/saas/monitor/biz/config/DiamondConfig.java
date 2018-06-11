@@ -78,13 +78,14 @@ public class DiamondConfig {
     private String operatorAlarmOperatorNameList;
 
     /**
-     * 运营商预警,确定预警等级的上下界
+     * 运营商预警,确定预警等级的上下界 10
      */
     @DAttribute(key = "operator.alarm.level.error.lower")
     private Integer errorLower;
 
     /**
      * 运营商预警,确定预警等级的上下界，warning等级的下界，<= warningLower info; > warningLower && < errorLower warning ; >= errorLower error
+     * 5
      */
     @DAttribute(key = "operator.alarm.level.warning.lower")
     private Integer warningLower;

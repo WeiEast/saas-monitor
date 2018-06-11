@@ -16,17 +16,14 @@ public enum EAlarmType {
     no_success_task("A02","无成功任务预警"),
 
     conversion_rate_low("A03","转化率预警"),
-
     /**
      * 运营商预警
      */
     operator_alarm("operator_alarm","运营商预警"),
-
     /**
      * 邮箱预警
      */
     email_alarm("A04","邮箱预警"),
-
     /**
      * 电商预警
      */

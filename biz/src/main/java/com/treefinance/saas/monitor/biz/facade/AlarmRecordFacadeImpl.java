@@ -262,8 +262,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         AlarmRecordCriteria criteria = new AlarmRecordCriteria();
         criteria.createCriteria().andIsProcessedEqualTo(EAlarmRecordStatus.UNPROCESS.getCode()).andSummaryEqualTo(alarmRecord
-                .getSummary())
-                .andContentEqualTo(String.valueOf(alarmRecord.getId()));
+                .getSummary()).andContentEqualTo(String.valueOf(alarmRecord.getId()));
 
         List<AlarmRecord> unProcessedRecords = alarmRecordService.queryByCondition(criteria);
         unProcessedRecords.add(alarmRecord);
@@ -274,21 +273,26 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             record.setEndTime(now);
         });
 
+
         //如果是没有processor的工单
         if(StringUtils.isNotEmpty(alarmWorkOrder.getProcessorName())){
             alarmWorkOrder.setProcessorName(alarmWorkOrder.getDutyName());
         }
 
+        String opName = request.getOpName() == null?alarmWorkOrder.getProcessorName():request.getOpName();
+
         alarmWorkOrder.setRemark(request.getRemark());
         alarmWorkOrder.setStatus(newStatus.getCode());
         alarmWorkOrder.setLastUpdateTime(now);
+        alarmWorkOrder.setProcessorName(opName);
+
 
         WorkOrderLog workOrderLog = new WorkOrderLog();
 
         workOrderLog.setId(UidGenerator.getId());
         workOrderLog.setOrderId(alarmWorkOrder.getId());
         workOrderLog.setRecordId(alarmWorkOrder.getRecordId());
-        workOrderLog.setOpDesc(alarmWorkOrder.getProcessorName() + "处理工单，状态由" + (oldStatus == null ? "未处理" : oldStatus.getDesc()) +
+        workOrderLog.setOpDesc(opName + "处理工单，状态由" + (oldStatus == null ? "未处理" : oldStatus.getDesc()) +
                 "变更到" + newStatus.getDesc());
         workOrderLog.setOpName(alarmWorkOrder.getProcessorName());
         workOrderLog.setLastUpdateTime(now);
