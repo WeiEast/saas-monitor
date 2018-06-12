@@ -56,9 +56,8 @@ public class AlarmRecordFacadeTest extends BaseTest {
 
     @Test
     public void updateWorkerOrderStatus() {
-
         UpdateWorkOrderRequest request = new UpdateWorkOrderRequest();
-        request.setId(186791617926033408L);
+        request.setId(188973703973859328L);
         request.setStatus(EOrderStatus.PROCESSED.getCode());
         request.setRemark("已处理");
         result = alarmRecordFacade.updateWorkerOrderStatus(request);

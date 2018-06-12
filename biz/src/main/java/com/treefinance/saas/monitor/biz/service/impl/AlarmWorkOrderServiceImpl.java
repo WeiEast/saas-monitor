@@ -61,7 +61,9 @@ public class AlarmWorkOrderServiceImpl implements AlarmWorkOrderService {
     public void updateOrder(AlarmWorkOrder order, WorkOrderLog log, List<AlarmRecord> records) {
         alarmWorkOrderMapper.updateByPrimaryKey(order);
         workOrderLogMapper.insert(log);
-        alarmRecordMapper.batchUpdateByPrimaryKey(records);
+        for (AlarmRecord record:records){
+            alarmRecordMapper.updateByPrimaryKey(record);
+        }
     }
 
     @Override
