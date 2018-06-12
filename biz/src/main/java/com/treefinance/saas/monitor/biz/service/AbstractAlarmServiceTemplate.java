@@ -122,7 +122,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         criteria.createCriteria().andLevelEqualTo(level.name()).andSummaryEqualTo(summary).andIsProcessedEqualTo(EAlarmRecordStatus.DISABLE.getCode()).andStartTimeGreaterThan(oneDayAgo);
         List<AlarmRecord> records = alarmRecordService.queryByCondition(criteria);
 
-        if (records != null) {
+        if (!records.isEmpty()) {
             logger.info("一天之内已存在{}的记录，不再继续", EAlarmRecordStatus.DISABLE.getDesc());
             //save record if has unprocessed same type record
             saveDisableRecord(env, baseTime, msgList, level, String.valueOf(records.get(0).getId()));
