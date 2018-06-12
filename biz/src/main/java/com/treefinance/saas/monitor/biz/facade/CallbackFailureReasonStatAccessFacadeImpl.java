@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.CallbackFailureReasonStatAccess;
@@ -59,13 +60,20 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
         List<CallbackFailureReasonStatDayAccessRO> result = Lists.newArrayList();
 
         CallbackFailureReasonStatDayAccessCriteria criteria = new CallbackFailureReasonStatDayAccessCriteria();
-        criteria.createCriteria().andAppIdEqualTo(request.getAppId())
+        CallbackFailureReasonStatDayAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andAppIdEqualTo(request.getAppId())
                 .andSaasEnvEqualTo(request.getSaasEnv())
                 .andDataTypeEqualTo(request.getDataType())
-                .andBizTypeEqualTo(request.getBizType())
-                .andDataTimeGreaterThanOrEqualTo(request.getStartTime())
-                .andDataTimeLessThan(request.getEndTime())
-                .andGroupCodeEqualTo(request.getGroupCode());
+                .andBizTypeEqualTo(request.getBizType());
+
+        if (StringUtils.isNotBlank(request.getGroupCode())) {
+            innerCriteria.andGroupCodeEqualTo(request.getGroupCode());
+        } else {
+            innerCriteria.andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_GROUPCODE);
+        }
+        innerCriteria.andDataTimeGreaterThanOrEqualTo(request.getStartTime())
+                .andDataTimeLessThan(request.getEndTime());
+
 
         List<CallbackFailureReasonStatDayAccess> list = callbackFailureReasonStatDayAccessMapper.selectByExample(criteria);
         if (!CollectionUtils.isEmpty(list)) {
@@ -87,12 +95,18 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
         List<CallbackFailureReasonStatAccessRO> result = Lists.newArrayList();
 
         CallbackFailureReasonStatAccessCriteria criteria = new CallbackFailureReasonStatAccessCriteria();
-        criteria.createCriteria().andAppIdEqualTo(request.getAppId())
+        CallbackFailureReasonStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andAppIdEqualTo(request.getAppId())
                 .andSaasEnvEqualTo(request.getSaasEnv())
                 .andDataTypeEqualTo(request.getDataType())
-                .andBizTypeEqualTo(request.getBizType())
-                .andGroupCodeEqualTo(request.getGroupCode())
-                .andDataTimeGreaterThanOrEqualTo(request.getStartTime())
+                .andBizTypeEqualTo(request.getBizType());
+        if (StringUtils.isNotBlank(request.getGroupCode())) {
+            innerCriteria.andGroupCodeEqualTo(request.getGroupCode());
+        } else {
+            innerCriteria.andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_GROUPCODE);
+        }
+
+        innerCriteria.andDataTimeGreaterThanOrEqualTo(request.getStartTime())
                 .andDataTimeLessThan(request.getEndTime());
 
         List<CallbackFailureReasonStatAccess> list = callbackFailureReasonStatAccessMapper.selectByExample(criteria);
