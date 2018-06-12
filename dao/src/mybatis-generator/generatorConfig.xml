@@ -58,7 +58,16 @@
             <!--<property name="useActualColumnNames" value="true"/>-->
         <!--</table>-->
 
-        <table tableName="as_stat_item" domainObjectName="AsStatItem"
+        <table tableName="callback_failure_reason_stat_access" domainObjectName="CallbackFailureReasonStatAccess"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <table tableName="callback_failure_reason_stat_day_access" domainObjectName="CallbackFailureReasonStatDayAccess"
                enableSelectPaginationByExample="true"
                enableInsertOrUpdateBySelective="true"
                enableBatchInsert="true"
