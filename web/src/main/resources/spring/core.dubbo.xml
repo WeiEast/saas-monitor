@@ -68,6 +68,10 @@
                    interface="com.treefinance.saas.monitor.facade.service.autostat.StatItemFacade"
                    version="1.0.0"/>
 
+    <dubbo:service ref="callbackFailureReasonStatAccessFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.stat.CallbackFailureReasonStatAccessFacade"
+                   version="1.0.0"/>
+
 
     <!--消费者-->
     <dubbo:reference interface="com.datatrees.notify.sms.newservice.SmsNewService" id="smsNewService"/>
