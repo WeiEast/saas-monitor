@@ -14,10 +14,7 @@ import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
-import com.treefinance.saas.monitor.facade.domain.request.AlarmRecordRequest;
-import com.treefinance.saas.monitor.facade.domain.request.UpdateWorkOrderRequest;
-import com.treefinance.saas.monitor.facade.domain.request.WorkOrderLogRequest;
-import com.treefinance.saas.monitor.facade.domain.request.WorkOrderRequest;
+import com.treefinance.saas.monitor.facade.domain.request.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmRecordRO;
@@ -69,6 +66,9 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         }
         if (StringUtils.isNotEmpty(recordRequest.getSummary())) {
             criteriaInner.andSummaryLike(recordRequest.getSummary());
+        }
+        if (StringUtils.isNotEmpty(recordRequest.getId())) {
+            criteriaInner.andIdIsLike(recordRequest.getId());
         }
         if (Objects.nonNull(recordRequest.getStartTime())) {
             criteriaInner.andDataTimeGreaterThan(recordRequest.getStartTime());
@@ -236,6 +236,11 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             return MonitorResultBuilder.build("不支持的status字段");
         }
 
+        if(EOrderStatus.UNPROCESS.equals(newStatus)){
+            logger.error("不支持的状态，newStatus={}", request.getStatus());
+            return MonitorResultBuilder.build("不支持的status字段");
+        }
+
         Date now = new Date();
 
         AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByPrimaryKey(request.getId());
@@ -247,6 +252,8 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             return MonitorResultBuilder.build("该工单已被处理");
         }
 
+        EOrderStatus oldStatus = EOrderStatus.getByValue(alarmWorkOrder.getStatus());
+
         AlarmRecord alarmRecord = alarmRecordService.getByPrimaryKey(alarmWorkOrder.getRecordId());
         if (alarmRecord == null) {
             logger.error("预警记录id：{}不存在", alarmWorkOrder.getRecordId());
@@ -257,7 +264,6 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             return MonitorResultBuilder.build("预警记录已被处理");
         }
 
-        EOrderStatus oldStatus = EOrderStatus.getByValue(alarmWorkOrder.getStatus());
 
         List<AlarmRecord> unProcessedRecords = getUnProcessedAndSameTypeRecords(alarmRecord);
         unProcessedRecords.add(alarmRecord);
@@ -339,8 +345,39 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         List<WorkOrderLogRO> workOrderLogROs = DataConverterUtils.convert(workOrderLogs, WorkOrderLogRO.class);
 
+
+        for(WorkOrderLogRO logRO : workOrderLogROs){
+            logRO.setOpTime(MonitorDateUtils.format(logRO.getCreateTime()));
+        }
+
         return MonitorResultBuilder.build(workOrderLogROs);
     }
 
 
+    @Override
+    public MonitorResult<List<SaasWorkerRO>> querySaasWorkerPaginate(SaasWorkerRequest request) {
+
+        SaasWorkerCriteria criteria = new SaasWorkerCriteria();
+        if(StringUtils.isNotEmpty(request.getName())){
+            criteria.createCriteria().andNameLike(request.getName());
+        }
+
+        long count = saasWorkerService.countByCondition(criteria);
+
+        List<SaasWorker> saasWorkers = saasWorkerService.queryPaginateByCondition(criteria);
+
+        List<SaasWorkerRO> saasWorkerROS = DataConverterUtils.convert(saasWorkers, SaasWorkerRO.class);
+
+        Date now = new Date();
+
+        for (SaasWorkerRO ro : saasWorkerROS) {
+            if(StringUtils.isNotEmpty(ro.getDutyCorn())){
+                    ro.setNextOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getNextMeetDay(ro.getDutyCorn(), now)));
+                ro.setPreOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getPreMeetDay(ro.getDutyCorn(), now)));
+            }
+        }
+
+
+        return MonitorResultBuilder.pageResult(request,saasWorkerROS,count);
+    }
 }

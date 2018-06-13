@@ -239,7 +239,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         EmailMonitorAlarmConfigDTO emailMonitorAlarmConfigDTO = (EmailMonitorAlarmConfigDTO) configDTO;
 
 
-        EmailMonitorAlarmTimeConfigDTO timeConfigDTO = emailMonitorAlarmConfigDTO.getList().stream().filter
+        EmailMonitorAlarmTimeConfigDTO timeConfigDTO = emailMonitorAlarmConfigDTO.getTimeConfig().stream().filter
                 (EmailMonitorAlarmTimeConfigDTO::isInTime).collect
                 (Collectors.toList()).get(0);
 
@@ -490,6 +490,15 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         String returnBody = "";
 
         EmailMonitorAlarmConfigDTO emailConfig = (EmailMonitorAlarmConfigDTO) configDTO;
+
+        EmailMonitorAlarmTimeConfigDTO timeConfigDTO = emailConfig.getTimeConfig().stream().filter
+                (EmailMonitorAlarmTimeConfigDTO::isInTime).collect
+                (Collectors.toList()).get(0);
+        if(timeConfigDTO == null){
+            logger.error("邮箱预警配置错误，当前时间段没有配置");
+            return null;
+        }
+
         Date startTime = DateUtils.addMinutes(endTime, -configDTO.getIntervalMins());
         MonitorAlarmLevelConfigDTO levelConfig = emailConfig.getLevelConfig().stream().filter
                 (emailMonitorAlarmLevelConfigDTO ->
@@ -500,7 +509,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         }
 
 
-        HashMap<String, String> switches = emailConfig.getSwitches();
+        HashMap<String, String> switches = timeConfigDTO.getSwitches();
         if (switches == null || switches.isEmpty() || switches.values().stream().noneMatch(SWITCH_ON::equals)) {
             logger.info("邮箱预警配置 为空 或者预警信息发送渠道全部关闭。。");
             return null;

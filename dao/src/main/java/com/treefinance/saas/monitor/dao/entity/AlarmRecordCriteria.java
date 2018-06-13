@@ -266,6 +266,11 @@ public class AlarmRecordCriteria {
             return (Criteria) this;
         }
 
+        public Criteria andIdIsLike(String value) {
+            addCriterion("id like ", "%"+value+"%", "id");
+            return (Criteria) this;
+        }
+
         public Criteria andIdNotEqualTo(Long value) {
             addCriterion("id <>", value, "id");
             return (Criteria) this;
@@ -612,7 +617,7 @@ public class AlarmRecordCriteria {
         }
 
         public Criteria andSummaryLike(String value) {
-            addCriterion("summary like", value, "summary");
+            addCriterion("summary like ", "%"+value+"%", "summary");
             return (Criteria) this;
         }
 

@@ -14,6 +14,8 @@ import java.util.Date;
 @Getter
 public class AlarmRecordRequest extends PageRequest {
 
+    /**预警记录编号*/
+    private String id;
     /**数据表中的dataTime的范围查询 开始时间*/
     private Date startTime;
     /**数据表中的dataTime的范围查询 结束时间*/
