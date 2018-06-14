@@ -28,6 +28,8 @@ public class IvrConfig {
 
     @DAttribute(key = "ivr.alarm.type.cron")
     private String alarmTypeCron;
+    @DAttribute(key = "dutyMan.alarm.ivr.model")
+    private String dutyManIvrModel;
 
     @DAttribute(key = "monitor.environment")
     private String environment;
@@ -39,6 +41,14 @@ public class IvrConfig {
     private String accessKey;
     @DAttribute(key = "auth.ivr.token")
     private String token;
+
+    public String getDutyManIvrModel() {
+        return dutyManIvrModel;
+    }
+
+    public void setDutyManIvrModel(String dutyManIvrModel) {
+        this.dutyManIvrModel = dutyManIvrModel;
+    }
 
     public String getAccessKey() {
         return accessKey;
