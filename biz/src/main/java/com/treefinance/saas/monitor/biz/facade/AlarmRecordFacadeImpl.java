@@ -118,7 +118,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         Date now = new Date();
 
         for (SaasWorkerRO ro : saasWorkerROS) {
-            if(StringUtils.isNotEmpty(ro.getDutyCorn())){
+            if (StringUtils.isNotEmpty(ro.getDutyCorn())) {
                 ro.setNextOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getNextMeetDay(ro.getDutyCorn(), now)));
                 ro.setPreOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getPreMeetDay(ro.getDutyCorn(), now)));
             }
@@ -196,7 +196,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         alarmWorkOrder.setProcessorName(request.getProcessorName());
         alarmWorkOrder.setLastUpdateTime(now);
 
-        String opName = request.getOpName() == null?alarmWorkOrder.getDutyName():request.getOpName();
+        String opName = request.getOpName() == null ? alarmWorkOrder.getDutyName() : request.getOpName();
 
         WorkOrderLog workOrderLog = new WorkOrderLog();
 
@@ -228,7 +228,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
     @Override
     public MonitorResult<Boolean> updateWorkerOrderStatus(UpdateWorkOrderRequest request) {
-        logger.info("更新工单状态id:{}",request.toString());
+        logger.info("更新工单状态id:{}", request.toString());
 
         EOrderStatus newStatus = EOrderStatus.getByValue(request.getStatus());
         if (newStatus == null) {
@@ -236,7 +236,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             return MonitorResultBuilder.build("不支持的status字段");
         }
 
-        if(EOrderStatus.UNPROCESS.equals(newStatus)){
+        if (EOrderStatus.UNPROCESS.equals(newStatus)) {
             logger.error("不支持的状态，newStatus={}", request.getStatus());
             return MonitorResultBuilder.build("不支持的status字段");
         }
@@ -276,11 +276,11 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
 
         //如果是没有processor的工单
-        if(StringUtils.isNotEmpty(alarmWorkOrder.getProcessorName())){
+        if (StringUtils.isNotEmpty(alarmWorkOrder.getProcessorName())) {
             alarmWorkOrder.setProcessorName(alarmWorkOrder.getDutyName());
         }
 
-        String opName = request.getOpName() == null?alarmWorkOrder.getProcessorName():request.getOpName();
+        String opName = request.getOpName() == null ? alarmWorkOrder.getProcessorName() : request.getOpName();
 
         alarmWorkOrder.setRemark(request.getRemark());
         alarmWorkOrder.setStatus(newStatus.getCode());
@@ -346,7 +346,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         List<WorkOrderLogRO> workOrderLogROs = DataConverterUtils.convert(workOrderLogs, WorkOrderLogRO.class);
 
 
-        for(WorkOrderLogRO logRO : workOrderLogROs){
+        for (WorkOrderLogRO logRO : workOrderLogROs) {
             logRO.setOpTime(MonitorDateUtils.format(logRO.getCreateTime()));
         }
 
@@ -358,7 +358,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
     public MonitorResult<List<SaasWorkerRO>> querySaasWorkerPaginate(SaasWorkerRequest request) {
 
         SaasWorkerCriteria criteria = new SaasWorkerCriteria();
-        if(StringUtils.isNotEmpty(request.getName())){
+        if (StringUtils.isNotEmpty(request.getName())) {
             criteria.createCriteria().andNameLike(request.getName());
         }
 
@@ -371,13 +371,17 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         Date now = new Date();
 
         for (SaasWorkerRO ro : saasWorkerROS) {
-            if(StringUtils.isNotEmpty(ro.getDutyCorn())){
-                    ro.setNextOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getNextMeetDay(ro.getDutyCorn(), now)));
+            if (StringUtils.isNotEmpty(ro.getDutyCorn())) {
+                ro.setNextOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getNextMeetDay(ro.getDutyCorn(), now)));
                 ro.setPreOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getPreMeetDay(ro.getDutyCorn(), now)));
             }
+
+            ro.setCreateTimeStr(MonitorDateUtils.format(ro.getCreateTime()));
+            ro.setLastUpdateTimeStr(MonitorDateUtils.format(ro.getLastUpdateTime()));
+
         }
 
 
-        return MonitorResultBuilder.pageResult(request,saasWorkerROS,count);
+        return MonitorResultBuilder.pageResult(request, saasWorkerROS, count);
     }
 }

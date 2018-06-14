@@ -4,6 +4,8 @@ import com.treefinance.saas.monitor.facade.domain.base.BaseRO;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 /**
  * @author chengtong
  * @date 18/5/30 11:31
@@ -45,5 +47,13 @@ public class SaasWorkerRO extends BaseRO{
      * 上一个值班日
      * */
     private String preOnDuty;
+
+    private Date createTime;
+
+    private String createTimeStr;
+
+    private Date lastUpdateTime;
+
+    private String lastUpdateTimeStr;
 
 }
