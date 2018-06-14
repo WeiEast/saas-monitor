@@ -759,7 +759,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         return "${name}" + "小伙伴你好," + "邮箱发生预警,环境：" + env.getDesc() + "时间：" +
                 MonitorDateUtils.format(baseTime) +
                 "发生" + "级别:" + alarmLevel.name() + "预警" +
-                "系统已经生成了id为" + id + "的预警记录和编号为" + orderId + "的工单,请及时处理";
+                "系统已经生成了id为" + id + "的预警记录,请及时处理";
     }
 
     @Override
