@@ -76,8 +76,11 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         if (Objects.nonNull(recordRequest.getEndTime())) {
             criteriaInner.andDataTimeLessThanOrEqualTo(recordRequest.getEndTime());
         }
+        if (Objects.nonNull(recordRequest.getStatus())) {
+            criteriaInner.andIsProcessedEqualTo(recordRequest.getStatus());
+        }
 
-        criteria.setOrderByClause("level asc,dataTime desc");
+        criteria.setOrderByClause("isProcessed asc,dataTime desc");
         criteria.setLimit(recordRequest.getPageSize());
         criteria.setOffset(recordRequest.getOffset());
 
