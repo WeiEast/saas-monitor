@@ -3,10 +3,7 @@ package com.treefinance.saas.monitor.facade.service;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
-import com.treefinance.saas.monitor.facade.domain.request.AlarmRecordRequest;
-import com.treefinance.saas.monitor.facade.domain.request.UpdateWorkOrderRequest;
-import com.treefinance.saas.monitor.facade.domain.request.WorkOrderLogRequest;
-import com.treefinance.saas.monitor.facade.domain.request.WorkOrderRequest;
+import com.treefinance.saas.monitor.facade.domain.request.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +35,15 @@ public class AlarmRecordFacadeTest extends BaseTest {
     public void querySaasWorker() {
         result = alarmRecordFacade.querySaasWorker();
     }
+
+    @Test
+    public void querySaasWorkerPaginate() {
+
+        result = alarmRecordFacade.querySaasWorkerPaginate(new SaasWorkerRequest());
+    }
+
+
+
 
     @Test
     public void queryAlarmWorkerOrder() {
