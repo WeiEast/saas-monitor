@@ -26,4 +26,6 @@ public class AlarmRecordRequest extends PageRequest {
     private String summary;
     /**等级*/
     private String level;
+
+    private Integer status;
 }
