@@ -5,6 +5,7 @@ import com.datatrees.notify.async.body.mail.MailEnum;
 import com.google.common.base.Joiner;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
+import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
@@ -64,6 +65,8 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
     protected SaasWorkerService saasWorkerService;
     @Autowired
     protected AlarmMessageProducer alarmMessageProducer;
+    @Autowired
+    protected IvrConfig ivrConfig;
 
     protected abstract EAlarmType getAlarmType();
 
@@ -455,7 +458,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             return;
         }
         try {
-            ivrNotifyService.notifyIvrToDutyMan(content, saasWorker.getMobile(), saasWorker.getName());
+            ivrNotifyService.notifyIvrToDutyMan(content, saasWorker.getMobile(), saasWorker.getName(),ivrConfig.getDutyManIvrModel());
         } catch (Exception e) {
             logger.error("发送ivr失败,{}", e.getMessage());
         }

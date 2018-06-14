@@ -62,14 +62,14 @@ public class IvrNotifyService {
     }
 
 
-    public void notifyIvrToDutyMan(String content,String mobile,String name){
+    public void notifyIvrToDutyMan(String content,String mobile,String name,String model){
 
         IvrContactsDTO contactsDTO = new IvrContactsDTO();
 
         contactsDTO.setName(name);
         contactsDTO.setTelNum(mobile);
 
-        initMessageAndSend(Collections.singletonList(contactsDTO),content,ivrConfig.getDutyManIvrModel());
+        initMessageAndSend(Collections.singletonList(contactsDTO),content,model);
 
     }
 
