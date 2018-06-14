@@ -77,7 +77,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             criteriaInner.andDataTimeLessThanOrEqualTo(recordRequest.getEndTime());
         }
 
-        criteria.setOrderByClause("level asc,dataTime desc,level desc");
+        criteria.setOrderByClause("level asc,dataTime desc");
         criteria.setLimit(recordRequest.getPageSize());
         criteria.setOffset(recordRequest.getOffset());
 
