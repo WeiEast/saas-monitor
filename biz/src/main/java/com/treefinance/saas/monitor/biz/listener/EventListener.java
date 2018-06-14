@@ -65,8 +65,8 @@ public class EventListener {
         StringBuilder body = new StringBuilder();
 
         body.append("【预警处理】").append("【" + "saas-").append(diamondConfig.getMonitorEnvironment()).append("】");
-        body.append("\n").append(processor.getName()).append("小伙伴你好").append("id为").append(order.getId()).append
-                ("的预警工单已由").append(event.getOpName()).append("转交给你，请及时处理。").append("地址为：").append(diamondConfig
+        body.append("\n").append(processor.getName()).append("小伙伴你好").append("id为").append(order.getRecordId()).append
+                ("的预警记录已由").append(event.getOpName()).append("转交给你，请及时处理。").append("地址为：").append(diamondConfig
                 .getConsoleAddress());
         try{
             smsNotifyService.send(body.toString(), Collections.singletonList(processor.getMobile()));

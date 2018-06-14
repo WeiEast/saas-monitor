@@ -48,6 +48,8 @@ public class IvrNotifyService {
     @Autowired
     private IvrConfig ivrConfig;
 
+
+
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -67,7 +69,7 @@ public class IvrNotifyService {
         contactsDTO.setName(name);
         contactsDTO.setTelNum(mobile);
 
-        initMessageAndSend(Collections.singletonList(contactsDTO),content);
+        initMessageAndSend(Collections.singletonList(contactsDTO),content,ivrConfig.getDutyManIvrModel());
 
     }
 
@@ -109,11 +111,11 @@ public class IvrNotifyService {
                 .append("【" + alarmLevel.name() + "】")
                 .append(saasEnvDesc)
                 .append(alarmRule).toString();
-        initMessageAndSend(contactsDTOS, alarmInfo);
+        initMessageAndSend(contactsDTOS, alarmInfo, null);
     }
 
-    private void initMessageAndSend(List<IvrContactsDTO> contactsDTOS, String alarmInfo) {
-        Map<String, Object> jsonMap = initMessageBody(alarmInfo, contactsDTOS);
+    private void initMessageAndSend(List<IvrContactsDTO> contactsDTOS, String alarmInfo,String modelId) {
+        Map<String, Object> jsonMap = initMessageBody(alarmInfo, contactsDTOS,modelId);
         // 4.加密参数
         Map<String, String> paramsMessage = encrytMessageBody(jsonMap);
         // 5.发送请求
@@ -193,7 +195,7 @@ public class IvrNotifyService {
     /**
      * 初始化消息体
      */
-    protected Map<String, Object> initMessageBody(String alarmInfo, List<IvrContactsDTO> contactsDTOS) {
+    protected Map<String, Object> initMessageBody(String alarmInfo, List<IvrContactsDTO> contactsDTOS,String modelId) {
         List<Map<String, Object>> taskItems = Lists.newArrayList();
         Long refId = UidGenerator.getId();
 
@@ -214,7 +216,11 @@ public class IvrNotifyService {
         ivrParams.put("system", "saas");
         ivrParams.put("sysUserId", 1);
         ivrParams.put("useGroup", getUserGroup());
-        ivrParams.put("modelId", ivrConfig.getModelId());
+        if(StringUtils.isEmpty(modelId)){
+            ivrParams.put("modelId", ivrConfig.getModelId());
+        }else {
+            ivrParams.put("modelId", modelId);
+        }
         ivrParams.put("executeTime", DateFormatUtils.format(new Date(), "yyyy-MM-dd hh:mm:ss"));
         ivrParams.put("executeNotify", true);
         ivrParams.put("taskItems", taskItems);
