@@ -1,9 +1,6 @@
 package com.treefinance.saas.monitor.facade.service;
 
-import com.treefinance.saas.monitor.facade.domain.request.AlarmRecordRequest;
-import com.treefinance.saas.monitor.facade.domain.request.UpdateWorkOrderRequest;
-import com.treefinance.saas.monitor.facade.domain.request.WorkOrderLogRequest;
-import com.treefinance.saas.monitor.facade.domain.request.WorkOrderRequest;
+import com.treefinance.saas.monitor.facade.domain.request.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmRecordRO;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmWorkOrderRO;
@@ -34,6 +31,15 @@ public interface AlarmRecordFacade {
      * @return 数据列表
      * */
     MonitorResult<List<SaasWorkerRO>> querySaasWorker();
+
+
+    /**
+     * 查询saas工作人员的列表
+     *
+     * @return 数据列表
+     * */
+    MonitorResult<List<SaasWorkerRO>> querySaasWorkerPaginate(SaasWorkerRequest request);
+
 
     /**
      * 查询saas工单的列表

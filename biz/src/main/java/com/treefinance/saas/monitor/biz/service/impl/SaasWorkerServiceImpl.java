@@ -54,7 +54,7 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
                     active.add(worker);
                 }
             } catch (ParseException e) {
-                logger.error("工作人员corn表达式错误，name：{}",worker.getDutyCorn());
+                logger.error("工作人员corn表达式错误，name：{}", worker.getDutyCorn());
             }
         }
         return active;
@@ -70,5 +70,16 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
             return null;
         }
         return list.get(0);
+    }
+
+
+    @Override
+    public List<SaasWorker> queryPaginateByCondition(SaasWorkerCriteria criteria) {
+        return saasWorkerMapper.selectByExample(criteria);
+    }
+
+    @Override
+    public long countByCondition(SaasWorkerCriteria criteria) {
+        return saasWorkerMapper.countByExample(criteria);
     }
 }

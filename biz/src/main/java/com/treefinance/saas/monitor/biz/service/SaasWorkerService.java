@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.service;
 
 import com.treefinance.saas.monitor.dao.entity.SaasWorker;
+import com.treefinance.saas.monitor.dao.entity.SaasWorkerCriteria;
 
 import java.util.Date;
 import java.util.List;
@@ -17,4 +18,7 @@ public interface SaasWorkerService {
 
     SaasWorker getWorkerByName(String name);
 
+    List<SaasWorker> queryPaginateByCondition(SaasWorkerCriteria criteria);
+
+    long countByCondition(SaasWorkerCriteria criteria);
 }
