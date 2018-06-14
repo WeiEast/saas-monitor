@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.listener;
 
 import com.datatrees.notify.async.body.mail.MailEnum;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
+import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.biz.event.AlarmClearEvent;
 import com.treefinance.saas.monitor.biz.event.OrderDelegateEvent;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
@@ -38,6 +39,8 @@ public class EventListener {
 
     @Autowired
     private DiamondConfig diamondConfig;
+    @Autowired
+    private IvrConfig ivrConfig;
 
     @org.springframework.context.event.EventListener
     public void alarmClearFire(AlarmClearEvent event) {
@@ -79,7 +82,8 @@ public class EventListener {
             logger.error("发送邮箱失败" + ignore.getMessage());
         }
         try{
-            ivrNotifyService.notifyIvrToDutyMan(body.toString(),processor.getMobile(),processor.getName());
+            ivrNotifyService.notifyIvrToDutyMan(body.toString(),processor.getMobile(),processor.getName(),ivrConfig
+                    .getDeliverIvrModel());
         }catch (Exception ignore){
             logger.error("发送ivr信息失败" + ignore.getMessage());
         }
