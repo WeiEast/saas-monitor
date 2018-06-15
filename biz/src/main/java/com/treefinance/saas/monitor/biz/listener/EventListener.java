@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.listener;
 
 import com.datatrees.notify.async.body.mail.MailEnum;
+import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.biz.event.AlarmClearEvent;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * @author chengtong
@@ -69,8 +71,16 @@ public class EventListener {
 
         body.append("【预警处理】").append("【" + "saas-").append(diamondConfig.getMonitorEnvironment()).append("】");
         body.append("\n").append(processor.getName()).append("小伙伴你好").append("id为").append(order.getRecordId()).append
-                ("的预警记录已由").append(event.getOpName()).append("转交给你，请及时处理。").append("地址为：").append(diamondConfig
-                .getConsoleAddress());
+                ("的预警记录已由").append(event.getOpName()).append("转交给你，请及时处理。").append("地址为：").append(diamondConfig.getConsoleAddress());
+
+        Map<String,Object> map = Maps.newHashMap();
+
+        map.put("env",diamondConfig.getMonitorEnvironment());
+        map.put("id",order.getRecordId());
+        map.put("processor",event.getOpName());
+        map.put("url",diamondConfig.getConsoleAddress());
+
+
         try{
             smsNotifyService.send(body.toString(), Collections.singletonList(processor.getMobile()));
         }catch (Exception ignore){
@@ -83,7 +93,7 @@ public class EventListener {
         }
         try{
             ivrNotifyService.notifyIvrToDutyMan(body.toString(),processor.getMobile(),processor.getName(),ivrConfig
-                    .getDeliverIvrModel());
+                    .getDeliverIvrModel(), map);
         }catch (Exception ignore){
             logger.error("发送ivr信息失败" + ignore.getMessage());
         }

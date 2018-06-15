@@ -78,23 +78,113 @@ public class EmailMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
     private List<EmailMonitorAlarmTimeConfigDTO> timeConfig;
 
     public static void main(String... args) {
-        EmailMonitorAlarmConfigDTO configDTO = getEmailMonitorAlarmConfigDTO(ESaasEnv.ALL);
-        EmailMonitorAlarmConfigDTO configDTO1 = getEmailMonitorAlarmConfigDTO(ESaasEnv.PRODUCT);
-        EmailMonitorAlarmConfigDTO configDTO2 = getEmailMonitorAlarmConfigDTO(ESaasEnv.PRE_PRODUCT);
+        EmailMonitorAlarmConfigDTO configDTO = getGroupConfig(ESaasEnv.ALL);
+//        EmailMonitorAlarmConfigDTO configDTO1 = getGroupConfig(ESaasEnv.PRODUCT);
+//        EmailMonitorAlarmConfigDTO configDTO2 = getGroupConfig(ESaasEnv.PRE_PRODUCT);
+
+        EmailMonitorAlarmConfigDTO configAllDTO = getAllConfig(ESaasEnv.ALL);
+//        EmailMonitorAlarmConfigDTO configAllDTO1 = getAllConfig(ESaasEnv.PRODUCT);
+//        EmailMonitorAlarmConfigDTO configAllDTO2 = getAllConfig(ESaasEnv.PRE_PRODUCT);
 
 
-        System.err.println(JSON.toJSONString(Arrays.asList(configDTO,configDTO1,configDTO2),
+        System.err.println(JSON.toJSONString(Arrays.asList(configDTO,configAllDTO),
                 SerializerFeature.DisableCircularReferenceDetect));
     }
-
-    private static EmailMonitorAlarmConfigDTO getEmailMonitorAlarmConfigDTO(ESaasEnv eSaasEnv) {
+    private static EmailMonitorAlarmConfigDTO getAllConfig(ESaasEnv eSaasEnv) {
         EmailMonitorAlarmConfigDTO emailMonitorAlarmConfigDTO = new EmailMonitorAlarmConfigDTO();
         emailMonitorAlarmConfigDTO.setSaasEnv((byte) eSaasEnv.getValue());
         emailMonitorAlarmConfigDTO.setSaasEnvDesc(eSaasEnv.getDesc());
 
         emailMonitorAlarmConfigDTO.setAlarmSwitch(AlarmConstants.SWITCH_ON);
         emailMonitorAlarmConfigDTO.alarmType = 1;
-        emailMonitorAlarmConfigDTO.alarmTypeDesc = "所有邮箱所有商户按人数统计预警";
+        emailMonitorAlarmConfigDTO.alarmTypeDesc = "所有商户邮箱大盘按人数统计预警";
+        emailMonitorAlarmConfigDTO.appName = "所有商户";
+        emailMonitorAlarmConfigDTO.setIntervalMins(30);
+        emailMonitorAlarmConfigDTO.previousDays = 7;
+        emailMonitorAlarmConfigDTO.setTaskTimeoutSecs(600);
+        emailMonitorAlarmConfigDTO.appId = "virtual_total_stat_appId";
+        emailMonitorAlarmConfigDTO.threshold = 20;
+        emailMonitorAlarmConfigDTO.fewNum = 5;
+
+        HashMap<String, String> map = Maps.newHashMap();
+        map.put(EAlarmChannel.IVR.getValue(), SWITCH_ON);
+        map.put(EAlarmChannel.SMS.getValue(), SWITCH_ON);
+        map.put(EAlarmChannel.EMAIL.getValue(), SWITCH_ON);
+        map.put(EAlarmChannel.WECHAT.getValue(), SWITCH_ON);
+
+
+        emailMonitorAlarmConfigDTO.setEmails(Collections.singletonList(AlarmConstants.ALL_EMAIL));
+
+        EmailMonitorAlarmTimeConfigDTO timeConfigDTO = new EmailMonitorAlarmTimeConfigDTO();
+        timeConfigDTO.setCallbackSuccessRate(70);
+        timeConfigDTO.setLoginConversionRate(70);
+        timeConfigDTO.setLoginSuccessRate(70);
+        timeConfigDTO.setProcessSuccessRate(70);
+        timeConfigDTO.setWholeConversionRate(70);
+        timeConfigDTO.setCrawlSuccessRate(70);
+        timeConfigDTO.setEndTime("23:59:59");
+        timeConfigDTO.setStartTime("18:00:00");
+        timeConfigDTO.setSwitches(map);
+
+        EmailMonitorAlarmTimeConfigDTO timeConfigDTO1 = new EmailMonitorAlarmTimeConfigDTO();
+        timeConfigDTO1.setCallbackSuccessRate(70);
+        timeConfigDTO1.setLoginConversionRate(70);
+        timeConfigDTO1.setLoginSuccessRate(70);
+        timeConfigDTO1.setProcessSuccessRate(70);
+        timeConfigDTO1.setWholeConversionRate(70);
+        timeConfigDTO1.setCrawlSuccessRate(70);
+        timeConfigDTO1.setEndTime("06:00:00");
+        timeConfigDTO1.setStartTime("00:00:00");
+        timeConfigDTO1.setSwitches(map);
+
+        EmailMonitorAlarmTimeConfigDTO timeConfigDTO2 = new EmailMonitorAlarmTimeConfigDTO();
+        timeConfigDTO2.setCallbackSuccessRate(90);
+        timeConfigDTO2.setLoginConversionRate(90);
+        timeConfigDTO2.setLoginSuccessRate(90);
+        timeConfigDTO2.setProcessSuccessRate(90);
+        timeConfigDTO2.setWholeConversionRate(90);
+        timeConfigDTO2.setCrawlSuccessRate(90);
+        timeConfigDTO2.setEndTime("18:00:00");
+        timeConfigDTO2.setStartTime("06:00:00");
+        timeConfigDTO2.setSwitches(map);
+
+        List<EmailMonitorAlarmTimeConfigDTO> list = new ArrayList<>();
+        list.add(timeConfigDTO);
+        list.add(timeConfigDTO1);
+        list.add(timeConfigDTO2);
+
+        emailMonitorAlarmConfigDTO.setTimeConfig(list);
+
+        MonitorAlarmLevelConfigDTO errorConfig = new MonitorAlarmLevelConfigDTO();
+        errorConfig.setChannels(Arrays.asList("email", "ivr", "wechat"));
+        errorConfig.setLevel(EAlarmLevel.error.name());
+
+        MonitorAlarmLevelConfigDTO warning = new MonitorAlarmLevelConfigDTO();
+        warning.setChannels(Arrays.asList("email", "sms", "wechat"));
+        warning.setLevel(EAlarmLevel.warning.name());
+
+        MonitorAlarmLevelConfigDTO info = new MonitorAlarmLevelConfigDTO();
+        info.setChannels(Arrays.asList("email", "wechat"));
+        info.setLevel(EAlarmLevel.info.name());
+
+        emailMonitorAlarmConfigDTO.setLevelConfig(Arrays.asList(errorConfig, warning, info));
+
+        EmailMonitorAlarmConfigDTO configDTO = new EmailMonitorAlarmConfigDTO();
+        configDTO = BeanUtils.convert(emailMonitorAlarmConfigDTO,
+                configDTO);
+
+        configDTO.setEmails(Arrays.asList("virtual_total_stat_appId"));
+        configDTO.setLevelConfig(emailMonitorAlarmConfigDTO.levelConfig);
+        return configDTO;
+    }
+    private static EmailMonitorAlarmConfigDTO getGroupConfig(ESaasEnv eSaasEnv) {
+        EmailMonitorAlarmConfigDTO emailMonitorAlarmConfigDTO = new EmailMonitorAlarmConfigDTO();
+        emailMonitorAlarmConfigDTO.setSaasEnv((byte) eSaasEnv.getValue());
+        emailMonitorAlarmConfigDTO.setSaasEnvDesc(eSaasEnv.getDesc());
+
+        emailMonitorAlarmConfigDTO.setAlarmSwitch(AlarmConstants.SWITCH_ON);
+        emailMonitorAlarmConfigDTO.alarmType = 1;
+        emailMonitorAlarmConfigDTO.alarmTypeDesc = "所有商户邮箱分组按人数统计预警";
         emailMonitorAlarmConfigDTO.appName = "所有商户";
         emailMonitorAlarmConfigDTO.setIntervalMins(30);
         emailMonitorAlarmConfigDTO.previousDays = 7;

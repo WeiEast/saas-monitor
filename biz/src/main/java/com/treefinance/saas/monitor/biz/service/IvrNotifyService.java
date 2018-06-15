@@ -62,14 +62,15 @@ public class IvrNotifyService {
     }
 
 
-    public void notifyIvrToDutyMan(String content,String mobile,String name,String model){
+    public void notifyIvrToDutyMan(String content,String mobile,String name,String model,Map<String,Object>
+            placeholder){
 
         IvrContactsDTO contactsDTO = new IvrContactsDTO();
 
         contactsDTO.setName(name);
         contactsDTO.setTelNum(mobile);
 
-        initMessageAndSend(Collections.singletonList(contactsDTO),content,model);
+        initMessageAndSend(Collections.singletonList(contactsDTO),content,model, placeholder);
 
     }
 
@@ -111,16 +112,24 @@ public class IvrNotifyService {
                 .append("【" + alarmLevel.name() + "】")
                 .append(saasEnvDesc)
                 .append(alarmRule).toString();
-        initMessageAndSend(contactsDTOS, alarmInfo, null);
+        Map<String,Object> placeHolder = Maps.newHashMap();
+        placeHolder.put("alarmMessage", alarmInfo);
+
+        initMessageAndSend(contactsDTOS, alarmInfo, null, placeHolder);
     }
 
-    private void initMessageAndSend(List<IvrContactsDTO> contactsDTOS, String alarmInfo,String modelId) {
-        Map<String, Object> jsonMap = initMessageBody(alarmInfo, contactsDTOS,modelId);
+
+
+    private void initMessageAndSend(List<IvrContactsDTO> contactsDTOS, String alarmInfo, String modelId, Map<String, Object> placeHolder) {
+        Map<String, Object> jsonMap = initMessageBody(alarmInfo, contactsDTOS,modelId, placeHolder);
         // 4.加密参数
         Map<String, String> paramsMessage = encrytMessageBody(jsonMap);
         // 5.发送请求
         sendMessage(paramsMessage);
     }
+
+
+
 
 
     /**
@@ -194,15 +203,15 @@ public class IvrNotifyService {
 
     /**
      * 初始化消息体
+     *
+     *
      */
-    protected Map<String, Object> initMessageBody(String alarmInfo, List<IvrContactsDTO> contactsDTOS,String modelId) {
+    protected Map<String, Object> initMessageBody(String alarmInfo, List<IvrContactsDTO> contactsDTOS, String modelId, Map<String, Object> placeholder) {
         List<Map<String, Object>> taskItems = Lists.newArrayList();
         Long refId = UidGenerator.getId();
 
         contactsDTOS.forEach(ivrContactsDTO -> {
-            Map<String, Object> msgMap = Maps.newHashMap();
-            msgMap.put("name", ivrContactsDTO.getName());
-            msgMap.put("alarmMessage", alarmInfo);
+            Map<String, Object> msgMap = getTemplatePlaceHolderMap(placeholder, ivrContactsDTO);
 
             Map<String, Object> taskItem = Maps.newHashMap();
             taskItem.put("refId", refId);
@@ -233,6 +242,19 @@ public class IvrNotifyService {
                 JSON.toJSONString(ivrParams),
                 JSON.toJSONString(contactsDTOS));
         return ivrParams;
+    }
+
+
+    /**
+     * 生成替换模板的map
+     * key-value是替换备份的模板的时候用的；
+     * 发送的是http请求，这个键值对将会把模板中的${}替换掉生成完整的语句
+     * */
+    private Map<String, Object> getTemplatePlaceHolderMap(Map<String, Object> placeholder, IvrContactsDTO ivrContactsDTO) {
+        Map<String, Object> msgMap = Maps.newHashMap();
+        msgMap.put("name", ivrContactsDTO.getName());
+        msgMap.putAll(placeholder);
+        return msgMap;
     }
 
     /**
@@ -277,7 +299,6 @@ public class IvrNotifyService {
             logger.info("send ivr message: url={},paramsMap={},headerMap={}", ivrConfig.getIvrUrl(),
                     JSON.toJSONString(paramsMap), JSON.toJSONString(headerMap));
         }
-
     }
 
     /**
