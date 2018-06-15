@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.service;
 import com.alibaba.fastjson.JSON;
 import com.datatrees.notify.async.body.mail.MailEnum;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.config.IvrConfig;
@@ -120,7 +121,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             return;
         }
 
-        AlarmRecordCriteria criteria =new AlarmRecordCriteria();
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
         Date oneDayAgo = new Date(now.getTime() - day);
         criteria.createCriteria().andLevelEqualTo(level.name()).andSummaryEqualTo(summary).andIsProcessedEqualTo(EAlarmRecordStatus.DISABLE.getCode()).andStartTimeGreaterThan(oneDayAgo);
         List<AlarmRecord> records = alarmRecordService.queryByCondition(criteria);
@@ -152,8 +153,9 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             map.put("name", saasWorker.getName());
 
             String newContent = StrSubstitutor.replace(content, map);
+            Map<String, Object> params = genIvrMap(recordId,saasWorker,level,baseTime,env);
 
-            sendIvr(newContent, saasWorker);
+            sendIvr(newContent, saasWorker, params);
             sendSms(newContent, saasWorker);
             sendEmail(newContent, saasWorker);
         }
@@ -177,6 +179,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         sendAlarmMsg(level, msgList, configDTO, baseTime, type);
 
     }
+
 
     private void sendEmail(String content, SaasWorker saasWorker) {
         String title = "值班人员预警";
@@ -451,14 +454,32 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
      */
     protected abstract String generateSummary(EAlarmLevel alarmLevel, ESaasEnv env, List<BaseAlarmMsgDTO> bizSourceAspectList);
 
+    /**
+     * 生成发送ivr时需要replace placeholder的map
+     *
+     * @param alarmLevel 预警等级
+     * @param id         预警记录id
+     * @param saasWorker 工作人员
+     * @param baseTime   数据时间
+     * @param env        环境
+     * @return map
+     */
+    protected abstract Map<String, Object> genIvrMap(Long id, SaasWorker saasWorker, EAlarmLevel
+            alarmLevel, Date baseTime, ESaasEnv env);
 
-    private void sendIvr(String content, SaasWorker saasWorker) {
+
+    private void sendIvr(String content, SaasWorker saasWorker, Map<String, Object> params) {
         if (!AlarmConstants.SWITCH_ON.equals(diamondConfig.getDutyIvrSwitch())) {
             logger.info("对值班人员的ivr提醒已经关闭。。");
             return;
         }
         try {
-            ivrNotifyService.notifyIvrToDutyMan(content, saasWorker.getMobile(), saasWorker.getName(),ivrConfig.getDutyManIvrModel());
+            Map<String, String> map = Maps.newHashMap();
+
+            map.put("\n", "");
+            String ivrContent = StrSubstitutor.replace(content, map);
+            logger.info("给值班人员预警，content={},mobile={}，name={}", ivrContent, saasWorker.getMobile(), saasWorker.getName());
+            ivrNotifyService.notifyIvrToDutyMan(ivrContent, saasWorker.getMobile(), saasWorker.getName(), ivrConfig.getDutyManIvrModel(), params);
         } catch (Exception e) {
             logger.error("发送ivr失败,{}", e.getMessage());
         }

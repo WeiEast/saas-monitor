@@ -22,6 +22,7 @@ import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
 import com.treefinance.saas.monitor.dao.entity.EmailStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EmailStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.SaasWorker;
 import com.treefinance.saas.monitor.exception.BizException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -766,4 +767,22 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     protected EAlarmType getAlarmType() {
         return EAlarmType.email_alarm;
     }
+
+    @Override
+    protected Map<String, Object> genIvrMap(Long id, SaasWorker saasWorker, EAlarmLevel
+            alarmLevel, Date baseTime, ESaasEnv env) {
+
+        Map<String, Object> map = Maps.newHashMap();
+
+        map.put("name",saasWorker.getName());
+        map.put("biz","邮箱");
+        map.put("env",env.getDesc());
+        map.put("baseTime",MonitorDateUtils.format(baseTime));
+        map.put("level",alarmLevel.name());
+        map.put("id",id);
+        map.put("address",diamondConfig.getConsoleAddress());
+
+        return map;
+    }
+
 }

@@ -53,10 +53,10 @@ public class AlarmRecordFacadeTest extends BaseTest {
 
     @Test
     public void updateWorkerOrder() {
-
         UpdateWorkOrderRequest request = new UpdateWorkOrderRequest();
-        request.setId(188709763599593472L);
+        request.setId(192282788811010048L);
         request.setProcessorName("程通");
+        request.setOpName("叶徽");
         result = alarmRecordFacade.updateWorkerOrderProcessor(request);
     }
 

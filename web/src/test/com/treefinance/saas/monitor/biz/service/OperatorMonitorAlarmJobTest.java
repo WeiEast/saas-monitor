@@ -54,7 +54,7 @@ public class OperatorMonitorAlarmJobTest {
             try {
                 operatorAlarmMonitorService.alarm(jobTime, configDTO, ETaskStatDataType.USER);
             }catch (Exception e){
-                e.printStackTrace();
+                logger.info(e.getMessage());
                 continue;
             }
         }
