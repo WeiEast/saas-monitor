@@ -173,7 +173,7 @@ public class EmailMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
         configDTO = BeanUtils.convert(emailMonitorAlarmConfigDTO,
                 configDTO);
 
-        configDTO.setEmails(Arrays.asList("virtual_total_stat_appId"));
+        configDTO.setEmails(Arrays.asList("virtual_total_stat_email"));
         configDTO.setLevelConfig(emailMonitorAlarmConfigDTO.levelConfig);
         return configDTO;
     }
