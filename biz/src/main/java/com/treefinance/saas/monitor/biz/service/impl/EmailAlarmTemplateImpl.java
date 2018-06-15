@@ -744,7 +744,8 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     @Override
     protected String generateSummary(EAlarmLevel alarmLevel, ESaasEnv env, List<BaseAlarmMsgDTO> msgDTOList) {
 
-        return Joiner.on(":").join(EAlarmType.email_alarm.getCode(), alarmLevel.name(), EStatType.EMAIL.getType(), env.getValue(),
+        return Joiner.on(":").join(EAlarmType.email_alarm.name(), alarmLevel.name(), EStatType.EMAIL.getType(), env
+                        .getValue(),
                 getBizSourceAspect
                         (genBizSourceAspectList(msgDTOList)));
     }
@@ -765,10 +766,9 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     @Override
     protected String genDutyManAlarmInfo(Long id, Long orderId, List<BaseAlarmMsgDTO> dtoList, EAlarmLevel alarmLevel, Date baseTime, ESaasEnv env) {
 
-        return "${name}" + "小伙伴你好," + "邮箱发生预警,环境：" + env.getDesc() + "时间：" +
-                MonitorDateUtils.format(baseTime) +
-                "发生" + "级别:" + alarmLevel.name() + "预警" +
-                "系统已经生成了id为" + id + "的预警记录,请及时处理";
+        return "${name}" + "小伙伴你好," + "邮箱发生预警:\n环境：" + env.getDesc() + "\n时间：" +
+                MonitorDateUtils.format(baseTime) + "\n级别:" + alarmLevel.name() +
+                "\n系统已经生成了编号为" + id + "的预警记录,请及时处理,地址："+diamondConfig.getConsoleAddress();
     }
 
     @Override
