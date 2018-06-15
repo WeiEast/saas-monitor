@@ -31,7 +31,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundSetOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -55,13 +55,21 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     @Autowired
     private EmailAlarmConfig emailAlarmConfig;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public String getKey(ETaskStatDataType type, Date jobTime, BaseAlarmConfigDTO baseAlarmConfigDTO) {
         EmailMonitorAlarmConfigDTO configDTO = (EmailMonitorAlarmConfigDTO) baseAlarmConfigDTO;
+
+        ESaasEnv saasEnv = ESaasEnv.getByValue(configDTO.getSaasEnv());
+        if (saasEnv == null) {
+            throw new BizException("邮箱预警配置有误");
+        }
+
         String[] emails = configDTO.getEmails().toArray(new String[configDTO.getEmails().size()]);
 
-        return EmailMonitorKeyHelper.genEmailAllKey(jobTime, "virtual_total_stat_appId", type, ALL_EMAIL.equals(emails[0]) ? ALL_EMAIL : GROUP_EMAIL);
+        return EmailMonitorKeyHelper.genEmailAllKey(jobTime, "virtual_total_stat_appId", type, ALL_EMAIL.equals(emails[0]) ? ALL_EMAIL : GROUP_EMAIL,saasEnv);
     }
 
     @Override
@@ -301,6 +309,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             msg.setAlarmSimpleDesc("总转化率");
             msg.setValue(sourceDto.getWholeConversionRate());
             msg.setThreshold(wholeConversionCompareVal);
+            msg.setAlarmAspectType(EAlarmAspectType.WHOLE_CONVERSION);
             String valueDesc = String.valueOf(sourceDto.getWholeConversionRate()) + "%" + " " + "(" +
                     sourceDto.getCallbackSuccessCount() + "/" +
                     sourceDto.getEntryCount() + ")";
@@ -331,6 +340,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             msg.setAlarmDesc("回调成功率低于前" + previousDays + "天平均值的" + timeConfigDTO.getCallbackSuccessRate() + "%");
             msg.setAlarmType("回调成功率");
             msg.setAlarmSimpleDesc("回调");
+            msg.setAlarmAspectType(EAlarmAspectType.CALLBACK_SUCCESS);
             msg.setValue(sourceDto.getCallbackSuccessRate());
             msg.setThreshold(callbackCompareVal);
             String valueDesc = String.valueOf(sourceDto.getCallbackSuccessRate()) + "%" + " " + "(" +
@@ -356,6 +366,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             msg.setAlarmDesc("洗数成功率低于前" + previousDays + "天平均值的" + timeConfigDTO.getProcessSuccessRate() + "%");
             msg.setAlarmType("洗数成功率");
             msg.setAlarmSimpleDesc("洗数");
+            msg.setAlarmAspectType(EAlarmAspectType.PROCESS_SUCCESS);
             msg.setValue(sourceDto.getProcessSuccessRate());
             msg.setThreshold(processCompareVal);
             String valueDesc = String.valueOf(sourceDto.getProcessSuccessRate()) + "%" + " " + "(" +
@@ -380,6 +391,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             msg.setEmail(email);
             msg.setAlarmDesc("抓取成功率低于前" + previousDays + "天平均值的" + timeConfigDTO.getCrawlSuccessRate() + "%");
             msg.setAlarmType("抓取成功率");
+            msg.setAlarmAspectType(EAlarmAspectType.CRAW_SUCCESS);
             msg.setAlarmSimpleDesc("抓取");
             msg.setValue(sourceDto.getCrawlSuccessRate());
             msg.setThreshold(crawlCompareVal);
@@ -403,6 +415,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             EmailAlarmMsgDTO msg = new EmailAlarmMsgDTO();
             String email = AlarmConstants.ALL_EMAIL.equals(sourceDto.getEmail()) ? "邮箱大盘" : sourceDto.getEmail();
             msg.setEmail(email);
+            msg.setAlarmAspectType(EAlarmAspectType.LOGIN_SUCCESS);
             msg.setAlarmDesc("登陆成功率低于前" + previousDays + "天平均值的" + timeConfigDTO.getLoginSuccessRate() + "%");
             msg.setAlarmType("登陆成功率");
             msg.setAlarmSimpleDesc("登陆");
@@ -421,13 +434,14 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             msgList.add(msg);
         }
     }
-
+    /**登录妆化率*/
     private void calcConversionRate(EmailMonitorAlarmConfigDTO configDTO, EmailMonitorAlarmTimeConfigDTO timeConfigDTO, Integer previousDays, List<BaseAlarmMsgDTO> msgList, EmailStatAccessDTO sourceDto, EmailStatAccessDTO compareDTO, BigDecimal loginConversionCompareVal) {
         if (isAlarm(sourceDto.getEntryCount(), sourceDto.getLoginConversionRate(), loginConversionCompareVal,
                 configDTO.getFewNum(), configDTO.getThreshold())) {
             EmailAlarmMsgDTO msg = new EmailAlarmMsgDTO();
             String email = AlarmConstants.ALL_EMAIL.equals(sourceDto.getEmail()) ? "邮箱大盘" : sourceDto.getEmail();
             msg.setEmail(email);
+            msg.setAlarmAspectType(EAlarmAspectType.LOGIN_CONVERSION);
             msg.setAlarmDesc("登陆转化率低于前" + previousDays + "天平均值的" + timeConfigDTO.getLoginConversionRate() + "%");
             msg.setAlarmType("登陆转化率");
             msg.setAlarmSimpleDesc("开始登陆");
@@ -495,7 +509,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         EmailMonitorAlarmTimeConfigDTO timeConfigDTO = emailConfig.getTimeConfig().stream().filter
                 (EmailMonitorAlarmTimeConfigDTO::isInTime).collect
                 (Collectors.toList()).get(0);
-        if(timeConfigDTO == null){
+        if (timeConfigDTO == null) {
             logger.error("邮箱预警配置错误，当前时间段没有配置");
             return null;
         }
@@ -648,19 +662,14 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
     @Override
     public void ifAlarmed(Date now, Date baseTime, String alarmTimeKey, BaseAlarmConfigDTO baseAlarmConfigDTO) {
-        BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(alarmTimeKey);
-        if (setOperations.isMember(MonitorDateUtils.format(baseTime))) {
-
+        if (stringRedisTemplate.hasKey(alarmTimeKey)) {
             logger.info("邮箱监控,预警定时任务执行,已预警,不再预警,jobTime={},baseTime={},config={}",
                     MonitorDateUtils.format(now), MonitorDateUtils.format(baseTime), JSON.toJSONString
                             (baseAlarmConfigDTO));
             throw new BizException("该时段已经预警过");
         }
-
-        setOperations.add(MonitorDateUtils.format(baseTime));
-        if (setOperations.getExpire() == -1) {
-            setOperations.expire(2, TimeUnit.DAYS);
-        }
+        stringRedisTemplate.opsForValue().set(alarmTimeKey, "1");
+        stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.HOURS);
     }
 
     @Override
@@ -741,7 +750,6 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     }
 
 
-
     private List<BizSourceAspect> genBizSourceAspectList(List<BaseAlarmMsgDTO> msgList) {
         List<BizSourceAspect> list = Lists.newArrayList();
 
@@ -774,13 +782,13 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
         Map<String, Object> map = Maps.newHashMap();
 
-        map.put("name",saasWorker.getName());
-        map.put("biz","邮箱");
-        map.put("env",env.getDesc());
-        map.put("baseTime",MonitorDateUtils.format(baseTime));
-        map.put("level",alarmLevel.name());
-        map.put("id",id);
-        map.put("address",diamondConfig.getConsoleAddress());
+        map.put("name", saasWorker.getName());
+        map.put("biz", "邮箱");
+        map.put("env", env.getDesc());
+        map.put("baseTime", MonitorDateUtils.format(baseTime));
+        map.put("level", alarmLevel.name());
+        map.put("id", id);
+        map.put("address", diamondConfig.getConsoleAddress());
 
         return map;
     }
