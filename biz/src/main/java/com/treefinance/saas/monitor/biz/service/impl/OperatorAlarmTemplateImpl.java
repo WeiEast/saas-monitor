@@ -790,7 +790,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
         List<BizSourceAspect> bizSourceAspectList = genBizSourceAspectList(msgList);
 
-        return Joiner.on(":").join(EAlarmType.operator_alarm.getCode(),alarmLevel.name(),EStatType.OPERATOR.getType(),env.getValue(), getBizSourceAspect(bizSourceAspectList));
+        return Joiner.on(":").join(EAlarmType.operator_alarm.name(),alarmLevel.name(),EStatType.OPERATOR.getType(),env.getValue(), getBizSourceAspect(bizSourceAspectList));
     }
 
     @Override
