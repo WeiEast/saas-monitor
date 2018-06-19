@@ -168,15 +168,15 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         AlarmWorkOrder workOrder = getAlarmWorkOrder(now, saasWorkers, recordId, orderId);
         WorkOrderLog orderLog = getWorkOrderLog(now, recordId, orderId);
 
+        //构建回调内容 发送通知;
+        String alarmMsg = sendAlarmMsg(level, msgList, configDTO, baseTime, type);
+        record.setContent(alarmMsg);
+
         try {
             alarmRecordService.saveAlarmRecords(workOrder, record, orderLog);
         } catch (Exception e) {
             logger.error("插入工单记录等失败，仍然发送特定信息及群发信息,错误信息：{}", e.getMessage());
         }
-
-
-        //构建回调内容 发送通知;
-        sendAlarmMsg(level, msgList, configDTO, baseTime, type);
 
     }
 
