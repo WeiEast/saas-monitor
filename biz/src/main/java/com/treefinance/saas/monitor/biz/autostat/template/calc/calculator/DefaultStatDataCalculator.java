@@ -180,6 +180,21 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 Object itemValue = expressionCalculator.calculate(itemId, itemExpression, data);
                 dataMap.put(itemCode, itemValue);
             });
+
+            statItems.stream().filter(statItem -> Byte.valueOf("3").equals(statItem.getDataSource())).forEach(statItem -> {
+                Long itemId = statItem.getId();
+                String itemCode = statItem.getItemCode();
+                String itemExpression = statItem.getItemExpression();
+                Object itemValue = expressionCalculator.calculate(itemId, itemExpression, data);
+                if (itemValue instanceof Number) {
+                    if (((Number) itemValue).doubleValue() > 0) {
+                        Map<String, Double> map = Maps.newHashMap();
+                        map.put(data.get("statCode").toString(), (double) 1);
+                        dataMap.put(itemCode, map);
+                    }
+                }
+            });
+
             // 分组标记
             dataMap.put(AsConstants.GROUP, redisKey);
 
@@ -203,39 +218,61 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
         // 分组名称
         List<String> groupNames = _statGroups.stream().map(StatGroup::getGroupCode).collect(Collectors.toList());
-        redisMultiMap.keySet().forEach(redisKey -> {
-            Map<String, Double> totalMap = Maps.newHashMap();
+
+        for (String redisKey : redisMultiMap.keySet()) {
+
+            Map<String, Object> itemMap = Maps.newHashMap();
             Map<String, String> groupMap = Maps.newHashMap();
             Collection<Map<String, Object>> dataList = redisMultiMap.get(redisKey);
-            dataList.forEach(dataMap -> {
-                dataMap.keySet().stream().forEach(key -> {
+
+            for (Map<String, Object> dataMap : dataList) {
+                for (String key : dataMap.keySet()) {
                     if (groupNames.contains(key) || AsConstants.DATA_TIME.equals(key) || AsConstants.GROUP.equals(key)) {
                         groupMap.put(key, dataMap.get(key) + "");
                     } else {
-                        Double totalValue = totalMap.get(key);
-                        Number value = (Number) dataMap.get(key);
-                        if (totalValue == null) {
-                            totalMap.put(key, value.doubleValue());
+                        if (!(dataMap.get(key) instanceof Map)) {
+                            Number value = (Number) dataMap.get(key);
+                            Object itemValue = itemMap.get(key);
+                            if (itemValue == null) {
+                                itemMap.put(key, value.doubleValue());
+                            } else {
+                                itemMap.put(key, (Double) itemValue + value.doubleValue());
+                            }
+                            redisTemplate.boundHashOps(redisKey).increment(key, (Double) itemMap.get(key));
                         } else {
-                            totalMap.put(key, totalValue + value.doubleValue());
+                            Map<String, Object> value = (Map<String, Object>) dataMap.get(key);
+                            Map<String, Object> itemValue = (Map<String, Object>) itemMap.get(key);
+                            if (MapUtils.isEmpty(itemValue)) {
+                                itemValue.putAll(value);
+                            } else {
+                                for (Map.Entry<String, Object> entry : value.entrySet()) {
+                                    if (itemValue.get(entry.getKey()) == null) {
+                                        itemValue.put(entry.getKey(), entry.getValue());
+                                    } else {
+                                        Object oldValue = itemValue.get(entry.getKey());
+                                        Double newValue = (Double) oldValue + (Double) entry.getValue();
+                                        itemValue.put(entry.getKey(), newValue);
+                                    }
+                                }
+                            }
+                            redisTemplate.boundHashOps(redisKey).put(key, itemValue);
                         }
-                    }
-                });
-            });
 
+                    }
+                }
+            }
             redisTemplate.boundHashOps(redisKey).putAll(groupMap);
-            totalMap.keySet().forEach(key -> redisTemplate
-                    .boundHashOps(redisKey)
-                    .increment(key, totalMap.get(key)));
             redisTemplate.boundHashOps(redisKey).expire(expireTime, TimeUnit.MILLISECONDS);
 
             Map<String, Object> resultMap = Maps.newHashMap();
             resultMap.putAll(groupMap);
-            resultMap.putAll(totalMap);
+            resultMap.putAll(itemMap);
             resultList.add(resultMap);
             logger.info("spel base data calculate: redisKey={}, groupMap={}，totalMap={},dataList={}",
-                    redisKey, groupMap, totalMap, JSON.toJSONString(dataList));
-        });
+                    redisKey, groupMap, itemMap, JSON.toJSONString(dataList));
+
+        }
+
         String dataListKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode);
         Multiset<String> keys = redisMultiMap.keys();
         if (keys.size() > 0) {
