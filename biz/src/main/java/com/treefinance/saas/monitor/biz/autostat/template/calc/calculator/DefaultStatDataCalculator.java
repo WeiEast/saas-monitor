@@ -243,6 +243,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                             Map<String, Object> value = (Map<String, Object>) dataMap.get(key);
                             Map<String, Object> itemValue = (Map<String, Object>) itemMap.get(key);
                             if (MapUtils.isEmpty(itemValue)) {
+                                itemValue = Maps.newHashMap();
                                 itemValue.putAll(value);
                             } else {
                                 for (Map.Entry<String, Object> entry : value.entrySet()) {

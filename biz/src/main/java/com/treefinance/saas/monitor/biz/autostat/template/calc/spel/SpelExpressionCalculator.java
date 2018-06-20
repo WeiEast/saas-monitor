@@ -350,7 +350,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
                 "\t\"failCount\":\"3\"\n" +
                 "}";
         map = JSON.parseObject(json);
-        System.out.println(calculator.calculate(1L, "#divide(#successCount,#subtract(#totalCount,#failCount),2)", map));
+        System.out.println(calculator.calculate(1L, "#webSite==null?1:0", map));
 //        System.out.println(calculator.calculate(1L, "(#taskSteps.?[#this[stepCode] == \"create\"]).size()>0?1:0", map));
 //        System.out.println(calculator.calculate(1L, "\"virtual_total_stat_appId\"", map));
 //        System.out.println(calculator.calculate(1L, "#day(#createTime)", map));
