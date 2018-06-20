@@ -386,7 +386,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 msgList.add(msg);
             }
             //回调成功率小于前7天平均值
-            if (isAlarm(dto.getCallbackSuccessCount(), dto.getCallbackSuccessRate(), callbackCompareVal)) {
+            if (isAlarm(dto.getProcessSuccessCount(), dto.getCallbackSuccessRate(), callbackCompareVal)) {
                 OperatorAccessAlarmMsgDTO msg = new OperatorAccessAlarmMsgDTO();
                 msg.setGroupCode(dto.getGroupCode());
                 msg.setGroupName(dto.getGroupName());
