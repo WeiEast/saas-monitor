@@ -190,9 +190,14 @@ public class MonitorDateUtils {
 
     public static void main(String[] args) throws ParseException {
 //        System.out.println(format(getIntervalTime(new Date(), 5)));
-        String dateStr = "2018-03-02 23:59:59";
+        String dateStr = "2018-03-08 23:59:59";
         Date date = parse(dateStr);
+
         System.out.println(MonitorDateUtils.format2Hms(date));
+
+        Date end = addTimeUnit(date,Calendar.DATE,-7);
+
+        System.out.println(MonitorDateUtils.format(end));
     }
 
 
