@@ -330,7 +330,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     private void calcCallbackSuccessRate(EmailMonitorAlarmConfigDTO configDTO, EmailMonitorAlarmTimeConfigDTO
             timeConfigDTO, Integer previousDays, List<BaseAlarmMsgDTO> msgList, EmailStatAccessDTO sourceDto, EmailStatAccessDTO
                                                  compareDTO, BigDecimal processCompareVal, BigDecimal callbackCompareVal) {
-        if (isAlarm(sourceDto.getCallbackSuccessCount(),
+        if (isAlarm(sourceDto.getProcessSuccessCount(),
                 sourceDto.getCallbackSuccessRate(),
                 callbackCompareVal,
                 configDTO.getFewNum(), configDTO.getThreshold())) {
