@@ -70,9 +70,9 @@ public class CronUtils {
             Date endTime = cronExpression.getNextValidTimeAfter(startTime);
             Long expireTime = endTime.getTime() - startTime.getTime();
             if (expireTime < 10 * 60 * 1000) {
-                return 3 * 10 * 60 * 1000L;
+                return 10 * 60 * 1000L;
             }
-            return 3 * expireTime;
+            return expireTime;
         } catch (ParseException e) {
             throw new RuntimeException("parse cron exception: cron=" + statCron, e);
         }

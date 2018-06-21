@@ -355,7 +355,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
     private static Long getExpireTime(String statCron) {
         Long expireTime = CronUtils.getTimeInterval(statCron);
         if (expireTime < 10 * 60 * 1000) {
-            return 3 * 10 * 60 * 1000L;
+            return 10 * 60 * 1000L;
         }
         return expireTime;
     }
