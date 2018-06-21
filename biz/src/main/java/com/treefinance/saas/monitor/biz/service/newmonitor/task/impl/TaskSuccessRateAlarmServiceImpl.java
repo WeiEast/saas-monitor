@@ -12,12 +12,10 @@ import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskSuccessRateAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
-import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
-import com.treefinance.saas.monitor.common.domain.dto.EmailAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.SaasStatAccessDTO;
+import com.treefinance.saas.monitor.common.domain.dto.TaskSuccRateCompareDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.MonitorAlarmLevelConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccRateAlarmTimeListDTO;
-import com.treefinance.saas.monitor.common.domain.dto.TaskSuccRateCompareDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccessRateAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
@@ -36,9 +34,6 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundSetOperations;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -51,7 +46,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * Created by haojiahong on 2017/11/24.
+ *
+ * @author haojiahong
+ * @date 2017/11/24
  */
 @Service
 public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmService {

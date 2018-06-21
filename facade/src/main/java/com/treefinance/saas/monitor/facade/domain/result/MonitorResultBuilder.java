@@ -2,8 +2,6 @@ package com.treefinance.saas.monitor.facade.domain.result;
 
 import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
 
-import java.util.List;
-
 /**
  * Created by yh-treefinance on 2017/6/5.
  */

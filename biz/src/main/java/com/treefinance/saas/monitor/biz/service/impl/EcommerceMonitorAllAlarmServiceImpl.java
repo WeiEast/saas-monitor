@@ -8,6 +8,7 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.biz.service.EcommerceMonitorAllAlarmService;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceAllStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
@@ -121,7 +122,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             baseTile = "【总】电商监控(按人数统计)";
 
         }
-        if (StringUtils.equalsIgnoreCase(mailSwitch, "on")) {
+        if (StringUtils.equalsIgnoreCase(mailSwitch, AlarmConstants.SWITCH_ON)) {
             String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile);
             String title = generateTitle(baseTile);
             alarmMessageProducer.sendMail(title, mailDataBody, MailEnum.HTML_MAIL);
@@ -129,7 +130,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             logger.info("电商预警,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
 
         }
-        if (StringUtils.equalsIgnoreCase(weChatSwitch, "on")) {
+        if (StringUtils.equalsIgnoreCase(weChatSwitch,AlarmConstants.SWITCH_ON)) {
             String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile);
             alarmMessageProducer.sendWebChart(weChatBody);
         } else {

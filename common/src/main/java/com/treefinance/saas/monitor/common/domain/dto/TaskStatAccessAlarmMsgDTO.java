@@ -1,6 +1,5 @@
 package com.treefinance.saas.monitor.common.domain.dto;
 
-import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

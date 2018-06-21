@@ -58,7 +58,7 @@
             <!--<property name="useActualColumnNames" value="true"/>-->
         <!--</table>-->
 
-        <table tableName="as_stat_item" domainObjectName="AsStatItem"
+        <table tableName="alarm_record" domainObjectName="AlarmRecord"
                enableSelectPaginationByExample="true"
                enableInsertOrUpdateBySelective="true"
                enableBatchInsert="true"
