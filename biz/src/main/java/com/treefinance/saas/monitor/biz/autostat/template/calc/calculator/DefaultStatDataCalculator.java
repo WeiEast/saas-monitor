@@ -181,15 +181,15 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 dataMap.put(itemCode, itemValue);
             });
 
-            statItems.stream().filter(statItem -> Byte.valueOf("3").equals(statItem.getDataSource())).forEach(statItem -> {
+            statItems.stream().filter(statItem -> Byte.valueOf("2").equals(statItem.getDataSource())).forEach(statItem -> {
                 Long itemId = statItem.getId();
                 String itemCode = statItem.getItemCode();
                 String itemExpression = statItem.getItemExpression();
                 Object itemValue = expressionCalculator.calculate(itemId, itemExpression, data);
                 if (itemValue instanceof Number) {
                     if (((Number) itemValue).doubleValue() > 0) {
-                        Map<String, Double> map = Maps.newHashMap();
-                        map.put(data.get("statCode").toString(), (double) 1);
+                        Map<String, Integer> map = Maps.newHashMap();
+                        map.put(data.get("statCode").toString(), 1);
                         dataMap.put(itemCode, map);
                     }
                 }
@@ -240,23 +240,37 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                             }
                             redisTemplate.boundHashOps(redisKey).increment(key, (Double) itemMap.get(key));
                         } else {
-                            Map<String, Object> value = (Map<String, Object>) dataMap.get(key);
-                            Map<String, Object> itemValue = (Map<String, Object>) itemMap.get(key);
+                            Map<String, Integer> value = (Map<String, Integer>) dataMap.get(key);
+                            Map<String, Integer> itemValue = (Map<String, Integer>) itemMap.get(key);
                             if (MapUtils.isEmpty(itemValue)) {
                                 itemValue = Maps.newHashMap();
                                 itemValue.putAll(value);
                             } else {
-                                for (Map.Entry<String, Object> entry : value.entrySet()) {
+                                for (Map.Entry<String, Integer> entry : value.entrySet()) {
                                     if (itemValue.get(entry.getKey()) == null) {
                                         itemValue.put(entry.getKey(), entry.getValue());
                                     } else {
-                                        Object oldValue = itemValue.get(entry.getKey());
-                                        Double newValue = (Double) oldValue + (Double) entry.getValue();
+                                        Integer newValue = itemValue.get(entry.getKey()) + entry.getValue();
                                         itemValue.put(entry.getKey(), newValue);
                                     }
                                 }
                             }
-                            redisTemplate.boundHashOps(redisKey).put(key, itemValue);
+                            Object oldItemValueStr = redisTemplate.boundHashOps(redisKey).get(key);
+                            Map<String, Object> oldItemValue;
+                            if (oldItemValueStr != null) {
+                                oldItemValue = JSON.parseObject(oldItemValueStr.toString());
+                            } else {
+                                oldItemValue = Maps.newHashMap();
+                            }
+                            for (Map.Entry<String, Integer> entry : itemValue.entrySet()) {
+                                if (oldItemValue.get(entry.getKey()) == null) {
+                                    oldItemValue.put(entry.getKey(), entry.getValue());
+                                } else {
+                                    Integer updateValue = ((Number) oldItemValue.get(entry.getKey())).intValue() + entry.getValue();
+                                    oldItemValue.put(entry.getKey(), updateValue);
+                                }
+                            }
+                            redisTemplate.boundHashOps(redisKey).put(key, JSON.toJSONString(oldItemValue));
                         }
 
                     }
