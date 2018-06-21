@@ -159,7 +159,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
             return 0;
         }
         redisTemplate.boundSetOps(redisKey).add(uniqueString);
-        redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
+        redisTemplate.boundSetOps(redisKey).expire(timeInterval, TimeUnit.MILLISECONDS);
         logger.info("distinct : result=1, expressionId={},redisKey={},value={}", expressionId, redisKey, uniqueString);
         return 1;
     }
@@ -197,7 +197,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         }
 
         redisTemplate.boundSetOps(redisKey).add(uniqueString);
-        redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
+        redisTemplate.boundSetOps(redisKey).expire(timeInterval, TimeUnit.MILLISECONDS);
         logger.info("exists : result=false, expressionId={},redisKey={},value={}", expressionId, redisKey, uniqueString);
         return false;
     }
@@ -263,7 +263,7 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
 
         StringRedisTemplate redisTemplate = (StringRedisTemplate) context.get().get(AsConstants.REDIS);
         redisTemplate.boundSetOps(redisKey).add(_value);
-        redisTemplate.boundSetOps(redisKey).expire(2 * timeInterval, TimeUnit.MILLISECONDS);
+        redisTemplate.boundSetOps(redisKey).expire(timeInterval, TimeUnit.MILLISECONDS);
         logger.info("containsSet : result=true, expressionId={},redisKey={}", expressionId, redisKey);
         return true;
     }
