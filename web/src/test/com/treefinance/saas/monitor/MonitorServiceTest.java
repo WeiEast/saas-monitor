@@ -14,6 +14,10 @@ import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.facade.domain.request.BaseStatAccessRequest;
+import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.RealTimeStatAccessRO;
+import com.treefinance.saas.monitor.facade.service.stat.RealTimeStatAccessFacade;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +57,8 @@ public class MonitorServiceTest {
     private RedisDao redisDao;
     @Autowired
     private SmsNotifyService smsNotifyService;
+    @Autowired
+    private RealTimeStatAccessFacade realTimeStatAccessFacade;
 
     @Test
     public void testMail() {
@@ -239,6 +245,19 @@ public class MonitorServiceTest {
     @Test
     public void ivrAlarm() {
         ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm, "运营商-分时人数时间段是2018年02月06日 下午 14点30分00秒至2018年02月06日 下午 15点00分00秒运营商:中国联通预警类型是登陆成功率低于前7天平均值的70%偏离阀值程度百分之28.00时间段是2018年02月06日 下午 14点30分00秒至2018年02月06日 下午 15点00分00秒运营商:中国联通预警类型是抓取成功率低于前7天平均值的70%偏离阀值程度百分之100.00");
+    }
+
+    @Test
+    public void testRealTimeStatAccess() {
+        BaseStatAccessRequest request = new BaseStatAccessRequest();
+        request.setAppId("QATestabcdefghQA");
+        request.setSaasEnv((byte) 0);
+        request.setStartTime(MonitorDateUtils.parse("2018-05-02 16:50:00"));
+        request.setEndTime(MonitorDateUtils.parse("2018-05-02 17:55:00"));
+        request.setBizType((byte) 3);
+        request.setIntervalMins(10);
+        MonitorResult<List<RealTimeStatAccessRO>> result = realTimeStatAccessFacade.queryRealTimeStatAccess(request);
+        System.out.println(JSON.toJSONString(result));
     }
 
 
