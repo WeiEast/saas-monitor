@@ -2,9 +2,10 @@ package com.treefinance.saas.monitor.dao.mapper;
 
 import com.treefinance.saas.monitor.dao.entity.AsStatCallback;
 import com.treefinance.saas.monitor.dao.entity.AsStatCallbackCriteria;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.RowBounds;
+
+import java.util.List;
 
 public interface AsStatCallbackMapper {
     /**

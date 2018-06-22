@@ -1,5 +1,10 @@
 package com.treefinance.saas.monitor.common.domain.dto;
 
+import com.treefinance.saas.monitor.common.enumeration.EAlarmAspectType;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -8,6 +13,9 @@ import java.util.Date;
  * @author chengtong
  * @date 18/3/13 11:34
  */
+@Getter
+@Setter
+@ToString
 public class BaseAlarmMsgDTO implements Serializable{
 
     /**统计时间*/
@@ -39,85 +47,9 @@ public class BaseAlarmMsgDTO implements Serializable{
 
     /**预警等级*/
     private Enum alarmLevel;
-    public Date getDataTime() {
-        return dataTime;
-    }
 
-    public void setDataTime(Date dataTime) {
-        this.dataTime = dataTime;
-    }
-
-    public String getAlarmDesc() {
-        return alarmDesc;
-    }
-
-    public void setAlarmDesc(String alarmDesc) {
-        this.alarmDesc = alarmDesc;
-    }
-
-    public String getAlarmSimpleDesc() {
-        return alarmSimpleDesc;
-    }
-
-    public void setAlarmSimpleDesc(String alarmSimpleDesc) {
-        this.alarmSimpleDesc = alarmSimpleDesc;
-    }
-
-    public BigDecimal getValue() {
-        return value;
-    }
-
-    public void setValue(BigDecimal value) {
-        this.value = value;
-    }
-
-    public String getValueDesc() {
-        return valueDesc;
-    }
-
-    public void setValueDesc(String valueDesc) {
-        this.valueDesc = valueDesc;
-    }
-
-    public BigDecimal getThreshold() {
-        return threshold;
-    }
-
-    public void setThreshold(BigDecimal threshold) {
-        this.threshold = threshold;
-    }
-
-    public String getThresholdDesc() {
-        return thresholdDesc;
-    }
-
-    public void setThresholdDesc(String thresholdDesc) {
-        this.thresholdDesc = thresholdDesc;
-    }
-
-    public BigDecimal getOffset() {
-        return offset;
-    }
-
-    public void setOffset(BigDecimal offset) {
-        this.offset = offset;
-    }
-
-    public String getAlarmType() {
-        return alarmType;
-    }
-
-    public void setAlarmType(String alarmType) {
-        this.alarmType = alarmType;
-    }
-
-    public Enum getAlarmLevel() {
-        return alarmLevel;
-    }
-
-    public void setAlarmLevel(Enum alarmLevel) {
-        this.alarmLevel = alarmLevel;
-    }
+    /**预警指标的类型*/
+    private EAlarmAspectType alarmAspectType;
 
 
 }

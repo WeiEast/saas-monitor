@@ -342,15 +342,9 @@ public class SpelExpressionCalculator implements ExpressionCalculator {
         SpelExpressionCalculator calculator = new SpelExpressionCalculator();
 //        System.out.println(calculator.calculate(1L, "#distinct(#uniqueId)", map));
 
-        //
-        json = "{\"webSite\":\"china_10010_app\",\"monitorType\":\"task_callback_msg\",\"bizType\":3,\"saasEnv\":\"product\",\"accountNo\":\"4$8ilOHq7Mus2WAcvhEjwgUOCAAAwA\",\"appId\":\"product_JZD7AUYqWogc9U7K\",\"completeTime\":1522123356000,\"taskId\":163256388045922304,\"uniqueId\":\"1002649448\",\"group\":\"saas-monitor:stat:callback-user-time-share:index-1:2018-03-27 12:00:00\"}";
-        json = "{\n" +
-                "\t\"successCount\":\"1\",\n" +
-                "\t\"totalCount\":\"1\",\n" +
-                "\t\"failCount\":\"3\"\n" +
-                "}";
+        json = "{\"bizType\":3,\"webSite\":\"\",\"monitorType\":\"task_callback_failure_reason\",\"saasEnv\":\"1\",\"taskAttributes\":{\"groupName\":\"中国联通\",\"groupCode\":\"ZHONG_GUO_10010\"},\"dataTime\":1525251302000,\"accountNo\":\"\",\"appId\":\"QATestabcdefghQA\",\"failureReason\":\"1\",\"distinctUserGroup\":\"saas-monitor:stat:callback-failure-time-share:index-1:distinct:user:2018-05-02 16:30:00:appId-QATestabcdefghQA:groupCode-ZHONG_GUO_10010:groupName-中国联通:saasEnv-0:dataType-0:bizType-3\",\"taskId\":176375711672594432,\"uniqueId\":\"test333\",\"status\":1,\"group\":\"saas-monitor:stat:callback-failure-time-share:index-1:2018-05-02 16:55:00:appId-QATestabcdefghQA:groupCode-ZHONG_GUO_10010:groupName-中国联通:saasEnv-0:dataType-0:bizType-3\"}";
         map = JSON.parseObject(json);
-        System.out.println(calculator.calculate(1L, "#webSite==null?1:0", map));
+        System.out.println(calculator.calculate(1L, "#failureReason==\"1\"?1:0 ", map));
 //        System.out.println(calculator.calculate(1L, "(#taskSteps.?[#this[stepCode] == \"create\"]).size()>0?1:0", map));
 //        System.out.println(calculator.calculate(1L, "\"virtual_total_stat_appId\"", map));
 //        System.out.println(calculator.calculate(1L, "#day(#createTime)", map));

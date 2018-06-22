@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.service;
 
-import com.treefinance.saas.monitor.common.domain.dto.OperatorMonitorAlarmConfigDTO;
+
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
 
 import java.util.Date;
 

@@ -27,6 +27,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,8 @@ public class IvrNotifyService {
     @Autowired
     private IvrConfig ivrConfig;
 
+
+
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -57,6 +60,20 @@ public class IvrNotifyService {
         String saasEnvDesc = "saas-" + ivrConfig.getEnvironment();
         this.notifyIvr(alarmLevel, type, alarmRule, saasEnvDesc);
     }
+
+
+    public void notifyIvrToDutyMan(String content,String mobile,String name,String model,Map<String,Object>
+            placeholder){
+
+        IvrContactsDTO contactsDTO = new IvrContactsDTO();
+
+        contactsDTO.setName(name);
+        contactsDTO.setTelNum(mobile);
+
+        initMessageAndSend(Collections.singletonList(contactsDTO),content,model, placeholder);
+
+    }
+
 
     /**
      * ivr通知
@@ -95,12 +112,24 @@ public class IvrNotifyService {
                 .append("【" + alarmLevel.name() + "】")
                 .append(saasEnvDesc)
                 .append(alarmRule).toString();
-        Map<String, Object> jsonMap = initMessageBody(alarmInfo, contactsDTOS);
+        Map<String,Object> placeHolder = Maps.newHashMap();
+        placeHolder.put("alarmMessage", alarmInfo);
+
+        initMessageAndSend(contactsDTOS, alarmInfo, null, placeHolder);
+    }
+
+
+
+    private void initMessageAndSend(List<IvrContactsDTO> contactsDTOS, String alarmInfo, String modelId, Map<String, Object> placeHolder) {
+        Map<String, Object> jsonMap = initMessageBody(alarmInfo, contactsDTOS,modelId, placeHolder);
         // 4.加密参数
         Map<String, String> paramsMessage = encrytMessageBody(jsonMap);
         // 5.发送请求
         sendMessage(paramsMessage);
     }
+
+
+
 
 
     /**
@@ -174,15 +203,15 @@ public class IvrNotifyService {
 
     /**
      * 初始化消息体
+     *
+     *
      */
-    protected Map<String, Object> initMessageBody(String alarmInfo, List<IvrContactsDTO> contactsDTOS) {
+    protected Map<String, Object> initMessageBody(String alarmInfo, List<IvrContactsDTO> contactsDTOS, String modelId, Map<String, Object> placeholder) {
         List<Map<String, Object>> taskItems = Lists.newArrayList();
         Long refId = UidGenerator.getId();
 
         contactsDTOS.forEach(ivrContactsDTO -> {
-            Map<String, Object> msgMap = Maps.newHashMap();
-            msgMap.put("name", ivrContactsDTO.getName());
-            msgMap.put("alarmMessage", alarmInfo);
+            Map<String, Object> msgMap = getTemplatePlaceHolderMap(placeholder, ivrContactsDTO);
 
             Map<String, Object> taskItem = Maps.newHashMap();
             taskItem.put("refId", refId);
@@ -196,7 +225,11 @@ public class IvrNotifyService {
         ivrParams.put("system", "saas");
         ivrParams.put("sysUserId", 1);
         ivrParams.put("useGroup", getUserGroup());
-        ivrParams.put("modelId", ivrConfig.getModelId());
+        if(StringUtils.isEmpty(modelId)){
+            ivrParams.put("modelId", ivrConfig.getModelId());
+        }else {
+            ivrParams.put("modelId", modelId);
+        }
         ivrParams.put("executeTime", DateFormatUtils.format(new Date(), "yyyy-MM-dd hh:mm:ss"));
         ivrParams.put("executeNotify", true);
         ivrParams.put("taskItems", taskItems);
@@ -209,6 +242,19 @@ public class IvrNotifyService {
                 JSON.toJSONString(ivrParams),
                 JSON.toJSONString(contactsDTOS));
         return ivrParams;
+    }
+
+
+    /**
+     * 生成替换模板的map
+     * key-value是替换备份的模板的时候用的；
+     * 发送的是http请求，这个键值对将会把模板中的${}替换掉生成完整的语句
+     * */
+    private Map<String, Object> getTemplatePlaceHolderMap(Map<String, Object> placeholder, IvrContactsDTO ivrContactsDTO) {
+        Map<String, Object> msgMap = Maps.newHashMap();
+        msgMap.put("name", ivrContactsDTO.getName());
+        msgMap.putAll(placeholder);
+        return msgMap;
     }
 
     /**
@@ -253,7 +299,6 @@ public class IvrNotifyService {
             logger.info("send ivr message: url={},paramsMap={},headerMap={}", ivrConfig.getIvrUrl(),
                     JSON.toJSONString(paramsMap), JSON.toJSONString(headerMap));
         }
-
     }
 
     /**

@@ -2,7 +2,6 @@ package com.treefinance.saas.monitor.common.domain.dto;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Date;
 
 /**
  * @author chengtong

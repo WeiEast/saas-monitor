@@ -2,7 +2,6 @@ package com.treefinance.saas.monitor.facade.domain.ro;
 
 import com.treefinance.saas.monitor.facade.domain.base.BaseRO;
 
-import java.io.Serializable;
 import java.util.Date;
 
 public class BankRO extends BaseRO{

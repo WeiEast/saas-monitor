@@ -18,6 +18,10 @@
                    interface="com.treefinance.saas.monitor.facade.service.stat.MerchantStatAccessFacade"
                    version="1.0.0"/>
 
+    <dubbo:service ref="alarmRecordFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.AlarmRecordFacade"
+                   version="1.0.0"/>
+
     <dubbo:service ref="apiStatAccessFacade"
                    interface="com.treefinance.saas.monitor.facade.service.stat.ApiStatAccessFacade"
                    version="1.0.0"/>
@@ -62,6 +66,10 @@
                    version="1.0.0"/>
     <dubbo:service ref="statItemFacade"
                    interface="com.treefinance.saas.monitor.facade.service.autostat.StatItemFacade"
+                   version="1.0.0"/>
+
+    <dubbo:service ref="callbackFailureReasonStatAccessFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.stat.CallbackFailureReasonStatAccessFacade"
                    version="1.0.0"/>
 
 

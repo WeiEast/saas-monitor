@@ -2,9 +2,10 @@ package com.treefinance.saas.monitor.dao.mapper;
 
 import com.treefinance.saas.monitor.dao.entity.Ecommerce;
 import com.treefinance.saas.monitor.dao.entity.EcommerceCriteria;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.RowBounds;
+
+import java.util.List;
 
 public interface EcommerceMapper {
     /**

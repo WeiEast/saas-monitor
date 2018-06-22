@@ -18,7 +18,6 @@ package com.treefinance.saas.monitor.web.registry;
 
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.ivr.filter.IvrFilter;
-import com.treefinance.saas.monitor.web.filter.WebContextFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
