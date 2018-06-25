@@ -62,12 +62,8 @@ public class TaskSuccessRateAlarmConfigDTO extends BaseAlarmConfigDTO {
 
     public static void main(String[] args) {
         List<TaskSuccessRateAlarmConfigDTO> list = Lists.newArrayList();
-        TaskSuccessRateAlarmConfigDTO dto1 = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.PRODUCT);
-        TaskSuccessRateAlarmConfigDTO dto2 = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.PRE_PRODUCT);
         TaskSuccessRateAlarmConfigDTO dto3 = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.ALL);
 
-        list.add(dto1);
-        list.add(dto2);
         list.add(dto3);
 
         System.out.println(JSON.toJSONString(list, SerializerFeature.DisableCircularReferenceDetect));

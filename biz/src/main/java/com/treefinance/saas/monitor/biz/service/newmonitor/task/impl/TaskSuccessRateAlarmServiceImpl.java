@@ -272,9 +272,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             total += saasStatAccessDTO.getTotalCount();
         }
 
-        BigDecimal averSuccRate = new BigDecimal(successCount).multiply(HUNDRED).divide(new BigDecimal(total), 2,
-                RoundingMode
-                        .HALF_UP);
+        BigDecimal averSuccRate = new BigDecimal(successCount).multiply(HUNDRED).divide(new BigDecimal(total), 2, RoundingMode.HALF_UP);
 
         compareDTO.setAverSuccRate(averSuccRate);
 

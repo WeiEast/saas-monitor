@@ -47,7 +47,6 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     private final static Logger logger = LoggerFactory.getLogger(OperatorStatAccessFacade.class);
 
-
     @Autowired
     private OperatorStatAccessMapper operatorStatAccessMapper;
     @Autowired
@@ -112,7 +111,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
                 ro.setProcessSuccessRate(calcRate(data.getCrawlSuccessCount(), data.getProcessSuccessCount()));
                 ro.setCallbackSuccessRate(calcRate(data.getProcessSuccessCount(), data.getCallbackSuccessCount()));
                 ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
-                // TODO: 18/6/20  add average 某一个运营商某七天的数据
+                //add average 某一个运营商某七天的数据
 
                 ro.setDayAverage(getPreviousAverage(request.getAppId(), request.getSaasEnv(), request.getStatType(), ro
                         .getGroupCode(), request.getDataDate(), request.getGroupName()));
@@ -123,7 +122,6 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         logger.info("查询各个运营商日监控统计数据(分页),返回结果result={}", JSON.toJSONString(result));
         return MonitorResultBuilder.pageResult(request, result, total);
     }
-
 
     private BigDecimal getPreviousAverage(String appId, byte saasEnv, byte dataType, String groupCode, Date initDate,
                                           String groupName) {
@@ -150,18 +148,18 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         }
 
         Integer callbackCount = 0;
-        Integer entryCount = 0;
+        Integer comfirmCount = 0;
 
         for (OperatorStatDayAccess operatorStatDayAccess : list) {
             callbackCount += operatorStatDayAccess.getCallbackSuccessCount();
-            entryCount += operatorStatDayAccess.getEntryCount();
+            comfirmCount += operatorStatDayAccess.getConfirmMobileCount();
         }
 
-        if (entryCount.equals(0)) {
+        if (comfirmCount.equals(0)) {
             return BigDecimal.ZERO;
         }
 
-        return new BigDecimal(callbackCount).divide(new BigDecimal(entryCount), 2, RoundingMode.HALF_UP)
+        return new BigDecimal(callbackCount).divide(new BigDecimal(comfirmCount), 2, RoundingMode.HALF_UP)
                 .multiply(new BigDecimal(100));
     }
 
@@ -251,7 +249,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
             operatorStatAccesses.forEach(operatorStatAccess -> {
                 callbackCount.updateAndGet(v -> v + operatorStatAccess
                         .getCallbackSuccessCount());
-                entryCount.updateAndGet(v -> v + operatorStatAccess.getEntryCount());
+                entryCount.updateAndGet(v -> v + operatorStatAccess.getConfirmMobileCount());
             });
         }
         logger.info("获取{}过去七天的平均值,成功数：{}，总数：{}", groupCode, callbackCount.get(), entryCount.get());
