@@ -17,4 +17,6 @@ public interface RealTimeStatAccessFacade {
 
     MonitorResult<List<RealTimeStatAccessRO>> queryRealTimeStatAccess(BaseStatAccessRequest request);
 
+    MonitorResult<List<RealTimeStatAccessRO>> queryAvgRealTimeStatAccess(BaseStatAccessRequest request);
+
 }

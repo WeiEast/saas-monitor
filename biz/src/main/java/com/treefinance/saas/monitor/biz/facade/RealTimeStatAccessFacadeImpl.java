@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.RealTimeStatAccess;
@@ -45,18 +46,26 @@ public class RealTimeStatAccessFacadeImpl implements RealTimeStatAccessFacade {
     @Override
     public MonitorResult<List<RealTimeStatAccessRO>> queryRealTimeStatAccess(BaseStatAccessRequest request) {
 
-        if (request == null || request.getBizType() == null || StringUtils.isBlank(request.getAppId())
-                || request.getStartTime() == null || request.getEndTime() == null || request.getSaasEnv() == null) {
-            logger.error("任务实时监控数据统计查询,输入参数appId,bizType,startTime,endTime,saasEnv为空,request={}", JSON.toJSONString(request));
-            throw new ParamCheckerException("请求参数非法,appId,bizType,startTime,endTime,saasEnv必填");
+        if (request == null || request.getBizType() == null || request.getStartTime() == null || request.getEndTime() == null) {
+            logger.error("任务实时监控数据统计查询,输入参数bizType,startTime,endTime,saasEnv为空,request={}", JSON.toJSONString(request));
+            throw new ParamCheckerException("请求参数非法,bizType,startTime,endTime,saasEnv必填");
         }
         logger.info("任务实时监控数据统计查询,输入参数request={}", JSON.toJSONString(request));
         List<RealTimeStatAccessRO> result = Lists.newArrayList();
 
         RealTimeStatAccessCriteria criteria = new RealTimeStatAccessCriteria();
-        criteria.createCriteria().andAppIdEqualTo(request.getAppId())
-                .andBizTypeEqualTo(request.getBizType())
-                .andSaasEnvEqualTo(request.getSaasEnv())
+        RealTimeStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        if (StringUtils.isNotBlank(request.getAppId())) {
+            innerCriteria.andAppIdEqualTo(request.getAppId());
+        } else {
+            innerCriteria.andAppIdEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_APP_ID);
+        }
+        if (request.getSaasEnv() != null) {
+            innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
+        } else {
+            innerCriteria.andSaasEnvEqualTo((byte) 0);
+        }
+        innerCriteria.andBizTypeEqualTo(request.getBizType())
                 .andDataTimeGreaterThanOrEqualTo(request.getStartTime())
                 .andDataTimeLessThan(request.getEndTime());
         List<RealTimeStatAccess> list = realTimeStatAccessMapper.selectByExample(criteria);
@@ -67,6 +76,39 @@ public class RealTimeStatAccessFacadeImpl implements RealTimeStatAccessFacade {
             }
         }
         return MonitorResultBuilder.build(result);
+    }
+
+    @Override
+    public MonitorResult<List<RealTimeStatAccessRO>> queryAvgRealTimeStatAccess(BaseStatAccessRequest request) {
+//        if (request == null || request.getBizType() == null || StringUtils.isBlank(request.getAppId())
+//                || request.getStartTime() == null || request.getEndTime() == null || request.getSaasEnv() == null) {
+//            logger.error("任务实时监控7天平均数据统计查询,输入参数appId,bizType,startTime,endTime,saasEnv为空,request={}", JSON.toJSONString(request));
+//            throw new ParamCheckerException("请求参数非法,appId,bizType,startTime,endTime,saasEnv必填");
+//        }
+//        logger.info("任务实时监控7天平均数据统计查询,输入参数request={}", JSON.toJSONString(request));
+//        List<RealTimeStatAccessRO> result = Lists.newArrayList();
+//
+//        RealTimeStatAccessCriteria criteria = new RealTimeStatAccessCriteria();
+//        RealTimeStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+//        if (StringUtils.isNotBlank(request.getAppId())) {
+//            innerCriteria.andAppIdEqualTo(request.getAppId());
+//        } else {
+//            innerCriteria.andAppIdEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_APP_ID);
+//        }
+//        innerCriteria.andBizTypeEqualTo(request.getBizType())
+//                .andSaasEnvEqualTo(request.getSaasEnv())
+//                .andDataTimeGreaterThanOrEqualTo(DateUtils.addDays(request.getStartTime(), -7))
+//                .andDataTimeLessThan(DateUtils.addDays(request.getEndTime(), -1));
+//        List<RealTimeStatAccess> list = realTimeStatAccessMapper.selectByExample(criteria);
+//        if (!CollectionUtils.isEmpty(list)) {
+//            result = this.convertStatData(list);
+//            if (request.getIntervalMins() != null) {
+//                result = this.convertIntervalMinsData(result, request.getIntervalMins());
+//            }
+//        }
+//        result = computeAvgResult(result);
+        return MonitorResultBuilder.build(null);
+
     }
 
     private List<RealTimeStatAccessRO> convertIntervalMinsData(List<RealTimeStatAccessRO> list, Integer intervalMins) {
