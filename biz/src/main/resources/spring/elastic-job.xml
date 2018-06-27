@@ -24,6 +24,11 @@
                 registry-center-ref="regCenter" cron="0 2/10 * * * ?"
                 sharding-total-count="1" overwrite="true"/>
 
+    <!--任务实时监控7天平均值-->
+    <job:simple id="realTimeAvgStatAccessJob" class="com.treefinance.saas.monitor.biz.task.RealTimeAvgStatAccessJob"
+                registry-center-ref="regCenter" cron="0 0 0 1/1 * ?"
+                sharding-total-count="1" overwrite="true"/>
+
     <!-- 无任务预警 -->
     <job:simple id="noTaskAlarmJob" class="com.treefinance.saas.monitor.biz.task.NoTaskAlarmJob"
                 registry-center-ref="regCenter" cron="0 0/5 * * * ?"

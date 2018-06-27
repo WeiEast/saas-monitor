@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.common.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -22,12 +23,12 @@ public class MonitorDateUtils {
      * @return
      */
     public static Date getIntervalDateTime(Date dataTime, Integer intervalMinutes) {
-        Date intervalTime = org.apache.commons.lang.time.DateUtils.truncate(dataTime, Calendar.MINUTE);
-        Long currentMinute = org.apache.commons.lang.time.DateUtils.getFragmentInMinutes(intervalTime, Calendar.HOUR_OF_DAY);
+        Date intervalTime = DateUtils.truncate(dataTime, Calendar.MINUTE);
+        Long currentMinute = DateUtils.getFragmentInMinutes(intervalTime, Calendar.HOUR_OF_DAY);
         if (currentMinute % intervalMinutes == 0) {
             return intervalTime;
         }
-        intervalTime = org.apache.commons.lang.time.DateUtils.addMinutes(intervalTime, (-currentMinute.intValue() % intervalMinutes));
+        intervalTime = DateUtils.addMinutes(intervalTime, (-currentMinute.intValue() % intervalMinutes));
         return intervalTime;
     }
 
@@ -100,22 +101,6 @@ public class MonitorDateUtils {
         return calendar.getTime();
     }
 
-    /**
-     * 获取当前日期每隔intervalMinutes时间的整点时间
-     * 例如:2017-11-07 15:22:30 ,intervalMinutes = 10,则结果为:2017-11-07 15:20:00
-     *
-     * @param date
-     * @return
-     */
-    public static Date getIntervalTime(Date date, Integer intervalMinutes) {
-        Date intervalTime = DateUtils.truncate(date, Calendar.MINUTE);
-        Long currentMinute = DateUtils.getFragmentInMinutes(intervalTime, Calendar.HOUR_OF_DAY);
-        if (currentMinute % intervalMinutes == 0) {
-            return intervalTime;
-        }
-        intervalTime = DateUtils.addMinutes(intervalTime, (-currentMinute.intValue() % intervalMinutes));
-        return intervalTime;
-    }
 
     /**
      * 获取前n天的此此时刻date的时间列表
@@ -137,10 +122,10 @@ public class MonitorDateUtils {
         return result;
     }
 
-    public static Date addTimeUnit(Date date,int type,int amount) {
+    public static Date addTimeUnit(Date date, int type, int amount) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-            calendar.add(type, amount);
+        calendar.add(type, amount);
         return calendar.getTime();
     }
 
@@ -190,14 +175,11 @@ public class MonitorDateUtils {
 
     public static void main(String[] args) throws ParseException {
 //        System.out.println(format(getIntervalTime(new Date(), 5)));
-        String dateStr = "2018-03-08 23:59:59";
+        String dateStr = "2018-06-25 23:50:59";
         Date date = parse(dateStr);
+        System.out.println(JSON.toJSONString(format(getIntervalDateTime(date, 120))));
 
-        System.out.println(MonitorDateUtils.format2Hms(date));
 
-        Date end = addTimeUnit(date,Calendar.DATE,-7);
-
-        System.out.println(MonitorDateUtils.format(end));
     }
 
 
