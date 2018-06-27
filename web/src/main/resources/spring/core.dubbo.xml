@@ -74,7 +74,7 @@
 
     <dubbo:service ref="realTimeStatAccessFacade"
                    interface="com.treefinance.saas.monitor.facade.service.stat.RealTimeStatAccessFacade"
-                   version="1.0.0"/>
+                   version="1.0.0" timeout="60000"/>
 
 
     <!--消费者-->
