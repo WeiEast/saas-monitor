@@ -44,7 +44,7 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
 
     private static final Logger logger = LoggerFactory.getLogger(RealTimeAvgStatAccessService.class);
 
-    private static final String REAL_TIME_STAT_REDIS_KEY_PREFIX = "realTime";
+    private static final String REAL_TIME_STAT_REDIS_KEY_PREFIX = "real-time";
 
     @Autowired
     private RealTimeStatAccessMapper realTimeStatAccessMapper;
