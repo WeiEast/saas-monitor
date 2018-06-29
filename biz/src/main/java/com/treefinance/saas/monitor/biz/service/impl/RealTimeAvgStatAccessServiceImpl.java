@@ -67,6 +67,9 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         } else {
             innerCriteria.andSaasEnvEqualTo((byte) 0);
         }
+        if (request.getIntervalMins() != null && request.getIntervalMins() > 0) {
+            request.setStartTime(MonitorDateUtils.getIntervalDateTime(request.getStartTime(), request.getIntervalMins()));
+        }
         innerCriteria.andBizTypeEqualTo(request.getBizType())
                 .andDataTimeGreaterThanOrEqualTo(request.getStartTime())
                 .andDataTimeLessThanOrEqualTo(request.getEndTime());
@@ -136,6 +139,9 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         }
         if (saasEnv == null) {
             saasEnv = 0;
+        }
+        if (intervalMins != null && intervalMins > 0) {
+            startTime = MonitorDateUtils.getIntervalDateTime(startTime, intervalMins);
         }
         List<Date> dateList = this.getDayStartTimeList(startTime, endTime);
         List<RealTimeStatAccessDTO> dataList = Lists.newArrayList();
