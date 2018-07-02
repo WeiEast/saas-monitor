@@ -22,7 +22,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,7 +152,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             map.put("name", saasWorker.getName());
 
             String newContent = StrSubstitutor.replace(content, map);
-            Map<String, Object> params = genIvrMap(recordId,saasWorker,level,baseTime,env);
+            Map<String, Object> params = genIvrMap(recordId, saasWorker, level, baseTime, env);
 
             sendIvr(newContent, saasWorker, params);
             sendSms(newContent, saasWorker);
@@ -256,7 +255,8 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
      * 距离任务开始时间之前的timeout Seconds
      */
     private Date getBaseTime(Date jobTime, BaseAlarmConfigDTO config) {
-        Date statTime = DateUtils.addSeconds(jobTime, -config.getTaskTimeoutSecs());
+        //由于任务监控时间已经有createTime改为lastUpdatedTime,所以无需再延迟预警了
+        Date statTime = jobTime;
         //取得预警原点时间,如:statTime=14:01分,30分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
         return TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, config.getIntervalMins());
     }
