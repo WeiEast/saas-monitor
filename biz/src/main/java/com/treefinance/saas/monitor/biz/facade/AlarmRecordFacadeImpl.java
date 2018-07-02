@@ -98,16 +98,13 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             if (alarmWorkOrder == null) {
                 continue;
             }
-
             recordRO.setDutyName(alarmWorkOrder.getDutyName());
+            recordRO.setDesc(alarmWorkOrder.getRemark());
             recordRO.setProcessorName(alarmWorkOrder.getProcessorName());
-
             recordRO.setOrderId(alarmWorkOrder.getId());
             recordRO.setOrderStatus(alarmWorkOrder.getStatus());
             recordRO.setOrderStatusDesc(EOrderStatus.getDesc(alarmWorkOrder.getStatus()));
         }
-
-
         return MonitorResultBuilder.pageResult(recordRequest, alarmRecordROList, count);
     }
 

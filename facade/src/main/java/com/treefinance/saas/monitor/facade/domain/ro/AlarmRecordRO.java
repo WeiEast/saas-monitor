@@ -1,7 +1,6 @@
 package com.treefinance.saas.monitor.facade.domain.ro;
 
 import com.treefinance.saas.monitor.facade.domain.base.BaseRO;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -44,5 +43,8 @@ public class AlarmRecordRO extends BaseRO {
     private Date endTime;
     /**工单编号*/
     private Long orderId;
+
+    /**描述*/
+    private String desc;
 
 }
