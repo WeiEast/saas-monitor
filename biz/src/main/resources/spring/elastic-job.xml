@@ -41,18 +41,18 @@
     <!--运营商监控,定时预警任务-->
     <job:simple id="operatorMonitorAlarmJob"
                 class="com.treefinance.saas.monitor.biz.task.OperatorMonitorAlarmJob"
-                registry-center-ref="regCenter" cron="0 0/5 * * * ? "
+                registry-center-ref="regCenter" cron="0 2/5 * * * ? "
                 sharding-total-count="1" overwrite="true"/>
 
     <!--邮箱监控,定时任务预警-->
     <job:simple id="emailMonitorAlarmJob"
                 class="com.treefinance.saas.monitor.biz.task.EmailMonitorAlarmJob"
-                registry-center-ref="regCenter" cron="0 0/5 * * * ? "
+                registry-center-ref="regCenter" cron="0 2/5 * * * ? "
                 sharding-total-count="1" overwrite="true"/>
 
     <!--电商监控,定时预警任务-->
     <job:simple id="ecommerceMonitorAlarmJob"
                 class="com.treefinance.saas.monitor.biz.task.EcommerceMonitorAlarmJob"
-                registry-center-ref="regCenter" cron="0 0/5 * * * ? "
+                registry-center-ref="regCenter" cron="0 2/5 * * * ? "
                 sharding-total-count="1" overwrite="true"/>
 </beans>
