@@ -91,14 +91,19 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
             if (StringUtils.isNotBlank(request.getGroupCode())) {
                 operatorInnerCriteria.andGroupCodeEqualTo(request.getGroupCode());
             } else {
-                operatorInnerCriteria.andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_GROUPCODE);
+                operatorInnerCriteria.andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
             }
             operatorInnerCriteria.andDataTimeGreaterThanOrEqualTo(request.getStartTime())
                     .andDataTimeLessThan(request.getEndTime());
             List<OperatorStatDayAccess> operatorList = operatorStatDayAccessMapper.selectByExample(operatorCriteria);
             Map<String, OperatorStatDayAccess> operatorMap = Maps.newHashMap();
             for (OperatorStatDayAccess operator : operatorList) {
-                String key = Joiner.on(":").join(operator.getAppId(), operator.getDataTime(), operator.getGroupCode(), operator.getDataType(), operator.getSaasEnv());
+                String key;
+                if (StringUtils.isNotBlank(request.getGroupCode())) {
+                    key = Joiner.on(":").join(operator.getAppId(), operator.getDataTime(), operator.getGroupCode(), operator.getDataType(), operator.getSaasEnv());
+                } else {
+                    key = Joiner.on(":").join(operator.getAppId(), operator.getDataTime(), operator.getDataType(), operator.getSaasEnv());
+                }
                 operatorMap.put(key, operator);
             }
             if (!CollectionUtils.isEmpty(list)) {
@@ -106,7 +111,12 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
             }
             List<CallbackFailureReasonStatDayAccessRO> countResult = Lists.newArrayList();
             for (CallbackFailureReasonStatDayAccessRO resultData : result) {
-                String key = Joiner.on(":").join(resultData.getAppId(), resultData.getDataTime(), resultData.getGroupCode(), resultData.getDataType(), resultData.getSaasEnv());
+                String key;
+                if (StringUtils.isNotBlank(request.getGroupCode())) {
+                    key = Joiner.on(":").join(resultData.getAppId(), resultData.getDataTime(), resultData.getGroupCode(), resultData.getDataType(), resultData.getSaasEnv());
+                } else {
+                    key = Joiner.on(":").join(resultData.getAppId(), resultData.getDataTime(), resultData.getDataType(), resultData.getSaasEnv());
+                }
                 OperatorStatDayAccess operator = operatorMap.get(key);
                 if (operator == null) {
                     continue;
@@ -167,7 +177,7 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
             if (StringUtils.isNotBlank(request.getGroupCode())) {
                 operatorInnerCritria.andGroupCodeEqualTo(request.getGroupCode());
             } else {
-                operatorInnerCritria.andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_GROUPCODE);
+                operatorInnerCritria.andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
             }
             operatorInnerCritria.andDataTimeGreaterThanOrEqualTo(request.getStartTime())
                     .andDataTimeLessThan(request.getEndTime());
@@ -175,7 +185,12 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
             List<OperatorStatAccess> operatorChangeList = this.changeOperatorIntervalDataTimeList(operatorList, request.getIntervalMins());
             Map<String, OperatorStatAccess> operatorMap = Maps.newHashMap();
             for (OperatorStatAccess operator : operatorChangeList) {
-                String key = Joiner.on(":").join(operator.getAppId(), operator.getDataTime(), operator.getGroupCode(), operator.getDataType(), operator.getSaasEnv());
+                String key;
+                if (StringUtils.isNotBlank(request.getGroupCode())) {
+                    key = Joiner.on(":").join(operator.getAppId(), operator.getDataTime(), operator.getGroupCode(), operator.getDataType(), operator.getSaasEnv());
+                } else {
+                    key = Joiner.on(":").join(operator.getAppId(), operator.getDataTime(), operator.getDataType(), operator.getSaasEnv());
+                }
                 operatorMap.put(key, operator);
             }
             if (!CollectionUtils.isEmpty(changeList)) {
@@ -183,7 +198,12 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
             }
             List<CallbackFailureReasonStatAccessRO> countResult = Lists.newArrayList();
             for (CallbackFailureReasonStatAccessRO resultData : result) {
-                String key = Joiner.on(":").join(resultData.getAppId(), resultData.getDataTime(), resultData.getGroupCode(), resultData.getDataType(), resultData.getSaasEnv());
+                String key;
+                if (StringUtils.isNotBlank(request.getGroupCode())) {
+                    key = Joiner.on(":").join(resultData.getAppId(), resultData.getDataTime(), resultData.getGroupCode(), resultData.getDataType(), resultData.getSaasEnv());
+                } else {
+                    key = Joiner.on(":").join(resultData.getAppId(), resultData.getDataTime(), resultData.getDataType(), resultData.getSaasEnv());
+                }
                 OperatorStatAccess operator = operatorMap.get(key);
                 if (operator == null) {
                     continue;
