@@ -48,43 +48,65 @@ public class TaskSuccessRateAlarmJobTest {
         }
         long start = System.currentTimeMillis();
         //定时任务执行时间
-        String dateStr = "2018-05-16 20:52:00";
+        String dateStr = "2018-05-17 20:52:00";
 
         Date jobTime = DateUtils.parseDate(dateStr,"yyyy-MM-dd hh:mm:ss");
         logger.info("任务成功率预警,定时任务执行jobTime={}", MonitorDateUtils.format(jobTime));
         try {
 //            String configStr = diamondConfig.getTaskSuccessRateAlarmConfig();
-            String configStr = "[\n" +
-                    " {\n" +
+            String configStr = "[{\n" +
+                    "\t\"alarmSwitch\": \"on\",\n" +
                     "\t\"intervalMins\": 3,\n" +
+                    "\t\"levelConfig\": [{\n" +
+                    "\t\t\"channels\": [\"ivr\", \"email\", \"wechat\"],\n" +
+                    "\t\t\"level\": \"error\"\n" +
+                    "\t}, {\n" +
+                    "\t\t\"channels\": [\"sms\", \"email\", \"wechat\"],\n" +
+                    "\t\t\"level\": \"warning\"\n" +
+                    "\t}, {\n" +
+                    "\t\t\"channels\": [\"email\", \"wechat\"],\n" +
+                    "\t\t\"level\": \"info\"\n" +
+                    "\t}],\n" +
                     "\t\"saasEnv\": 0,\n" +
                     "\t\"saasEnvDesc\": \"所有环境\",\n" +
                     "\t\"succesThreshold\": 40,\n" +
-                    "\t\"switches\": {\n" +
-                    "\t\t\"ivr\": \"on\",\n" +
-                    "\t\t\"sms\": \"on\",\n" +
-                    "\t\t\"wechat\": \"on\",\n" +
-                    "\t\t\"email\": \"on\"\n" +
-                    "\t},\n" +
                     "\t\"taskTimeoutSecs\": 600,\n" +
                     "\t\"timeConfig\": [{\n" +
                     "\t\t\"endTime\": \"23:59:59\",\n" +
                     "\t\t\"inTime\": true,\n" +
-                    "\t\t\"startTime\": \"19:00:00\",\n" +
+                    "\t\t\"startTime\": \"20:00:00\",\n" +
+                    "\t\t\"switches\": {\n" +
+                    "\t\t\t\"sms\": \"on\",\n" +
+                    "\t\t\t\"wechat\": \"on\",\n" +
+                    "\t\t\t\"ivr\": \"off\",\n" +
+                    "\t\t\t\"email\": \"on\"\n" +
+                    "\t\t},\n" +
                     "\t\t\"thresholdError\": 70,\n" +
                     "\t\t\"thresholdInfo\": 90,\n" +
                     "\t\t\"thresholdWarning\": 80\n" +
                     "\t}, {\n" +
-                    "\t\t\"endTime\": \"06:00:00\",\n" +
-                    "\t\t\"inTime\": false,\n" +
-                    "\t\t\"startTime\": \"00:00:00\",\n" +
-                    "\t\t\"thresholdError\": 70,\n" +
+                    "\t\t\"endTime\": \"20:00:00\",\n" +
+                    "\t\t\"inTime\": true,\n" +
+                    "\t\t\"startTime\": \"11:00:00\",\n" +
+                    "\t\t\"switches\": {\n" +
+                    "\t\t\t\"sms\": \"on\",\n" +
+                    "\t\t\t\"wechat\": \"on\",\n" +
+                    "\t\t\t\"ivr\": \"off\",\n" +
+                    "\t\t\t\"email\": \"on\"\n" +
+                    "\t\t},\n" +
+                    "\t\t\"thresholdError\": 60,\n" +
                     "\t\t\"thresholdInfo\": 90,\n" +
                     "\t\t\"thresholdWarning\": 80\n" +
                     "\t}, {\n" +
-                    "\t\t\"endTime\": \"19:00:00\",\n" +
-                    "\t\t\"inTime\": false,\n" +
+                    "\t\t\"endTime\": \"11:00:00\",\n" +
+                    "\t\t\"inTime\": true,\n" +
                     "\t\t\"startTime\": \"06:00:00\",\n" +
+                    "\t\t\"switches\": {\n" +
+                    "\t\t\t\"sms\": \"on\",\n" +
+                    "\t\t\t\"wechat\": \"on\",\n" +
+                    "\t\t\t\"ivr\": \"off\",\n" +
+                    "\t\t\t\"email\": \"on\"\n" +
+                    "\t\t},\n" +
                     "\t\t\"thresholdError\": 70,\n" +
                     "\t\t\"thresholdInfo\": 90,\n" +
                     "\t\t\"thresholdWarning\": 80\n" +
