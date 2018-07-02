@@ -48,22 +48,50 @@ public class TaskSuccessRateAlarmJobTest {
         }
         long start = System.currentTimeMillis();
         //定时任务执行时间
-        String dateStr = "2018-05-21 21:10:00";
+        String dateStr = "2018-05-16 20:52:00";
 
         Date jobTime = DateUtils.parseDate(dateStr,"yyyy-MM-dd hh:mm:ss");
         logger.info("任务成功率预警,定时任务执行jobTime={}", MonitorDateUtils.format(jobTime));
         try {
 //            String configStr = diamondConfig.getTaskSuccessRateAlarmConfig();
-            String configStr = "[{\"alarmSwitch\":\"on\",\"intervalMins\":3,\"levelConfig\":[{\"channels\":[\"ivr\"," +
-                    "\"email\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"sms\",\"email\",\"wechat\"]," +
-                    "\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"saasEnv\":1," +
-                    "\"saasEnvDesc\":\"生产环境\",\"succesThreshold\":40,\"taskTimeoutSecs\":600," +
-                    "\"timeConfig\":[{\"endTime\":\"23:59:59\",\"inTime\":false,\"startTime\":\"19:00:00\"," +
-                    "\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"on\",\"email\":\"on\"}," +
-                    "\"thresholdError\":70,\"thresholdInfo\":90,\"thresholdWarning\":80},{\"endTime\":\"06:00:00\"," +
-                    "\"inTime\":false,\"startTime\":\"00:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\"," +
-                    "\"ivr\":\"on\",\"email\":\"on\"},\"thresholdError\":70,\"thresholdInfo\":90," +
-                    "\"thresholdWarning\":80},{\"endTime\":\"19:00:00\",\"inTime\":true,\"startTime\":\"06:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"off\",\"email\":\"on\"},\"thresholdError\":70,\"thresholdInfo\":90,\"thresholdWarning\":80}],\"times\":3,\"type\":\"OPERATOR\"},{\"alarmSwitch\":\"on\",\"intervalMins\":3,\"levelConfig\":[{\"channels\":[\"ivr\",\"email\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"sms\",\"email\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"saasEnv\":2,\"saasEnvDesc\":\"预发布环境\",\"succesThreshold\":40,\"taskTimeoutSecs\":600,\"timeConfig\":[{\"endTime\":\"23:59:59\",\"inTime\":false,\"startTime\":\"19:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"on\",\"email\":\"on\"},\"thresholdError\":70,\"thresholdInfo\":90,\"thresholdWarning\":80},{\"endTime\":\"06:00:00\",\"inTime\":false,\"startTime\":\"00:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"on\",\"email\":\"on\"},\"thresholdError\":70,\"thresholdInfo\":90,\"thresholdWarning\":80},{\"endTime\":\"19:00:00\",\"inTime\":true,\"startTime\":\"06:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"off\",\"email\":\"on\"},\"thresholdError\":70,\"thresholdInfo\":90,\"thresholdWarning\":80}],\"times\":3,\"type\":\"OPERATOR\"},{\"alarmSwitch\":\"on\",\"intervalMins\":3,\"levelConfig\":[{\"channels\":[\"ivr\",\"email\",\"wechat\"],\"level\":\"error\"},{\"channels\":[\"sms\",\"email\",\"wechat\"],\"level\":\"warning\"},{\"channels\":[\"email\",\"wechat\"],\"level\":\"info\"}],\"saasEnv\":0,\"saasEnvDesc\":\"所有环境\",\"succesThreshold\":40,\"taskTimeoutSecs\":600,\"timeConfig\":[{\"endTime\":\"23:59:59\",\"inTime\":false,\"startTime\":\"19:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"on\",\"email\":\"on\"},\"thresholdError\":70,\"thresholdInfo\":90,\"thresholdWarning\":80},{\"endTime\":\"06:00:00\",\"inTime\":false,\"startTime\":\"00:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"on\",\"email\":\"on\"},\"thresholdError\":70,\"thresholdInfo\":90,\"thresholdWarning\":80},{\"endTime\":\"19:00:00\",\"inTime\":true,\"startTime\":\"06:00:00\",\"switches\":{\"sms\":\"on\",\"wechat\":\"on\",\"ivr\":\"off\",\"email\":\"on\"},\"thresholdError\":70,\"thresholdInfo\":90,\"thresholdWarning\":80}],\"times\":3,\"type\":\"OPERATOR\"}]\n";
+            String configStr = "[\n" +
+                    " {\n" +
+                    "\t\"intervalMins\": 3,\n" +
+                    "\t\"saasEnv\": 0,\n" +
+                    "\t\"saasEnvDesc\": \"所有环境\",\n" +
+                    "\t\"succesThreshold\": 40,\n" +
+                    "\t\"switches\": {\n" +
+                    "\t\t\"ivr\": \"on\",\n" +
+                    "\t\t\"sms\": \"on\",\n" +
+                    "\t\t\"wechat\": \"on\",\n" +
+                    "\t\t\"email\": \"on\"\n" +
+                    "\t},\n" +
+                    "\t\"taskTimeoutSecs\": 600,\n" +
+                    "\t\"timeConfig\": [{\n" +
+                    "\t\t\"endTime\": \"23:59:59\",\n" +
+                    "\t\t\"inTime\": true,\n" +
+                    "\t\t\"startTime\": \"19:00:00\",\n" +
+                    "\t\t\"thresholdError\": 70,\n" +
+                    "\t\t\"thresholdInfo\": 90,\n" +
+                    "\t\t\"thresholdWarning\": 80\n" +
+                    "\t}, {\n" +
+                    "\t\t\"endTime\": \"06:00:00\",\n" +
+                    "\t\t\"inTime\": false,\n" +
+                    "\t\t\"startTime\": \"00:00:00\",\n" +
+                    "\t\t\"thresholdError\": 70,\n" +
+                    "\t\t\"thresholdInfo\": 90,\n" +
+                    "\t\t\"thresholdWarning\": 80\n" +
+                    "\t}, {\n" +
+                    "\t\t\"endTime\": \"19:00:00\",\n" +
+                    "\t\t\"inTime\": false,\n" +
+                    "\t\t\"startTime\": \"06:00:00\",\n" +
+                    "\t\t\"thresholdError\": 70,\n" +
+                    "\t\t\"thresholdInfo\": 90,\n" +
+                    "\t\t\"thresholdWarning\": 80\n" +
+                    "\t}],\n" +
+                    "\t\"times\": 3,\n" +
+                    "\t\"type\": \"OPERATOR\"\n" +
+                    "}]";
             List<TaskSuccessRateAlarmConfigDTO> configList = JSONObject.parseArray(configStr, TaskSuccessRateAlarmConfigDTO.class);
             Map<String, List<TaskSuccessRateAlarmConfigDTO>> configMap = configList.stream().collect(Collectors.groupingBy(TaskSuccessRateAlarmConfigDTO::getType));
             if (MapUtils.isEmpty(configMap)) {
