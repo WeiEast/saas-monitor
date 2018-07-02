@@ -76,9 +76,14 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
      * <p>
      * 123|456|
      * 修改预警的频次，将连续的 @param times 个 间隔 @param intervals 时间都放入同一个redis key中作为是否预警的标志；
+     *
+     * @since 20180702 修改回到原来的模式。连续的时间预警。
      */
-    private boolean ifAlarmed(Date baseTime, String alarmTimeKey, int times, int intervals) {
+    private boolean ifAlarmed(Date baseTime, String alarmTimeKey, TaskSuccessRateAlarmConfigDTO config) {
 
+        int times = config.getTimes();
+        int intervals = config.getIntervalMins();
+        // times 个 interval分钟之前
         Date keyTime = MonitorDateUtils.addTimeUnit(baseTime, Calendar.MINUTE, -intervals * times);
 
         String newKey = alarmTimeKey + ":" + MonitorDateUtils.format(keyTime);
@@ -87,13 +92,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         if (redisTemplate.hasKey(newKey)) {
             return true;
         }
-
-        for (int i = 0; i <= times - 1; i++) {
-            baseTime = MonitorDateUtils.addTimeUnit(baseTime, Calendar.MINUTE, -intervals);
-            newKey = alarmTimeKey + ":" + MonitorDateUtils.format(baseTime);
-            logger.info("add time to redis:{}", MonitorDateUtils.format(baseTime));
-            redisTemplate.opsForValue().set(newKey, "1", 2, TimeUnit.DAYS);
-        }
+        // 预警时间模式修改
+//        for(int i=0;i<=times-1;i++){
+        logger.info("add time to redis:{}", MonitorDateUtils.format(keyTime));
+        redisTemplate.opsForValue().set(newKey, "1", 2, TimeUnit.DAYS);
+//        }
 
         return false;
     }
@@ -107,14 +110,12 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         //由于任务执行需要时间,保证预警的精确,预警统计向前一段时间(各业务任务的超时时间),此时此段时间的任务可以保证都已统计完毕.
         //好处:预警时间即使每隔1分钟预警,依然可以保证预警的准确.坏处:收到预警消息时间向后延迟了相应时间.
         //如:jobTime=14:11,但是运营商超时时间为600s,则statTime=14:01
-//        Date statTime = DateUtils.addSeconds(jobTime, -config.getTaskTimeoutSecs());
-        //由于任务监控时间已经有createTime改为lastUpdatedTime,所以无需再延迟预警了,监控数据刷新到db(一般两分钟一刷新)需要时间,暂时延迟两分钟.
-        Date statTime = DateUtils.addMinutes(jobTime, -2);
+        Date statTime = DateUtils.addSeconds(jobTime, -config.getTaskTimeoutSecs());
         //取得预警原点时间,如:statTime=14:01分,10分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
         Date beginTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
         String alarmTimeKey = TaskMonitorPerMinKeyHelper.strKeyOfAlarmTimeLog(beginTime, bizType, config.getSaasEnv());
-        if (ifAlarmed(beginTime, alarmTimeKey, config.getTimes(), config.getIntervalMins())) {
+        if (ifAlarmed(beginTime, alarmTimeKey, config)) {
             logger.info("任务成功率预警已预警,不再预警,beginTime={},bizType={}", MonitorDateUtils.format(beginTime), JSON.toJSONString(bizType));
             return;
         }
@@ -128,6 +129,8 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         }
 
         TaskSuccRateCompareDTO compareDTO = getPastData(beginTime, config, intervalMins, bizType);
+
+        logger.info("过去七天平均值数据：{}",JSON.toJSONString(compareDTO));
 
         if (compareDTO.getTotalCount() == null || compareDTO.getTotalCount().equals(0)) {
             logger.info("过去7天内没有找到数据，不预警");
@@ -255,8 +258,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         BigDecimal warnThresholdRate = taskSuccRateAlarmTimeConfig.getThresholdWarning();
         BigDecimal infoThresholdRate = taskSuccRateAlarmTimeConfig.getThresholdInfo();
 
-        if (errorThresholdRate == null || warnThresholdRate == null || infoThresholdRate == null
-                ) {
+        if (errorThresholdRate == null || warnThresholdRate == null || infoThresholdRate == null) {
             throw new BizException("任务成功率预警，当前时间没有设定错误、警告级别阈值");
         }
 
@@ -266,28 +268,44 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         BigDecimal warnThreshold = warnThresholdRate.multiply(operand);
         BigDecimal infoThreshold = infoThresholdRate.multiply(operand);
 
-        int successCount = 0, total = 0;
+        int levelScoreTotal = 0;
 
+        //获取平均值  ==》获取每个点的等级相加，info =1，warning =2，error = 3；
         for (SaasStatAccessDTO saasStatAccessDTO : list) {
-            successCount += saasStatAccessDTO.getSuccessCount();
-            total += saasStatAccessDTO.getTotalCount();
+            int levelScore = 0;
+            EAlarmLevel level = null;
+            BigDecimal hold = null;
+            if(saasStatAccessDTO.getConversionRate().compareTo(errorThreshold)<0){
+                level = EAlarmLevel.error;
+                hold = errorThreshold;
+                levelScore = 3;
+            }else if(saasStatAccessDTO.getConversionRate().compareTo(warnThreshold)<0){
+                level = EAlarmLevel.warning;
+                hold = warnThreshold;
+                levelScore = 2;
+            }else if(saasStatAccessDTO.getConversionRate().compareTo(infoThreshold)<0){
+                level = EAlarmLevel.info;
+                hold = infoThreshold;
+                levelScore = 1;
+            }
+
+            logger.info("任务成功率预警，数据时间：{}，等级得分:{},阀值：{}，传化率：{},命中等级：{}",
+                    MonitorDateUtils.format(saasStatAccessDTO.getDataTime()),
+                    levelScore,hold,saasStatAccessDTO.getConversionRate(),level);
+            levelScoreTotal += levelScore;
         }
-
-        BigDecimal averSuccRate = new BigDecimal(successCount).multiply(HUNDRED).divide(new BigDecimal(total), 2, RoundingMode.HALF_UP);
-
-        compareDTO.setAverSuccRate(averSuccRate);
-
-        if (averSuccRate.compareTo(errorThreshold) < 0) {
+        logger.info("预警等级分数：{}",levelScoreTotal);
+        if (levelScoreTotal == 9) {
             compareDTO.setThreshold(errorThreshold);
             compareDTO.setThresholdDecs(errorThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO
                     .getSuccessRate()
                     .toPlainString());
             return EAlarmLevel.error;
-        } else if (averSuccRate.compareTo(warnThreshold) < 0) {
+        } else if (levelScoreTotal >= 6) {
             compareDTO.setThreshold(warnThreshold);
             compareDTO.setThresholdDecs(warnThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO.getSuccessRate().toPlainString());
             return EAlarmLevel.warning;
-        } else if (averSuccRate.compareTo(infoThreshold) < 0) {
+        } else if (levelScoreTotal >= 3) {
             compareDTO.setThreshold(infoThreshold);
             compareDTO.setThresholdDecs(infoThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO.getSuccessRate().toPlainString());
             return EAlarmLevel.info;
