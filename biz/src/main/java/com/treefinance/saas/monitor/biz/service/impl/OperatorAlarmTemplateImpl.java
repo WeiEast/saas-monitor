@@ -494,26 +494,29 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         //所有运营商预警级别定义
         OperatorAccessAlarmMsgDTO msgDTO = (OperatorAccessAlarmMsgDTO) msg;
 
+        Integer groupErrorLowBound = diamondConfig.getErrorLower();
+
+        Integer allErrorLowBound = diamondConfig.getAllErrorLower();
+        Integer allWarnLowBound = diamondConfig.getAllErrorWarning();
+
         if (MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR.equals(msgDTO.getGroupCode())) {
-            if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0) {
+            if (value.compareTo(BigDecimal.valueOf(allErrorLowBound)) >= 0) {
                 msg.setAlarmLevel(EAlarmLevel.error);
-            } else if (value.compareTo(BigDecimal.valueOf(diamondConfig.getWarningLower())) > 0) {
+            } else if (value.compareTo(BigDecimal.valueOf(allWarnLowBound)) > 0) {
                 msg.setAlarmLevel(EAlarmLevel.warning);
             } else {
                 msg.setAlarmLevel(EAlarmLevel.info);
             }
         } else { //分运营商预警级别定义
-            if (value.compareTo(BigDecimal.valueOf(diamondConfig.getErrorLower())) >= 0
+            if (value.compareTo(BigDecimal.valueOf(groupErrorLowBound)) >= 0
                     && CUTC.equals(msgDTO.getGroupName())) {
-                msg.setAlarmLevel(EAlarmLevel.error);
+                msg.setAlarmLevel(EAlarmLevel.warning);
             } else if (CUTC.equals(msgDTO.getGroupName())) {
                 msg.setAlarmLevel(EAlarmLevel.warning);
             } else {
                 msg.setAlarmLevel(EAlarmLevel.info);
             }
         }
-
-
     }
 
 
@@ -622,6 +625,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
     @Override
     public EAlarmLevel determineLevel(List<BaseAlarmMsgDTO> msgList) {
+        //根据运营商名字分组 大于3个就是warning
         Map<String, List<BaseAlarmMsgDTO>> operatorNameGroup = msgList.stream().collect(Collectors
                 .groupingBy(operatorAccessAlarmMsgDTO -> ((OperatorAccessAlarmMsgDTO) operatorAccessAlarmMsgDTO).getGroupName()));
 

@@ -90,6 +90,13 @@ public class DiamondConfig {
     @DAttribute(key = "operator.alarm.level.warning.lower")
     private Integer warningLower;
 
+
+    @DAttribute(key = "operator.all.alarm.level.error.lower")
+    private Integer allErrorLower;
+
+    @DAttribute(key = "operator.all.alarm.level.warning.lower")
+    private Integer allErrorWarning;
+
     /**
      * 运营商预警,统计数量低于此值时,取特殊阀值处理
      */
@@ -493,5 +500,22 @@ public class DiamondConfig {
 
     public void setConsoleAddress(String consoleAddress) {
         this.consoleAddress = consoleAddress;
+    }
+
+
+    public Integer getAllErrorLower() {
+        return allErrorLower;
+    }
+
+    public void setAllErrorLower(Integer allErrorLower) {
+        this.allErrorLower = allErrorLower;
+    }
+
+    public Integer getAllErrorWarning() {
+        return allErrorWarning;
+    }
+
+    public void setAllErrorWarning(Integer allErrorWarning) {
+        this.allErrorWarning = allErrorWarning;
     }
 }
