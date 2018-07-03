@@ -134,9 +134,13 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
         EAlarmLevel alarmLevel = null;
         for (TaskStatAccessAlarmMsgDTO msgDTO:msgList){
             if(msgDTO.getOffset().compareTo(info)<0){
-                alarmLevel = EAlarmLevel.info;
+                if(alarmLevel == null){
+                    alarmLevel = EAlarmLevel.info;
+                }
             }else if(msgDTO.getOffset().compareTo(warning)< 0){
-                alarmLevel = EAlarmLevel.warning;
+                if(alarmLevel == null || alarmLevel.equals(EAlarmLevel.info)){
+                    alarmLevel = EAlarmLevel.warning;
+                }
             }else {
                 alarmLevel = EAlarmLevel.error;
             }
