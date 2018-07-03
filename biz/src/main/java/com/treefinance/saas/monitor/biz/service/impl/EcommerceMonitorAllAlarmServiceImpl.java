@@ -145,18 +145,22 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
                 alarmLevel = EAlarmLevel.error;
             }
         }
+        if(alarmLevel == null){
+            logger.info("预警等级为空，需要预警的数据：{}",msgList);
+            return;
+        }
 
         if(EAlarmLevel.info.equals(alarmLevel)){
-            sendWechat(msgList,jobTime,startTime,endTime,baseTile,weChatSwitch);
+            sendWechat(alarmLevel,msgList,jobTime,startTime,endTime,baseTile,weChatSwitch);
         }else {
-            sendWechat(msgList,jobTime,startTime,endTime,baseTile,weChatSwitch);
-            sendEmail(msgList,jobTime,startTime,endTime,baseTile,mailSwitch);
+            sendWechat(alarmLevel,msgList,jobTime,startTime,endTime,baseTile,weChatSwitch);
+            sendEmail(alarmLevel,msgList,jobTime,startTime,endTime,baseTile,mailSwitch);
         }
     }
 
-    private void sendEmail(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime, String baseTile, String mailSwitch) {
+    private void sendEmail(EAlarmLevel alarmLevel,List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime, String baseTile, String mailSwitch) {
         if (StringUtils.equalsIgnoreCase(mailSwitch, AlarmConstants.SWITCH_ON)) {
-            String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile);
+            String mailDataBody = generateMailDataBody(alarmLevel,msgList, startTime, endTime, baseTile);
             String title = generateTitle(baseTile);
             alarmMessageProducer.sendMail(title, mailDataBody, MailEnum.HTML_MAIL);
         } else {
@@ -164,9 +168,9 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
         }
     }
 
-    private void sendWechat(List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime, String baseTile, String weChatSwitch) {
+    private void sendWechat(EAlarmLevel alarmLevel,List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime, String baseTile, String weChatSwitch) {
         if (StringUtils.equalsIgnoreCase(weChatSwitch, AlarmConstants.SWITCH_ON)) {
-            String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile);
+            String weChatBody = generateWeChatBody(alarmLevel,msgList, startTime, endTime, baseTile);
             alarmMessageProducer.sendWebChart(weChatBody);
         } else {
             logger.info("电商预警,预警定时任务执行jobTime={},发送微信开关已关闭", MonitorDateUtils.format(jobTime));
@@ -178,9 +182,12 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
         return "saas-" + diamondConfig.getMonitorEnvironment() + baseTile + "发生预警";
     }
 
-    private String generateMailDataBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTile) {
+    private String generateMailDataBody(EAlarmLevel alarmLevel,List<TaskStatAccessAlarmMsgDTO> msgList, Date
+            startTime, Date
+            endTime,
+                                        String baseTile) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("<br>").append("【").append(EAlarmLevel.info).append("】").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
+        buffer.append("<br>").append("【").append(alarmLevel).append("】").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(baseTile)
                 .append("预警,在")
                 .append(MonitorDateUtils.format(startTime))
@@ -206,9 +213,12 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
         return buffer.toString();
     }
 
-    private String generateWeChatBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTile) {
+    private String generateWeChatBody(EAlarmLevel alarmLevel,List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime,
+                                      Date
+            endTime, String
+            baseTile) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("【").append(EAlarmLevel.info).append("】")
+        buffer.append("【").append(alarmLevel).append("】")
                 .append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(baseTile)
                 .append("预警,在")
