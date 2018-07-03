@@ -495,6 +495,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         OperatorAccessAlarmMsgDTO msgDTO = (OperatorAccessAlarmMsgDTO) msg;
 
         Integer groupErrorLowBound = diamondConfig.getErrorLower();
+
         Integer allErrorLowBound = diamondConfig.getAllErrorLower();
         Integer allWarnLowBound = diamondConfig.getAllErrorWarning();
 
