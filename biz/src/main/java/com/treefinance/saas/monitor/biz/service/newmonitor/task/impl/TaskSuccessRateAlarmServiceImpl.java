@@ -110,7 +110,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         //由于任务执行需要时间,保证预警的精确,预警统计向前一段时间(各业务任务的超时时间),此时此段时间的任务可以保证都已统计完毕.
         //好处:预警时间即使每隔1分钟预警,依然可以保证预警的准确.坏处:收到预警消息时间向后延迟了相应时间.
         //如:jobTime=14:11,但是运营商超时时间为600s,则statTime=14:01
-        Date statTime = DateUtils.addSeconds(jobTime, -config.getTaskTimeoutSecs());
+        Date statTime = DateUtils.addSeconds(jobTime, -2);
         //取得预警原点时间,如:statTime=14:01分,10分钟间隔统计一次,则beginTime为14:00.统计的数据间隔[13:30-13:40;13:40-13:50;13:50-14:00]
         Date beginTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
@@ -130,7 +130,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
         TaskSuccRateCompareDTO compareDTO = getPastData(beginTime, config, intervalMins, bizType);
 
-        logger.info("过去七天平均值数据：{}",JSON.toJSONString(compareDTO));
+        logger.info("过去七天平均值数据：{}", JSON.toJSONString(compareDTO));
 
         if (compareDTO.getTotalCount() == null || compareDTO.getTotalCount().equals(0)) {
             logger.info("过去7天内没有找到数据，不预警");
@@ -275,15 +275,15 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             int levelScore = 0;
             EAlarmLevel level = null;
             BigDecimal hold = null;
-            if(saasStatAccessDTO.getConversionRate().compareTo(errorThreshold)<0){
+            if (saasStatAccessDTO.getConversionRate().compareTo(errorThreshold) < 0) {
                 level = EAlarmLevel.error;
                 hold = errorThreshold;
                 levelScore = 3;
-            }else if(saasStatAccessDTO.getConversionRate().compareTo(warnThreshold)<0){
+            } else if (saasStatAccessDTO.getConversionRate().compareTo(warnThreshold) < 0) {
                 level = EAlarmLevel.warning;
                 hold = warnThreshold;
                 levelScore = 2;
-            }else if(saasStatAccessDTO.getConversionRate().compareTo(infoThreshold)<0){
+            } else if (saasStatAccessDTO.getConversionRate().compareTo(infoThreshold) < 0) {
                 level = EAlarmLevel.info;
                 hold = infoThreshold;
                 levelScore = 1;
@@ -291,10 +291,10 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
             logger.info("任务成功率预警，数据时间：{}，等级得分:{},阀值：{}，传化率：{},命中等级：{}",
                     MonitorDateUtils.format(saasStatAccessDTO.getDataTime()),
-                    levelScore,hold,saasStatAccessDTO.getConversionRate(),level);
+                    levelScore, hold, saasStatAccessDTO.getConversionRate(), level);
             levelScoreTotal += levelScore;
         }
-        logger.info("预警等级分数：{}",levelScoreTotal);
+        logger.info("预警等级分数：{}", levelScoreTotal);
         if (levelScoreTotal == 9) {
             compareDTO.setThreshold(errorThreshold);
             compareDTO.setThresholdDecs(errorThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO
