@@ -285,7 +285,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         EAlarmLevel level = null;
 
         for (SaasStatAccessDTO saasStatAccessDTO : list) {
-            BigDecimal hold = null;
             if (saasStatAccessDTO.getConversionRate().compareTo(errorThreshold) < 0) {
                 level = EAlarmLevel.error;
                 isWarn = false;
@@ -299,10 +298,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 isWarn = false;
                 isError = false;
             }
-            logger.info("任务成功率预警，数据时间：{},阀值：{}，传化率：{},命中等级：{}",
-                    MonitorDateUtils.format(saasStatAccessDTO.getDataTime()), hold, saasStatAccessDTO.getConversionRate(), level);
+            logger.info("任务成功率预警，数据时间：{},传化率：{},命中等级：{}",
+                    MonitorDateUtils.format(saasStatAccessDTO.getDataTime()), saasStatAccessDTO.getConversionRate(), level);
         }
         if (level == null){
+            logger.info("任务成功率预警,没有命中任务等级，无需预警，直接返回，数据list：{}",list);
             return null;
         }
         if (isError) {
@@ -318,6 +318,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             compareDTO.setThresholdDecs(infoThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO.getSuccessRate().toPlainString());
             return EAlarmLevel.info;
         }
+        logger.info("任务成功率预警,预警命中了不同等级，数据：{}，直接返回",list);
 
         return null;
     }
