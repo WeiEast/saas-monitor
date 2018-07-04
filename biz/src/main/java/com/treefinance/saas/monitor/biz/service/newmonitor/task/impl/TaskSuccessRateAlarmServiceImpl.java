@@ -213,7 +213,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                     sendWechatAlarm(list, bizType, alarmLevel, compareDTO);
                     break;
                 default:
-
             }
         }
     }
@@ -283,9 +282,9 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         boolean isError = true;
         boolean isWarn = true;
         boolean isInfo = true;
+        EAlarmLevel level = null;
 
         for (SaasStatAccessDTO saasStatAccessDTO : list) {
-            EAlarmLevel level = null;
             BigDecimal hold = null;
             if (saasStatAccessDTO.getConversionRate().compareTo(errorThreshold) < 0) {
                 level = EAlarmLevel.error;
@@ -300,11 +299,12 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 isWarn = false;
                 isError = false;
             }
-
             logger.info("任务成功率预警，数据时间：{},阀值：{}，传化率：{},命中等级：{}",
                     MonitorDateUtils.format(saasStatAccessDTO.getDataTime()), hold, saasStatAccessDTO.getConversionRate(), level);
         }
-
+        if (level == null){
+            return null;
+        }
         if (isError) {
             compareDTO.setThreshold(errorThreshold);
             compareDTO.setThresholdDecs(errorThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO.getSuccessRate().toPlainString());
