@@ -297,6 +297,10 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 level = EAlarmLevel.info;
                 isWarn = false;
                 isError = false;
+            }else{
+                level = null;
+                isError = isInfo = isWarn = false;
+                break;
             }
             logger.info("任务成功率预警，数据时间：{},传化率：{},命中等级：{}",
                     MonitorDateUtils.format(saasStatAccessDTO.getDataTime()), saasStatAccessDTO.getConversionRate(), level);
