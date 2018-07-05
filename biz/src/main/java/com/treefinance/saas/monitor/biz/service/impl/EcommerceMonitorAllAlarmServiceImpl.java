@@ -59,7 +59,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             //由于任务执行需要时间,保证预警的精确,预警统计向前一段时间(各业务任务的超时时间),此时此段时间的任务可以保证都已统计完毕.
             //好处:预警时间即使每隔1分钟预警,依然可以保证预警的准确.坏处:收到预警消息时间向后延迟了相应时间.
             //如:jobTime=14:11,但是电商超时时间为600s,则statTime=14:01
-            Date statTime = DateUtils.addSeconds(jobTime, -2);
+            Date statTime = jobTime;
             //取得预警原点时间,如:statTime=14:01分,30分钟间隔统计一次,则beginTime为14:00.
             Date baseTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
