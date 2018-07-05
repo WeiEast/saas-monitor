@@ -50,6 +50,8 @@ public class OperatorStatAccessRO implements Serializable {
 
     private BigDecimal taskUserRatio;
 
+    private BigDecimal average;
+
     private Date createTime;
 
     private Date lastUpdateTime;
@@ -220,5 +222,13 @@ public class OperatorStatAccessRO implements Serializable {
 
     public void setCallbackSuccessRate(BigDecimal callbackSuccessRate) {
         this.callbackSuccessRate = callbackSuccessRate;
+    }
+
+    public BigDecimal getAverage() {
+        return average;
+    }
+
+    public void setAverage(BigDecimal average) {
+        this.average = average;
     }
 }

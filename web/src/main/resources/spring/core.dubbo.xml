@@ -72,6 +72,10 @@
                    interface="com.treefinance.saas.monitor.facade.service.stat.CallbackFailureReasonStatAccessFacade"
                    version="1.0.0"/>
 
+    <dubbo:service ref="realTimeStatAccessFacade"
+                   interface="com.treefinance.saas.monitor.facade.service.stat.RealTimeStatAccessFacade"
+                   version="1.0.0" timeout="60000"/>
+
 
     <!--消费者-->
     <dubbo:reference interface="com.datatrees.notify.sms.newservice.SmsNewService" id="smsNewService"/>

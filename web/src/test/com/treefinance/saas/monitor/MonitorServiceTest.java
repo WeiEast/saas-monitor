@@ -2,19 +2,20 @@ package com.treefinance.saas.monitor;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
 import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
-import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import org.apache.commons.lang3.time.DateUtils;
+import com.treefinance.saas.monitor.facade.domain.request.BaseStatAccessRequest;
+import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.RealTimeStatAccessRO;
+import com.treefinance.saas.monitor.facade.service.stat.RealTimeStatAccessFacade;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -53,59 +53,12 @@ public class MonitorServiceTest {
     private RedisDao redisDao;
     @Autowired
     private SmsNotifyService smsNotifyService;
+    @Autowired
+    private RealTimeStatAccessFacade realTimeStatAccessFacade;
 
-    @Test
-    public void testMail() {
-        List<TaskStatAccessAlarmMsgDTO> msgList = Lists.newArrayList();
-        TaskStatAccessAlarmMsgDTO msg1 = new TaskStatAccessAlarmMsgDTO();
-        msg1.setGroupName("浙江移动");
-        msg1.setAlarmDesc("登录转化率低于前7天平均值的70%");
-        msg1.setValue(new BigDecimal(10));
-        msg1.setThreshold(new BigDecimal(20));
-        msgList.add(msg1);
-        TaskStatAccessAlarmMsgDTO msg2 = new TaskStatAccessAlarmMsgDTO();
-        msg2.setGroupName("浙江电信");
-        msg2.setAlarmDesc("登录转化率低于前7天平均值的70%");
-        msg2.setValue(new BigDecimal(20));
-        msg2.setThreshold(new BigDecimal(30));
-        msgList.add(msg2);
-        String mailDataBody = generateMailDataBody(msgList, new Date());
-        String title = generateTitle();
-        alarmMessageProducer.sendMail4OperatorMonitor(title, mailDataBody, new Date());
-
-    }
 
     private String generateTitle() {
         return "saas-" + diamondConfig.getMonitorEnvironment() + "总运营商监控发生预警";
-    }
-
-
-    private String generateMailDataBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date dataTime) {
-        Integer intervalMins = diamondConfig.getOperatorMonitorIntervalMinutes();
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<br>").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("总运营商监控预警,在")
-                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(dataTime, intervalMins)))
-                .append("--")
-                .append(MonitorDateUtils.format(MonitorDateUtils.getIntervalTime(DateUtils.addMinutes(dataTime, intervalMins), intervalMins)))
-                .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("</br>");
-        buffer.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\" width=\"80%\">");
-        buffer.append("<tr bgcolor=\"#C9C9C9\">")
-                .append("<th>").append("预警描述").append("</th>")
-                .append("<th>").append("当前指标值(%)").append("</th>")
-                .append("<th>").append("指标阀值(%)").append("</th>")
-                .append("<th>").append("偏离阀值程度(%)").append("</th>")
-                .append("</tr>");
-        for (TaskStatAccessAlarmMsgDTO msg : msgList) {
-            buffer.append("<tr>")
-                    .append("<td>").append(msg.getAlarmDesc()).append("</td>")
-                    .append("<td>").append(msg.getValue()).append("</td>")
-                    .append("<td>").append(msg.getThreshold()).append("</td>")
-                    .append("<td>").append(msg.getOffset()).append("</td>").append("</tr>");
-
-        }
-        buffer.append("</table>");
-        return buffer.toString();
     }
 
 
@@ -239,6 +192,19 @@ public class MonitorServiceTest {
     @Test
     public void ivrAlarm() {
         ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.operator_alarm, "运营商-分时人数时间段是2018年02月06日 下午 14点30分00秒至2018年02月06日 下午 15点00分00秒运营商:中国联通预警类型是登陆成功率低于前7天平均值的70%偏离阀值程度百分之28.00时间段是2018年02月06日 下午 14点30分00秒至2018年02月06日 下午 15点00分00秒运营商:中国联通预警类型是抓取成功率低于前7天平均值的70%偏离阀值程度百分之100.00");
+    }
+
+    @Test
+    public void testRealTimeStatAccess() {
+        BaseStatAccessRequest request = new BaseStatAccessRequest();
+        request.setAppId("QATestabcdefghQA");
+        request.setSaasEnv((byte) 0);
+        request.setStartTime(MonitorDateUtils.parse("2018-05-02 16:50:00"));
+        request.setEndTime(MonitorDateUtils.parse("2018-05-02 17:55:00"));
+        request.setBizType((byte) 3);
+        request.setIntervalMins(10);
+        MonitorResult<List<RealTimeStatAccessRO>> result = realTimeStatAccessFacade.queryRealTimeStatAccess(request);
+        System.out.println(JSON.toJSONString(result));
     }
 
 
