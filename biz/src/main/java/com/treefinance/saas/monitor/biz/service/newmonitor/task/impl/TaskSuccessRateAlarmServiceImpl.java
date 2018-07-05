@@ -106,7 +106,10 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
      */
     @Override
     public void alarm(EBizType bizType, TaskSuccessRateAlarmConfigDTO config, Date jobTime) {
-        Integer intervalMins = config.getIntervalMins();
+
+        Integer intervalMins = getInterval(config);
+
+        logger.info("当前的interval：{}",intervalMins);
         //由于任务执行需要时间,保证预警的精确,预警统计向前一段时间(各业务任务的超时时间),此时此段时间的任务可以保证都已统计完毕.
         //好处:预警时间即使每隔1分钟预警,依然可以保证预警的准确.坏处:收到预警消息时间向后延迟了相应时间.
         //如:jobTime=14:11,但是运营商超时时间为600s,则statTime=14:01
@@ -141,7 +144,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             return;
         }
 
-
         TaskSuccRateAlarmTimeListDTO taskSuccRateAlarmTimeConfig = findActiveTimeConfig(config);
 
         EAlarmLevel alarmLevel = isAlarmAndDetermineLevel(list, compareDTO, taskSuccRateAlarmTimeConfig);
@@ -168,6 +170,16 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 //        if (EBizType.OPERATOR == bizType) {
 //            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.conversion_rate_low, "运营商转化率低于阀值");
 //        }
+    }
+
+    /**
+     * 需求：interval根据时间段不同也不同
+     */
+    private Integer getInterval(TaskSuccessRateAlarmConfigDTO config) {
+
+        TaskSuccRateAlarmTimeListDTO inTimeConfig = findActiveTimeConfig(config);
+
+        return inTimeConfig.getIntervals() == null ? config.getIntervalMins() : inTimeConfig.getIntervals();
     }
 
     private void doAlarm(EBizType bizType, List<SaasStatAccessDTO> list, TaskSuccRateCompareDTO compareDTO, TaskSuccRateAlarmTimeListDTO taskSuccRateAlarmTimeConfig, EAlarmLevel alarmLevel, MonitorAlarmLevelConfigDTO levelConfigDTO) {
@@ -201,7 +213,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                     sendWechatAlarm(list, bizType, alarmLevel, compareDTO);
                     break;
                 default:
-
             }
         }
     }
@@ -268,48 +279,50 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         BigDecimal warnThreshold = warnThresholdRate.multiply(operand);
         BigDecimal infoThreshold = infoThresholdRate.multiply(operand);
 
-        int levelScoreTotal = 0;
+        boolean isError = true;
+        boolean isWarn = true;
+        boolean isInfo = true;
+        EAlarmLevel level = null;
 
-        //获取平均值  ==》获取每个点的等级相加，info =1，warning =2，error = 3；
         for (SaasStatAccessDTO saasStatAccessDTO : list) {
-            int levelScore = 0;
-            EAlarmLevel level = null;
-            BigDecimal hold = null;
             if (saasStatAccessDTO.getConversionRate().compareTo(errorThreshold) < 0) {
                 level = EAlarmLevel.error;
-                hold = errorThreshold;
-                levelScore = 3;
+                isWarn = false;
+                isInfo = false;
             } else if (saasStatAccessDTO.getConversionRate().compareTo(warnThreshold) < 0) {
                 level = EAlarmLevel.warning;
-                hold = warnThreshold;
-                levelScore = 2;
+                isError = false;
+                isInfo = false;
             } else if (saasStatAccessDTO.getConversionRate().compareTo(infoThreshold) < 0) {
                 level = EAlarmLevel.info;
-                hold = infoThreshold;
-                levelScore = 1;
+                isWarn = false;
+                isError = false;
+            }else{
+                level = null;
+                isError = isInfo = isWarn = false;
+                break;
             }
-
-            logger.info("任务成功率预警，数据时间：{}，等级得分:{},阀值：{}，传化率：{},命中等级：{}",
-                    MonitorDateUtils.format(saasStatAccessDTO.getDataTime()),
-                    levelScore, hold, saasStatAccessDTO.getConversionRate(), level);
-            levelScoreTotal += levelScore;
+            logger.info("任务成功率预警，数据时间：{},传化率：{},命中等级：{}",
+                    MonitorDateUtils.format(saasStatAccessDTO.getDataTime()), saasStatAccessDTO.getConversionRate(), level);
         }
-        logger.info("预警等级分数：{}", levelScoreTotal);
-        if (levelScoreTotal == 9) {
+        if (level == null){
+            logger.info("任务成功率预警,没有命中任务等级，无需预警，直接返回，数据list：{}",list);
+            return null;
+        }
+        if (isError) {
             compareDTO.setThreshold(errorThreshold);
-            compareDTO.setThresholdDecs(errorThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO
-                    .getSuccessRate()
-                    .toPlainString());
+            compareDTO.setThresholdDecs(errorThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO.getSuccessRate().toPlainString());
             return EAlarmLevel.error;
-        } else if (levelScoreTotal >= 6) {
+        } else if (isWarn) {
             compareDTO.setThreshold(warnThreshold);
             compareDTO.setThresholdDecs(warnThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO.getSuccessRate().toPlainString());
             return EAlarmLevel.warning;
-        } else if (levelScoreTotal >= 3) {
+        } else if (isInfo) {
             compareDTO.setThreshold(infoThreshold);
             compareDTO.setThresholdDecs(infoThresholdRate.divide(HUNDRED, 2, RoundingMode.HALF_UP).toPlainString() + "*" + compareDTO.getSuccessRate().toPlainString());
             return EAlarmLevel.info;
         }
+        logger.info("任务成功率预警,预警命中了不同等级，数据：{}，直接返回",list);
 
         return null;
     }

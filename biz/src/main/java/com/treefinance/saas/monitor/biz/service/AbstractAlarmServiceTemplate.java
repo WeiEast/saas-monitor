@@ -102,6 +102,9 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         EAlarmLevel level = determineLevel(msgList);
         ESaasEnv env = ESaasEnv.getByValue(configDTO.getSaasEnv());
 
+        // TODO: 18/7/3 if e-commerce return
+
+
         if (EAlarmLevel.info.equals(level)) {
             //发出全局的报警
             String content = sendAlarmMsg(level, msgList, configDTO, baseTime, type);

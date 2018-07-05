@@ -59,7 +59,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             //由于任务执行需要时间,保证预警的精确,预警统计向前一段时间(各业务任务的超时时间),此时此段时间的任务可以保证都已统计完毕.
             //好处:预警时间即使每隔1分钟预警,依然可以保证预警的准确.坏处:收到预警消息时间向后延迟了相应时间.
             //如:jobTime=14:11,但是电商超时时间为600s,则statTime=14:01
-            Date statTime = jobTime;
+            Date statTime = DateUtils.addSeconds(jobTime, -2);
             //取得预警原点时间,如:statTime=14:01分,30分钟间隔统计一次,则beginTime为14:00.
             Date baseTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, intervalMins);
 
@@ -116,27 +116,65 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
         String baseTile;
         String mailSwitch = config.getMailAlarmSwitch();
         String weChatSwitch = config.getWeChatAlarmSwitch();
+
+
+        String boundStr = diamondConfig.getEcommerceMonitorAlarmBounds();
+
+        String[] bounds = boundStr.split(",");
+
+        BigDecimal warning = new BigDecimal(Integer.valueOf(bounds[0]));
+        BigDecimal info = new BigDecimal(Integer.valueOf(bounds[1]));
+
+
         if (ETaskStatDataType.TASK.equals(statType)) {
             baseTile = "【总】电商监控(按任务数统计)";
         } else {
             baseTile = "【总】电商监控(按人数统计)";
-
         }
+        EAlarmLevel alarmLevel = null;
+        for (TaskStatAccessAlarmMsgDTO msgDTO:msgList){
+            if(msgDTO.getOffset().compareTo(info)<0){
+                if(alarmLevel == null){
+                    alarmLevel = EAlarmLevel.info;
+                }
+            }else if(msgDTO.getOffset().compareTo(warning)< 0){
+                if(alarmLevel == null || alarmLevel.equals(EAlarmLevel.info)){
+                    alarmLevel = EAlarmLevel.warning;
+                }
+            }else {
+                alarmLevel = EAlarmLevel.error;
+            }
+        }
+        if(alarmLevel == null){
+            logger.info("预警等级为空，需要预警的数据：{}",msgList);
+            return;
+        }
+
+        if(EAlarmLevel.info.equals(alarmLevel)){
+            sendWechat(alarmLevel,msgList,jobTime,startTime,endTime,baseTile,weChatSwitch);
+        }else {
+            sendWechat(alarmLevel,msgList,jobTime,startTime,endTime,baseTile,weChatSwitch);
+            sendEmail(alarmLevel,msgList,jobTime,startTime,endTime,baseTile,mailSwitch);
+        }
+    }
+
+    private void sendEmail(EAlarmLevel alarmLevel,List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime, String baseTile, String mailSwitch) {
         if (StringUtils.equalsIgnoreCase(mailSwitch, AlarmConstants.SWITCH_ON)) {
-            String mailDataBody = generateMailDataBody(msgList, startTime, endTime, baseTile);
+            String mailDataBody = generateMailDataBody(alarmLevel,msgList, startTime, endTime, baseTile);
             String title = generateTitle(baseTile);
             alarmMessageProducer.sendMail(title, mailDataBody, MailEnum.HTML_MAIL);
         } else {
             logger.info("电商预警,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
-
         }
+    }
+
+    private void sendWechat(EAlarmLevel alarmLevel,List<TaskStatAccessAlarmMsgDTO> msgList, Date jobTime, Date startTime, Date endTime, String baseTile, String weChatSwitch) {
         if (StringUtils.equalsIgnoreCase(weChatSwitch, AlarmConstants.SWITCH_ON)) {
-            String weChatBody = generateWeChatBody(msgList, startTime, endTime, baseTile);
+            String weChatBody = generateWeChatBody(alarmLevel,msgList, startTime, endTime, baseTile);
             alarmMessageProducer.sendWebChart(weChatBody);
         } else {
             logger.info("电商预警,预警定时任务执行jobTime={},发送微信开关已关闭", MonitorDateUtils.format(jobTime));
         }
-
     }
 
 
@@ -144,9 +182,12 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
         return "saas-" + diamondConfig.getMonitorEnvironment() + baseTile + "发生预警";
     }
 
-    private String generateMailDataBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTile) {
+    private String generateMailDataBody(EAlarmLevel alarmLevel,List<TaskStatAccessAlarmMsgDTO> msgList, Date
+            startTime, Date
+            endTime,
+                                        String baseTile) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("<br>").append("【").append(EAlarmLevel.info).append("】").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
+        buffer.append("<br>").append("【").append(alarmLevel).append("】").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(baseTile)
                 .append("预警,在")
                 .append(MonitorDateUtils.format(startTime))
@@ -172,9 +213,12 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
         return buffer.toString();
     }
 
-    private String generateWeChatBody(List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime, Date endTime, String baseTile) {
+    private String generateWeChatBody(EAlarmLevel alarmLevel,List<TaskStatAccessAlarmMsgDTO> msgList, Date startTime,
+                                      Date
+            endTime, String
+            baseTile) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("【").append(EAlarmLevel.info).append("】")
+        buffer.append("【").append(alarmLevel).append("】")
                 .append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(baseTile)
                 .append("预警,在")
@@ -195,6 +239,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
     private List<TaskStatAccessAlarmMsgDTO> getAlarmMsgList(EcommerceAllStatAccessDTO dataDTO,
                                                             EcommerceAllStatAccessDTO compareDTO,
                                                             EcommerceMonitorAlarmConfigDTO config) {
+
         List<TaskStatAccessAlarmMsgDTO> msgList = Lists.newArrayList();
         Integer previousDays = config.getPreviousDays();
 
@@ -227,6 +272,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
                 msg.setOffset(BigDecimal.ZERO);
             } else {
                 BigDecimal value = BigDecimal.ONE.subtract(dataDTO.getLoginConversionRate().divide(loginConversionCompareVal, 2, BigDecimal.ROUND_HALF_UP)).multiply(BigDecimal.valueOf(100));
+
                 msg.setOffset(value);
             }
             msgList.add(msg);

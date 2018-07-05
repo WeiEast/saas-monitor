@@ -59,63 +59,49 @@ public class TaskSuccessRateAlarmConfigDTO extends BaseAlarmConfigDTO {
      * */
     private List<TaskSuccRateAlarmTimeListDTO> timeConfig;
 
-
+    /**用于生成线上的配置数据*/
     public static void main(String[] args) {
         List<TaskSuccessRateAlarmConfigDTO> list = Lists.newArrayList();
-        TaskSuccessRateAlarmConfigDTO dto3 = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.ALL);
+        TaskSuccessRateAlarmConfigDTO operator = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.ALL,"OPERATOR");
+        TaskSuccessRateAlarmConfigDTO ecommerce = getTaskSuccessRateAlarmConfigDTO(ESaasEnv.ALL,"ECOMMERCE");
 
-        list.add(dto3);
+        list.add(operator);
+        list.add(ecommerce);
 
         System.out.println(JSON.toJSONString(list, SerializerFeature.DisableCircularReferenceDetect));
     }
 
-    private static TaskSuccessRateAlarmConfigDTO getTaskSuccessRateAlarmConfigDTO(ESaasEnv saasEnv) {
+    private static TaskSuccessRateAlarmConfigDTO getTaskSuccessRateAlarmConfigDTO(ESaasEnv saasEnv,String type) {
         TaskSuccessRateAlarmConfigDTO dto1 = new TaskSuccessRateAlarmConfigDTO();
         dto1.setAlarmSwitch(SWITCH_ON);
         dto1.setSaasEnv((byte)saasEnv.getValue());
         dto1.setSaasEnvDesc(saasEnv.getDesc());
-        dto1.setType("OPERATOR");
+        dto1.setType(type);
         dto1.setIntervalMins(5);
         dto1.setTimes(3);
         dto1.setTaskTimeoutSecs(600);
         dto1.setSuccesThreshold(40);
 
-        List<TaskSuccRateAlarmTimeListDTO> listDTOS = Lists.newArrayList();
-
-        TaskSuccRateAlarmTimeListDTO timeListDTO = new TaskSuccRateAlarmTimeListDTO();
-        timeListDTO.setEndTime("23:59:59");
-        timeListDTO.setStartTime("19:00:00");
-        timeListDTO.setThresholdError(new BigDecimal("70"));
-        timeListDTO.setThresholdWarning(new BigDecimal("80"));
-        timeListDTO.setThresholdInfo(new BigDecimal("90"));
-        HashMap<String,String> mapEvening = new HashMap<>(4);
-        mapEvening.put(EAlarmChannel.IVR.getValue(), SWITCH_ON);
-        mapEvening.put(EAlarmChannel.EMAIL.getValue(), SWITCH_ON);
-        mapEvening.put(EAlarmChannel.SMS.getValue(), SWITCH_ON);
-        mapEvening.put(EAlarmChannel.WECHAT.getValue(), SWITCH_ON);
-        timeListDTO.setSwitches(mapEvening);
-
-        TaskSuccRateAlarmTimeListDTO timeListDTO1 = new TaskSuccRateAlarmTimeListDTO();
-        timeListDTO1.setEndTime("06:00:00");
-        timeListDTO1.setStartTime("00:00:00");
-        timeListDTO1.setThresholdError(new BigDecimal("70"));
-        timeListDTO1.setThresholdWarning(new BigDecimal("80"));
-        timeListDTO1.setThresholdInfo(new BigDecimal("90"));
-
-        timeListDTO1.setSwitches(mapEvening);
-
-        TaskSuccRateAlarmTimeListDTO timeListDTO2 = new TaskSuccRateAlarmTimeListDTO();
-        timeListDTO2.setEndTime("19:00:00");
-        timeListDTO2.setStartTime("06:00:00");
-        timeListDTO2.setThresholdError(new BigDecimal("70"));
-        timeListDTO2.setThresholdWarning(new BigDecimal("80"));
-        timeListDTO2.setThresholdInfo(new BigDecimal("90"));
         HashMap<String,String> mapDay = new HashMap<>(4);
-        mapDay.put(EAlarmChannel.IVR.getValue(), AlarmConstants.SWITCH_OFF);
+        mapDay.put(EAlarmChannel.IVR.getValue(), SWITCH_ON);
         mapDay.put(EAlarmChannel.EMAIL.getValue(), SWITCH_ON);
         mapDay.put(EAlarmChannel.SMS.getValue(), SWITCH_ON);
         mapDay.put(EAlarmChannel.WECHAT.getValue(), SWITCH_ON);
-        timeListDTO2.setSwitches(mapDay);
+
+        HashMap<String,String> mapEvening = new HashMap<>(4);
+        mapEvening.put(EAlarmChannel.IVR.getValue(), AlarmConstants.SWITCH_OFF);
+        mapEvening.put(EAlarmChannel.EMAIL.getValue(), SWITCH_ON);
+        mapEvening.put(EAlarmChannel.SMS.getValue(), SWITCH_ON);
+        mapEvening.put(EAlarmChannel.WECHAT.getValue(), SWITCH_ON);
+
+        List<TaskSuccRateAlarmTimeListDTO> listDTOS = Lists.newArrayList();
+
+        TaskSuccRateAlarmTimeListDTO timeListDTO = getTaskSuccRateAlarmTimeListDTO( "19:00:00","23:59:59", "70", "80", "90",mapDay);
+
+        TaskSuccRateAlarmTimeListDTO timeListDTO1 = getTaskSuccRateAlarmTimeListDTO( "00:00:00", "06:00:00","50", "70", "80",mapEvening);
+        timeListDTO1.setIntervals(10);
+        TaskSuccRateAlarmTimeListDTO timeListDTO2 = getTaskSuccRateAlarmTimeListDTO("06:00:00","19:00:00",  "70", "80", "90",mapDay);
+
 
         listDTOS.add(timeListDTO);
         listDTOS.add(timeListDTO1);
@@ -139,6 +125,17 @@ public class TaskSuccessRateAlarmConfigDTO extends BaseAlarmConfigDTO {
         dto1.setLevelConfig(Arrays.asList(errorConfig,warnConfig,infoConfig));
 
         return dto1;
+    }
+
+    private static TaskSuccRateAlarmTimeListDTO getTaskSuccRateAlarmTimeListDTO(String startTime,String endTime, String error, String warn, String info,HashMap switches) {
+        TaskSuccRateAlarmTimeListDTO timeListDTO1 = new TaskSuccRateAlarmTimeListDTO();
+        timeListDTO1.setEndTime(endTime);
+        timeListDTO1.setStartTime(startTime);
+        timeListDTO1.setThresholdError(new BigDecimal(error));
+        timeListDTO1.setThresholdWarning(new BigDecimal(warn));
+        timeListDTO1.setThresholdInfo(new BigDecimal(info));
+        timeListDTO1.setSwitches(switches);
+        return timeListDTO1;
     }
 
 }

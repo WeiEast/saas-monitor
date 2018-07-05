@@ -133,6 +133,11 @@ public class DiamondConfig {
      */
     @DAttribute(key = "ecommerce.monitor.alarm.config")
     private String ecommerceMonitorAlarmConfig;
+    /**
+     * 电商预警配置
+     */
+    @DAttribute(key = "ecommerce.monitor.alarm.bounds")
+    private String ecommerceMonitorAlarmBounds;
 
     // 预警消息，group
     @DAttribute(key = "monitor.alarm.group.name")
@@ -190,6 +195,13 @@ public class DiamondConfig {
     @DAttribute(key = "auth.ivr.token")
     private String ivrToken;
 
+    public String getEcommerceMonitorAlarmBounds() {
+        return ecommerceMonitorAlarmBounds;
+    }
+
+    public void setEcommerceMonitorAlarmBounds(String ecommerceMonitorAlarmBounds) {
+        this.ecommerceMonitorAlarmBounds = ecommerceMonitorAlarmBounds;
+    }
 
     public String getIvrAccessKey() {
         return ivrAccessKey;
