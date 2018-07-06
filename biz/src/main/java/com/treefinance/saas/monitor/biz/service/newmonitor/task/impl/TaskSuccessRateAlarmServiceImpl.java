@@ -179,7 +179,8 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
         TaskSuccRateAlarmTimeListDTO inTimeConfig = findActiveTimeConfig(config);
 
-        return inTimeConfig.getIntervals() == null ? config.getIntervalMins() : inTimeConfig.getIntervals();
+        return (inTimeConfig.getIntervals() == null|| inTimeConfig.getIntervals() == 0) ? config.getIntervalMins() : inTimeConfig.getIntervals();
+
     }
 
     private void doAlarm(EBizType bizType, List<SaasStatAccessDTO> list, TaskSuccRateCompareDTO compareDTO, TaskSuccRateAlarmTimeListDTO taskSuccRateAlarmTimeConfig, EAlarmLevel alarmLevel, MonitorAlarmLevelConfigDTO levelConfigDTO) {

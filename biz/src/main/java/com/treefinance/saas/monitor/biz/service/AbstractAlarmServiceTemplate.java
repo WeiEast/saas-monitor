@@ -103,9 +103,6 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         EAlarmLevel level = determineLevel(msgList);
         ESaasEnv env = ESaasEnv.getByValue(configDTO.getSaasEnv());
 
-        // TODO: 18/7/3 if e-commerce return
-
-
         if (EAlarmLevel.info.equals(level)) {
             //发出全局的报警
             String content = sendAlarmMsg(level, msgList, configDTO, baseTime, type);
@@ -154,6 +151,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             content = genDutyManAlarmInfo(recordId, orderId, msgList, level, baseTime, env);
             Map<String, String> map = new HashMap<>(2);
             map.put("name", saasWorker.getName());
+            map.put("saasEnv", diamondConfig.getSaasMonitorEnvironment());
 
             String newContent = StrSubstitutor.replace(content, map);
             Map<String, Object> params = genIvrMap(recordId,saasWorker,level,baseTime,env);
