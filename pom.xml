@@ -51,7 +51,7 @@
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		<saas-monitor.version>1.0.0-SNAPSHOT</saas-monitor.version>
 		<assistant-monitor.version>1.0.10</assistant-monitor.version>
-		<monitor-facade.version>1.2.0-SNAPSHOT</monitor-facade.version>
+		<monitor-facade.version>1.2.1-SNAPSHOT</monitor-facade.version>
 	</properties>
 
 	<dependencyManagement>
