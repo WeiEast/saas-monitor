@@ -24,6 +24,8 @@ public class EcommerceTimeShareDTO {
 
     private String appId;
 
+    private Byte saasEnv;
+
     /**
      * 当前页
      */
@@ -36,6 +38,14 @@ public class EcommerceTimeShareDTO {
      * 偏移量
      */
     private int offset;
+
+    public Byte getSaasEnv() {
+        return saasEnv;
+    }
+
+    public void setSaasEnv(Byte saasEnv) {
+        this.saasEnv = saasEnv;
+    }
 
     public Byte getSourceType() {
         return sourceType;
@@ -61,7 +71,7 @@ public class EcommerceTimeShareDTO {
         this.pageSize = pageSize;
     }
 
-    public int  getOffset() {
+    public int getOffset() {
         return offset;
     }
 
@@ -125,20 +135,5 @@ public class EcommerceTimeShareDTO {
         this.appId = appId;
     }
 
-    @Override
-    public String toString() {
-        return "EcommerceTimeShareDTO{" +
-                "dataDate=" + dataDate +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", groupCode='" + groupCode + '\'' +
-                ", groupName='" + groupName + '\'' +
-                ", statType=" + statType +
-                ", sourceType=" + sourceType +
-                ", appId='" + appId + '\'' +
-                ", pageNumber=" + pageNumber +
-                ", pageSize=" + pageSize +
-                ", offset=" + offset +
-                '}';
-    }
+
 }

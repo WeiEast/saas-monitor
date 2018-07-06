@@ -37,7 +37,14 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         EcommerceAllStatAccessCriteria ecommerceAllStatAccessCriteria = new EcommerceAllStatAccessCriteria();
         ecommerceAllStatAccessCriteria.setOrderByClause("dataTime desc");
 
-        ecommerceAllStatAccessCriteria.createCriteria().andAppIdEqualTo(request.getAppId())
+        EcommerceAllStatAccessCriteria.Criteria innerCriteria = ecommerceAllStatAccessCriteria.createCriteria();
+        if (request.getSaasEnv() != null) {
+            innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
+        } else {
+            innerCriteria.andSaasEnvEqualTo((byte) 0);
+        }
+
+        innerCriteria.andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getStatType()).andSourceTypeEqualTo(request.getSourceType())
                 .andDataTimeBetween(request.getDataDate(), MonitorDateUtils.getDayEndTime(request.getDataDate()));
 
@@ -61,8 +68,13 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         ecommerceAllStatDayAccessCriteria.setLimit(request.getPageSize());
         ecommerceAllStatDayAccessCriteria.setOffset(request.getOffset());
 
-
-        ecommerceAllStatDayAccessCriteria.createCriteria().andAppIdEqualTo(request.getAppId())
+        EcommerceAllStatDayAccessCriteria.Criteria innerCriteria = ecommerceAllStatDayAccessCriteria.createCriteria();
+        if (request.getSaasEnv() != null) {
+            innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
+        } else {
+            innerCriteria.andSaasEnvEqualTo((byte) 0);
+        }
+        innerCriteria.andAppIdEqualTo(request.getAppId())
                 .andSourceTypeEqualTo(request.getSourceType()).andDataTypeEqualTo(request.getStatType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
 
@@ -82,9 +94,15 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
         ecommerceAllStatDayAccessCriteria.setOrderByClause("dataTime desc");
         ecommerceAllStatDayAccessCriteria.setLimit(ecommerceTimeShareDTO.getPageSize());
         ecommerceAllStatDayAccessCriteria.setOffset(ecommerceTimeShareDTO.getOffset());
+        EcommerceAllStatDayAccessCriteria.Criteria innerCriteria = ecommerceAllStatDayAccessCriteria.createCriteria();
 
+        if (ecommerceTimeShareDTO.getSaasEnv() != null) {
+            innerCriteria.andSaasEnvEqualTo(ecommerceTimeShareDTO.getSaasEnv());
+        } else {
+            innerCriteria.andSaasEnvEqualTo((byte) 0);
+        }
 
-        ecommerceAllStatDayAccessCriteria.createCriteria().andSourceTypeEqualTo(ecommerceTimeShareDTO.getSourceType())
+        innerCriteria.andSourceTypeEqualTo(ecommerceTimeShareDTO.getSourceType())
                 .andAppIdEqualTo(ecommerceTimeShareDTO.getAppId()).andDataTypeEqualTo(ecommerceTimeShareDTO.getStatType())
                 .andDataTimeBetween(ecommerceTimeShareDTO.getStartDate(), ecommerceTimeShareDTO.getEndDate());
 
