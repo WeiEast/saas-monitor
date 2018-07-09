@@ -703,7 +703,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         }
         alarmRecord.setCreateTime(now);
         alarmRecord.setLastUpdateTime(now);
-        alarmRecord.setAlarmType(EAlarmType.task_success_alarm.name());
+        alarmRecord.setAlarmType(EAlarmType.task_success_alarm.name()+":"+bizType);
         return alarmRecord;
     }
 
