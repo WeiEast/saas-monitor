@@ -199,7 +199,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         }
     }
 
-    private WorkOrderLog getWorkOrderLog(Date now, Long recordId, Long orderId) {
+    public static WorkOrderLog getWorkOrderLog(Date now, Long recordId, Long orderId) {
         WorkOrderLog orderLog = new WorkOrderLog();
         orderLog.setId(UidGenerator.getId());
         orderLog.setOrderId(orderId);
@@ -211,7 +211,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         return orderLog;
     }
 
-    private AlarmWorkOrder getAlarmWorkOrder(Date now, List<SaasWorker> saasWorkers, Long recordId, Long orderId) {
+    public static AlarmWorkOrder getAlarmWorkOrder(Date now, List<SaasWorker> saasWorkers, Long recordId, Long orderId) {
         AlarmWorkOrder workOrder = new AlarmWorkOrder();
         workOrder.setId(orderId);
         workOrder.setRecordId(recordId);

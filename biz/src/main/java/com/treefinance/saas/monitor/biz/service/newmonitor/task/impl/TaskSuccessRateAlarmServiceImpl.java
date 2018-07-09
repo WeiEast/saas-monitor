@@ -42,6 +42,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate.getAlarmWorkOrder;
+import static com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate.getWorkOrderLog;
+
 /**
  * @author haojiahong
  * @date 2017/11/24
@@ -235,7 +238,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             map.put("bizType", config.getType());
 
             String newContent = StrSubstitutor.replace(content, map);
-            Map<String, Object> params = genIvrMap(recordId,saasWorker,alarmLevel,statTime,env);
+            Map<String, Object> params = genIvrMap(recordId,saasWorker,alarmLevel,statTime,env,config.getType());
 
             sendIvr(newContent, saasWorker, params);
             sendSms(newContent, saasWorker);
@@ -247,7 +250,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         map.put("name", Joiner.on(",").join(names));
 
         record = genAlarmRecord(recordId, statTime, EAlarmRecordStatus.UNPROCESS, alarmLevel, StrSubstitutor.replace(content,
-                map), env, null);
+                map), env, config.getType());
         AlarmWorkOrder workOrder = getAlarmWorkOrder(jobTime, saasWorkers, recordId, orderId);
         WorkOrderLog orderLog = getWorkOrderLog(jobTime, recordId, orderId);
 
@@ -260,11 +263,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         } catch (Exception e) {
             logger.error("插入工单记录等失败，仍然发送特定信息及群发信息,错误信息：{}", e.getMessage());
         }
-
-
-
-
-        doAlarm(bizType, list, compareDTO, taskSuccRateAlarmTimeConfig, alarmLevel, levelConfigDTO);
 
     }
 
@@ -301,7 +299,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                     sendMailAlarm(list, bizType, alarmLevel, compareDTO);
                     break;
                 case IVR:
-                    sendIvr(list, alarmLevel, "");
+                    sendIvr(alarmLevel);
                     break;
                 case SMS:
                     sendSmsAlarm(list, bizType, alarmLevel, compareDTO);
@@ -323,7 +321,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         try {
             Map<String, String> map = Maps.newHashMap();
 
-            map.put("\n", "");
             String ivrContent = StrSubstitutor.replace(content, map);
             logger.info("给值班人员预警，content={},mobile={}，name={}", ivrContent, saasWorker.getMobile(), saasWorker.getName());
             ivrNotifyService.notifyIvrToDutyMan(ivrContent, saasWorker.getMobile(), saasWorker.getName(), ivrConfig.getDutyManIvrModel(), params);
@@ -333,11 +330,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     }
 
 
-    protected void sendIvr(List<SaasStatAccessDTO> msgList, EAlarmLevel level, String alarmBiz) {
+    private void sendIvr(EAlarmLevel level) {
 
-        logger.info(alarmBiz + "发送ivr请求 {}");
+        logger.info("任务成功率预警发送ivr请求 {}");
 
-        ivrNotifyService.notifyIvr(level, EAlarmType.operator_alarm, alarmBiz);
+        ivrNotifyService.notifyIvr(level, EAlarmType.operator_alarm, "");
     }
 
     private TaskSuccRateAlarmTimeListDTO findActiveTimeConfig(TaskSuccessRateAlarmConfigDTO config) {
@@ -536,13 +533,12 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
      * @return
      */
     private BigDecimal calcRate(Integer totalCount, Integer rateCount) {
-        if (totalCount <= 0) {
+        if (Integer.valueOf(0).compareTo(totalCount) >= 0) {
             return BigDecimal.valueOf(0, 2);
         }
-        BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
+        return BigDecimal.valueOf(rateCount, 2)
                 .multiply(BigDecimal.valueOf(100))
                 .divide(BigDecimal.valueOf(totalCount, 2), 2, BigDecimal.ROUND_HALF_UP);
-        return rate;
     }
 
     private String sendWechatAlarm(List<SaasStatAccessDTO> list, EBizType type, EAlarmLevel alarmLevel,
@@ -555,7 +551,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     private void sendMailAlarm(List<SaasStatAccessDTO> list, EBizType bizType, EAlarmLevel alarmLevel,
                                TaskSuccRateCompareDTO compareDTO) {
         String title = this.generateTitle(bizType);
-        String body = this.genMailBody(list, bizType, EAlarmChannel.EMAIL, alarmLevel, compareDTO);
+        String body = this.genMailBody(list, bizType, alarmLevel, compareDTO);
         alarmMessageProducer.sendMail(title, body, MailEnum.HTML_MAIL);
     }
 
@@ -568,9 +564,9 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         smsNotifyService.send(body);
     }
 
-    private String genMailBody(List<SaasStatAccessDTO> list, EBizType type, EAlarmChannel sendType,
+    private String genMailBody(List<SaasStatAccessDTO> list, EBizType type,
                                EAlarmLevel alarmLevel, TaskSuccRateCompareDTO compareDTO) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         if (EBizType.OPERATOR.equals(type)) {
             buffer.append("【").append(alarmLevel).append("】");
         } else {
@@ -585,15 +581,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         List<BigDecimal> failRateList = Lists.newArrayList();
         List<Integer> failCountList = Lists.newArrayList();
         List<Integer> cancelCountList = Lists.newArrayList();
-        list.forEach(access -> {
-            dataTimeList.add(fmt.format(access.getDataTime()));
-            totalCountList.add(access.getTotalCount());
-            successRateList.add(access.getConversionRate());
-            successCountList.add(access.getSuccessCount());
-            failRateList.add(access.getFailRate());
-            failCountList.add(access.getFailCount());
-            cancelCountList.add(access.getCancelCount());
-        });
+        calcRateList(list, fmt, dataTimeList, totalCountList, successRateList, successCountList, failRateList, failCountList, cancelCountList);
 
         buffer.append("<table>");
         buffer.append("<tr>");
@@ -673,6 +661,21 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         List<BigDecimal> failRateList = Lists.newArrayList();
         List<Integer> failCountList = Lists.newArrayList();
         List<Integer> cancelCountList = Lists.newArrayList();
+        calcRateList(list, fmt, dataTimeList, totalCountList, successRateList, successCountList, failRateList, failCountList, cancelCountList);
+
+        buffer.append(" 环境标志: ").append(compareDTO.getEvn()).append("\n");
+        buffer.append(" 阈值(%): ").append(compareDTO.getThreshold()).append("(").append(compareDTO.getThresholdDecs()).append(")").append("\n");
+        buffer.append(" 数据时间: ").append(Joiner.on(" | ").useForNull(" ").join(dataTimeList)).append(" \n");
+        buffer.append(" 任务总数: ").append(Joiner.on(" | ").useForNull(" ").join(totalCountList)).append(" \n");
+        buffer.append(" 转化率(%): ").append(Joiner.on(" | ").useForNull(" ").join(successRateList)).append(" \n");
+        buffer.append(" 成功数: ").append(Joiner.on(" | ").useForNull(" ").join(successCountList)).append(" \n");
+        buffer.append(" 失败率(%): ").append(Joiner.on(" | ").useForNull(" ").join(failRateList)).append(" \n");
+        buffer.append(" 失败数: ").append(Joiner.on(" | ").useForNull(" ").join(failCountList)).append(" \n");
+        buffer.append(" 取消数: ").append(Joiner.on(" | ").useForNull(" ").join(cancelCountList)).append(" \n");
+        return buffer.toString();
+    }
+
+    private void calcRateList(List<SaasStatAccessDTO> list, SimpleDateFormat fmt, List<String> dataTimeList, List<Integer> totalCountList, List<BigDecimal> successRateList, List<Integer> successCountList, List<BigDecimal> failRateList, List<Integer> failCountList, List<Integer> cancelCountList) {
         list.forEach(access -> {
             dataTimeList.add(fmt.format(access.getDataTime()));
             totalCountList.add(access.getTotalCount());
@@ -682,17 +685,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             failCountList.add(access.getFailCount());
             cancelCountList.add(access.getCancelCount());
         });
-
-        buffer.append(" 环境标志: " + compareDTO.getEvn() + "\n");
-        buffer.append(" 阈值(%): " + compareDTO.getThreshold() + "(" + compareDTO.getThresholdDecs() + ")" + "\n");
-        buffer.append(" 数据时间: " + Joiner.on(" | ").useForNull(" ").join(dataTimeList) + " \n");
-        buffer.append(" 任务总数: " + Joiner.on(" | ").useForNull(" ").join(totalCountList) + " \n");
-        buffer.append(" 转化率(%): " + Joiner.on(" | ").useForNull(" ").join(successRateList) + " \n");
-        buffer.append(" 成功数: " + Joiner.on(" | ").useForNull(" ").join(successCountList) + " \n");
-        buffer.append(" 失败率(%): " + Joiner.on(" | ").useForNull(" ").join(failRateList) + " \n");
-        buffer.append(" 失败数: " + Joiner.on(" | ").useForNull(" ").join(failCountList) + " \n");
-        buffer.append(" 取消数: " + Joiner.on(" | ").useForNull(" ").join(cancelCountList) + " \n");
-        return buffer.toString();
     }
 
 
@@ -727,12 +719,12 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 "\n系统已经生成了编号为" + id + "的预警记录,请及时处理,地址："+diamondConfig.getConsoleAddress();
     }
     private Map<String, Object> genIvrMap(Long id, SaasWorker saasWorker, EAlarmLevel
-            alarmLevel, Date baseTime, ESaasEnv env) {
+            alarmLevel, Date baseTime, ESaasEnv env,String type) {
 
         Map<String, Object> map = Maps.newHashMap();
 
         map.put("name",saasWorker.getName());
-        map.put("biz","运营商");
+        map.put("biz","任务成功率预警"+type);
         map.put("env",env.getDesc());
         map.put("baseTime",MonitorDateUtils.format(baseTime));
         map.put("level",alarmLevel.name());
@@ -760,27 +752,5 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         }
     }
 
-    private AlarmWorkOrder getAlarmWorkOrder(Date now, List<SaasWorker> saasWorkers, Long recordId, Long orderId) {
-        AlarmWorkOrder workOrder = new AlarmWorkOrder();
-        workOrder.setId(orderId);
-        workOrder.setRecordId(recordId);
-        List<String> names = saasWorkers.stream().map(SaasWorker::getName).collect(Collectors.toList());
-        workOrder.setDutyName(Joiner.on(",").join(names));
-        workOrder.setStatus(EOrderStatus.UNPROCESS.getCode());
-        workOrder.setCreateTime(now);
-        workOrder.setLastUpdateTime(now);
-        return workOrder;
-    }
 
-    private WorkOrderLog getWorkOrderLog(Date now, Long recordId, Long orderId) {
-        WorkOrderLog orderLog = new WorkOrderLog();
-        orderLog.setId(UidGenerator.getId());
-        orderLog.setOrderId(orderId);
-        orderLog.setRecordId(recordId);
-        orderLog.setOpName("system");
-        orderLog.setOpDesc("创建操作工单");
-        orderLog.setCreateTime(now);
-        orderLog.setLastUpdateTime(now);
-        return orderLog;
-    }
 }
