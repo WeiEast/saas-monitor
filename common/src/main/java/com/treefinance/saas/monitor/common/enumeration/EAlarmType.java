@@ -27,7 +27,11 @@ public enum EAlarmType {
     /**
      * 电商预警
      */
-    ecommerce_alarm("A05","电商预警"),;
+    ecommerce_alarm("A05","电商预警"),
+
+
+    task_success_alarm("A06","任务成功率预警");
+
 
     private String code;
     private String desc;

@@ -44,7 +44,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractAlarmServiceTemplate.class);
 
-    private static Long day = 24 * 60 * 60 * 1000L;
+    public static Long day = 24 * 60 * 60 * 1000L;
 
     @Autowired
     protected RedisTemplate<String, Object> redisTemplate;
