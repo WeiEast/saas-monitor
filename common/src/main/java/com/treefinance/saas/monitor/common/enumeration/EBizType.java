@@ -67,4 +67,14 @@ public enum EBizType {
         }
         return null;
     }
+    public static EBizType getBizType(String text) {
+        if (text != null) {
+            for (EBizType item : EBizType.values()) {
+                if (item.text.equals(text)) {
+                    return item;
+                }
+            }
+        }
+        return null;
+    }
 }

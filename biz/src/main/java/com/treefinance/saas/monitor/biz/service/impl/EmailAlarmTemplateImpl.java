@@ -766,7 +766,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     @Override
     protected String genDutyManAlarmInfo(Long id, Long orderId, List<BaseAlarmMsgDTO> dtoList, EAlarmLevel alarmLevel, Date baseTime, ESaasEnv env) {
 
-        return "${name}" + "小伙伴你好," + "邮箱发生预警:\n环境：" + env.getDesc() + "\n时间：" +
+        return "${name}" + "小伙伴你好,当前环境:${saasEnv}," + "邮箱发生预警:\n环境：" + env.getDesc() + "\n时间：" +
                 MonitorDateUtils.format(baseTime) + "\n级别:" + alarmLevel.name() +
                 "\n系统已经生成了编号为" + id + "的预警记录,请及时处理,地址："+diamondConfig.getConsoleAddress();
     }

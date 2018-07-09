@@ -48,7 +48,7 @@ public class TaskSuccessRateAlarmJobTest {
         }
         long start = System.currentTimeMillis();
         //定时任务执行时间
-        String dateStr = "2018-05-17 20:52:00";
+        String dateStr = "2018-07-02 18:27:00";
 
         Date jobTime = DateUtils.parseDate(dateStr,"yyyy-MM-dd hh:mm:ss");
         logger.info("任务成功率预警,定时任务执行jobTime={}", MonitorDateUtils.format(jobTime));

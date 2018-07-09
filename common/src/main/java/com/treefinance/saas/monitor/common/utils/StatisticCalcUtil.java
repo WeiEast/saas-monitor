@@ -14,7 +14,7 @@ public class StatisticCalcUtil {
      * @return a*100/b
      */
     public static BigDecimal calcRate(Integer numerator, Integer denominator) {
-        if (Integer.valueOf(0).compareTo(denominator) == 0) {
+        if (Integer.valueOf(0).compareTo(denominator) >= 0) {
             return BigDecimal.ZERO;
         }
         return BigDecimal.valueOf(numerator, 2)

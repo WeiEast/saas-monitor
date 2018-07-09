@@ -5,11 +5,13 @@ import com.datatrees.notify.async.body.mail.MailEnum;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
+import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskMonitorPerMinKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
-import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
-import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
+import com.treefinance.saas.monitor.biz.service.*;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskSuccessRateAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.SaasStatAccessDTO;
@@ -17,18 +19,13 @@ import com.treefinance.saas.monitor.common.domain.dto.TaskSuccRateCompareDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.MonitorAlarmLevelConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccRateAlarmTimeListDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccessRateAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
-import com.treefinance.saas.monitor.common.enumeration.EBizType;
+import com.treefinance.saas.monitor.common.enumeration.*;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.MerchantStatAccess;
-import com.treefinance.saas.monitor.dao.entity.MerchantStatAccessCriteria;
-import com.treefinance.saas.monitor.dao.entity.SaasStatAccess;
-import com.treefinance.saas.monitor.dao.entity.SaasStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.MerchantStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.SaasStatAccessMapper;
 import com.treefinance.saas.monitor.exception.BizException;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
@@ -45,6 +42,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate.getAlarmWorkOrder;
+import static com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate.getWorkOrderLog;
+
 /**
  * @author haojiahong
  * @date 2017/11/24
@@ -60,6 +60,8 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     @Autowired
     private AlarmMessageProducer alarmMessageProducer;
     @Autowired
+    private AlarmRecordService alarmRecordService;
+    @Autowired
     private StringRedisTemplate redisTemplate;
     @Autowired
     private MerchantStatAccessMapper merchantStatAccessMapper;
@@ -67,6 +69,10 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     private IvrNotifyService ivrNotifyService;
     @Autowired
     private SmsNotifyService smsNotifyService;
+    @Autowired
+    private SaasWorkerService saasWorkerService;
+    @Autowired
+    private IvrConfig ivrConfig;
 
     private static final BigDecimal HUNDRED = new BigDecimal(100);
 
@@ -164,12 +170,100 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             return;
         }
         logger.info("任务成功率预警,定时任务执行jobTim={},list={},config={},compare={}", jobTime, list, config, compareDTO);
-        doAlarm(bizType, list, compareDTO, taskSuccRateAlarmTimeConfig, alarmLevel, levelConfigDTO);
 
-        // 增加ivr服务通知
-//        if (EBizType.OPERATOR == bizType) {
-//            ivrNotifyService.notifyIvr(EAlarmLevel.error, EAlarmType.conversion_rate_low, "运营商转化率低于阀值");
-//        }
+        ESaasEnv env = ESaasEnv.getByValue(config.getSaasEnv());
+
+        if(env == null){
+            logger.error("配置中环境配置错误，当前配置：{}",config);
+            return;
+        }
+
+        if (EAlarmLevel.info.equals(alarmLevel)) {
+            //发出全局的报警
+            String content = doAlarm(bizType, list, compareDTO, taskSuccRateAlarmTimeConfig, alarmLevel, levelConfigDTO);
+            //保存记录
+            AlarmRecord alarmRecord = genAlarmRecord(null, beginTime, EAlarmRecordStatus.PROCESSED, alarmLevel,
+                    content, env,config.getType());
+
+            alarmRecordService.insert(alarmRecord);
+            return;
+        }
+
+        String summary = genSummary(env,alarmLevel,config.getType());
+        AlarmRecord record = alarmRecordService.getFirstStatusRecord(alarmLevel, summary, EAlarmRecordStatus.UNPROCESS);
+
+        if (record != null) {
+            logger.info("已存在{}的记录，不再继续", EAlarmRecordStatus.UNPROCESS.getDesc());
+            //save record if has unprocessed same type record
+            AlarmRecord alarmRecord = genAlarmRecord(null, statTime, EAlarmRecordStatus.PROCESSED, alarmLevel,
+                    String.valueOf(record.getId()), env,config.getType());
+
+            alarmRecordService.insert(alarmRecord);
+            return;
+        }
+
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+        Date oneDayAgo = new Date(jobTime.getTime() - AbstractAlarmServiceTemplate.day);
+        criteria.createCriteria().andLevelEqualTo(alarmLevel.name()).andSummaryEqualTo(summary).andIsProcessedEqualTo(EAlarmRecordStatus.DISABLE.getCode()).andStartTimeGreaterThan(oneDayAgo);
+        List<AlarmRecord> records = alarmRecordService.queryByCondition(criteria);
+
+        if (!records.isEmpty()) {
+            logger.info("一天之内已存在{}的记录，不再继续", EAlarmRecordStatus.DISABLE.getDesc());
+            //save record if has unprocessed same type record
+            AlarmRecord alarmRecord = genAlarmRecord(null, statTime, EAlarmRecordStatus.DISABLE, alarmLevel, String.valueOf(records.get(0).getId()), env,config.getType());
+            alarmRecordService.insert(alarmRecord);
+            return;
+        }
+
+        //获取值班人员
+        List<SaasWorker> saasWorkers = saasWorkerService.getDutyWorker(statTime);
+
+        if (saasWorkers == null || saasWorkers.isEmpty()) {
+            logger.info("当前时间:{}没有配置值班人，使用默认值班人员", MonitorDateUtils.format(statTime));
+            saasWorkers = new ArrayList<>();
+            saasWorkers.add(SaasWorker.DEFAULT_WORKER);
+        }
+
+        Long recordId = UidGenerator.getId();
+        Long orderId = UidGenerator.getId();
+
+        String content = "";
+
+        for (SaasWorker saasWorker : saasWorkers) {
+            content = genDutyManAlarmInfo(recordId, alarmLevel, statTime, env);
+            Map<String, String> map = new HashMap<>(2);
+            map.put("name", saasWorker.getName());
+            map.put("saasEnv", diamondConfig.getSaasMonitorEnvironment());
+            map.put("type", EAlarmType.task_success_alarm.getDesc());
+            map.put("bizType", config.getType());
+
+            String newContent = StrSubstitutor.replace(content, map);
+            Map<String, Object> params = genIvrMap(recordId,saasWorker,alarmLevel,statTime,env,config.getType());
+
+            sendIvr(newContent, saasWorker, params);
+            sendSms(newContent, saasWorker);
+            sendEmail(newContent, saasWorker);
+        }
+
+        Map<String, String> map = new HashMap<>(2);
+        List<String> names = saasWorkers.stream().map(SaasWorker::getName).collect(Collectors.toList());
+        map.put("name", Joiner.on(",").join(names));
+
+        record = genAlarmRecord(recordId, statTime, EAlarmRecordStatus.UNPROCESS, alarmLevel, StrSubstitutor.replace(content,
+                map), env, config.getType());
+        AlarmWorkOrder workOrder = getAlarmWorkOrder(jobTime, saasWorkers, recordId, orderId);
+        WorkOrderLog orderLog = getWorkOrderLog(jobTime, recordId, orderId);
+
+        //构建回调内容 发送通知;
+        String alarmMsg = doAlarm(bizType, list, compareDTO, taskSuccRateAlarmTimeConfig, alarmLevel, levelConfigDTO);
+        record.setContent(alarmMsg);
+
+        try {
+            alarmRecordService.saveAlarmRecords(workOrder, record, orderLog);
+        } catch (Exception e) {
+            logger.error("插入工单记录等失败，仍然发送特定信息及群发信息,错误信息：{}", e.getMessage());
+        }
+
     }
 
     /**
@@ -179,14 +273,15 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
         TaskSuccRateAlarmTimeListDTO inTimeConfig = findActiveTimeConfig(config);
 
-        return inTimeConfig.getIntervals() == null ? config.getIntervalMins() : inTimeConfig.getIntervals();
+        return (inTimeConfig.getIntervals() == null|| inTimeConfig.getIntervals() == 0) ? config.getIntervalMins() : inTimeConfig.getIntervals();
+
     }
 
-    private void doAlarm(EBizType bizType, List<SaasStatAccessDTO> list, TaskSuccRateCompareDTO compareDTO, TaskSuccRateAlarmTimeListDTO taskSuccRateAlarmTimeConfig, EAlarmLevel alarmLevel, MonitorAlarmLevelConfigDTO levelConfigDTO) {
+    private String doAlarm(EBizType bizType, List<SaasStatAccessDTO> list, TaskSuccRateCompareDTO compareDTO, TaskSuccRateAlarmTimeListDTO taskSuccRateAlarmTimeConfig, EAlarmLevel alarmLevel, MonitorAlarmLevelConfigDTO levelConfigDTO) {
         HashMap<String, String> switches = taskSuccRateAlarmTimeConfig.getSwitches();
 
         List<String> channels = levelConfigDTO.getChannels();
-
+        String body = "";
         for (String channel : channels) {
             EAlarmChannel alarmChannel = EAlarmChannel.getByValue(channel);
             if (alarmChannel == null) {
@@ -204,24 +299,42 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                     sendMailAlarm(list, bizType, alarmLevel, compareDTO);
                     break;
                 case IVR:
-                    sendIvr(list, alarmLevel, "");
+                    sendIvr(alarmLevel);
                     break;
                 case SMS:
                     sendSmsAlarm(list, bizType, alarmLevel, compareDTO);
                     break;
                 case WECHAT:
-                    sendWechatAlarm(list, bizType, alarmLevel, compareDTO);
+                    body = sendWechatAlarm(list, bizType, alarmLevel, compareDTO);
                     break;
                 default:
             }
         }
+        return body;
     }
 
-    protected void sendIvr(List<SaasStatAccessDTO> msgList, EAlarmLevel level, String alarmBiz) {
+    private void sendIvr(String content, SaasWorker saasWorker, Map<String, Object> params) {
+        if (!AlarmConstants.SWITCH_ON.equals(diamondConfig.getDutyIvrSwitch())) {
+            logger.info("对值班人员的ivr提醒已经关闭。。");
+            return;
+        }
+        try {
+            Map<String, String> map = Maps.newHashMap();
 
-        logger.info(alarmBiz + "发送ivr请求 {}");
+            String ivrContent = StrSubstitutor.replace(content, map);
+            logger.info("给值班人员预警，content={},mobile={}，name={}", ivrContent, saasWorker.getMobile(), saasWorker.getName());
+            ivrNotifyService.notifyIvrToDutyMan(ivrContent, saasWorker.getMobile(), saasWorker.getName(), ivrConfig.getDutyManIvrModel(), params);
+        } catch (Exception e) {
+            logger.error("发送ivr失败,{}", e.getMessage());
+        }
+    }
 
-        ivrNotifyService.notifyIvr(level, EAlarmType.operator_alarm, alarmBiz);
+
+    private void sendIvr(EAlarmLevel level) {
+
+        logger.info("任务成功率预警发送ivr请求 {}");
+
+        ivrNotifyService.notifyIvr(level, EAlarmType.operator_alarm, "");
     }
 
     private TaskSuccRateAlarmTimeListDTO findActiveTimeConfig(TaskSuccessRateAlarmConfigDTO config) {
@@ -323,7 +436,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             return EAlarmLevel.info;
         }
         logger.info("任务成功率预警,预警命中了不同等级，数据：{}，直接返回",list);
-
         return null;
     }
 
@@ -421,24 +533,25 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
      * @return
      */
     private BigDecimal calcRate(Integer totalCount, Integer rateCount) {
-        if (totalCount <= 0) {
+        if (Integer.valueOf(0).compareTo(totalCount) >= 0) {
             return BigDecimal.valueOf(0, 2);
         }
-        BigDecimal rate = BigDecimal.valueOf(rateCount, 2)
+        return BigDecimal.valueOf(rateCount, 2)
                 .multiply(BigDecimal.valueOf(100))
                 .divide(BigDecimal.valueOf(totalCount, 2), 2, BigDecimal.ROUND_HALF_UP);
-        return rate;
     }
 
-    private void sendWechatAlarm(List<SaasStatAccessDTO> list, EBizType type, EAlarmLevel alarmLevel, TaskSuccRateCompareDTO compareDTO) {
+    private String sendWechatAlarm(List<SaasStatAccessDTO> list, EBizType type, EAlarmLevel alarmLevel,
+                                  TaskSuccRateCompareDTO compareDTO) {
         String body = this.generateMessageBody(list, type, EAlarmChannel.WECHAT, alarmLevel, compareDTO);
         alarmMessageProducer.sendWechantAlarm(body);
+        return body;
     }
 
     private void sendMailAlarm(List<SaasStatAccessDTO> list, EBizType bizType, EAlarmLevel alarmLevel,
                                TaskSuccRateCompareDTO compareDTO) {
         String title = this.generateTitle(bizType);
-        String body = this.genMailBody(list, bizType, EAlarmChannel.EMAIL, alarmLevel, compareDTO);
+        String body = this.genMailBody(list, bizType, alarmLevel, compareDTO);
         alarmMessageProducer.sendMail(title, body, MailEnum.HTML_MAIL);
     }
 
@@ -451,9 +564,9 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         smsNotifyService.send(body);
     }
 
-    private String genMailBody(List<SaasStatAccessDTO> list, EBizType type, EAlarmChannel sendType,
+    private String genMailBody(List<SaasStatAccessDTO> list, EBizType type,
                                EAlarmLevel alarmLevel, TaskSuccRateCompareDTO compareDTO) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         if (EBizType.OPERATOR.equals(type)) {
             buffer.append("【").append(alarmLevel).append("】");
         } else {
@@ -468,15 +581,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         List<BigDecimal> failRateList = Lists.newArrayList();
         List<Integer> failCountList = Lists.newArrayList();
         List<Integer> cancelCountList = Lists.newArrayList();
-        list.forEach(access -> {
-            dataTimeList.add(fmt.format(access.getDataTime()));
-            totalCountList.add(access.getTotalCount());
-            successRateList.add(access.getConversionRate());
-            successCountList.add(access.getSuccessCount());
-            failRateList.add(access.getFailRate());
-            failCountList.add(access.getFailCount());
-            cancelCountList.add(access.getCancelCount());
-        });
+        calcRateList(list, fmt, dataTimeList, totalCountList, successRateList, successCountList, failRateList, failCountList, cancelCountList);
 
         buffer.append("<table>");
         buffer.append("<tr>");
@@ -556,6 +661,21 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         List<BigDecimal> failRateList = Lists.newArrayList();
         List<Integer> failCountList = Lists.newArrayList();
         List<Integer> cancelCountList = Lists.newArrayList();
+        calcRateList(list, fmt, dataTimeList, totalCountList, successRateList, successCountList, failRateList, failCountList, cancelCountList);
+
+        buffer.append(" 环境标志: ").append(compareDTO.getEvn()).append("\n");
+        buffer.append(" 阈值(%): ").append(compareDTO.getThreshold()).append("(").append(compareDTO.getThresholdDecs()).append(")").append("\n");
+        buffer.append(" 数据时间: ").append(Joiner.on(" | ").useForNull(" ").join(dataTimeList)).append(" \n");
+        buffer.append(" 任务总数: ").append(Joiner.on(" | ").useForNull(" ").join(totalCountList)).append(" \n");
+        buffer.append(" 转化率(%): ").append(Joiner.on(" | ").useForNull(" ").join(successRateList)).append(" \n");
+        buffer.append(" 成功数: ").append(Joiner.on(" | ").useForNull(" ").join(successCountList)).append(" \n");
+        buffer.append(" 失败率(%): ").append(Joiner.on(" | ").useForNull(" ").join(failRateList)).append(" \n");
+        buffer.append(" 失败数: ").append(Joiner.on(" | ").useForNull(" ").join(failCountList)).append(" \n");
+        buffer.append(" 取消数: ").append(Joiner.on(" | ").useForNull(" ").join(cancelCountList)).append(" \n");
+        return buffer.toString();
+    }
+
+    private void calcRateList(List<SaasStatAccessDTO> list, SimpleDateFormat fmt, List<String> dataTimeList, List<Integer> totalCountList, List<BigDecimal> successRateList, List<Integer> successCountList, List<BigDecimal> failRateList, List<Integer> failCountList, List<Integer> cancelCountList) {
         list.forEach(access -> {
             dataTimeList.add(fmt.format(access.getDataTime()));
             totalCountList.add(access.getTotalCount());
@@ -565,16 +685,72 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             failCountList.add(access.getFailCount());
             cancelCountList.add(access.getCancelCount());
         });
-
-        buffer.append(" 环境标志: " + compareDTO.getEvn() + "\n");
-        buffer.append(" 阈值(%): " + compareDTO.getThreshold() + "(" + compareDTO.getThresholdDecs() + ")" + "\n");
-        buffer.append(" 数据时间: " + Joiner.on(" | ").useForNull(" ").join(dataTimeList) + " \n");
-        buffer.append(" 任务总数: " + Joiner.on(" | ").useForNull(" ").join(totalCountList) + " \n");
-        buffer.append(" 转化率(%): " + Joiner.on(" | ").useForNull(" ").join(successRateList) + " \n");
-        buffer.append(" 成功数: " + Joiner.on(" | ").useForNull(" ").join(successCountList) + " \n");
-        buffer.append(" 失败率(%): " + Joiner.on(" | ").useForNull(" ").join(failRateList) + " \n");
-        buffer.append(" 失败数: " + Joiner.on(" | ").useForNull(" ").join(failCountList) + " \n");
-        buffer.append(" 取消数: " + Joiner.on(" | ").useForNull(" ").join(cancelCountList) + " \n");
-        return buffer.toString();
     }
+
+
+    private AlarmRecord genAlarmRecord(Long id, Date baseTime, EAlarmRecordStatus isProcessed, EAlarmLevel level, String content, ESaasEnv eSaasEnv,String bizType) {
+        Date now = new Date();
+        AlarmRecord alarmRecord = new AlarmRecord();
+        alarmRecord.setId(id == null ? UidGenerator.getId() : id);
+        alarmRecord.setLevel(level.name());
+        alarmRecord.setSummary(genSummary(eSaasEnv,level,bizType));
+        alarmRecord.setContent(content);
+        alarmRecord.setDataTime(baseTime);
+        alarmRecord.setIsProcessed(isProcessed.getCode());
+        alarmRecord.setStartTime(now);
+        if (EAlarmRecordStatus.PROCESSED.equals(isProcessed)) {
+            alarmRecord.setEndTime(now);
+        }
+        alarmRecord.setCreateTime(now);
+        alarmRecord.setLastUpdateTime(now);
+        alarmRecord.setAlarmType(EAlarmType.task_success_alarm.name()+":"+bizType);
+        return alarmRecord;
+    }
+
+    private String genSummary(ESaasEnv eSaasEnv, EAlarmLevel alarmLevel,String bizType){
+        String alarmType = "taskSuccessRate";
+        return Joiner.on(":").join(alarmType,eSaasEnv.getValue(),alarmLevel.name(),bizType);
+    }
+
+    private String genDutyManAlarmInfo(Long id, EAlarmLevel
+            alarmLevel, Date baseTime, ESaasEnv env) {
+        return "${name}" + "小伙伴你好,当前环境:${saasEnv}," + "${type}-${bizType}发生预警:\n环境：" + env.getDesc() + "\n时间：" +
+                MonitorDateUtils.format(baseTime) + "\n级别:" + alarmLevel.name() +
+                "\n系统已经生成了编号为" + id + "的预警记录,请及时处理,地址："+diamondConfig.getConsoleAddress();
+    }
+    private Map<String, Object> genIvrMap(Long id, SaasWorker saasWorker, EAlarmLevel
+            alarmLevel, Date baseTime, ESaasEnv env,String type) {
+
+        Map<String, Object> map = Maps.newHashMap();
+
+        map.put("name",saasWorker.getName());
+        map.put("biz","任务成功率预警"+type);
+        map.put("env",env.getDesc());
+        map.put("baseTime",MonitorDateUtils.format(baseTime));
+        map.put("level",alarmLevel.name());
+        map.put("id",id);
+        map.put("address",diamondConfig.getConsoleAddress());
+
+        return map;
+    }
+
+    private void sendEmail(String content, SaasWorker saasWorker) {
+        String title = "值班人员预警";
+        try {
+            alarmMessageProducer.sendMail(title, content, MailEnum.SIMPLE_MAIL, saasWorker.getEmail());
+        } catch (Exception e) {
+            logger.error("发送邮件失败，{}", e.getMessage());
+        }
+    }
+
+    private void sendSms(String content, SaasWorker saasWorker) {
+        String mobile = saasWorker.getMobile();
+        try {
+            smsNotifyService.send(content, Collections.singletonList(mobile));
+        } catch (Exception e) {
+            logger.error("发送短信失败，{}", e.getMessage());
+        }
+    }
+
+
 }
