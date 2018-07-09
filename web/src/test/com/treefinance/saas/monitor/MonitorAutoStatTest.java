@@ -181,4 +181,23 @@ public class MonitorAutoStatTest {
         System.out.println(JSON.toJSONString(result));
     }
 
+
+    @Test
+    public void testDataStat() {
+        StatTemplate statTemplate = statTemplateMapper.selectByPrimaryKey(30001L);
+        String dataJson = "{\"accountNo\":\"4$D4Msjq3kVT7oOUuYVdIgt/BAAAwA\",\"appId\":\"pJWAtOx8SDIZr5PH\",\"bizType\":3,\"createTime\":1528274776000,\"lastUpdateTime\":1528274833000,\"monitorType\":\"task_operator\",\"saasEnv\":\"2\",\"status\":2,\"stepCode\":\"\",\"taskAttributes\":{\"groupName\":\"浙江移动\",\"sourceType\":\"1\",\"groupCode\":\"ZHE_JIANG_10086\"},\"taskId\":189057315180683260,\"taskSteps\":[{\"stepCode\":\"create\",\"stepIndex\":1,\"stepName\":\"创建任务\"},{\"stepCode\":\"confirm-mobile\",\"stepIndex\":2,\"stepName\":\"确认手机号\"},{\"stepCode\":\"confirm-login\",\"stepIndex\":3,\"stepName\":\"确认登录\"},{\"stepCode\":\"login\",\"stepIndex\":4,\"stepName\":\"登录\"},{\"stepCode\":\"crawl\",\"stepIndex\":5,\"stepName\":\"抓取\"},{\"stepCode\":\"process\",\"stepIndex\":6,\"stepName\":\"洗数\"},{\"stepCode\":\"callback\",\"stepIndex\":7,\"stepName\":\"回调\"}],\"uniqueId\":\"5432345\",\"webSite\":\"china_10086_app\"}";
+        String dataJson2 = "{\"accountNo\":\"4$D4Msjq3kVT7oOUuYVdIgt/BAAAwA\",\"appId\":\"888AtOx8SDIZr5PH\",\"bizType\":3,\"createTime\":1528274776000,\"lastUpdateTime\":1528274833000,\"monitorType\":\"task_operator\",\"saasEnv\":\"2\",\"status\":2,\"stepCode\":\"\",\"taskAttributes\":{\"groupName\":\"浙江移动\",\"sourceType\":\"1\",\"groupCode\":\"ZHE_JIANG_10086\"},\"taskId\":189057315180683260,\"taskSteps\":[{\"stepCode\":\"create\",\"stepIndex\":1,\"stepName\":\"创建任务\"},{\"stepCode\":\"confirm-mobile\",\"stepIndex\":2,\"stepName\":\"确认手机号\"},{\"stepCode\":\"confirm-login\",\"stepIndex\":3,\"stepName\":\"确认登录\"},{\"stepCode\":\"login\",\"stepIndex\":4,\"stepName\":\"登录\"},{\"stepCode\":\"crawl\",\"stepIndex\":5,\"stepName\":\"抓取\"},{\"stepCode\":\"process\",\"stepIndex\":6,\"stepName\":\"洗数\"},{\"stepCode\":\"callback\",\"stepIndex\":7,\"stepName\":\"回调\"}],\"uniqueId\":\"5432345888\",\"webSite\":\"china_10086_app\"}";
+
+        Map<String, Object> dataMap = JSON.parseObject(dataJson);
+        Map<String, Object> dataMap2 = JSON.parseObject(dataJson2);
+        List<Map<String, Object>> dataList = Lists.newArrayList();
+        dataList.add(dataMap2);
+        dataList.add(dataMap2);
+        dataList.add(dataMap2);
+        dataList.add(dataMap);
+        dataList.add(dataMap);
+        Map<Integer, List<Map<String, Object>>> result = defaultStatDataCalculator.calculate(statTemplate, dataList);
+        System.out.println(JSON.toJSONString(result));
+    }
+
 }

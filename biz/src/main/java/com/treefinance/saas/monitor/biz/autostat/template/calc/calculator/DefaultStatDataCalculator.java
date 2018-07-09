@@ -21,7 +21,10 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -238,7 +241,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                             } else {
                                 itemMap.put(key, (Double) itemValue + value.doubleValue());
                             }
-                            redisTemplate.boundHashOps(redisKey).increment(key, (Double) itemMap.get(key));
+                            redisTemplate.boundHashOps(redisKey).increment(key, value.doubleValue());
                         } else {
                             Map<String, Integer> value = (Map<String, Integer>) dataMap.get(key);
                             Map<String, Integer> itemValue = (Map<String, Integer>) itemMap.get(key);
@@ -255,22 +258,51 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                                     }
                                 }
                             }
-                            Object oldItemValueStr = redisTemplate.boundHashOps(redisKey).get(key);
-                            Map<String, Object> oldItemValue;
-                            if (oldItemValueStr != null) {
-                                oldItemValue = JSON.parseObject(oldItemValueStr.toString());
-                            } else {
-                                oldItemValue = Maps.newHashMap();
-                            }
-                            for (Map.Entry<String, Integer> entry : itemValue.entrySet()) {
-                                if (oldItemValue.get(entry.getKey()) == null) {
-                                    oldItemValue.put(entry.getKey(), entry.getValue());
-                                } else {
-                                    Integer updateValue = ((Number) oldItemValue.get(entry.getKey())).intValue() + entry.getValue();
-                                    oldItemValue.put(entry.getKey(), updateValue);
+                            final Map<String, Integer> finalItemValue =itemValue;
+                            SessionCallback<Object> sessionCallback = new SessionCallback<Object>() {
+                                @Override
+                                public Object execute(RedisOperations operations) throws DataAccessException {
+                                    operations.multi();
+                                    Object oldItemValueStr =operations.boundHashOps(redisKey).get(key);
+                                    Map<String, Object> oldItemValue;
+                                    if (oldItemValueStr != null) {
+                                        oldItemValue = JSON.parseObject(oldItemValueStr.toString());
+                                    } else {
+                                        oldItemValue = Maps.newHashMap();
+                                    }
+                                    for (Map.Entry<String, Integer> entry : finalItemValue.entrySet()) {
+                                        if (oldItemValue.get(entry.getKey()) == null) {
+                                            oldItemValue.put(entry.getKey(), entry.getValue());
+                                        } else {
+                                            Integer updateValue = ((Number) oldItemValue.get(entry.getKey())).intValue() + entry.getValue();
+                                            oldItemValue.put(entry.getKey(), updateValue);
+                                        }
+                                    }
+                                    operations.boundHashOps(redisKey).put(key, JSON.toJSONString(oldItemValue));
+                                    Object val = operations.exec();
+                                    return val;
                                 }
-                            }
-                            redisTemplate.boundHashOps(redisKey).put(key, JSON.toJSONString(oldItemValue));
+                            };
+                            redisTemplate.execute(sessionCallback);
+
+
+
+//                            Object oldItemValueStr = redisTemplate.boundHashOps(redisKey).get(key);
+//                            Map<String, Object> oldItemValue;
+//                            if (oldItemValueStr != null) {
+//                                oldItemValue = JSON.parseObject(oldItemValueStr.toString());
+//                            } else {
+//                                oldItemValue = Maps.newHashMap();
+//                            }
+//                            for (Map.Entry<String, Integer> entry : itemValue.entrySet()) {
+//                                if (oldItemValue.get(entry.getKey()) == null) {
+//                                    oldItemValue.put(entry.getKey(), entry.getValue());
+//                                } else {
+//                                    Integer updateValue = ((Number) oldItemValue.get(entry.getKey())).intValue() + entry.getValue();
+//                                    oldItemValue.put(entry.getKey(), updateValue);
+//                                }
+//                            }
+//                            redisTemplate.boundHashOps(redisKey).put(key, JSON.toJSONString(oldItemValue));
                         }
 
                     }
