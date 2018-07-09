@@ -58,7 +58,7 @@
             <!--<property name="useActualColumnNames" value="true"/>-->
         <!--</table>-->
 
-        <table tableName="alarm_record" domainObjectName="AlarmRecord"
+        <table tableName="real_time_stat_access" domainObjectName="RealTimeStatAccess"
                enableSelectPaginationByExample="true"
                enableInsertOrUpdateBySelective="true"
                enableBatchInsert="true"

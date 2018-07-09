@@ -30,9 +30,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +46,6 @@ import java.util.stream.Collectors;
 public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
     private final static Logger logger = LoggerFactory.getLogger(OperatorStatAccessFacade.class);
-
 
     @Autowired
     private OperatorStatAccessMapper operatorStatAccessMapper;
@@ -109,6 +111,10 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
                 ro.setProcessSuccessRate(calcRate(data.getCrawlSuccessCount(), data.getProcessSuccessCount()));
                 ro.setCallbackSuccessRate(calcRate(data.getProcessSuccessCount(), data.getCallbackSuccessCount()));
                 ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
+                //add average 某一个运营商某七天的数据
+
+                ro.setDayAverage(getPreviousAverage(request.getAppId(), request.getSaasEnv(), request.getStatType(), ro
+                        .getGroupCode(), request.getDataDate(), request.getGroupName()));
 
                 result.add(ro);
             }
@@ -116,6 +122,47 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         logger.info("查询各个运营商日监控统计数据(分页),返回结果result={}", JSON.toJSONString(result));
         return MonitorResultBuilder.pageResult(request, result, total);
     }
+
+    private BigDecimal getPreviousAverage(String appId, byte saasEnv, byte dataType, String groupCode, Date initDate,
+                                          String groupName) {
+        Date startDate = MonitorDateUtils.addTimeUnit(initDate, Calendar.DATE, -7);
+
+        OperatorStatDayAccessCriteria criteria = new OperatorStatDayAccessCriteria();
+        criteria.setOrderByClause("confirmMobileCount desc");
+        OperatorStatDayAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andAppIdEqualTo(appId)
+                .andDataTimeGreaterThanOrEqualTo(startDate)
+                .andDataTimeLessThan(initDate)
+                .andGroupCodeEqualTo(groupCode)
+                .andSaasEnvEqualTo(saasEnv)
+                .andDataTypeEqualTo(dataType)
+                .andGroupCodeNotEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
+        if (StringUtils.isNotBlank(groupName)) {
+            innerCriteria.andGroupNameLike("%" + groupName + "%");
+        }
+
+        List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectByExample(criteria);
+
+        if (list.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        Integer callbackCount = 0;
+        Integer comfirmCount = 0;
+
+        for (OperatorStatDayAccess operatorStatDayAccess : list) {
+            callbackCount += operatorStatDayAccess.getCallbackSuccessCount();
+            comfirmCount += operatorStatDayAccess.getConfirmMobileCount();
+        }
+
+        if (comfirmCount.equals(0)) {
+            return BigDecimal.ZERO;
+        }
+
+        return new BigDecimal(callbackCount).divide(new BigDecimal(comfirmCount), 2, RoundingMode.HALF_UP)
+                .multiply(new BigDecimal(100));
+    }
+
 
     @Override
     public MonitorResult<List<OperatorStatAccessRO>> queryOperatorStatHourAccessListWithPage(OperatorStatAccessRequest request) {
@@ -126,8 +173,8 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         }
         logger.info("查询各个运营商小时监控统计数据(分页),输入参数request={}", JSON.toJSONString(request));
         List<OperatorStatAccessRO> result = Lists.newArrayList();
-        OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
 
+        OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
         OperatorStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
         Date startTime = request.getDataDate();
         Date endTime = DateUtils.addMinutes(request.getDataDate(), request.getIntervalMins());
@@ -163,10 +210,57 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         }
         for (OperatorStatAccessDTO data : pageList) {
             OperatorStatAccessRO ro = DataConverterUtils.convert(data, OperatorStatAccessRO.class);
+            ro.setAverage(getAverageWholeConversion(request, ro.getGroupCode()));
             result.add(ro);
         }
         return MonitorResultBuilder.pageResult(request, result, changeList.size());
     }
+
+    /**
+     * 分运营商 分时监控 过去七天的总转化率的平均值
+     */
+    private BigDecimal getAverageWholeConversion(OperatorStatAccessRequest request, String groupCode) {
+
+        List<Date> dates = MonitorDateUtils.getPreviousOClockTime(request.getDataDate(), 7);
+
+        AtomicReference<Integer> callbackCount = new AtomicReference<>(0);
+        AtomicReference<Integer> entryCount = new AtomicReference<>(0);
+
+        for (Date startTime : dates) {
+            OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
+            OperatorStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+            Date endTime = DateUtils.addMinutes(startTime, request.getIntervalMins());
+            innerCriteria.andAppIdEqualTo(request.getAppId())
+                    .andDataTypeEqualTo(request.getStatType())
+                    .andGroupCodeEqualTo(groupCode)
+                    .andSaasEnvEqualTo(request.getSaasEnv())
+                    .andDataTimeGreaterThanOrEqualTo(startTime)
+                    .andDataTimeLessThan(endTime)
+                    .andGroupCodeNotEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
+            if (StringUtils.isNotBlank(request.getGroupName())) {
+                innerCriteria.andGroupNameLike("%" + request.getGroupName() + "%");
+            }
+
+            List<OperatorStatAccess> operatorStatAccesses = operatorStatAccessMapper.selectByExample(criteria);
+            if (operatorStatAccesses.isEmpty()) {
+                continue;
+            }
+
+            operatorStatAccesses.forEach(operatorStatAccess -> {
+                callbackCount.updateAndGet(v -> v + operatorStatAccess
+                        .getCallbackSuccessCount());
+                entryCount.updateAndGet(v -> v + operatorStatAccess.getConfirmMobileCount());
+            });
+        }
+        logger.info("获取{}过去七天的平均值,成功数：{}，总数：{}", groupCode, callbackCount.get(), entryCount.get());
+
+        if (entryCount.get() == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return new BigDecimal(callbackCount.get()).divide(new BigDecimal(entryCount.get()), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
+    }
+
 
     private List<OperatorStatAccessDTO> changeSumGroupCodeOperatorStatAccess(List<OperatorStatAccess> list, Date startTime) {
         Map<String, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(OperatorStatAccess::getGroupCode));

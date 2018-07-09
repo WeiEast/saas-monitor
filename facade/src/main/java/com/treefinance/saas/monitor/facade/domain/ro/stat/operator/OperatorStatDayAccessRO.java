@@ -53,6 +53,8 @@ public class OperatorStatDayAccessRO implements Serializable {
 
     private Date lastUpdateTime;
 
+    private BigDecimal dayAverage;
+
     /**
      * 任务人数比
      */
@@ -224,5 +226,13 @@ public class OperatorStatDayAccessRO implements Serializable {
 
     public void setTaskCount(Integer taskCount) {
         this.taskCount = taskCount;
+    }
+
+    public BigDecimal getDayAverage() {
+        return dayAverage;
+    }
+
+    public void setDayAverage(BigDecimal dayAverage) {
+        this.dayAverage = dayAverage;
     }
 }

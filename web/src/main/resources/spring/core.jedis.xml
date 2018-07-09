@@ -38,6 +38,24 @@
         <property name="connectionFactory" ref="connectionFactory"/>
     </bean>
 
+    <bean id="jsonRedisTemplate"
+          class="com.treefinance.saas.monitor.common.cache.redis.MoreRedisTemplate">
+        <property name="keySerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
+        </property>
+        <property name="valueSerializer">
+            <bean class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer"/>
+        </property>
+        <property name="hashKeySerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
+        </property>
+        <property name="hashValueSerializer">
+            <bean class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer"/>
+        </property>
+        <property name="enableTransactionSupport" value="true"/>
+        <property name="connectionFactory" ref="connectionFactory"/>
+    </bean>
+
     <!-- declare Redis Cache Manager -->
     <bean id="defaultCacheManager" class="org.springframework.data.redis.cache.RedisCacheManager">
         <constructor-arg name="redisOperations" ref="redisTemplate"/>
