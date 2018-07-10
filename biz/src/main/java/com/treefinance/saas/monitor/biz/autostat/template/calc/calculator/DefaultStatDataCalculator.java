@@ -258,12 +258,13 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                                     }
                                 }
                             }
-                            final Map<String, Integer> finalItemValue =itemValue;
-                            SessionCallback<Object> sessionCallback = new SessionCallback<Object>() {
+                            final Map<String, Integer> finalItemValue = itemValue;
+                            SessionCallback<List<Object>> sessionCallback = new SessionCallback<List<Object>>() {
                                 @Override
-                                public Object execute(RedisOperations operations) throws DataAccessException {
+                                public List<Object> execute(RedisOperations operations) throws DataAccessException {
+                                    operations.watch(redisKey);
+                                    Object oldItemValueStr = operations.boundHashOps(redisKey).get(key);
                                     operations.multi();
-                                    Object oldItemValueStr =operations.boundHashOps(redisKey).get(key);
                                     Map<String, Object> oldItemValue;
                                     if (oldItemValueStr != null) {
                                         oldItemValue = JSON.parseObject(oldItemValueStr.toString());
@@ -279,12 +280,25 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                                         }
                                     }
                                     operations.boundHashOps(redisKey).put(key, JSON.toJSONString(oldItemValue));
-                                    Object val = operations.exec();
-                                    return val;
+                                    return operations.exec();
                                 }
                             };
-                            redisTemplate.execute(sessionCallback);
-
+                            int i = 1;
+                            while (true) {
+                                List<Object> operationsResult = redisTemplate.execute(sessionCallback);
+                                if (CollectionUtils.isNotEmpty(operationsResult)) {
+                                    break;
+                                }
+                                try {
+                                    Random random = new Random();
+                                    int m = random.nextInt(100);
+                                    Thread.sleep(m);
+                                } catch (InterruptedException e) {
+                                    logger.error("InterruptedException", e);
+                                }
+                                logger.info("redis key已被修改,事务discard,开始重试.key={},i={}", redisKey, i);
+                                i++;
+                            }
 
 
 //                            Object oldItemValueStr = redisTemplate.boundHashOps(redisKey).get(key);

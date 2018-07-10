@@ -7,6 +7,7 @@ import java.util.Date;
 
 /**
  * 电商分时监控查询条件类
+ *
  * @author:guoguoyun
  * @date:Created in 2018/1/15上午10:56
  */
@@ -29,8 +30,18 @@ public class EcommerceDetailAccessRequest extends PageRequest implements Seriali
 
     private String appId;
 
+    private Byte saasEnv;
+
 
     private Integer intervalMins = 30;
+
+    public Byte getSaasEnv() {
+        return saasEnv;
+    }
+
+    public void setSaasEnv(Byte saasEnv) {
+        this.saasEnv = saasEnv;
+    }
 
     public Integer getIntervalMins() {
         return intervalMins;
