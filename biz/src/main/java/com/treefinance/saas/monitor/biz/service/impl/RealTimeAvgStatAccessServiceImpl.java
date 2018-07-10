@@ -80,7 +80,8 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         dataList = this.convertIntervalMinsData(dataList, intervalMins);
         Map<String, RealTimeStatAccessDTO> dataMap = dataList.stream()
                 .collect(Collectors.toMap(d -> MonitorDateUtils.format(d.getDataTime()), d -> d));
-        List<String> timeList = this.getIntervalTimeStrList(request.getStartTime(), request.getEndTime(), intervalMins);
+        List<String> timeList = this.getIntervalTimeStrList(request.getStartTime(), request.getEndTime(),
+                intervalMins, request.getHiddenRecentPoint());
         for (String timeStr : timeList) {
             if (dataMap.get(timeStr) == null) {
                 //初始化一个空值,填充时间空白点
@@ -128,7 +129,9 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
 
 
     @Override
-    public List<RealTimeStatAccessDTO> queryDataByConditions(String appId, Byte saasEnv, Byte bizType, Date startTime, Date endTime, Integer intervalMins) {
+    public List<RealTimeStatAccessDTO> queryDataByConditions(String appId, Byte saasEnv, Byte bizType,
+                                                             Date startTime, Date endTime, Integer intervalMins,
+                                                             Byte hiddenRecentPoint) {
         if (startTime == null || endTime == null || bizType == null) {
             logger.error("任务实时监控平均值查询,参数缺失,bizType,startTime,endTime必填,appId={},saaEnv={},startTime={},endTime={}",
                     appId, saasEnv, bizType, startTime, endTime);
@@ -158,7 +161,7 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         Map<String, RealTimeStatAccessDTO> dataMap = dataList.stream()
                 .collect(Collectors.toMap(d -> MonitorDateUtils.format(d.getDataTime()), d -> d));
         List<RealTimeStatAccessDTO> result = Lists.newArrayList();
-        List<String> timeList = this.getIntervalTimeStrList(startTime, endTime, intervalMins);
+        List<String> timeList = this.getIntervalTimeStrList(startTime, endTime, intervalMins, hiddenRecentPoint);
         for (String timeStr : timeList) {
             if (dataMap.get(timeStr) == null) {
                 //初始化一个空值,填充时间空白点
@@ -317,10 +320,15 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
     }
 
 
-    private List<String> getIntervalTimeStrList(Date startTime, Date endTime, Integer intervalMins) {
+    private List<String> getIntervalTimeStrList(Date startTime, Date endTime, Integer intervalMins, Byte hiddenRecentPoint) {
         List<String> result = Lists.newArrayList();
         List<Date> list = Lists.newArrayList();
-        Date endTimeInterval = MonitorDateUtils.getIntervalDateTime(endTime, intervalMins);
+        Date endTimeInterval;
+        if (hiddenRecentPoint != null && hiddenRecentPoint == 1) {
+            endTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(endTime, -intervalMins), intervalMins);
+        } else {
+            endTimeInterval = MonitorDateUtils.getIntervalDateTime(endTime, intervalMins);
+        }
         Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(startTime, intervalMins);
         while (endTimeInterval.compareTo(startTimeInterval) >= 0) {
             list.add(endTimeInterval);

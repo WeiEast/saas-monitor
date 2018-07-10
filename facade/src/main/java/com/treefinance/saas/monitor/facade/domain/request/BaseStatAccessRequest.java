@@ -57,6 +57,19 @@ public class BaseStatAccessRequest implements Serializable {
      */
     private Integer intervalMins;
 
+    /**
+     * 是否隐藏最近一个点
+     */
+    private Byte hiddenRecentPoint;
+
+    public Byte getHiddenRecentPoint() {
+        return hiddenRecentPoint;
+    }
+
+    public void setHiddenRecentPoint(Byte hiddenRecentPoint) {
+        this.hiddenRecentPoint = hiddenRecentPoint;
+    }
+
     public String getAppId() {
         return appId;
     }
