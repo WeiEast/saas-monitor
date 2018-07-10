@@ -21,7 +21,10 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -180,6 +183,21 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                 Object itemValue = expressionCalculator.calculate(itemId, itemExpression, data);
                 dataMap.put(itemCode, itemValue);
             });
+
+            statItems.stream().filter(statItem -> Byte.valueOf("2").equals(statItem.getDataSource())).forEach(statItem -> {
+                Long itemId = statItem.getId();
+                String itemCode = statItem.getItemCode();
+                String itemExpression = statItem.getItemExpression();
+                Object itemValue = expressionCalculator.calculate(itemId, itemExpression, data);
+                if (itemValue instanceof Number) {
+                    if (((Number) itemValue).doubleValue() > 0) {
+                        Map<String, Integer> map = Maps.newHashMap();
+                        map.put(data.get("statCode").toString(), 1);
+                        dataMap.put(itemCode, map);
+                    }
+                }
+            });
+
             // 分组标记
             dataMap.put(AsConstants.GROUP, redisKey);
 
@@ -203,39 +221,105 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
 
         // 分组名称
         List<String> groupNames = _statGroups.stream().map(StatGroup::getGroupCode).collect(Collectors.toList());
-        redisMultiMap.keySet().forEach(redisKey -> {
-            Map<String, Double> totalMap = Maps.newHashMap();
+
+        for (String redisKey : redisMultiMap.keySet()) {
+
+            Map<String, Object> itemMap = Maps.newHashMap();
             Map<String, String> groupMap = Maps.newHashMap();
             Collection<Map<String, Object>> dataList = redisMultiMap.get(redisKey);
-            dataList.forEach(dataMap -> {
-                dataMap.keySet().stream().forEach(key -> {
+
+            for (Map<String, Object> dataMap : dataList) {
+                for (String key : dataMap.keySet()) {
                     if (groupNames.contains(key) || AsConstants.DATA_TIME.equals(key) || AsConstants.GROUP.equals(key)) {
                         groupMap.put(key, dataMap.get(key) + "");
                     } else {
-                        Double totalValue = totalMap.get(key);
-                        Number value = (Number) dataMap.get(key);
-                        if (totalValue == null) {
-                            totalMap.put(key, value.doubleValue());
+                        if (!(dataMap.get(key) instanceof Map)) {
+                            Number value = (Number) dataMap.get(key);
+                            Object itemValue = itemMap.get(key);
+                            if (itemValue == null) {
+                                itemMap.put(key, value.doubleValue());
+                            } else {
+                                itemMap.put(key, (Double) itemValue + value.doubleValue());
+                            }
+                            redisTemplate.boundHashOps(redisKey).increment(key, value.doubleValue());
                         } else {
-                            totalMap.put(key, totalValue + value.doubleValue());
-                        }
-                    }
-                });
-            });
+                            Map<String, Integer> value = (Map<String, Integer>) dataMap.get(key);
+                            Map<String, Integer> itemValue = (Map<String, Integer>) itemMap.get(key);
+                            if (MapUtils.isEmpty(itemValue)) {
+                                itemValue = Maps.newHashMap();
+                                itemValue.putAll(value);
+                            } else {
+                                for (Map.Entry<String, Integer> entry : value.entrySet()) {
+                                    if (itemValue.get(entry.getKey()) == null) {
+                                        itemValue.put(entry.getKey(), entry.getValue());
+                                    } else {
+                                        Integer newValue = itemValue.get(entry.getKey()) + entry.getValue();
+                                        itemValue.put(entry.getKey(), newValue);
+                                    }
+                                }
+                            }
+//                            final Map<String, Integer> finalItemValue =itemValue;
+//                            SessionCallback<Object> sessionCallback = new SessionCallback<Object>() {
+//                                @Override
+//                                public Object execute(RedisOperations operations) throws DataAccessException {
+//                                    operations.multi();
+//                                    Object oldItemValueStr =operations.boundHashOps(redisKey).get(key);
+//                                    Map<String, Object> oldItemValue;
+//                                    if (oldItemValueStr != null) {
+//                                        oldItemValue = JSON.parseObject(oldItemValueStr.toString());
+//                                    } else {
+//                                        oldItemValue = Maps.newHashMap();
+//                                    }
+//                                    for (Map.Entry<String, Integer> entry : finalItemValue.entrySet()) {
+//                                        if (oldItemValue.get(entry.getKey()) == null) {
+//                                            oldItemValue.put(entry.getKey(), entry.getValue());
+//                                        } else {
+//                                            Integer updateValue = ((Number) oldItemValue.get(entry.getKey())).intValue() + entry.getValue();
+//                                            oldItemValue.put(entry.getKey(), updateValue);
+//                                        }
+//                                    }
+//                                    operations.boundHashOps(redisKey).put(key, JSON.toJSONString(oldItemValue));
+//                                    Object val = operations.exec();
+//                                    return val;
+//                                }
+//                            };
+//                            redisTemplate.execute(sessionCallback);
 
+
+
+                            Object oldItemValueStr = redisTemplate.boundHashOps(redisKey).get(key);
+                            Map<String, Object> oldItemValue;
+                            if (oldItemValueStr != null) {
+                                oldItemValue = JSON.parseObject(oldItemValueStr.toString());
+                            } else {
+                                oldItemValue = Maps.newHashMap();
+                            }
+                            for (Map.Entry<String, Integer> entry : itemValue.entrySet()) {
+                                if (oldItemValue.get(entry.getKey()) == null) {
+                                    oldItemValue.put(entry.getKey(), entry.getValue());
+                                } else {
+                                    Integer updateValue = ((Number) oldItemValue.get(entry.getKey())).intValue() + entry.getValue();
+                                    oldItemValue.put(entry.getKey(), updateValue);
+                                }
+                            }
+                            redisTemplate.boundHashOps(redisKey).put(key, JSON.toJSONString(oldItemValue));
+                        }
+
+                    }
+                }
+            }
             redisTemplate.boundHashOps(redisKey).putAll(groupMap);
-            totalMap.keySet().forEach(key -> redisTemplate
-                    .boundHashOps(redisKey)
-                    .increment(key, totalMap.get(key)));
             redisTemplate.boundHashOps(redisKey).expire(expireTime, TimeUnit.MILLISECONDS);
 
             Map<String, Object> resultMap = Maps.newHashMap();
             resultMap.putAll(groupMap);
-            resultMap.putAll(totalMap);
+            resultMap.putAll(itemMap);
             resultList.add(resultMap);
             logger.info("spel base data calculate: redisKey={}, groupMap={}，totalMap={},dataList={}",
-                    redisKey, groupMap, totalMap, JSON.toJSONString(dataList));
-        });
+                    redisKey, groupMap, itemMap, JSON.toJSONString(dataList));
+
+        }
+
         String dataListKey = Joiner.on(":").join(AsConstants.REDIS_PREFIX, templateCode);
         Multiset<String> keys = redisMultiMap.keys();
         if (keys.size() > 0) {

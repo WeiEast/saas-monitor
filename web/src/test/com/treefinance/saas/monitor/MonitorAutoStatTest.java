@@ -1,14 +1,17 @@
 package com.treefinance.saas.monitor;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.autostat.AutoStatService;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.MybatisService;
+import com.treefinance.saas.monitor.biz.autostat.template.calc.calculator.DefaultStatDataCalculator;
 import com.treefinance.saas.monitor.common.cache.RedisDao;
-import com.treefinance.saas.monitor.common.domain.dto.StatTemplateDTO;
 import com.treefinance.saas.monitor.common.utils.SpringIocUtils;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
+import com.treefinance.saas.monitor.dao.mapper.StatTemplateMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +38,10 @@ public class MonitorAutoStatTest {
     private AutoStatService autoStatService;
     @Autowired
     private MybatisService mybatisService;
+    @Autowired
+    private DefaultStatDataCalculator defaultStatDataCalculator;
+    @Autowired
+    private StatTemplateMapper statTemplateMapper;
 
 
     @Test
@@ -54,16 +61,9 @@ public class MonitorAutoStatTest {
     }
 
     public static void main(String[] args) {
-        StatTemplateDTO s1 = new StatTemplateDTO();
-        s1.setTemplateCode("1111");
-
-        System.out.println(s1.toString());
-
-        StatTemplateDTO s2 = new StatTemplateDTO();
-        s2.setTemplateCode("1111");
-        System.out.println(s2.toString());
-
-        System.out.println("hao=====" + s1.equals(s2));
+        String json = "{\"source\":1,\"password\":\"12345\",\"username\":\"1235\"}";
+        JSONObject map = JSON.parseObject(json);
+        System.out.println(map);
     }
 
 
@@ -153,5 +153,51 @@ public class MonitorAutoStatTest {
         System.out.println("done====");
     }
 
+    @Test
+    public void testDataStatDataCalculator() {
+        StatTemplate statTemplate = statTemplateMapper.selectByPrimaryKey(70000L);
+        String dataJson = "{\n" +
+                "  \"accountNo\": \"\",\n" +
+                "  \"appId\": \"QATestabcdefghQA\",\n" +
+                "  \"bizType\": 3,\n" +
+                "  \"dataTime\": 1525251302000,\n" +
+                "  \"taskId\": 176375711672594432,\n" +
+                "  \"monitorType\": \"task-real-time-stat\",\n" +
+                "  \"status\": 1,\n" +
+                "  \"taskAttributes\": {\n" +
+                "    \"groupCode\": \"ZHONG_GUO_10010\",\n" +
+                "    \"groupName\": \"中国联通\"\n" +
+                "  },\n" +
+                "  \"uniqueId\": \"test\",\n" +
+                "  \"saasEnv\":\"1\",\n" +
+                "  \"webSite\": \"\",\n" +
+                "  \"statCode\":\"taskCreate\",\n" +
+                "  \"statName\":\"任务创建\"\n" +
+                "}";
+        Map<String, Object> dataMap = JSON.parseObject(dataJson);
+        List<Map<String, Object>> dataList = Lists.newArrayList();
+        dataList.add(dataMap);
+        Map<Integer, List<Map<String, Object>>> result = defaultStatDataCalculator.calculate(statTemplate, dataList);
+        System.out.println(JSON.toJSONString(result));
+    }
+
+
+    @Test
+    public void testDataStat() {
+        StatTemplate statTemplate = statTemplateMapper.selectByPrimaryKey(30001L);
+        String dataJson = "{\"accountNo\":\"4$D4Msjq3kVT7oOUuYVdIgt/BAAAwA\",\"appId\":\"pJWAtOx8SDIZr5PH\",\"bizType\":3,\"createTime\":1528274776000,\"lastUpdateTime\":1528274833000,\"monitorType\":\"task_operator\",\"saasEnv\":\"2\",\"status\":2,\"stepCode\":\"\",\"taskAttributes\":{\"groupName\":\"浙江移动\",\"sourceType\":\"1\",\"groupCode\":\"ZHE_JIANG_10086\"},\"taskId\":189057315180683260,\"taskSteps\":[{\"stepCode\":\"create\",\"stepIndex\":1,\"stepName\":\"创建任务\"},{\"stepCode\":\"confirm-mobile\",\"stepIndex\":2,\"stepName\":\"确认手机号\"},{\"stepCode\":\"confirm-login\",\"stepIndex\":3,\"stepName\":\"确认登录\"},{\"stepCode\":\"login\",\"stepIndex\":4,\"stepName\":\"登录\"},{\"stepCode\":\"crawl\",\"stepIndex\":5,\"stepName\":\"抓取\"},{\"stepCode\":\"process\",\"stepIndex\":6,\"stepName\":\"洗数\"},{\"stepCode\":\"callback\",\"stepIndex\":7,\"stepName\":\"回调\"}],\"uniqueId\":\"5432345\",\"webSite\":\"china_10086_app\"}";
+        String dataJson2 = "{\"accountNo\":\"4$D4Msjq3kVT7oOUuYVdIgt/BAAAwA\",\"appId\":\"888AtOx8SDIZr5PH\",\"bizType\":3,\"createTime\":1528274776000,\"lastUpdateTime\":1528274833000,\"monitorType\":\"task_operator\",\"saasEnv\":\"2\",\"status\":2,\"stepCode\":\"\",\"taskAttributes\":{\"groupName\":\"浙江移动\",\"sourceType\":\"1\",\"groupCode\":\"ZHE_JIANG_10086\"},\"taskId\":189057315180683260,\"taskSteps\":[{\"stepCode\":\"create\",\"stepIndex\":1,\"stepName\":\"创建任务\"},{\"stepCode\":\"confirm-mobile\",\"stepIndex\":2,\"stepName\":\"确认手机号\"},{\"stepCode\":\"confirm-login\",\"stepIndex\":3,\"stepName\":\"确认登录\"},{\"stepCode\":\"login\",\"stepIndex\":4,\"stepName\":\"登录\"},{\"stepCode\":\"crawl\",\"stepIndex\":5,\"stepName\":\"抓取\"},{\"stepCode\":\"process\",\"stepIndex\":6,\"stepName\":\"洗数\"},{\"stepCode\":\"callback\",\"stepIndex\":7,\"stepName\":\"回调\"}],\"uniqueId\":\"5432345888\",\"webSite\":\"china_10086_app\"}";
+
+        Map<String, Object> dataMap = JSON.parseObject(dataJson);
+        Map<String, Object> dataMap2 = JSON.parseObject(dataJson2);
+        List<Map<String, Object>> dataList = Lists.newArrayList();
+        dataList.add(dataMap2);
+        dataList.add(dataMap2);
+        dataList.add(dataMap2);
+        dataList.add(dataMap);
+        dataList.add(dataMap);
+        Map<Integer, List<Map<String, Object>>> result = defaultStatDataCalculator.calculate(statTemplate, dataList);
+        System.out.println(JSON.toJSONString(result));
+    }
 
 }

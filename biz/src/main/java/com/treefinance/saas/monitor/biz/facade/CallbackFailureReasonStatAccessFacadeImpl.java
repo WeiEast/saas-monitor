@@ -1,16 +1,17 @@
 package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.CallbackFailureReasonStatAccess;
-import com.treefinance.saas.monitor.dao.entity.CallbackFailureReasonStatAccessCriteria;
-import com.treefinance.saas.monitor.dao.entity.CallbackFailureReasonStatDayAccess;
-import com.treefinance.saas.monitor.dao.entity.CallbackFailureReasonStatDayAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.CallbackFailureReasonStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.CallbackFailureReasonStatDayAccessMapper;
+import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
+import com.treefinance.saas.monitor.dao.mapper.OperatorStatDayAccessMapper;
 import com.treefinance.saas.monitor.facade.domain.request.CallbackFailureReasonStatAccessRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
@@ -46,6 +47,10 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
     private CallbackFailureReasonStatAccessMapper callbackFailureReasonStatAccessMapper;
     @Autowired
     private CallbackFailureReasonStatDayAccessMapper callbackFailureReasonStatDayAccessMapper;
+    @Autowired
+    private OperatorStatDayAccessMapper operatorStatDayAccessMapper;
+    @Autowired
+    private OperatorStatAccessMapper operatorStatAccessMapper;
 
 
     @Override
@@ -76,10 +81,60 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
 
 
         List<CallbackFailureReasonStatDayAccess> list = callbackFailureReasonStatDayAccessMapper.selectByExample(criteria);
-        if (!CollectionUtils.isEmpty(list)) {
-            result = DataConverterUtils.convert(list, CallbackFailureReasonStatDayAccessRO.class);
+
+        if (request.getBizType() == 3) {
+            OperatorStatDayAccessCriteria operatorCriteria = new OperatorStatDayAccessCriteria();
+            OperatorStatDayAccessCriteria.Criteria operatorInnerCriteria = operatorCriteria.createCriteria();
+            operatorInnerCriteria.andAppIdEqualTo(request.getAppId())
+                    .andSaasEnvEqualTo(request.getSaasEnv())
+                    .andDataTypeEqualTo(request.getDataType());
+            if (StringUtils.isNotBlank(request.getGroupCode())) {
+                operatorInnerCriteria.andGroupCodeEqualTo(request.getGroupCode());
+            } else {
+                operatorInnerCriteria.andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
+            }
+            operatorInnerCriteria.andDataTimeGreaterThanOrEqualTo(request.getStartTime())
+                    .andDataTimeLessThan(request.getEndTime());
+            List<OperatorStatDayAccess> operatorList = operatorStatDayAccessMapper.selectByExample(operatorCriteria);
+            Map<String, OperatorStatDayAccess> operatorMap = Maps.newHashMap();
+            for (OperatorStatDayAccess operator : operatorList) {
+                String key;
+                if (StringUtils.isNotBlank(request.getGroupCode())) {
+                    key = Joiner.on(":").join(operator.getAppId(), operator.getDataTime(), operator.getGroupCode(), operator.getDataType(), operator.getSaasEnv());
+                } else {
+                    key = Joiner.on(":").join(operator.getAppId(), operator.getDataTime(), operator.getDataType(), operator.getSaasEnv());
+                }
+                operatorMap.put(key, operator);
+            }
+            if (!CollectionUtils.isEmpty(list)) {
+                result = DataConverterUtils.convert(list, CallbackFailureReasonStatDayAccessRO.class);
+            }
+            List<CallbackFailureReasonStatDayAccessRO> countResult = Lists.newArrayList();
+            for (CallbackFailureReasonStatDayAccessRO resultData : result) {
+                String key;
+                if (StringUtils.isNotBlank(request.getGroupCode())) {
+                    key = Joiner.on(":").join(resultData.getAppId(), resultData.getDataTime(), resultData.getGroupCode(), resultData.getDataType(), resultData.getSaasEnv());
+                } else {
+                    key = Joiner.on(":").join(resultData.getAppId(), resultData.getDataTime(), resultData.getDataType(), resultData.getSaasEnv());
+                }
+                OperatorStatDayAccess operator = operatorMap.get(key);
+                if (operator == null) {
+                    continue;
+                }
+                Integer totalCount = operator.getProcessSuccessCount() - operator.getCallbackSuccessCount();
+                Integer personalReasonCount = resultData.getPersonalReasonCount();
+                Integer unKnownReasonCount = totalCount - personalReasonCount < 0 ? 0 : totalCount - personalReasonCount;
+                resultData.setTotalCount(totalCount);
+                resultData.setUnKnownReasonCount(unKnownReasonCount);
+                countResult.add(resultData);
+            }
+            return MonitorResultBuilder.build(countResult);
+        } else {
+            if (!CollectionUtils.isEmpty(list)) {
+                result = DataConverterUtils.convert(list, CallbackFailureReasonStatDayAccessRO.class);
+            }
+            return MonitorResultBuilder.build(result);
         }
-        return MonitorResultBuilder.build(result);
     }
 
     @Override
@@ -112,10 +167,86 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
         List<CallbackFailureReasonStatAccess> list = callbackFailureReasonStatAccessMapper.selectByExample(criteria);
         List<CallbackFailureReasonStatAccess> changeList = this.changeIntervalDataTimeList(list, request.getIntervalMins());
 
-        if (!CollectionUtils.isEmpty(changeList)) {
-            result = DataConverterUtils.convert(changeList, CallbackFailureReasonStatAccessRO.class);
+
+        if (request.getBizType() == 3) {
+            OperatorStatAccessCriteria operatorCriteria = new OperatorStatAccessCriteria();
+            OperatorStatAccessCriteria.Criteria operatorInnerCritria = operatorCriteria.createCriteria();
+            operatorInnerCritria.andAppIdEqualTo(request.getAppId())
+                    .andSaasEnvEqualTo(request.getSaasEnv())
+                    .andDataTypeEqualTo(request.getDataType());
+            if (StringUtils.isNotBlank(request.getGroupCode())) {
+                operatorInnerCritria.andGroupCodeEqualTo(request.getGroupCode());
+            } else {
+                operatorInnerCritria.andGroupCodeEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
+            }
+            operatorInnerCritria.andDataTimeGreaterThanOrEqualTo(request.getStartTime())
+                    .andDataTimeLessThan(request.getEndTime());
+            List<OperatorStatAccess> operatorList = operatorStatAccessMapper.selectByExample(operatorCriteria);
+            List<OperatorStatAccess> operatorChangeList = this.changeOperatorIntervalDataTimeList(operatorList, request.getIntervalMins());
+            Map<String, OperatorStatAccess> operatorMap = Maps.newHashMap();
+            for (OperatorStatAccess operator : operatorChangeList) {
+                String key;
+                if (StringUtils.isNotBlank(request.getGroupCode())) {
+                    key = Joiner.on(":").join(operator.getAppId(), operator.getDataTime(), operator.getGroupCode(), operator.getDataType(), operator.getSaasEnv());
+                } else {
+                    key = Joiner.on(":").join(operator.getAppId(), operator.getDataTime(), operator.getDataType(), operator.getSaasEnv());
+                }
+                operatorMap.put(key, operator);
+            }
+            if (!CollectionUtils.isEmpty(changeList)) {
+                result = DataConverterUtils.convert(changeList, CallbackFailureReasonStatAccessRO.class);
+            }
+            List<CallbackFailureReasonStatAccessRO> countResult = Lists.newArrayList();
+            for (CallbackFailureReasonStatAccessRO resultData : result) {
+                String key;
+                if (StringUtils.isNotBlank(request.getGroupCode())) {
+                    key = Joiner.on(":").join(resultData.getAppId(), resultData.getDataTime(), resultData.getGroupCode(), resultData.getDataType(), resultData.getSaasEnv());
+                } else {
+                    key = Joiner.on(":").join(resultData.getAppId(), resultData.getDataTime(), resultData.getDataType(), resultData.getSaasEnv());
+                }
+                OperatorStatAccess operator = operatorMap.get(key);
+                if (operator == null) {
+                    continue;
+                }
+                Integer totalCount = operator.getProcessSuccessCount() - operator.getCallbackSuccessCount();
+                Integer personalReasonCount = resultData.getPersonalReasonCount();
+                Integer unKnownReasonCount = totalCount - personalReasonCount < 0 ? 0 : totalCount - personalReasonCount;
+                resultData.setTotalCount(totalCount);
+                resultData.setUnKnownReasonCount(unKnownReasonCount);
+                countResult.add(resultData);
+            }
+            return MonitorResultBuilder.build(countResult);
+        } else {
+            if (!CollectionUtils.isEmpty(changeList)) {
+                result = DataConverterUtils.convert(changeList, CallbackFailureReasonStatAccessRO.class);
+            }
+            return MonitorResultBuilder.build(result);
         }
-        return MonitorResultBuilder.build(result);
+
+    }
+
+    private List<OperatorStatAccess> changeOperatorIntervalDataTimeList(List<OperatorStatAccess> list, Integer intervalMins) {
+        Map<Date, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
+        List<OperatorStatAccess> resultList = Lists.newArrayList();
+        for (Map.Entry<Date, List<OperatorStatAccess>> entry : map.entrySet()) {
+            if (CollectionUtils.isEmpty(entry.getValue())) {
+                continue;
+            }
+            OperatorStatAccess data = new OperatorStatAccess();
+            BeanUtils.copyProperties(entry.getValue().get(0), data);
+            data.setDataTime(entry.getKey());
+            List<OperatorStatAccess> entryList = entry.getValue();
+            int processSuccessCount = 0, callbackSuccessCount = 0;
+            for (OperatorStatAccess item : entryList) {
+                processSuccessCount = processSuccessCount + item.getProcessSuccessCount();
+                callbackSuccessCount = callbackSuccessCount + item.getCallbackSuccessCount();
+            }
+            data.setProcessSuccessCount(processSuccessCount);
+            data.setCallbackSuccessCount(callbackSuccessCount);
+            resultList.add(data);
+        }
+
+        return resultList;
     }
 
     private List<CallbackFailureReasonStatAccess> changeIntervalDataTimeList(List<CallbackFailureReasonStatAccess> list, Integer intervalMins) {
