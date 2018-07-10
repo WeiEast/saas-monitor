@@ -32,7 +32,7 @@ public class RealTimeStatAccessServiceTest {
         Date startTime = MonitorDateUtils.parse(startTimeStr);
         String endTimeStr = "2018-06-27 17:00:00";
         Date endTime = MonitorDateUtils.parse(endTimeStr);
-        List<RealTimeStatAccessDTO> list = realTimeAvgStatAccessService.queryDataByConditions("virtual_total_stat_appId", (byte) 0, (byte) 3, startTime, endTime, 10);
+        List<RealTimeStatAccessDTO> list = realTimeAvgStatAccessService.queryDataByConditions("virtual_total_stat_appId", (byte) 0, (byte) 3, startTime, endTime, 10, (byte) 1);
         System.out.println("result--" + JSON.toJSONString(list));
     }
 
