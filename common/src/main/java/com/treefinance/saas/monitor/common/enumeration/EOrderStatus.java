@@ -13,7 +13,8 @@ public enum EOrderStatus {
     PROCESSED(2, "已处理"),
     WRONG(4, "误报"),
     WAIT(6, "继续观察"),
-    DISABLE(8, "无法解决"),;
+    DISABLE(8, "无法解决"),
+    REPAIRED(10, "系统恢复"),;
 
     private Integer code;
     private String desc;
@@ -22,11 +23,9 @@ public enum EOrderStatus {
     private static Map<Integer,String> map = new HashMap<>();
 
     static {
-        map.put(UNPROCESS.code, UNPROCESS.desc);
-        map.put(PROCESSED.code, PROCESSED.desc);
-        map.put(WRONG.code, WRONG.desc);
-        map.put(WAIT.code, WAIT.desc);
-        map.put(DISABLE.code, DISABLE.desc);
+        for (EOrderStatus status: values()) {
+            map.put(status.code, status.desc);
+        }
     }
 
     public static String getDesc(Integer code){

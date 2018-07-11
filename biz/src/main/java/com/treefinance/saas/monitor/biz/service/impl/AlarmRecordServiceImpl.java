@@ -91,4 +91,17 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
     public AlarmRecord getByPrimaryKey(Long id) {
         return alarmRecordMapper.selectByPrimaryKey(id);
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void repairAlarmRecord(AlarmWorkOrder order, AlarmRecord record, WorkOrderLog orderLog) {
+        alarmRecordMapper.updateByPrimaryKey(record);
+
+        if(order!= null){
+            workOrderMapper.updateByPrimaryKey(order);
+        }
+        if(orderLog != null){
+            workOrderLogMapper.insert(orderLog);
+        }
+    }
 }

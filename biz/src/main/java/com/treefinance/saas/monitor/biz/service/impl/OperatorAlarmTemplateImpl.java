@@ -24,6 +24,7 @@ import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.entity.SaasWorker;
 import com.treefinance.saas.monitor.exception.BizException;
+import com.treefinance.saas.monitor.exception.NoNeedAlarmException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -64,7 +65,8 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     }
 
     @Override
-    public List<BaseStatAccessDTO> getBaseData(Date baseTime, ETaskStatDataType statDataType, BaseAlarmConfigDTO alarmConfigDTO) {
+    public List<BaseStatAccessDTO> getBaseData(Date baseTime, ETaskStatDataType statDataType, BaseAlarmConfigDTO
+            alarmConfigDTO) throws NoNeedAlarmException {
         OperatorMonitorAlarmConfigDTO config = (OperatorMonitorAlarmConfigDTO) alarmConfigDTO;
         List<String> operatorNameList = Splitter.on(",").splitToList(diamondConfig.getOperatorAlarmOperatorNameList());
         if (CollectionUtils.isEmpty(operatorNameList)) {
@@ -81,7 +83,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到运营商的统计数据",
                     MonitorDateUtils.format(new Date()), MonitorDateUtils.format(startTime), MonitorDateUtils.format
                             (baseTime));
-            throw new BizException("没有原始数据 无需预警");
+            throw new NoNeedAlarmException("没有原始数据 无需预警");
         }
 
         logger.info("运营商监控，查询数据如下：{}",JSON.toJSONString(dataDTOList));
@@ -246,7 +248,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},获取前n天内,相同时刻运营商统计的平均值compareMap={}",
                 MonitorDateUtils.format(new Date()), MonitorDateUtils.format(baseTime), JSON.toJSONString(compareMap));
         if (MapUtils.isEmpty(compareMap)) {
-            throw new BizException("compareMap is empty");
+            throw new NoNeedAlarmException("compareMap is empty");
         }
 
         return compareMap;
@@ -413,6 +415,12 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         }
         msgList = msgList.stream().sorted(Comparator.comparing(baseAlarmMsgDTO
                 -> ((OperatorAccessAlarmMsgDTO) baseAlarmMsgDTO).getGroupName())).collect(Collectors.toList());
+
+        logger.info("需要预警的预警信息：{}", JSON.toJSONString(msgList));
+        if (CollectionUtils.isEmpty(msgList)) {
+            logger.info("需要预警的信息为空，不再继续。");
+            throw new NoNeedAlarmException("需要预警的信息为空");
+        }
 
         return msgList;
     }

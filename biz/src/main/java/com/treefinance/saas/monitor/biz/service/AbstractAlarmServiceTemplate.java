@@ -1,6 +1,5 @@
 package com.treefinance.saas.monitor.biz.service;
 
-import com.alibaba.fastjson.JSON;
 import com.datatrees.notify.async.body.mail.MailEnum;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
@@ -18,9 +17,9 @@ import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.EmailStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
+import com.treefinance.saas.monitor.exception.NoNeedAlarmException;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +70,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
     protected abstract EAlarmType getAlarmType();
 
     @Override
-    public void alarm(Date now, BaseAlarmConfigDTO configDTO, ETaskStatDataType type) {
+    public void alarm(Date now, BaseAlarmConfigDTO configDTO, ETaskStatDataType type, EAlarmType alarmType) {
 
         //获取时间
         Date baseTime = getBaseTime(now, configDTO);
@@ -82,105 +81,188 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         //是否预警过?
         ifAlarmed(now, baseTime, alarmTimeKey, configDTO);
 
-        //获取基础数据
-        List<BaseStatAccessDTO> emailStatAccessDTOS = getBaseData(baseTime, type, configDTO);
-
-        //获取平均值数据
-        Map<String, BaseStatAccessDTO> compareMap = getPreviousCompareDataMap(baseTime, emailStatAccessDTOS, configDTO, type);
-
-        //计算需要预警的信息
-        List<BaseAlarmMsgDTO> msgList = getAlarmMsgList(now, emailStatAccessDTOS, compareMap, configDTO);
-
-        //是否需要预警
-        logger.info("需要预警的预警信息：{}", JSON.toJSONString(msgList));
-        if (CollectionUtils.isEmpty(msgList)) {
-            logger.info("需要预警的信息为空，不再继续。");
-            return;
-        }
-
-        //确定回调预警等级
-        EAlarmLevel level = determineLevel(msgList);
-        ESaasEnv env = ESaasEnv.getByValue(configDTO.getSaasEnv());
-
-        if (EAlarmLevel.info.equals(level)) {
-            //发出全局的报警
-            String content = sendAlarmMsg(level, msgList, configDTO, baseTime, type);
-            //保存记录
-            saveProcessedRecord(env, baseTime, msgList, level, content);
-            return;
-        }
-        //生成摘要
-        String summary = generateSummary(level, env, msgList);
-        AlarmRecord record = alarmRecordService.getFirstStatusRecord(level, summary, EAlarmRecordStatus.UNPROCESS);
-
-        if (record != null) {
-            logger.info("已存在{}的记录，不再继续", EAlarmRecordStatus.UNPROCESS.getDesc());
-            //save record if has unprocessed same type record
-            saveUnProcessRecord(env, baseTime, msgList, level, String.valueOf(record.getId()));
-            return;
-        }
-
-        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
-        Date oneDayAgo = new Date(now.getTime() - day);
-        criteria.createCriteria().andLevelEqualTo(level.name()).andSummaryEqualTo(summary).andIsProcessedEqualTo(EAlarmRecordStatus.DISABLE.getCode()).andStartTimeGreaterThan(oneDayAgo);
-        List<AlarmRecord> records = alarmRecordService.queryByCondition(criteria);
-
-        if (!records.isEmpty()) {
-            logger.info("一天之内已存在{}的记录，不再继续", EAlarmRecordStatus.DISABLE.getDesc());
-            //save record if has unprocessed same type record
-            saveDisableRecord(env, baseTime, msgList, level, String.valueOf(records.get(0).getId()));
-            return;
-        }
-
-        //获取值班人员
-        List<SaasWorker> saasWorkers = saasWorkerService.getDutyWorker(baseTime);
-
-        if (saasWorkers == null || saasWorkers.isEmpty()) {
-            logger.info("当前时间:{}没有配置值班人，使用默认值班人员", MonitorDateUtils.format(baseTime));
-            saasWorkers = new ArrayList<>();
-            saasWorkers.add(SaasWorker.DEFAULT_WORKER);
-        }
-
-        Long recordId = UidGenerator.getId();
-        Long orderId = UidGenerator.getId();
-
-        String content = "";
-
-        for (SaasWorker saasWorker : saasWorkers) {
-            content = genDutyManAlarmInfo(recordId, orderId, msgList, level, baseTime, env);
-            Map<String, String> map = new HashMap<>(2);
-            map.put("name", saasWorker.getName());
-            map.put("saasEnv", diamondConfig.getSaasMonitorEnvironment());
-
-            String newContent = StrSubstitutor.replace(content, map);
-            Map<String, Object> params = genIvrMap(recordId, saasWorker, level, baseTime, env);
-
-            sendIvr(newContent, saasWorker, params);
-            sendSms(newContent, saasWorker);
-            sendEmail(newContent, saasWorker);
-        }
-
-        Map<String, String> map = new HashMap<>(2);
-        List<String> names = saasWorkers.stream().map(SaasWorker::getName).collect(Collectors.toList());
-        map.put("name", Joiner.on(",").join(names));
-
-        record = genAlarmRecord(recordId, baseTime, EAlarmRecordStatus.UNPROCESS, level, StrSubstitutor.replace(content, map), env, msgList);
-        AlarmWorkOrder workOrder = getAlarmWorkOrder(now, saasWorkers, recordId, orderId);
-        WorkOrderLog orderLog = getWorkOrderLog(now, recordId, orderId);
-
-        //构建回调内容 发送通知;
-        String alarmMsg = sendAlarmMsg(level, msgList, configDTO, baseTime, type);
-        record.setContent(alarmMsg);
+        String summary = null;
+        EAlarmLevel level = null;
 
         try {
-            alarmRecordService.saveAlarmRecords(workOrder, record, orderLog);
-        } catch (Exception e) {
-            logger.error("插入工单记录等失败，仍然发送特定信息及群发信息,错误信息：{}", e.getMessage());
+            //获取基础数据
+            List<BaseStatAccessDTO> emailStatAccessDTOS = getBaseData(baseTime, type, configDTO);
+
+            //获取平均值数据
+            Map<String, BaseStatAccessDTO> compareMap = getPreviousCompareDataMap(baseTime, emailStatAccessDTOS, configDTO, type);
+
+            //计算需要预警的信息
+            List<BaseAlarmMsgDTO> msgList = getAlarmMsgList(now, emailStatAccessDTOS, compareMap, configDTO);
+
+
+            //确定回调预警等级
+            level = determineLevel(msgList);
+            ESaasEnv env = ESaasEnv.getByValue(configDTO.getSaasEnv());
+
+            if (EAlarmLevel.info.equals(level)) {
+                //发出全局的报警
+                String content = sendAlarmMsg(level, msgList, configDTO, baseTime, type);
+                //保存记录
+                saveProcessedRecord(env, baseTime, msgList, level, content);
+                throw new NoNeedAlarmException("info等级的预警");
+            }
+            //生成摘要
+            summary = generateSummary(level, env, msgList);
+            AlarmRecord record = alarmRecordService.getFirstStatusRecord(level, summary, EAlarmRecordStatus.UNPROCESS);
+
+            if (record != null) {
+                logger.info("已存在{}的记录，不再继续", EAlarmRecordStatus.UNPROCESS.getDesc());
+                //save record if has unprocessed same type record
+                saveUnProcessRecord(env, baseTime, msgList, level, String.valueOf(record.getId()));
+                throw new NoNeedAlarmException("存在未处理的预警记录");
+            }
+
+            AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+            Date oneDayAgo = new Date(now.getTime() - day);
+            criteria.createCriteria().andLevelEqualTo(level.name()).andSummaryEqualTo(summary).andIsProcessedEqualTo(EAlarmRecordStatus.DISABLE.getCode()).andStartTimeGreaterThan(oneDayAgo);
+            List<AlarmRecord> records = alarmRecordService.queryByCondition(criteria);
+
+            if (!records.isEmpty()) {
+                logger.info("一天之内已存在{}的记录，不再继续", EAlarmRecordStatus.DISABLE.getDesc());
+                //save record if has unprocessed same type record
+                saveDisableRecord(env, baseTime, msgList, level, String.valueOf(records.get(0).getId()));
+                throw new NoNeedAlarmException("存在无法处理的预警");
+            }
+
+            //获取值班人员
+            List<SaasWorker> saasWorkers = saasWorkerService.getDutyWorker(baseTime);
+
+            if (saasWorkers == null || saasWorkers.isEmpty()) {
+                logger.info("当前时间:{}没有配置值班人，使用默认值班人员", MonitorDateUtils.format(baseTime));
+                saasWorkers = new ArrayList<>();
+                saasWorkers.add(SaasWorker.DEFAULT_WORKER);
+            }
+
+            Long recordId = UidGenerator.getId();
+            Long orderId = UidGenerator.getId();
+
+            String content = "";
+
+            for (SaasWorker saasWorker : saasWorkers) {
+                content = genDutyManAlarmInfo(recordId, orderId, msgList, level, baseTime, env);
+                Map<String, String> map = new HashMap<>(2);
+                map.put("name", saasWorker.getName());
+                map.put("saasEnv", diamondConfig.getSaasMonitorEnvironment());
+
+                String newContent = StrSubstitutor.replace(content, map);
+                Map<String, Object> params = genIvrMap(recordId, saasWorker, level, baseTime, env);
+
+                sendIvr(newContent, saasWorker, params);
+                sendSms(newContent, saasWorker);
+                sendEmail(newContent, saasWorker);
+            }
+
+            Map<String, String> map = new HashMap<>(2);
+            List<String> names = saasWorkers.stream().map(SaasWorker::getName).collect(Collectors.toList());
+            map.put("name", Joiner.on(",").join(names));
+
+            record = genAlarmRecord(recordId, baseTime, EAlarmRecordStatus.UNPROCESS, level, StrSubstitutor.replace(content, map), env, msgList);
+            AlarmWorkOrder workOrder = getAlarmWorkOrder(now, saasWorkers, recordId, orderId);
+            WorkOrderLog orderLog = getInitWorkOrderLog(now, recordId, orderId);
+
+            //构建回调内容 发送通知;
+            String alarmMsg = sendAlarmMsg(level, msgList, configDTO, baseTime, type);
+            record.setContent(alarmMsg);
+
+            try {
+                alarmRecordService.saveAlarmRecords(workOrder, record, orderLog);
+            } catch (Exception e) {
+                logger.error("插入工单记录等失败，仍然发送特定信息及群发信息,错误信息：{}", e.getMessage());
+            }
+            throw new NoNeedAlarmException("正常流程结束");
+        } catch (NoNeedAlarmException e) {
+            logger.info(e.getMessage());
+            if (level == null) {
+                alarmRecordRepair(now, alarmType);
+            } else if (summary == null) {
+                alarmRecordRepair(now, alarmType);
+            }else {
+                alarmRecordRepair(now,alarmType,summary);
+            }
         }
 
     }
 
+    private void alarmRecordRepair(Date now, EAlarmType alarmType) {
+        List<AlarmRecord> alarmRecords = getUnprocessedRecords(alarmType);
+        if (alarmRecords.isEmpty()) {
+            logger.info("没有处于未处理的预警记录，预警类型：{}", alarmType.getCode());
+            return;
+        }
 
+        doRepair(now, alarmRecords);
+    }
+
+    private void alarmRecordRepair(Date now, EAlarmType alarmType,String summary) {
+        List<AlarmRecord> alarmRecords = getUnprocessedRecords(alarmType,summary);
+        if (alarmRecords.isEmpty()) {
+            logger.info("没有处于未处理的预警记录，预警类型：{}", alarmType.getCode());
+            return;
+        }
+
+        doRepair(now, alarmRecords);
+    }
+
+    private void doRepair(Date now, List<AlarmRecord> alarmRecords) {
+        for (AlarmRecord record : alarmRecords) {
+            record.setEndTime(now);
+            record.setIsProcessed(EAlarmRecordStatus.REPAIRED.getCode());
+
+            AlarmWorkOrder order = alarmWorkOrderService.getByRecordId(record.getId());
+
+            if (order != null) {
+                WorkOrderLog workOrderLog = new WorkOrderLog();
+
+                workOrderLog.setId(UidGenerator.getId());
+                workOrderLog.setOrderId(order.getId());
+                workOrderLog.setRecordId(record.getId());
+                workOrderLog.setOpDesc("系统判定预警恢复");
+                workOrderLog.setOpName("system");
+                workOrderLog.setLastUpdateTime(now);
+                workOrderLog.setCreateTime(now);
+
+                order.setLastUpdateTime(now);
+                order.setStatus(EOrderStatus.REPAIRED.getCode());
+                order.setRemark("系统判定修复");
+                order.setProcessorName("system");
+
+                alarmRecordService.repairAlarmRecord(order, record, workOrderLog);
+            }else {
+                alarmRecordService.repairAlarmRecord(null,record , null);
+            }
+            sendAlarmRepair(record);
+        }
+    }
+
+    private List<AlarmRecord> getUnprocessedRecords(EAlarmType alarmType) {
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+        criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
+                .UNPROCESS
+                .getCode());
+        return alarmRecordService.queryByCondition(criteria);
+    }
+    private List<AlarmRecord> getUnprocessedRecords(EAlarmType alarmType,String summary) {
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+        criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
+                .UNPROCESS.getCode()).andSummaryNotEqualTo(summary);
+        return alarmRecordService.queryByCondition(criteria);
+    }
+
+
+    private void sendAlarmRepair(AlarmRecord alarmRecord) {
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("【预警恢复】").append("环境:").append(diamondConfig.getMonitorEnvironment()).append("\n");
+        stringBuilder.append("预警记录为").append(alarmRecord.getId()).append("的预警由系统判定恢复。请知悉。");
+
+        alarmMessageProducer.sendWebChart4OperatorMonitor(stringBuilder.toString(), new Date());
+    }
     private void sendEmail(String content, SaasWorker saasWorker) {
         String title = "值班人员预警";
         try {
@@ -199,7 +281,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         }
     }
 
-    public static WorkOrderLog getWorkOrderLog(Date now, Long recordId, Long orderId) {
+    public static WorkOrderLog getInitWorkOrderLog(Date now, Long recordId, Long orderId) {
         WorkOrderLog orderLog = new WorkOrderLog();
         orderLog.setId(UidGenerator.getId());
         orderLog.setOrderId(orderId);

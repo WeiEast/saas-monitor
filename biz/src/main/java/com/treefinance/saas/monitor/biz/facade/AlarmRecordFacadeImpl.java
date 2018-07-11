@@ -17,10 +17,7 @@ import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.facade.domain.request.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
-import com.treefinance.saas.monitor.facade.domain.ro.AlarmRecordRO;
-import com.treefinance.saas.monitor.facade.domain.ro.AlarmWorkOrderRO;
-import com.treefinance.saas.monitor.facade.domain.ro.SaasWorkerRO;
-import com.treefinance.saas.monitor.facade.domain.ro.WorkOrderLogRO;
+import com.treefinance.saas.monitor.facade.domain.ro.*;
 import com.treefinance.saas.monitor.facade.service.AlarmRecordFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -383,5 +380,14 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
 
         return MonitorResultBuilder.pageResult(request, saasWorkerROS, count);
+    }
+
+
+    @Override
+    public MonitorResult<List<AlarmTypeListRO>> queryAlarmTypeList() {
+
+
+
+        return null;
     }
 }
