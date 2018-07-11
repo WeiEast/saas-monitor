@@ -103,7 +103,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
                 //发出全局的报警
                 String content = sendAlarmMsg(level, msgList, configDTO, baseTime, type);
                 //保存记录
-                saveProcessedRecord(env, baseTime, msgList, level, content);
+                saveProcessedRecord(env, baseTime, msgList, level, content, configDTO);
                 throw new NoNeedAlarmException("info等级的预警");
             }
             //生成摘要
@@ -113,7 +113,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             if (record != null) {
                 logger.info("已存在{}的记录，不再继续", EAlarmRecordStatus.UNPROCESS.getDesc());
                 //save record if has unprocessed same type record
-                saveUnProcessRecord(env, baseTime, msgList, level, String.valueOf(record.getId()));
+                saveUnProcessRecord(env, baseTime, msgList, level, String.valueOf(record.getId()),configDTO);
                 throw new NoNeedAlarmException("存在未处理的预警记录");
             }
 
@@ -125,7 +125,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             if (!records.isEmpty()) {
                 logger.info("一天之内已存在{}的记录，不再继续", EAlarmRecordStatus.DISABLE.getDesc());
                 //save record if has unprocessed same type record
-                saveDisableRecord(env, baseTime, msgList, level, String.valueOf(records.get(0).getId()));
+                saveDisableRecord(env, baseTime, msgList, level, String.valueOf(records.get(0).getId()),configDTO);
                 throw new NoNeedAlarmException("存在无法处理的预警");
             }
 
@@ -161,7 +161,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             List<String> names = saasWorkers.stream().map(SaasWorker::getName).collect(Collectors.toList());
             map.put("name", Joiner.on(",").join(names));
 
-            record = genAlarmRecord(recordId, baseTime, EAlarmRecordStatus.UNPROCESS, level, StrSubstitutor.replace(content, map), env, msgList);
+            record = genAlarmRecord(recordId, baseTime, EAlarmRecordStatus.UNPROCESS, level, StrSubstitutor.replace(content, map), env, msgList, configDTO);
             AlarmWorkOrder workOrder = getAlarmWorkOrder(now, saasWorkers, recordId, orderId);
             WorkOrderLog orderLog = getInitWorkOrderLog(now, recordId, orderId);
 
@@ -177,47 +177,35 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             throw new NoNeedAlarmException("正常流程结束");
         } catch (NoNeedAlarmException e) {
             logger.info(e.getMessage());
-            if (level == null) {
-                alarmRecordRepair(now, alarmType);
-            } else if (summary == null) {
-                alarmRecordRepair(now, alarmType);
-            }else {
-                alarmRecordRepair(now,alarmType,summary);
-            }
+            repairProcess(now, alarmType, summary, level ,configDTO);
         }
-
     }
 
-    private void alarmRecordRepair(Date now, EAlarmType alarmType) {
-        List<AlarmRecord> alarmRecords = getUnprocessedRecords(alarmType);
+    private void repairProcess(Date now, EAlarmType alarmType, String summary, EAlarmLevel level,BaseAlarmConfigDTO configDTO) {
+        if (level == null || summary == null) {
+            alarmRecordRepair(now, alarmType,configDTO,null);
+        }else {
+            alarmRecordRepair(now,alarmType,configDTO,summary);
+        }
+    }
+
+    private void alarmRecordRepair(Date now, EAlarmType alarmType, BaseAlarmConfigDTO configDTO, String summary){
+        List<AlarmRecord> alarmRecords = getUnprocessedRecords(alarmType,configDTO, summary);
         if (alarmRecords.isEmpty()) {
             logger.info("没有处于未处理的预警记录，预警类型：{}", alarmType.getCode());
             return;
         }
-
         doRepair(now, alarmRecords);
     }
 
-    private void alarmRecordRepair(Date now, EAlarmType alarmType,String summary) {
-        List<AlarmRecord> alarmRecords = getUnprocessedRecords(alarmType,summary);
-        if (alarmRecords.isEmpty()) {
-            logger.info("没有处于未处理的预警记录，预警类型：{}", alarmType.getCode());
-            return;
-        }
-
-        doRepair(now, alarmRecords);
-    }
 
     private void doRepair(Date now, List<AlarmRecord> alarmRecords) {
         for (AlarmRecord record : alarmRecords) {
             record.setEndTime(now);
             record.setIsProcessed(EAlarmRecordStatus.REPAIRED.getCode());
-
             AlarmWorkOrder order = alarmWorkOrderService.getByRecordId(record.getId());
-
             if (order != null) {
                 WorkOrderLog workOrderLog = new WorkOrderLog();
-
                 workOrderLog.setId(UidGenerator.getId());
                 workOrderLog.setOrderId(order.getId());
                 workOrderLog.setRecordId(record.getId());
@@ -239,30 +227,22 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
         }
     }
 
-    private List<AlarmRecord> getUnprocessedRecords(EAlarmType alarmType) {
-        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
-        criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
-                .UNPROCESS
-                .getCode());
-        return alarmRecordService.queryByCondition(criteria);
-    }
-    private List<AlarmRecord> getUnprocessedRecords(EAlarmType alarmType,String summary) {
-        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
-        criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
-                .UNPROCESS.getCode()).andSummaryNotEqualTo(summary);
-        return alarmRecordService.queryByCondition(criteria);
-    }
+    protected abstract List<AlarmRecord> getUnprocessedRecords(EAlarmType alarmType, BaseAlarmConfigDTO configDTO, String summary);
+
+
 
 
     private void sendAlarmRepair(AlarmRecord alarmRecord) {
 
-        StringBuilder stringBuilder = new StringBuilder();
+        String stringBuilder = "【预警恢复】" + "环境:" + diamondConfig.getMonitorEnvironment() + "\n" +
+                "发生在 时间为:" + MonitorDateUtils.format(alarmRecord.getStartTime()) + " \n预警等级：" + alarmRecord.getLevel() +
+                " \n预警类型：" + alarmRecord.getAlarmType() + "\n预警编号:" +
+                alarmRecord.getId() +
+                "的预警由系统判定恢复。";
 
-        stringBuilder.append("【预警恢复】").append("环境:").append(diamondConfig.getMonitorEnvironment()).append("\n");
-        stringBuilder.append("预警记录为").append(alarmRecord.getId()).append("的预警由系统判定恢复。请知悉。");
-
-        alarmMessageProducer.sendWebChart4OperatorMonitor(stringBuilder.toString(), new Date());
+        alarmMessageProducer.sendWebChart4OperatorMonitor(stringBuilder, new Date());
     }
+
     private void sendEmail(String content, SaasWorker saasWorker) {
         String title = "值班人员预警";
         try {
@@ -306,20 +286,23 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
     }
 
     private void saveProcessedRecord(ESaasEnv env, Date baseTime, List<BaseAlarmMsgDTO> msgList, EAlarmLevel
-            level, String content) {
-        AlarmRecord alarmRecord = genAlarmRecord(null, baseTime, EAlarmRecordStatus.PROCESSED, level, content, env, msgList);
+            level, String content, BaseAlarmConfigDTO configDTO) {
+        AlarmRecord alarmRecord = genAlarmRecord(null, baseTime, EAlarmRecordStatus.PROCESSED, level, content, env,
+                msgList, configDTO);
         alarmRecordService.insert(alarmRecord);
     }
 
     private void saveUnProcessRecord(ESaasEnv env, Date baseTime, List<BaseAlarmMsgDTO> msgList, EAlarmLevel
-            level, String content) {
-        AlarmRecord alarmRecord = genAlarmRecord(null, baseTime, EAlarmRecordStatus.UNPROCESS, level, content, env, msgList);
+            level, String content,BaseAlarmConfigDTO configDTO) {
+        AlarmRecord alarmRecord = genAlarmRecord(null, baseTime, EAlarmRecordStatus.UNPROCESS, level, content, env,
+                msgList, configDTO);
         alarmRecordService.insert(alarmRecord);
     }
 
     private void saveDisableRecord(ESaasEnv env, Date baseTime, List<BaseAlarmMsgDTO> msgList, EAlarmLevel
-            level, String content) {
-        AlarmRecord alarmRecord = genAlarmRecord(null, baseTime, EAlarmRecordStatus.DISABLE, level, content, env, msgList);
+            level, String content,BaseAlarmConfigDTO configDTO) {
+        AlarmRecord alarmRecord = genAlarmRecord(null, baseTime, EAlarmRecordStatus.DISABLE, level, content, env,
+                msgList, configDTO);
         alarmRecordService.insert(alarmRecord);
     }
 
@@ -463,9 +446,10 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
      * @param content     发出预警的信息;
      * @param eSaasEnv    环境;
      * @param msgList     预警信息列表;
+     * @param alarmConfigDTO
      * @return 预警记录entity
      */
-    private AlarmRecord genAlarmRecord(Long id, Date baseTime, EAlarmRecordStatus isProcessed, EAlarmLevel level, String content, ESaasEnv eSaasEnv, List<BaseAlarmMsgDTO> msgList) {
+    private AlarmRecord genAlarmRecord(Long id, Date baseTime, EAlarmRecordStatus isProcessed, EAlarmLevel level, String content, ESaasEnv eSaasEnv, List<BaseAlarmMsgDTO> msgList, BaseAlarmConfigDTO alarmConfigDTO) {
         Date now = new Date();
         AlarmRecord alarmRecord = new AlarmRecord();
         alarmRecord.setId(id == null ? UidGenerator.getId() : id);

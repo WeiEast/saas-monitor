@@ -217,16 +217,20 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             throw new NoNeedAlarmException("正常流程结束");
         } catch (NoNeedAlarmException e) {
             logger.info(e.getMessage());
-            if (alarmLevel == null) {
-                alarmRecordRepair(jobTime, alarmType);
-            } else if (summary == null) {
-                alarmRecordRepair(jobTime, alarmType);
-            }else {
-                alarmRecordRepair(jobTime,alarmType,summary);
-            }
+            repairProcess(jobTime, summary, alarmLevel, alarmType);
         }
 
 
+    }
+
+    public void repairProcess(Date jobTime, String summary, EAlarmLevel alarmLevel, String alarmType) {
+        if (alarmLevel == null) {
+            alarmRecordRepair(jobTime, alarmType);
+        } else if (summary == null) {
+            alarmRecordRepair(jobTime, alarmType);
+        }else {
+            alarmRecordRepair(jobTime,alarmType,summary);
+        }
     }
 
 
@@ -254,7 +258,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         for (AlarmRecord record : alarmRecords) {
             record.setEndTime(now);
             record.setIsProcessed(EAlarmRecordStatus.REPAIRED.getCode());
-
             AlarmWorkOrder order = alarmWorkOrderService.getByRecordId(record.getId());
 
             if (order != null) {
@@ -298,12 +301,10 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
     private void sendAlarmRepair(AlarmRecord alarmRecord) {
 
-        StringBuilder stringBuilder = new StringBuilder();
+        String stringBuilder = "【预警恢复】" + "环境:" + diamondConfig.getMonitorEnvironment() + "\n" +
+                "预警记录为" + alarmRecord.getId() + "的预警由系统判定恢复。";
 
-        stringBuilder.append("【预警恢复】").append("环境:").append(diamondConfig.getMonitorEnvironment()).append("\n");
-        stringBuilder.append("预警记录为").append(alarmRecord.getId()).append("的预警由系统判定恢复。请知悉。");
-
-        alarmMessageProducer.sendWebChart4OperatorMonitor(stringBuilder.toString(), new Date());
+        alarmMessageProducer.sendWebChart4OperatorMonitor(stringBuilder, new Date());
     }
 
 

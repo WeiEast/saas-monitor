@@ -50,7 +50,6 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
         criteria.createCriteria().andContentEqualTo(String.valueOf(alarmRecord.getId())).andLevelEqualTo(alarmRecord
                 .getLevel()).andSummaryEqualTo(alarmRecord.getSummary()).andIsProcessedEqualTo(EAlarmRecordStatus.UNPROCESS.getCode());
 
-
         return alarmRecordMapper.selectByExample(criteria);
     }
 
