@@ -8,6 +8,7 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.service.MonitorAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;
@@ -57,7 +58,7 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
             }
             try {
                 ETaskStatDataType type = ETaskStatDataType.getByValue(configDTO.getAlarmType());
-                operatorAlarmMonitorService.alarm(jobTime, configDTO, type);
+                operatorAlarmMonitorService.alarm(jobTime, configDTO, type, EAlarmType.operator_alarm);
             } catch (Exception e) {
                 logger.error("运营商监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
                 continue;

@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
@@ -20,10 +21,9 @@ import com.treefinance.saas.monitor.common.enumeration.*;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
-import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
-import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
-import com.treefinance.saas.monitor.dao.entity.SaasWorker;
+import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.exception.BizException;
+import com.treefinance.saas.monitor.exception.NoNeedAlarmException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -53,6 +53,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     private static final Logger logger = LoggerFactory.getLogger(OperatorAlarmTemplateImpl.class);
 
     public static final String CUTC = "中国联通";
+    public static final String ALL = "all";
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -64,7 +65,8 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     }
 
     @Override
-    public List<BaseStatAccessDTO> getBaseData(Date baseTime, ETaskStatDataType statDataType, BaseAlarmConfigDTO alarmConfigDTO) {
+    public List<BaseStatAccessDTO> getBaseData(Date baseTime, ETaskStatDataType statDataType, BaseAlarmConfigDTO
+            alarmConfigDTO) throws NoNeedAlarmException {
         OperatorMonitorAlarmConfigDTO config = (OperatorMonitorAlarmConfigDTO) alarmConfigDTO;
         List<String> operatorNameList = Splitter.on(",").splitToList(diamondConfig.getOperatorAlarmOperatorNameList());
         if (CollectionUtils.isEmpty(operatorNameList)) {
@@ -81,7 +83,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到运营商的统计数据",
                     MonitorDateUtils.format(new Date()), MonitorDateUtils.format(startTime), MonitorDateUtils.format
                             (baseTime));
-            throw new BizException("没有原始数据 无需预警");
+            throw new NoNeedAlarmException("没有原始数据 无需预警");
         }
 
         logger.info("运营商监控，查询数据如下：{}",JSON.toJSONString(dataDTOList));
@@ -246,7 +248,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},获取前n天内,相同时刻运营商统计的平均值compareMap={}",
                 MonitorDateUtils.format(new Date()), MonitorDateUtils.format(baseTime), JSON.toJSONString(compareMap));
         if (MapUtils.isEmpty(compareMap)) {
-            throw new BizException("compareMap is empty");
+            throw new NoNeedAlarmException("没有历史的用于比对的数据，无需预警");
         }
 
         return compareMap;
@@ -413,6 +415,12 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         }
         msgList = msgList.stream().sorted(Comparator.comparing(baseAlarmMsgDTO
                 -> ((OperatorAccessAlarmMsgDTO) baseAlarmMsgDTO).getGroupName())).collect(Collectors.toList());
+
+        logger.info("需要预警的预警信息：{}", JSON.toJSONString(msgList));
+        if (CollectionUtils.isEmpty(msgList)) {
+            logger.info("需要预警的信息为空，不再继续。");
+            throw new NoNeedAlarmException("需要预警的信息为空，无需预警");
+        }
 
         return msgList;
     }
@@ -811,7 +819,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         for (BaseAlarmMsgDTO msg : msgList){
             OperatorAccessAlarmMsgDTO opMsg = (OperatorAccessAlarmMsgDTO) msg;
 
-            String bizSource = MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR.equals(opMsg.getGroupCode())?"all":opMsg.getGroupCode();
+            String bizSource = MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR.equals(opMsg.getGroupCode())? ALL :opMsg.getGroupCode();
 
             BizSourceAspect sourceAspect = new BizSourceAspect(bizSource,msg.getAlarmAspectType().getValue());
             list.add(sourceAspect);
@@ -843,5 +851,31 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     @Override
     protected EAlarmType getAlarmType() {
         return EAlarmType.operator_alarm;
+    }
+
+    @Override
+    protected List<AlarmRecord> getUnprocessedRecords(EAlarmType alarmType, BaseAlarmConfigDTO configDTO, String summary)  {
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+        OperatorMonitorAlarmConfigDTO config = (OperatorMonitorAlarmConfigDTO) configDTO;
+
+        if (summary != null){
+            if(AlarmConstants.ALL_OPERATOR.equals(config.getAlarmType())){
+                criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
+                        .UNPROCESS.getCode()).andSummaryLike(ALL).andSummaryNotEqualTo(summary);
+            }else {
+                criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
+                        .UNPROCESS.getCode()).andSummaryNotLike(ALL).andSummaryNotEqualTo(summary);
+            }
+            return alarmRecordService.queryByCondition(criteria);
+        }
+
+        if(AlarmConstants.ALL_OPERATOR.equals(config.getAlarmType())){
+            criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
+                    .UNPROCESS.getCode()).andSummaryLike(ALL);
+        }else {
+            criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
+                    .UNPROCESS.getCode()).andSummaryNotLike(ALL);
+        }
+        return alarmRecordService.queryByCondition(criteria);
     }
 }

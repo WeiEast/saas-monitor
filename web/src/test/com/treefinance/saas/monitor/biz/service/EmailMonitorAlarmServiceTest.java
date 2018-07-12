@@ -5,6 +5,7 @@ import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.service.impl.EmailAlarmTemplateImpl;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -45,7 +46,7 @@ public class EmailMonitorAlarmServiceTest {
             if (configDTO.getAlarmType() == 1) {
                 //总运营商按人统计的预警
                 try{
-                    emailAlarmTemplateImpl.alarm(jobTime, configDTO, ETaskStatDataType.USER);
+                    emailAlarmTemplateImpl.alarm(jobTime, configDTO, ETaskStatDataType.USER, EAlarmType.email_alarm );
                 }catch (Exception ignore){
                     ignore.printStackTrace();
                 }
