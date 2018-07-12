@@ -248,7 +248,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         logger.info("运营商监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},获取前n天内,相同时刻运营商统计的平均值compareMap={}",
                 MonitorDateUtils.format(new Date()), MonitorDateUtils.format(baseTime), JSON.toJSONString(compareMap));
         if (MapUtils.isEmpty(compareMap)) {
-            throw new NoNeedAlarmException("compareMap is empty");
+            throw new NoNeedAlarmException("没有历史的用于比对的数据，无需预警");
         }
 
         return compareMap;
@@ -419,7 +419,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         logger.info("需要预警的预警信息：{}", JSON.toJSONString(msgList));
         if (CollectionUtils.isEmpty(msgList)) {
             logger.info("需要预警的信息为空，不再继续。");
-            throw new NoNeedAlarmException("需要预警的信息为空");
+            throw new NoNeedAlarmException("需要预警的信息为空，无需预警");
         }
 
         return msgList;

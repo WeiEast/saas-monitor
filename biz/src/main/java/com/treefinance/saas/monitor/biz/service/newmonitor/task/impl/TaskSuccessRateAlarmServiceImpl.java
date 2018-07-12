@@ -225,9 +225,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     }
 
     private void repairProcess(Date jobTime, String summary, EAlarmLevel alarmLevel, String alarmType) {
-        if (alarmLevel == null) {
-            alarmRecordRepair(jobTime, alarmType);
-        } else if (summary == null) {
+        if (alarmLevel == null || summary == null) {
             alarmRecordRepair(jobTime, alarmType);
         }else {
             alarmRecordRepair(jobTime,alarmType,summary);
@@ -298,7 +296,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 .UNPROCESS.getCode()).andSummaryNotEqualTo(summary);
         return alarmRecordService.queryByCondition(criteria);
     }
-
 
     private void sendAlarmRepair(AlarmRecord alarmRecord) {
 
