@@ -217,13 +217,14 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             throw new NoNeedAlarmException("正常流程结束");
         } catch (NoNeedAlarmException e) {
             logger.info(e.getMessage());
+            logger.info("进入预警修复环节");
             repairProcess(jobTime, summary, alarmLevel, alarmType);
         }
 
 
     }
 
-    public void repairProcess(Date jobTime, String summary, EAlarmLevel alarmLevel, String alarmType) {
+    private void repairProcess(Date jobTime, String summary, EAlarmLevel alarmLevel, String alarmType) {
         if (alarmLevel == null) {
             alarmRecordRepair(jobTime, alarmType);
         } else if (summary == null) {
@@ -585,6 +586,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 successCount = successCount + data.getSuccessCount();
                 failCount = failCount + data.getFailCount();
                 cancelCount = cancelCount + data.getCancelCount();
+            }
+
+            if(totalCount == 0){
+                logger.info("任务成功率预警，该时段没有数据");
+                break;
             }
 
             SaasStatAccessDTO excludeData = getExcludeAlarmList(bizType, startTime, endTime, config);
