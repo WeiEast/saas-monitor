@@ -141,12 +141,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             TaskSuccRateAlarmTimeListDTO taskSuccRateAlarmTimeConfig = findActiveTimeConfig(config);
 
             alarmLevel = isAlarmAndDetermineLevel(list, compareDTO, taskSuccRateAlarmTimeConfig);
-            if (alarmLevel == null) {
-                logger.info("任务成功率预警,定时任务执行jobTime={},判断所得数据不需要预警,list={},config={},compare={}",
-                        MonitorDateUtils.format(jobTime), JSON.toJSONString(list), JSON.toJSONString(config), JSON
-                                .toJSONString(compareDTO));
-                return;
-            }
 
             Map<String, MonitorAlarmLevelConfigDTO> levelConfigMap = config.getLevelConfig().stream().collect(Collectors
                     .toMap(MonitorAlarmLevelConfigDTO::getLevel, monitorAlarmLevelConfigDto -> monitorAlarmLevelConfigDto));
@@ -172,9 +166,8 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 //保存记录
                 AlarmRecord alarmRecord = genAlarmRecord(null, beginTime, EAlarmRecordStatus.PROCESSED, alarmLevel,
                         content, env, config.getType());
-
                 alarmRecordService.insert(alarmRecord);
-                return;
+                throw new NoNeedAlarmException("info级别错误");
             }
 
             summary = genSummary(env, alarmLevel, config.getType());
@@ -183,14 +176,14 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             if (record != null) {
                 logger.info("已存在{}的记录，不再继续", EAlarmRecordStatus.UNPROCESS.getDesc());
                 insertRecord(config, statTime, alarmLevel, env, EAlarmRecordStatus.UNPROCESS, record);
-                return;
+                throw new NoNeedAlarmException("存在未处理的预警");
             }
 
             List<AlarmRecord> records = findUnCapableRecords(jobTime, alarmLevel, summary);
             if (!records.isEmpty()) {
                 logger.info("一天之内已存在{}的记录，不再继续", EAlarmRecordStatus.DISABLE.getDesc());
                 insertRecord(config, statTime, alarmLevel, env, EAlarmRecordStatus.DISABLE, records.get(0));
-                return;
+                throw new NoNeedAlarmException("存在无法处理的预警");
             }
 
             //获取值班人员
@@ -300,8 +293,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     private void sendAlarmRepair(AlarmRecord alarmRecord) {
 
         String stringBuilder = "【预警恢复】" + "环境:" + diamondConfig.getMonitorEnvironment() + "\n" +
-                "预警记录为" + alarmRecord.getId() + "的预警由系统判定恢复。";
-
+                "发生在 时间为:" + MonitorDateUtils.format(alarmRecord.getStartTime()) + " \n预警等级：" + alarmRecord.getLevel() +
+                " \n预警类型：" + alarmRecord.getAlarmType() + "\n预警编号:" +
+                alarmRecord.getId() +
+                "的预警由系统判定恢复。";
+        logger.info("发出预警恢复消息：{}",stringBuilder);
         alarmMessageProducer.sendWebChart4OperatorMonitor(stringBuilder, new Date());
     }
 
@@ -408,6 +404,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             logger.info("对值班人员的ivr提醒已经关闭。。");
             return;
         }
+
         try {
             Map<String, String> map = Maps.newHashMap();
 
@@ -523,7 +520,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         }
         if (level == null) {
             logger.info("任务成功率预警,没有命中任务等级，无需预警，直接返回，数据list：{}", list);
-            return null;
+            throw new NoNeedAlarmException("任务成功率预警,没有命中任务等级，无需预警");
         }
         if (isError) {
             compareDTO.setThreshold(errorThreshold);
@@ -539,7 +536,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             return EAlarmLevel.info;
         }
         logger.info("任务成功率预警,预警命中了不同等级，数据：{}，直接返回", list);
-        return null;
+        throw new NoNeedAlarmException("任务成功率预警,预警命中了不同等级，无需预警");
     }
 
     private List<SaasStatAccessDTO> getSourceDataList(Date beginTime, TaskSuccessRateAlarmConfigDTO config, Integer intervalMins, EBizType bizType) {
@@ -650,6 +647,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     private String sendWechatAlarm(List<SaasStatAccessDTO> list, EBizType type, EAlarmLevel alarmLevel,
                                    TaskSuccRateCompareDTO compareDTO) {
         String body = this.generateMessageBody(list, type, EAlarmChannel.WECHAT, alarmLevel, compareDTO);
+        logger.info("微信：{}",body);
         alarmMessageProducer.sendWechantAlarm(body);
         return body;
     }
