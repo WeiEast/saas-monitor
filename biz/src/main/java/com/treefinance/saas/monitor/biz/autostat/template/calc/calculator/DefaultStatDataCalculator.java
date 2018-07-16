@@ -291,7 +291,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
                                 }
                                 try {
                                     Random random = new Random();
-                                    int m = random.nextInt(100);
+                                    int m = random.nextInt(10);
                                     Thread.sleep(m);
                                 } catch (InterruptedException e) {
                                     logger.error("InterruptedException", e);
