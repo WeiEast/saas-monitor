@@ -32,6 +32,22 @@ public class MonitorDateUtils {
         return intervalTime;
     }
 
+    /**
+     * 获取dataTime在间隔时间内的结束时间,如dataTime=19:41,intervalMinutes=5,则19:45
+     *
+     * @param dataTime
+     * @return
+     */
+    public static Date getLaterIntervalDateTime(Date dataTime, Integer intervalMinutes) {
+        Date intervalTime = DateUtils.truncate(dataTime, Calendar.MINUTE);
+        Long currentMinute = DateUtils.getFragmentInMinutes(intervalTime, Calendar.HOUR_OF_DAY);
+        if (currentMinute % intervalMinutes == 0) {
+            return intervalTime;
+        }
+        intervalTime = DateUtils.addMinutes(intervalTime, (intervalMinutes - (currentMinute.intValue() % intervalMinutes)));
+        return intervalTime;
+    }
+
     public static String format(Date date) {
         return DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
     }
