@@ -70,6 +70,9 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         if (request.getIntervalMins() != null && request.getIntervalMins() > 0) {
             request.setStartTime(MonitorDateUtils.getIntervalDateTime(request.getStartTime(), request.getIntervalMins()));
         }
+        if (request.getIntervalMins() != null && request.getIntervalMins() > 0) {
+            request.setEndTime(MonitorDateUtils.getLaterIntervalDateTime(request.getEndTime(), request.getIntervalMins()));
+        }
         innerCriteria.andBizTypeEqualTo(request.getBizType())
                 .andDataTimeGreaterThanOrEqualTo(request.getStartTime())
                 .andDataTimeLessThanOrEqualTo(request.getEndTime());
@@ -145,6 +148,9 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         }
         if (intervalMins != null && intervalMins > 0) {
             startTime = MonitorDateUtils.getIntervalDateTime(startTime, intervalMins);
+        }
+        if (intervalMins != null && intervalMins > 0) {
+            startTime = MonitorDateUtils.getLaterIntervalDateTime(startTime, intervalMins);
         }
         List<Date> dateList = this.getDayStartTimeList(startTime, endTime);
         List<RealTimeStatAccessDTO> dataList = Lists.newArrayList();
@@ -275,7 +281,7 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         }
         List<RealTimeStatAccessDTO> result = Lists.newArrayList();
         Map<Date, List<RealTimeStatAccessDTO>> map = list.stream()
-                .collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
+                .collect(Collectors.groupingBy(data -> MonitorDateUtils.getLaterIntervalDateTime(data.getDataTime(), intervalMins)));
         for (Map.Entry<Date, List<RealTimeStatAccessDTO>> entry : map.entrySet()) {
             RealTimeStatAccessDTO data = new RealTimeStatAccessDTO();
             BeanUtils.copyProperties(entry.getValue().get(0), data);
@@ -325,9 +331,9 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         List<Date> list = Lists.newArrayList();
         Date endTimeInterval;
         if (hiddenRecentPoint != null && hiddenRecentPoint == 1) {
-            endTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(endTime, -intervalMins), intervalMins);
+            endTimeInterval = MonitorDateUtils.getLaterIntervalDateTime(DateUtils.addMinutes(endTime, -intervalMins), intervalMins);
         } else {
-            endTimeInterval = MonitorDateUtils.getIntervalDateTime(endTime, intervalMins);
+            endTimeInterval = MonitorDateUtils.getLaterIntervalDateTime(endTime, intervalMins);
         }
         Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(startTime, intervalMins);
         while (endTimeInterval.compareTo(startTimeInterval) >= 0) {
