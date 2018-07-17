@@ -27,6 +27,16 @@ public class MerchantStatBaseRequest extends PageRequest {
 
     private Byte saasEnv;
 
+    private Integer intervalMins;
+
+    public Integer getIntervalMins() {
+        return intervalMins;
+    }
+
+    public void setIntervalMins(Integer intervalMins) {
+        this.intervalMins = intervalMins;
+    }
+
     public Byte getSaasEnv() {
         return saasEnv;
     }
