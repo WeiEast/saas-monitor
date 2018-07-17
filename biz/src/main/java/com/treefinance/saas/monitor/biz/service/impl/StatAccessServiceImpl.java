@@ -129,6 +129,24 @@ public class StatAccessServiceImpl implements StatAccessService {
 
     @Override
     public MonitorResult<List<MerchantStatAccessRO>> queryAllAccessList(MerchantStatAccessRequest request) {
+        MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
+        criteria.setOrderByClause("dataTime asc");
+        MerchantStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
+        innerCriteria.andDataTypeEqualTo(request.getDataType())
+                .andDataTimeBetween(request.getStartDate(), request.getEndDate());
+        if (request.getSaasEnv() != null) {
+            innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
+        }
+        if (StringUtils.isNotBlank(request.getAppId())) {
+            innerCriteria.andAppIdEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_APP_ID);
+        }
+        List<MerchantStatAccess> list = merchantStatAccessMapper.selectByExample(criteria);
+        List<MerchantStatAccessRO> data = DataConverterUtils.convert(list, MerchantStatAccessRO.class);
+        return MonitorResultBuilder.build(data);
+    }
+
+    @Override
+    public MonitorResult<List<MerchantStatAccessRO>> queryAllSuccessAccessList(MerchantStatAccessRequest request) {
         if (request.getIntervalMins() != null && request.getIntervalMins() > 0) {
             request.setStartDate(MonitorDateUtils.getIntervalDateTime(request.getStartDate(), request.getIntervalMins()));
         }
