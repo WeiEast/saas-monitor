@@ -56,6 +56,12 @@ public class MerchantStatAccessFacadeImpl implements MerchantStatAccessFacade {
     }
 
     @Override
+    public MonitorResult<List<MerchantStatAccessRO>> queryAllSuccessAccessList(MerchantStatAccessRequest request) {
+        MerchantStatChecker.checkAllAccessRequest(request);
+        return statAccessService.queryAllSuccessAccessList(request);
+    }
+
+    @Override
     public MonitorResult<List<MerchantStatBankRO>> queryBankList(MerchantStatBankRequest request) {
         MerchantStatChecker.checkBankRequest(request);
         return statAccessService.queryBankList(request);
