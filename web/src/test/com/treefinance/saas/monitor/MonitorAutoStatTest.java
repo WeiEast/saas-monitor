@@ -1,7 +1,6 @@
 package com.treefinance.saas.monitor;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
@@ -12,10 +11,14 @@ import com.treefinance.saas.monitor.common.cache.RedisDao;
 import com.treefinance.saas.monitor.common.utils.SpringIocUtils;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import com.treefinance.saas.monitor.dao.mapper.StatTemplateMapper;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.HashMap;
@@ -58,12 +61,6 @@ public class MonitorAutoStatTest {
         s2.setTemplateCode("1111");
 
         System.out.println("hao=====" + s1.equals(s2));
-    }
-
-    public static void main(String[] args) {
-        String json = "{\"source\":1,\"password\":\"12345\",\"username\":\"1235\"}";
-        JSONObject map = JSON.parseObject(json);
-        System.out.println(map);
     }
 
 
@@ -154,50 +151,208 @@ public class MonitorAutoStatTest {
     }
 
     @Test
-    public void testDataStatDataCalculator() {
-        StatTemplate statTemplate = statTemplateMapper.selectByPrimaryKey(70000L);
-        String dataJson = "{\n" +
-                "  \"accountNo\": \"\",\n" +
-                "  \"appId\": \"QATestabcdefghQA\",\n" +
-                "  \"bizType\": 3,\n" +
-                "  \"dataTime\": 1525251302000,\n" +
-                "  \"taskId\": 176375711672594432,\n" +
-                "  \"monitorType\": \"task-real-time-stat\",\n" +
-                "  \"status\": 1,\n" +
-                "  \"taskAttributes\": {\n" +
-                "    \"groupCode\": \"ZHONG_GUO_10010\",\n" +
-                "    \"groupName\": \"中国联通\"\n" +
-                "  },\n" +
-                "  \"uniqueId\": \"test\",\n" +
-                "  \"saasEnv\":\"1\",\n" +
-                "  \"webSite\": \"\",\n" +
-                "  \"statCode\":\"taskCreate\",\n" +
-                "  \"statName\":\"任务创建\"\n" +
-                "}";
-        Map<String, Object> dataMap = JSON.parseObject(dataJson);
-        List<Map<String, Object>> dataList = Lists.newArrayList();
-        dataList.add(dataMap);
-        Map<Integer, List<Map<String, Object>>> result = defaultStatDataCalculator.calculate(statTemplate, dataList);
-        System.out.println(JSON.toJSONString(result));
+    public void testDataStatDataCalculator() throws InterruptedException {
+        TestDataStatDataCalculatorTask testDataStatDataCalculatorTask = new TestDataStatDataCalculatorTask();
+        Thread thread1 = new Thread(testDataStatDataCalculatorTask);
+        Thread thread2 = new Thread(testDataStatDataCalculatorTask);
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+
+
+    }
+
+    public class TestDataStatDataCalculatorTask implements Runnable {
+
+        private DefaultStatDataCalculator defaultStatDataCalculator;
+
+        public TestDataStatDataCalculatorTask() {
+            this.defaultStatDataCalculator = (DefaultStatDataCalculator) SpringIocUtils.getBean("defaultStatDataCalculator");
+        }
+
+        @Override
+        public void run() {
+            StatTemplate statTemplate = statTemplateMapper.selectByPrimaryKey(70000L);
+            String dataJson = "{\n" +
+                    "  \"accountNo\": \"\",\n" +
+                    "  \"appId\": \"QATestabcdefghQA\",\n" +
+                    "  \"bizType\": 3,\n" +
+                    "  \"dataTime\": 1525251302000,\n" +
+                    "  \"taskId\": 176375711672594432,\n" +
+                    "  \"monitorType\": \"task-real-time-stat\",\n" +
+                    "  \"status\": 1,\n" +
+                    "  \"taskAttributes\": {\n" +
+                    "    \"groupCode\": \"ZHONG_GUO_10010\",\n" +
+                    "    \"groupName\": \"中国联通\"\n" +
+                    "  },\n" +
+                    "  \"uniqueId\": \"test\",\n" +
+                    "  \"saasEnv\":\"1\",\n" +
+                    "  \"webSite\": \"\",\n" +
+                    "  \"statCode\":\"taskCreate\",\n" +
+                    "  \"statName\":\"任务创建\"\n" +
+                    "}";
+            Map<String, Object> dataMap = JSON.parseObject(dataJson);
+            List<Map<String, Object>> dataList = Lists.newArrayList();
+            dataList.add(dataMap);
+            dataList.add(dataMap);
+            dataList.add(dataMap);
+            dataList.add(dataMap);
+            dataList.add(dataMap);
+            Map<Integer, List<Map<String, Object>>> result = defaultStatDataCalculator.calculate(statTemplate, dataList);
+            System.out.println(JSON.toJSONString(result));
+        }
     }
 
 
     @Test
-    public void testDataStat() {
-        StatTemplate statTemplate = statTemplateMapper.selectByPrimaryKey(30001L);
-        String dataJson = "{\"accountNo\":\"4$D4Msjq3kVT7oOUuYVdIgt/BAAAwA\",\"appId\":\"pJWAtOx8SDIZr5PH\",\"bizType\":3,\"createTime\":1528274776000,\"lastUpdateTime\":1528274833000,\"monitorType\":\"task_operator\",\"saasEnv\":\"2\",\"status\":2,\"stepCode\":\"\",\"taskAttributes\":{\"groupName\":\"浙江移动\",\"sourceType\":\"1\",\"groupCode\":\"ZHE_JIANG_10086\"},\"taskId\":189057315180683260,\"taskSteps\":[{\"stepCode\":\"create\",\"stepIndex\":1,\"stepName\":\"创建任务\"},{\"stepCode\":\"confirm-mobile\",\"stepIndex\":2,\"stepName\":\"确认手机号\"},{\"stepCode\":\"confirm-login\",\"stepIndex\":3,\"stepName\":\"确认登录\"},{\"stepCode\":\"login\",\"stepIndex\":4,\"stepName\":\"登录\"},{\"stepCode\":\"crawl\",\"stepIndex\":5,\"stepName\":\"抓取\"},{\"stepCode\":\"process\",\"stepIndex\":6,\"stepName\":\"洗数\"},{\"stepCode\":\"callback\",\"stepIndex\":7,\"stepName\":\"回调\"}],\"uniqueId\":\"5432345\",\"webSite\":\"china_10086_app\"}";
-        String dataJson2 = "{\"accountNo\":\"4$D4Msjq3kVT7oOUuYVdIgt/BAAAwA\",\"appId\":\"888AtOx8SDIZr5PH\",\"bizType\":3,\"createTime\":1528274776000,\"lastUpdateTime\":1528274833000,\"monitorType\":\"task_operator\",\"saasEnv\":\"2\",\"status\":2,\"stepCode\":\"\",\"taskAttributes\":{\"groupName\":\"浙江移动\",\"sourceType\":\"1\",\"groupCode\":\"ZHE_JIANG_10086\"},\"taskId\":189057315180683260,\"taskSteps\":[{\"stepCode\":\"create\",\"stepIndex\":1,\"stepName\":\"创建任务\"},{\"stepCode\":\"confirm-mobile\",\"stepIndex\":2,\"stepName\":\"确认手机号\"},{\"stepCode\":\"confirm-login\",\"stepIndex\":3,\"stepName\":\"确认登录\"},{\"stepCode\":\"login\",\"stepIndex\":4,\"stepName\":\"登录\"},{\"stepCode\":\"crawl\",\"stepIndex\":5,\"stepName\":\"抓取\"},{\"stepCode\":\"process\",\"stepIndex\":6,\"stepName\":\"洗数\"},{\"stepCode\":\"callback\",\"stepIndex\":7,\"stepName\":\"回调\"}],\"uniqueId\":\"5432345888\",\"webSite\":\"china_10086_app\"}";
+    public void testDataStat() throws InterruptedException {
+        TestDataStatTask testDataStatTask = new TestDataStatTask();
+        Thread thread1 = new Thread(testDataStatTask);
+        Thread thread2 = new Thread(testDataStatTask);
 
-        Map<String, Object> dataMap = JSON.parseObject(dataJson);
-        Map<String, Object> dataMap2 = JSON.parseObject(dataJson2);
-        List<Map<String, Object>> dataList = Lists.newArrayList();
-        dataList.add(dataMap2);
-        dataList.add(dataMap2);
-        dataList.add(dataMap2);
-        dataList.add(dataMap);
-        dataList.add(dataMap);
-        Map<Integer, List<Map<String, Object>>> result = defaultStatDataCalculator.calculate(statTemplate, dataList);
-        System.out.println(JSON.toJSONString(result));
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+
+        System.out.println("done==");
+
     }
+
+    public class TestDataStatTask implements Runnable {
+        private DefaultStatDataCalculator defaultStatDataCalculator;
+
+        public TestDataStatTask() {
+            this.defaultStatDataCalculator = (DefaultStatDataCalculator) SpringIocUtils.getBean("defaultStatDataCalculator");
+        }
+
+        @Override
+        public void run() {
+            StatTemplate statTemplate = statTemplateMapper.selectByPrimaryKey(30001L);
+            String dataJson = "{\"accountNo\":\"4$D4Msjq3kVT7oOUuYVdIgt/BAAAwA\",\"appId\":\"pJWAtOx8SDIZr5PH\",\"bizType\":3,\"createTime\":1528274776000,\"lastUpdateTime\":1528274833000,\"monitorType\":\"task_operator\",\"saasEnv\":\"2\",\"status\":2,\"stepCode\":\"\",\"taskAttributes\":{\"groupName\":\"浙江移动\",\"sourceType\":\"1\",\"groupCode\":\"ZHE_JIANG_10086\"},\"taskId\":189057315180683260,\"taskSteps\":[{\"stepCode\":\"create\",\"stepIndex\":1,\"stepName\":\"创建任务\"},{\"stepCode\":\"confirm-mobile\",\"stepIndex\":2,\"stepName\":\"确认手机号\"},{\"stepCode\":\"confirm-login\",\"stepIndex\":3,\"stepName\":\"确认登录\"},{\"stepCode\":\"login\",\"stepIndex\":4,\"stepName\":\"登录\"},{\"stepCode\":\"crawl\",\"stepIndex\":5,\"stepName\":\"抓取\"},{\"stepCode\":\"process\",\"stepIndex\":6,\"stepName\":\"洗数\"},{\"stepCode\":\"callback\",\"stepIndex\":7,\"stepName\":\"回调\"}],\"uniqueId\":\"5432345\",\"webSite\":\"china_10086_app\"}";
+
+            Map<String, Object> dataMap = JSON.parseObject(dataJson);
+            List<Map<String, Object>> dataList = Lists.newArrayList();
+            dataList.add(dataMap);
+            dataList.add(dataMap);
+            dataList.add(dataMap);
+            dataList.add(dataMap);
+            dataList.add(dataMap);
+            Map<Integer, List<Map<String, Object>>> result = defaultStatDataCalculator.calculate(statTemplate, dataList);
+            System.out.println(JSON.toJSONString(result));
+        }
+    }
+
+    @Test
+    public void testSessionCallback() throws InterruptedException {
+        MultiTestTask multiTestTask = new MultiTestTask();
+        MultiSleepTestTask multiSleepTestTask = new MultiSleepTestTask();
+
+        Thread thread1 = new Thread(multiSleepTestTask);
+        Thread thread2 = new Thread(multiTestTask);
+//        Thread thread3 = new Thread(multiTestTask);
+
+        thread1.start();
+        thread2.start();
+//        thread3.start();
+
+        thread1.join();
+        thread2.join();
+//        thread3.join();
+
+        System.out.println("done==");
+
+
+    }
+
+    public class MultiTestTask implements Runnable {
+
+        private RedisDao redisDao;
+
+        public MultiTestTask() {
+            this.redisDao = (RedisDao) SpringIocUtils.getBean("redisDaoImpl");
+        }
+
+        @Override
+        public void run() {
+            SessionCallback<List<Object>> sessionCallback = new SessionCallback<List<Object>>() {
+                @Override
+                public List<Object> execute(RedisOperations operations) throws DataAccessException {
+                    operations.watch("hao-aaaa");
+                    Object oldValue = operations.opsForHash().get("hao-aaaa", "aaa");
+                    operations.multi();
+                    if (oldValue == null) {
+                        operations.opsForHash().put("hao-aaaa", "aaa", 1 + "");
+                    } else {
+                        Integer newValue = Integer.valueOf(oldValue.toString()) + 10;
+                        operations.opsForHash().put("hao-aaaa", "aaa", newValue + "");
+                    }
+                    return operations.exec();
+                }
+            };
+            while (true) {
+                int i = 1;
+                List<Object> result = redisDao.getRedisTemplate().execute(sessionCallback);
+                System.out.println("\nhao===" + "MultiTestTask" + Thread.currentThread().getName() + JSON.toJSONString(result));
+                if (CollectionUtils.isNotEmpty(result)) {
+                    break;
+                } else {
+                    System.out.println("key已被修改discard,重试i=" + Thread.currentThread().getName() + i);
+                    i++;
+                }
+            }
+
+        }
+    }
+
+    public class MultiSleepTestTask implements Runnable {
+
+        private RedisDao redisDao;
+
+        public MultiSleepTestTask() {
+            this.redisDao = (RedisDao) SpringIocUtils.getBean("redisDaoImpl");
+        }
+
+        @Override
+        public void run() {
+            SessionCallback<List<Object>> sessionCallback = new SessionCallback<List<Object>>() {
+                @Override
+                public List<Object> execute(RedisOperations operations) throws DataAccessException {
+                    operations.watch("hao-aaaa");
+                    Object oldValue = operations.opsForHash().get("hao-aaaa", "aaa");
+                    operations.multi();
+                    if (oldValue == null) {
+                        operations.opsForHash().put("hao-aaaa", "aaa", 1 + "");
+                    } else {
+                        Integer newValue = Integer.valueOf(oldValue.toString()) + 10;
+                        operations.opsForHash().put("hao-aaaa", "aaa", newValue + "");
+                    }
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    return operations.exec();
+                }
+            };
+            while (true) {
+                int i = 1;
+                List<Object> result = redisDao.getRedisTemplate().execute(sessionCallback);
+                System.out.println("\nhao===" + "MultiSleepTestTask" + Thread.currentThread().getName() + JSON.toJSONString(result));
+                if (CollectionUtils.isNotEmpty(result)) {
+                    break;
+                } else {
+                    System.out.println("key已被修改discard,重试i=" + Thread.currentThread().getName() + i);
+                    i++;
+                }
+            }
+
+        }
+    }
+
 
 }

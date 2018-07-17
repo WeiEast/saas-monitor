@@ -37,8 +37,9 @@ public interface RealTimeAvgStatAccessService {
      * @param bizType   业务类型
      * @param startTime 开始时间
      * @param endTime   结束时间
+     * @param hiddenRecentPoint
      * @return
      */
-    List<RealTimeStatAccessDTO> queryDataByConditions(String appId, Byte saasEnv, Byte bizType, Date startTime, Date endTime, Integer intervalMins);
+    List<RealTimeStatAccessDTO> queryDataByConditions(String appId, Byte saasEnv, Byte bizType, Date startTime, Date endTime, Integer intervalMins, Byte hiddenRecentPoint);
 
 }
