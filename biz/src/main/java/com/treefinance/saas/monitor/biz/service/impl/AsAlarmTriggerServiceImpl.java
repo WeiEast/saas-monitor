@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AsAlarmTriggerServiceImpl implements AsAlarmTriggerService {
-    private final Logger logger = LoggerFactory.getLogger(AsAlarmTriggerService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AsAlarmTriggerService.class);
 
     @Autowired
     private AsAlarmTriggerMapper asAlarmTriggerMapper;
