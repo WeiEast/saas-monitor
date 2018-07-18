@@ -58,7 +58,7 @@
             <!--<property name="useActualColumnNames" value="true"/>-->
         <!--</table>-->
 
-        <table tableName="real_time_stat_access" domainObjectName="RealTimeStatAccess"
+        <table tableName="as_alarm" domainObjectName="AsAlarm"
                enableSelectPaginationByExample="true"
                enableInsertOrUpdateBySelective="true"
                enableBatchInsert="true"
@@ -66,6 +66,71 @@
                enableBatchUpdateByPrimaryKeySelective="true">
             <property name="useActualColumnNames" value="true"/>
         </table>
+
+        <table tableName="as_alarm_constant" domainObjectName="AsAlarmConstant"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <table tableName="as_alarm_query" domainObjectName="AsAlarmQuery"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <table tableName="as_alarm_variable" domainObjectName="AsAlarmVariable"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <table tableName="as_alarm_notify" domainObjectName="AsAlarmNotify"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <table tableName="as_alarm_msg" domainObjectName="AsAlarmMsg"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <table tableName="as_alarm_trigger" domainObjectName="AsAlarmTrigger"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <table tableName="as_alarm_trigger_record" domainObjectName="AsAlarmTriggerRecord"
+               enableSelectPaginationByExample="true"
+               enableInsertOrUpdateBySelective="true"
+               enableBatchInsert="true"
+               enableBatchUpdateByPrimaryKey="true"
+               enableBatchUpdateByPrimaryKeySelective="true">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+
 
         <!--
          <table tableName="merchant_stat_bank" domainObjectName="MerchantStatBank">
