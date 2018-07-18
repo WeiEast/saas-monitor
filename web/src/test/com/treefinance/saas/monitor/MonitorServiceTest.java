@@ -197,11 +197,11 @@ public class MonitorServiceTest {
     @Test
     public void testRealTimeStatAccess() {
         BaseStatAccessRequest request = new BaseStatAccessRequest();
-        request.setAppId("QATestabcdefghQA");
+        request.setAppId("virtual_total_stat_appId");
         request.setSaasEnv((byte) 0);
-        request.setStartTime(MonitorDateUtils.parse("2018-05-02 16:50:00"));
-        request.setEndTime(MonitorDateUtils.parse("2018-05-02 17:55:00"));
-        request.setBizType((byte) 3);
+        request.setStartTime(MonitorDateUtils.parse("2018-07-18 16:22:00"));
+        request.setEndTime(MonitorDateUtils.parse("2018-07-18 16:32:00"));
+        request.setBizType((byte) 0);
         request.setIntervalMins(10);
         MonitorResult<List<RealTimeStatAccessRO>> result = realTimeStatAccessFacade.queryRealTimeStatAccess(request);
         System.out.println(JSON.toJSONString(result));
