@@ -335,7 +335,7 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         } else {
             endTimeInterval = MonitorDateUtils.getIntervalDateTime(endTime, intervalMins);
         }
-        Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(startTime, -intervalMins), intervalMins);
+        Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(startTime, intervalMins), intervalMins);
         while (endTimeInterval.compareTo(startTimeInterval) >= 0) {
             list.add(endTimeInterval);
             endTimeInterval = DateUtils.addMinutes(endTimeInterval, -intervalMins);

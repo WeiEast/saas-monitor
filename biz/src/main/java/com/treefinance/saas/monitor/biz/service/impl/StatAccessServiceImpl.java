@@ -198,7 +198,7 @@ public class StatAccessServiceImpl implements StatAccessService {
         List<String> result = Lists.newArrayList();
         List<Date> list = Lists.newArrayList();
         Date endTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(endTime, -intervalMins), intervalMins);
-        Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(startTime, -intervalMins), intervalMins);
+        Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(startTime, intervalMins), intervalMins);
         while (endTimeInterval.compareTo(startTimeInterval) >= 0) {
             list.add(endTimeInterval);
             endTimeInterval = DateUtils.addMinutes(endTimeInterval, -intervalMins);
