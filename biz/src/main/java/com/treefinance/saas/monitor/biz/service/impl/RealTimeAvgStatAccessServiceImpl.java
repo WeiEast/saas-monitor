@@ -71,7 +71,7 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
             request.setStartTime(MonitorDateUtils.getIntervalDateTime(request.getStartTime(), request.getIntervalMins()));
         }
         if (request.getIntervalMins() != null && request.getIntervalMins() > 0) {
-            request.setEndTime(MonitorDateUtils.getLaterIntervalDateTime(request.getEndTime(), request.getIntervalMins()));
+            request.setEndTime(MonitorDateUtils.getLaterBorderIntervalDateTime(request.getEndTime(), request.getIntervalMins()));
         }
         innerCriteria.andBizTypeEqualTo(request.getBizType())
                 .andDataTimeGreaterThanOrEqualTo(request.getStartTime())
@@ -281,7 +281,7 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         }
         List<RealTimeStatAccessDTO> result = Lists.newArrayList();
         Map<Date, List<RealTimeStatAccessDTO>> map = list.stream()
-                .collect(Collectors.groupingBy(data -> MonitorDateUtils.getLaterIntervalDateTime(data.getDataTime(), intervalMins)));
+                .collect(Collectors.groupingBy(data -> MonitorDateUtils.getLaterBorderIntervalDateTime(data.getDataTime(), intervalMins)));
         for (Map.Entry<Date, List<RealTimeStatAccessDTO>> entry : map.entrySet()) {
             RealTimeStatAccessDTO data = new RealTimeStatAccessDTO();
             BeanUtils.copyProperties(entry.getValue().get(0), data);
@@ -331,11 +331,11 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         List<Date> list = Lists.newArrayList();
         Date endTimeInterval;
         if (hiddenRecentPoint != null && hiddenRecentPoint == 1) {
-            endTimeInterval = MonitorDateUtils.getLaterIntervalDateTime(DateUtils.addMinutes(endTime, -intervalMins), intervalMins);
+            endTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(endTime, -intervalMins), intervalMins);
         } else {
-            endTimeInterval = MonitorDateUtils.getLaterIntervalDateTime(endTime, intervalMins);
+            endTimeInterval = MonitorDateUtils.getIntervalDateTime(endTime, intervalMins);
         }
-        Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(startTime, intervalMins);
+        Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(startTime, -intervalMins), intervalMins);
         while (endTimeInterval.compareTo(startTimeInterval) >= 0) {
             list.add(endTimeInterval);
             endTimeInterval = DateUtils.addMinutes(endTimeInterval, -intervalMins);

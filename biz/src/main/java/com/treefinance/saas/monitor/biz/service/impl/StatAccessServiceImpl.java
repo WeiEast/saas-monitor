@@ -151,7 +151,7 @@ public class StatAccessServiceImpl implements StatAccessService {
             request.setStartDate(MonitorDateUtils.getIntervalDateTime(request.getStartDate(), request.getIntervalMins()));
         }
         if (request.getIntervalMins() != null && request.getIntervalMins() > 0) {
-            request.setEndDate(MonitorDateUtils.getLaterIntervalDateTime(request.getEndDate(), request.getIntervalMins()));
+            request.setEndDate(MonitorDateUtils.getLaterBorderIntervalDateTime(request.getEndDate(), request.getIntervalMins()));
         }
         MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
         MerchantStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
@@ -197,8 +197,8 @@ public class StatAccessServiceImpl implements StatAccessService {
     private List<String> getIntervalTimeStrList(Date startTime, Date endTime, Integer intervalMins) {
         List<String> result = Lists.newArrayList();
         List<Date> list = Lists.newArrayList();
-        Date endTimeInterval = MonitorDateUtils.getLaterIntervalDateTime(DateUtils.addMinutes(endTime, -intervalMins), intervalMins);
-        Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(startTime, intervalMins);
+        Date endTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(endTime, -intervalMins), intervalMins);
+        Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(startTime, -intervalMins), intervalMins);
         while (endTimeInterval.compareTo(startTimeInterval) >= 0) {
             list.add(endTimeInterval);
             endTimeInterval = DateUtils.addMinutes(endTimeInterval, -intervalMins);
@@ -216,7 +216,7 @@ public class StatAccessServiceImpl implements StatAccessService {
         List<MerchantStatAccessRO> result = Lists.newArrayList();
 
         Map<Date, List<MerchantStatAccessRO>> map = list.stream()
-                .collect(Collectors.groupingBy(data -> MonitorDateUtils.getLaterIntervalDateTime(data.getDataTime(), intervalMins)));
+                .collect(Collectors.groupingBy(data -> MonitorDateUtils.getLaterBorderIntervalDateTime(data.getDataTime(), intervalMins)));
 
         for (Map.Entry<Date, List<MerchantStatAccessRO>> entry : map.entrySet()) {
             MerchantStatAccessRO data = new MerchantStatAccessRO();
