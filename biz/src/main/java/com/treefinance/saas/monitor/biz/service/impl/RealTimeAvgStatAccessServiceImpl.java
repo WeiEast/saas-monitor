@@ -75,7 +75,7 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
         }
         innerCriteria.andBizTypeEqualTo(request.getBizType())
                 .andDataTimeGreaterThanOrEqualTo(request.getStartTime())
-                .andDataTimeLessThanOrEqualTo(request.getEndTime());
+                .andDataTimeLessThan(request.getEndTime());
         List<RealTimeStatAccess> list = realTimeStatAccessMapper.selectByExample(criteria);
 
         List<RealTimeStatAccessDTO> dataList = this.convertStatData(list);
