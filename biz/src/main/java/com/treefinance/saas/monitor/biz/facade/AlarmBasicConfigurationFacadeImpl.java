@@ -55,10 +55,14 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         }
         logger.info("执行日志查询条件为{}", alarmExcuteLogRequest.toString());
         AsAlarm asAlarm = asAlarmService.getAsAlarmByPrimaryKey(alarmExcuteLogRequest.getId());
+
         AlarmExcuteLogRequest alarmExcuteLogRequest1 = new AlarmExcuteLogRequest();
         alarmExcuteLogRequest1.setId(alarmExcuteLogRequest.getId());
+
         List<AsAlarmTriggerRecord> totalasAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecord(alarmExcuteLogRequest1);
         List<AsAlarmTriggerRecord> asAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecordPagination(alarmExcuteLogRequest);
+
+
         List<AlarmExecuteLogRO> list = new ArrayList<>();
         for (AsAlarmTriggerRecord asAlarmTriggerRecord : asAlarmTriggerRecordList) {
             AlarmExecuteLogRO alarmExecuteLogRO = new AlarmExecuteLogRO();
@@ -69,9 +73,8 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             alarmExecuteLogRO.setConditionName(asAlarmTrigger.getName());
             list.add(alarmExecuteLogRO);
         }
+
         return new MonitorResult<>(alarmExcuteLogRequest, list, totalasAlarmTriggerRecordList.size());
-
-
     }
 
     @Override
