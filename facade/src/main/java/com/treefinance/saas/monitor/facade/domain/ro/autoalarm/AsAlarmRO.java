@@ -1,67 +1,39 @@
 package com.treefinance.saas.monitor.facade.domain.ro.autoalarm;
 
-import java.io.Serializable;
+import com.treefinance.saas.monitor.facade.domain.base.BaseRO;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * @author haojiahong
- * @date 2018/7/19
+ * @author:guoguoyun
+ * @date:Created in 2018/7/18下午7:34
  */
-public class AsAlarmRO implements Serializable {
+@Getter
+@Setter
+public class AsAlarmRO extends BaseRO{
 
-    private static final long serialVersionUID = 2591408385433873014L;
-
-    private Long id;
-    private String name;
+    /**
+     * 预警配置ID
+     */
+    private  Long id ;
+    /**
+     * 预警名称
+     */
+    private  String name;
+    /**
+     * 预警执行环境(0-所有，1-生产，2-预发布)
+     */
     private Byte runEnv;
+    /**
+     * 预警开关
+     */
     private String alarmSwitch;
+    /**
+     * 预警执行时间
+     */
     private String runInterval;
+    /**
+     * 预警时间间隔
+     */
     private Integer timeInterval;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Byte getRunEnv() {
-        return runEnv;
-    }
-
-    public void setRunEnv(Byte runEnv) {
-        this.runEnv = runEnv;
-    }
-
-    public String getAlarmSwitch() {
-        return alarmSwitch;
-    }
-
-    public void setAlarmSwitch(String alarmSwitch) {
-        this.alarmSwitch = alarmSwitch;
-    }
-
-    public String getRunInterval() {
-        return runInterval;
-    }
-
-    public void setRunInterval(String runInterval) {
-        this.runInterval = runInterval;
-    }
-
-    public Integer getTimeInterval() {
-        return timeInterval;
-    }
-
-    public void setTimeInterval(Integer timeInterval) {
-        this.timeInterval = timeInterval;
-    }
 }

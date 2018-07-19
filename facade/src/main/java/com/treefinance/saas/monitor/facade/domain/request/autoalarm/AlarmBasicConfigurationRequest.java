@@ -10,6 +10,6 @@ import java.io.Serializable;
  */
 public class AlarmBasicConfigurationRequest implements Serializable {
     private static final long serialVersionUID = 977996390384737005L;
-
+    
 
 }

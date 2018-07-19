@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.facade.domain.ro;
+package com.treefinance.saas.monitor.facade.domain.ro.autoalarm;
 
 import lombok.Getter;
 import lombok.Setter;
