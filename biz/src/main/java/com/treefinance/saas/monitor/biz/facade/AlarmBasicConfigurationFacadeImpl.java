@@ -1,15 +1,23 @@
 package com.treefinance.saas.monitor.biz.facade;
 
-import com.treefinance.saas.monitor.biz.service.*;
+import com.treefinance.saas.monitor.biz.service.AsAlarmMsgService;
+import com.treefinance.saas.monitor.biz.service.AsAlarmService;
+import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerRecordService;
+import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerService;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.dao.entity.*;
+import com.treefinance.saas.monitor.dao.entity.AsAlarm;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmMsg;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmTrigger;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerRecord;
 import com.treefinance.saas.monitor.facade.domain.request.AlarmExcuteLogRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationDetailRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmExecuteLogRO;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmRO;
+import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
 import com.treefinance.saas.monitor.facade.service.autoalarm.AlarmBasicConfigurationFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +49,14 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
     @Autowired
     private AsAlarmTriggerRecordService asAlarmTriggerRecordService;
 
-
     @Override
-    public void add(){}
-
-    @Override
-    public void update(){}
+    public MonitorResult<Void> addOrUpdate(AlarmBasicConfigurationDetailRequest request) {
+        if (request == null) {
+            throw new ParamCheckerException("request不能为null");
+        }
+        asAlarmService.addOrUpdate(request);
+        return MonitorResultBuilder.build();
+    }
 
     @Override
     public MonitorResult<List<AlarmExecuteLogRO>> queryAlaramExecuteLogList(AlarmExcuteLogRequest alarmExcuteLogRequest) {
@@ -79,29 +89,29 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
 
     @Override
     public MonitorResult<List<AsAlarmRO>> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request) {
-        logger.info("分页查询预警配置：{}",request);
+        logger.info("分页查询预警配置：{}", request);
 
         List<AsAlarm> list = asAlarmService.queryPagingList(request);
 
-        if (list.isEmpty()){
-            return MonitorResultBuilder.pageResult(request,new ArrayList<>(),0);
+        if (list.isEmpty()) {
+            return MonitorResultBuilder.pageResult(request, new ArrayList<>(), 0);
         }
 
         List<Long> ids = list.stream().map(AsAlarm::getId).collect(Collectors.toList());
         List<AsAlarmMsg> asAlarmMsgs = asAlarmMsgService.queryMsgInIdList(ids);
 
-        List<AsAlarmRO> returnList = DataConverterUtils.convert(list,AsAlarmRO.class);
-        Map<Long,AsAlarmMsg> map = asAlarmMsgs.stream().collect(Collectors.toMap(AsAlarmMsg::getAlarmId,
+        List<AsAlarmRO> returnList = DataConverterUtils.convert(list, AsAlarmRO.class);
+        Map<Long, AsAlarmMsg> map = asAlarmMsgs.stream().collect(Collectors.toMap(AsAlarmMsg::getAlarmId,
                 asAlarmMsg -> asAlarmMsg));
-        for(AsAlarmRO asAlarmRO : returnList){
+        for (AsAlarmRO asAlarmRO : returnList) {
             Long id = asAlarmRO.getId();
             AsAlarmMsg asAlarmMsg = map.get(id);
-            if(asAlarmMsg!=null){
+            if (asAlarmMsg != null) {
                 asAlarmRO.setTitleTemplate(asAlarmMsg.getTitleTemplate());
                 asAlarmRO.setBodyTemplate(asAlarmMsg.getBodyTemplate());
             }
         }
-        return MonitorResultBuilder.pageResult(request,returnList,returnList.size());
+        return MonitorResultBuilder.pageResult(request, returnList, returnList.size());
     }
 
 }

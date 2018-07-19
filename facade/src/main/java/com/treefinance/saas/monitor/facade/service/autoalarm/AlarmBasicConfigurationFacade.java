@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.facade.service.autoalarm;
 
 import com.treefinance.saas.monitor.facade.domain.request.AlarmExcuteLogRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationDetailRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmExecuteLogRO;
@@ -17,17 +18,13 @@ import java.util.List;
 public interface AlarmBasicConfigurationFacade {
 
     /**
-     * 添加预警配置
+     * 添加或修改预警配置
      */
-    void add();
-
-    /**
-     * 修改预警配置
-     */
-    void update();
+    MonitorResult<Void> addOrUpdate(AlarmBasicConfigurationDetailRequest request);
 
     /**
      * 列表返回预警触发条件（分页）
+     *
      * @param alarmExcuteLogRequest
      */
     MonitorResult<List<AlarmExecuteLogRO>> queryAlaramExecuteLogList(AlarmExcuteLogRequest alarmExcuteLogRequest);
