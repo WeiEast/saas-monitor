@@ -150,7 +150,7 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
             startTime = MonitorDateUtils.getIntervalDateTime(startTime, intervalMins);
         }
         if (intervalMins != null && intervalMins > 0) {
-            startTime = MonitorDateUtils.getLaterIntervalDateTime(startTime, intervalMins);
+            endTime = MonitorDateUtils.getLaterBorderIntervalDateTime(endTime, intervalMins);
         }
         List<Date> dateList = this.getDayStartTimeList(startTime, endTime);
         List<RealTimeStatAccessDTO> dataList = Lists.newArrayList();
