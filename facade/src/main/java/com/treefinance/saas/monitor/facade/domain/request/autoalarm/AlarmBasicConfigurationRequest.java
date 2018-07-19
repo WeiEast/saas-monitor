@@ -20,6 +20,6 @@ public class AlarmBasicConfigurationRequest extends PageRequest implements Seria
     /**配置管理列表搜索-配置名称*/
     private String name;
     /**执行环境*/
-    private String runEnv;
+    private Byte runEnv;
 
 }

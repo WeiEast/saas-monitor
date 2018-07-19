@@ -1,6 +1,9 @@
 package com.treefinance.saas.monitor.biz.service;
 
 import com.treefinance.saas.monitor.dao.entity.AsAlarm;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmCriteria;
+
+import java.util.List;
 
 /**
  * @author:guoguoyun
@@ -9,4 +12,6 @@ import com.treefinance.saas.monitor.dao.entity.AsAlarm;
 public interface AsAlarmService {
 
     AsAlarm getAsAlarmByPrimaryKey(long id);
+
+    List<AsAlarm> selectPaginationByExample(AsAlarmCriteria criteria);
 }
