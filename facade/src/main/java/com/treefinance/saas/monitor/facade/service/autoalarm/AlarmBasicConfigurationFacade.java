@@ -1,5 +1,9 @@
 package com.treefinance.saas.monitor.facade.service.autoalarm;
 
+import com.treefinance.saas.monitor.facade.domain.request.AlarmExcuteLogRequest;
+import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
+import com.treefinance.saas.monitor.facade.domain.ro.AlarmExecuteLogRO;
+
 /**
  * 预警基本配置管理
  *
@@ -18,5 +22,10 @@ public interface AlarmBasicConfigurationFacade {
      */
     void update();
 
+    /**
+     * 列表返回预警触发条件（分页）
+     * @param alarmExcuteLogRequest
+     */
+    MonitorResult<AlarmExecuteLogRO> queryAlaramExecuteLogByAlarmId(AlarmExcuteLogRequest alarmExcuteLogRequest);
 
 }
