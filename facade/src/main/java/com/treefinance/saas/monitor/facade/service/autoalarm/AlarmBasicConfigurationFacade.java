@@ -30,7 +30,7 @@ public interface AlarmBasicConfigurationFacade {
      * 列表返回预警触发条件（分页）
      * @param alarmExcuteLogRequest
      */
-    MonitorResult<AlarmExecuteLogRO> queryAlaramExecuteLogByAlarmId(AlarmExcuteLogRequest alarmExcuteLogRequest);
+    MonitorResult<List<AlarmExecuteLogRO>> queryAlaramExecuteLogList(AlarmExcuteLogRequest alarmExcuteLogRequest);
 
     /**
      *预警配置管理分页列表

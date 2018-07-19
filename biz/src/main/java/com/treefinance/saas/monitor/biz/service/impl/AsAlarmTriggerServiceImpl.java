@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 /**
  * @author:guoguoyun
  * @date:Created in 2018/7/18下午8:16
@@ -20,7 +21,7 @@ public class AsAlarmTriggerServiceImpl implements AsAlarmTriggerService {
     private AsAlarmTriggerMapper asAlarmTriggerMapper;
 
     @Override
-    public AsAlarmTrigger getAsAlarmTriggerByID(long id) {
+    public AsAlarmTrigger getAsAlarmTriggerByPrimaryKey(long id) {
 
         return   asAlarmTriggerMapper.selectByPrimaryKey(id);
     }

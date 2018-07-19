@@ -8,7 +8,11 @@ import com.treefinance.saas.monitor.dao.entity.AsAlarmTrigger;
  */
 public interface AsAlarmTriggerService {
 
-
-     AsAlarmTrigger getAsAlarmTriggerByID(long id);
+     /**
+      * 根据条件ID查询预警触发条件
+      * @param id
+      * @return
+      */
+     AsAlarmTrigger getAsAlarmTriggerByPrimaryKey(long id);
 
 }
