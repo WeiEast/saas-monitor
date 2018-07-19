@@ -33,7 +33,13 @@ public class AsAlarmServiceImpl implements AsAlarmService {
     @Override
     public List<AsAlarm> queryPagingList(AlarmBasicConfigurationRequest request) {
         AsAlarmCriteria criteria = new AsAlarmCriteria();
-        criteria.createCriteria().andNameLike(request.getName()).andRunEnvEqualTo(request.getRunEnv());
+        AsAlarmCriteria.Criteria innerCriteria = criteria.createCriteria();
+        if(request.getName() != null){
+            innerCriteria.andNameLike(request.getName());
+        }
+        if(request.getRunEnv() != null){
+            innerCriteria.andRunEnvEqualTo(request.getRunEnv());
+        }
         criteria.setOffset(request.getOffset());
         criteria.setLimit(request.getPageSize());
         return asAlarmMapper.selectPaginationByExample(criteria);
