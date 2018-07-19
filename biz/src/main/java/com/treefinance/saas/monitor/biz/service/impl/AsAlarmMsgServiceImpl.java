@@ -23,4 +23,12 @@ public class AsAlarmMsgServiceImpl implements AsAlarmMsgService {
     public List<AsAlarmMsg> selectByExample(AsAlarmMsgCriteria alarmMsgCriteria) {
         return asAlarmMsgMapper.selectByExample(alarmMsgCriteria);
     }
+
+
+    @Override
+    public List<AsAlarmMsg> queryMsgInIdList(List<Long> ids) {
+        AsAlarmMsgCriteria alarmMsgCriteria = new AsAlarmMsgCriteria();
+        alarmMsgCriteria.createCriteria().andIdIn(ids);
+        return selectByExample(alarmMsgCriteria);
+    }
 }

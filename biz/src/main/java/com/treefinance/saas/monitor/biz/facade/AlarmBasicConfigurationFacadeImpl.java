@@ -78,39 +78,27 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
     public MonitorResult<List<AsAlarmRO>> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request) {
         logger.info("分页查询预警配置：{}",request);
 
-        AsAlarmCriteria criteria = new AsAlarmCriteria();
-        criteria.createCriteria().andNameLike(request.getName()).andRunEnvEqualTo(request.getRunEnv());
-        criteria.setOffset(request.getOffset());
-        criteria.setLimit(request.getPageSize());
-        List<AsAlarm> list = asAlarmService.selectPaginationByExample(criteria);
+        List<AsAlarm> list = asAlarmService.queryPagingList(request);
 
         if (list.isEmpty()){
             return MonitorResultBuilder.pageResult(request,new ArrayList<>(),0);
         }
 
         List<Long> ids = list.stream().map(AsAlarm::getId).collect(Collectors.toList());
-
-
-        AsAlarmMsgCriteria alarmMsgCriteria = new AsAlarmMsgCriteria();
-        alarmMsgCriteria.createCriteria().andIdIn(ids);
-        List<AsAlarmMsg> asAlarmMsgs = asAlarmMsgService.selectByExample(alarmMsgCriteria);
+        List<AsAlarmMsg> asAlarmMsgs = asAlarmMsgService.queryMsgInIdList(ids);
 
         List<AsAlarmRO> returnList = DataConverterUtils.convert(list,AsAlarmRO.class);
         Map<Long,AsAlarmMsg> map = asAlarmMsgs.stream().collect(Collectors.toMap(AsAlarmMsg::getAlarmId,
                 asAlarmMsg -> asAlarmMsg));
         for(AsAlarmRO asAlarmRO : returnList){
-
             Long id = asAlarmRO.getId();
-
             AsAlarmMsg asAlarmMsg = map.get(id);
-
             if(asAlarmMsg!=null){
                 asAlarmRO.setTitleTemplate(asAlarmMsg.getTitleTemplate());
                 asAlarmRO.setBodyTemplate(asAlarmMsg.getBodyTemplate());
             }
-
         }
-
         return MonitorResultBuilder.pageResult(request,returnList,returnList.size());
     }
+
 }
