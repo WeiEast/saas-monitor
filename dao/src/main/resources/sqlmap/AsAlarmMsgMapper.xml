@@ -9,8 +9,8 @@
     -->
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="alarmId" jdbcType="BIGINT" property="alarmId" />
-    <result column="titleTemplate" jdbcType="varchar" property="titleTemplate" />
-    <result column="bodyTemplate" jdbcType="varchar" property="bodyTemplate" />
+    <result column="titleTemplate" jdbcType="VARCHAR" property="titleTemplate" />
+    <result column="bodyTemplate" jdbcType="VARCHAR" property="bodyTemplate" />
     <result column="createTime" jdbcType="TIMESTAMP" property="createTime" />
     <result column="lastUpdateTime" jdbcType="TIMESTAMP" property="lastUpdateTime" />
   </resultMap>
@@ -166,10 +166,10 @@
         #{alarmId,jdbcType=BIGINT},
       </if>
       <if test="titleTemplate != null">
-        #{titleTemplate,jdbcType=varchar},
+        #{titleTemplate,jdbcType=VARCHAR},
       </if>
       <if test="bodyTemplate != null">
-        #{bodyTemplate,jdbcType=varchar},
+        #{bodyTemplate,jdbcType=VARCHAR},
       </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},
@@ -187,10 +187,10 @@
         alarmId = #{alarmId,jdbcType=BIGINT},
       </if>
       <if test="titleTemplate != null">
-        titleTemplate = #{titleTemplate,jdbcType=varchar},
+        titleTemplate = #{titleTemplate,jdbcType=VARCHAR},
       </if>
       <if test="bodyTemplate != null">
-        bodyTemplate = #{bodyTemplate,jdbcType=varchar},
+        bodyTemplate = #{bodyTemplate,jdbcType=VARCHAR},
       </if>
       <if test="createTime != null">
         createTime = #{createTime,jdbcType=TIMESTAMP},
@@ -210,8 +210,8 @@
       bodyTemplate, createTime, 
       lastUpdateTime) values
     <foreach collection="list" item="record" separator=",">
-       (#{record.id,jdbcType=BIGINT}, #{record.alarmId,jdbcType=BIGINT}, #{record.titleTemplate,jdbcType=varchar}, 
-        #{record.bodyTemplate,jdbcType=varchar}, #{record.createTime,jdbcType=TIMESTAMP}, 
+       (#{record.id,jdbcType=BIGINT}, #{record.alarmId,jdbcType=BIGINT}, #{record.titleTemplate,jdbcType=VARCHAR}, 
+        #{record.bodyTemplate,jdbcType=VARCHAR}, #{record.createTime,jdbcType=TIMESTAMP}, 
         #{record.lastUpdateTime,jdbcType=TIMESTAMP})
     </foreach>
   </insert>
@@ -224,8 +224,8 @@
     <foreach collection="list" item="record" separator=";">
       update as_alarm_msg
       set alarmId = #{record.alarmId,jdbcType=BIGINT},
-        titleTemplate = #{record.titleTemplate,jdbcType=varchar},
-        bodyTemplate = #{record.bodyTemplate,jdbcType=varchar},
+        titleTemplate = #{record.titleTemplate,jdbcType=VARCHAR},
+        bodyTemplate = #{record.bodyTemplate,jdbcType=VARCHAR},
         createTime = #{record.createTime,jdbcType=TIMESTAMP},
         lastUpdateTime = #{record.lastUpdateTime,jdbcType=TIMESTAMP}
       where id = #{record.id,jdbcType=BIGINT}
@@ -243,10 +243,10 @@
         alarmId = #{record.alarmId,jdbcType=BIGINT},
       </if>
       <if test="record.titleTemplate != null">
-        titleTemplate = #{record.titleTemplate,jdbcType=varchar},
+        titleTemplate = #{record.titleTemplate,jdbcType=VARCHAR},
       </if>
       <if test="record.bodyTemplate != null">
-        bodyTemplate = #{record.bodyTemplate,jdbcType=varchar},
+        bodyTemplate = #{record.bodyTemplate,jdbcType=VARCHAR},
       </if>
       <if test="record.createTime != null">
         createTime = #{record.createTime,jdbcType=TIMESTAMP},
@@ -297,8 +297,8 @@
     insert into as_alarm_msg (id, alarmId, titleTemplate, 
       bodyTemplate, createTime, lastUpdateTime
       )
-    values (#{id,jdbcType=BIGINT}, #{alarmId,jdbcType=BIGINT}, #{titleTemplate,jdbcType=varchar}, 
-      #{bodyTemplate,jdbcType=varchar}, #{createTime,jdbcType=TIMESTAMP}, #{lastUpdateTime,jdbcType=TIMESTAMP}
+    values (#{id,jdbcType=BIGINT}, #{alarmId,jdbcType=BIGINT}, #{titleTemplate,jdbcType=VARCHAR}, 
+      #{bodyTemplate,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{lastUpdateTime,jdbcType=TIMESTAMP}
       )
   </insert>
   <insert id="insertSelective" parameterType="com.treefinance.saas.monitor.dao.entity.AsAlarmMsg">
@@ -336,10 +336,10 @@
         #{alarmId,jdbcType=BIGINT},
       </if>
       <if test="titleTemplate != null">
-        #{titleTemplate,jdbcType=varchar},
+        #{titleTemplate,jdbcType=VARCHAR},
       </if>
       <if test="bodyTemplate != null">
-        #{bodyTemplate,jdbcType=varchar},
+        #{bodyTemplate,jdbcType=VARCHAR},
       </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},
@@ -375,10 +375,10 @@
         alarmId = #{record.alarmId,jdbcType=BIGINT},
       </if>
       <if test="record.titleTemplate != null">
-        titleTemplate = #{record.titleTemplate,jdbcType=varchar},
+        titleTemplate = #{record.titleTemplate,jdbcType=VARCHAR},
       </if>
       <if test="record.bodyTemplate != null">
-        bodyTemplate = #{record.bodyTemplate,jdbcType=varchar},
+        bodyTemplate = #{record.bodyTemplate,jdbcType=VARCHAR},
       </if>
       <if test="record.createTime != null">
         createTime = #{record.createTime,jdbcType=TIMESTAMP},
@@ -400,8 +400,8 @@
     update as_alarm_msg
     set id = #{record.id,jdbcType=BIGINT},
       alarmId = #{record.alarmId,jdbcType=BIGINT},
-      titleTemplate = #{record.titleTemplate,jdbcType=varchar},
-      bodyTemplate = #{record.bodyTemplate,jdbcType=varchar},
+      titleTemplate = #{record.titleTemplate,jdbcType=VARCHAR},
+      bodyTemplate = #{record.bodyTemplate,jdbcType=VARCHAR},
       createTime = #{record.createTime,jdbcType=TIMESTAMP},
       lastUpdateTime = #{record.lastUpdateTime,jdbcType=TIMESTAMP}
     <if test="_parameter != null">
@@ -420,10 +420,10 @@
         alarmId = #{alarmId,jdbcType=BIGINT},
       </if>
       <if test="titleTemplate != null">
-        titleTemplate = #{titleTemplate,jdbcType=varchar},
+        titleTemplate = #{titleTemplate,jdbcType=VARCHAR},
       </if>
       <if test="bodyTemplate != null">
-        bodyTemplate = #{bodyTemplate,jdbcType=varchar},
+        bodyTemplate = #{bodyTemplate,jdbcType=VARCHAR},
       </if>
       <if test="createTime != null">
         createTime = #{createTime,jdbcType=TIMESTAMP},
@@ -442,8 +442,8 @@
     -->
     update as_alarm_msg
     set alarmId = #{alarmId,jdbcType=BIGINT},
-      titleTemplate = #{titleTemplate,jdbcType=varchar},
-      bodyTemplate = #{bodyTemplate,jdbcType=varchar},
+      titleTemplate = #{titleTemplate,jdbcType=VARCHAR},
+      bodyTemplate = #{bodyTemplate,jdbcType=VARCHAR},
       createTime = #{createTime,jdbcType=TIMESTAMP},
       lastUpdateTime = #{lastUpdateTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=BIGINT}

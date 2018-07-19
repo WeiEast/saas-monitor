@@ -35,5 +35,5 @@ public interface AlarmBasicConfigurationFacade {
     /**
      *预警配置管理分页列表
      * */
-    List<AsAlarmRO> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request);
+    MonitorResult<List<AsAlarmRO>> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request);
 }

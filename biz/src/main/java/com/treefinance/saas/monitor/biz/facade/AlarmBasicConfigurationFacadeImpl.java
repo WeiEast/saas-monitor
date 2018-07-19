@@ -7,6 +7,7 @@ import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.facade.domain.request.AlarmExcuteLogRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
+import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmExecuteLogRO;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmRO;
 import com.treefinance.saas.monitor.facade.service.autoalarm.AlarmBasicConfigurationFacade;
@@ -29,7 +30,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
     private static final Logger logger = LoggerFactory.getLogger(AlarmBasicConfigurationFacade.class);
 
     @Autowired
-    private AsAlarmService asalarmService;
+    private AsAlarmService asAlarmService;
 
     @Autowired
     private AsAlarmMsgService asAlarmMsgService;
@@ -42,12 +43,10 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
 
 
     @Override
-    public void add() {
-    }
+    public void add(){}
 
     @Override
-    public void update() {
-    }
+    public void update(){}
 
     @Override
     public MonitorResult<List<AlarmExecuteLogRO>> queryAlaramExecuteLogList(AlarmExcuteLogRequest alarmExcuteLogRequest) {
@@ -55,7 +54,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             return new MonitorResult<>("执行日志查询预警配置id不能为空");
         }
         logger.info("执行日志查询条件为{}", alarmExcuteLogRequest.toString());
-        AsAlarm asAlarm = asalarmService.getAsAlarmByPrimaryKey(alarmExcuteLogRequest.getId());
+        AsAlarm asAlarm = asAlarmService.getAsAlarmByPrimaryKey(alarmExcuteLogRequest.getId());
         AlarmExcuteLogRequest alarmExcuteLogRequest1 = new AlarmExcuteLogRequest();
         alarmExcuteLogRequest1.setId(alarmExcuteLogRequest.getId());
         List<AsAlarmTriggerRecord> totalasAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecord(alarmExcuteLogRequest1);
@@ -76,14 +75,19 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
     }
 
     @Override
-    public List<AsAlarmRO> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request) {
-        logger.info("分页查询预警配置：{}", request);
+    public MonitorResult<List<AsAlarmRO>> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request) {
+        logger.info("分页查询预警配置：{}",request);
 
         AsAlarmCriteria criteria = new AsAlarmCriteria();
         criteria.createCriteria().andNameLike(request.getName()).andRunEnvEqualTo(request.getRunEnv());
         criteria.setOffset(request.getOffset());
         criteria.setLimit(request.getPageSize());
-        List<AsAlarm> list = asalarmService.selectPaginationByExample(criteria);
+        List<AsAlarm> list = asAlarmService.selectPaginationByExample(criteria);
+
+        if (list.isEmpty()){
+            return MonitorResultBuilder.pageResult(request,new ArrayList<>(),0);
+        }
+
         List<Long> ids = list.stream().map(AsAlarm::getId).collect(Collectors.toList());
 
 
@@ -91,23 +95,22 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         alarmMsgCriteria.createCriteria().andIdIn(ids);
         List<AsAlarmMsg> asAlarmMsgs = asAlarmMsgService.selectByExample(alarmMsgCriteria);
 
-        List<AsAlarmRO> returnList = DataConverterUtils.convert(list, AsAlarmRO.class);
-        Map<Long, AsAlarmMsg> map = asAlarmMsgs.stream().collect(Collectors.toMap(AsAlarmMsg::getAlarmId,
+        List<AsAlarmRO> returnList = DataConverterUtils.convert(list,AsAlarmRO.class);
+        Map<Long,AsAlarmMsg> map = asAlarmMsgs.stream().collect(Collectors.toMap(AsAlarmMsg::getAlarmId,
                 asAlarmMsg -> asAlarmMsg));
-        for (AsAlarmRO asAlarmRO : returnList) {
+        for(AsAlarmRO asAlarmRO : returnList){
 
             Long id = asAlarmRO.getId();
 
             AsAlarmMsg asAlarmMsg = map.get(id);
 
-            if (asAlarmMsg != null) {
+            if(asAlarmMsg!=null){
                 asAlarmRO.setTitleTemplate(asAlarmMsg.getTitleTemplate());
                 asAlarmRO.setBodyTemplate(asAlarmMsg.getBodyTemplate());
             }
 
         }
 
-
-        return returnList;
+        return MonitorResultBuilder.pageResult(request,returnList,returnList.size());
     }
 }

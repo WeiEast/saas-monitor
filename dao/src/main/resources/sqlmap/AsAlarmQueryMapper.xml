@@ -10,7 +10,7 @@
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="alarmId" jdbcType="BIGINT" property="alarmId" />
     <result column="resultCode" jdbcType="VARCHAR" property="resultCode" />
-    <result column="querySql" jdbcType="varchar" property="querySql" />
+    <result column="querySql" jdbcType="VARCHAR" property="querySql" />
     <result column="description" jdbcType="VARCHAR" property="description" />
     <result column="createTime" jdbcType="TIMESTAMP" property="createTime" />
     <result column="lastUpdateTime" jdbcType="TIMESTAMP" property="lastUpdateTime" />
@@ -173,7 +173,7 @@
         #{resultCode,jdbcType=VARCHAR},
       </if>
       <if test="querySql != null">
-        #{querySql,jdbcType=varchar},
+        #{querySql,jdbcType=VARCHAR},
       </if>
       <if test="description != null">
         #{description,jdbcType=VARCHAR},
@@ -197,7 +197,7 @@
         resultCode = #{resultCode,jdbcType=VARCHAR},
       </if>
       <if test="querySql != null">
-        querySql = #{querySql,jdbcType=varchar},
+        querySql = #{querySql,jdbcType=VARCHAR},
       </if>
       <if test="description != null">
         description = #{description,jdbcType=VARCHAR},
@@ -221,7 +221,7 @@
       lastUpdateTime) values
     <foreach collection="list" item="record" separator=",">
        (#{record.id,jdbcType=BIGINT}, #{record.alarmId,jdbcType=BIGINT}, #{record.resultCode,jdbcType=VARCHAR}, 
-        #{record.querySql,jdbcType=varchar}, #{record.description,jdbcType=VARCHAR}, #{record.createTime,jdbcType=TIMESTAMP}, 
+        #{record.querySql,jdbcType=VARCHAR}, #{record.description,jdbcType=VARCHAR}, #{record.createTime,jdbcType=TIMESTAMP}, 
         #{record.lastUpdateTime,jdbcType=TIMESTAMP})
     </foreach>
   </insert>
@@ -235,7 +235,7 @@
       update as_alarm_query
       set alarmId = #{record.alarmId,jdbcType=BIGINT},
         resultCode = #{record.resultCode,jdbcType=VARCHAR},
-        querySql = #{record.querySql,jdbcType=varchar},
+        querySql = #{record.querySql,jdbcType=VARCHAR},
         description = #{record.description,jdbcType=VARCHAR},
         createTime = #{record.createTime,jdbcType=TIMESTAMP},
         lastUpdateTime = #{record.lastUpdateTime,jdbcType=TIMESTAMP}
@@ -257,7 +257,7 @@
         resultCode = #{record.resultCode,jdbcType=VARCHAR},
       </if>
       <if test="record.querySql != null">
-        querySql = #{record.querySql,jdbcType=varchar},
+        querySql = #{record.querySql,jdbcType=VARCHAR},
       </if>
       <if test="record.description != null">
         description = #{record.description,jdbcType=VARCHAR},
@@ -312,7 +312,7 @@
       querySql, description, createTime, 
       lastUpdateTime)
     values (#{id,jdbcType=BIGINT}, #{alarmId,jdbcType=BIGINT}, #{resultCode,jdbcType=VARCHAR}, 
-      #{querySql,jdbcType=varchar}, #{description,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{querySql,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
       #{lastUpdateTime,jdbcType=TIMESTAMP})
   </insert>
   <insert id="insertSelective" parameterType="com.treefinance.saas.monitor.dao.entity.AsAlarmQuery">
@@ -356,7 +356,7 @@
         #{resultCode,jdbcType=VARCHAR},
       </if>
       <if test="querySql != null">
-        #{querySql,jdbcType=varchar},
+        #{querySql,jdbcType=VARCHAR},
       </if>
       <if test="description != null">
         #{description,jdbcType=VARCHAR},
@@ -398,7 +398,7 @@
         resultCode = #{record.resultCode,jdbcType=VARCHAR},
       </if>
       <if test="record.querySql != null">
-        querySql = #{record.querySql,jdbcType=varchar},
+        querySql = #{record.querySql,jdbcType=VARCHAR},
       </if>
       <if test="record.description != null">
         description = #{record.description,jdbcType=VARCHAR},
@@ -424,7 +424,7 @@
     set id = #{record.id,jdbcType=BIGINT},
       alarmId = #{record.alarmId,jdbcType=BIGINT},
       resultCode = #{record.resultCode,jdbcType=VARCHAR},
-      querySql = #{record.querySql,jdbcType=varchar},
+      querySql = #{record.querySql,jdbcType=VARCHAR},
       description = #{record.description,jdbcType=VARCHAR},
       createTime = #{record.createTime,jdbcType=TIMESTAMP},
       lastUpdateTime = #{record.lastUpdateTime,jdbcType=TIMESTAMP}
@@ -447,7 +447,7 @@
         resultCode = #{resultCode,jdbcType=VARCHAR},
       </if>
       <if test="querySql != null">
-        querySql = #{querySql,jdbcType=varchar},
+        querySql = #{querySql,jdbcType=VARCHAR},
       </if>
       <if test="description != null">
         description = #{description,jdbcType=VARCHAR},
@@ -470,7 +470,7 @@
     update as_alarm_query
     set alarmId = #{alarmId,jdbcType=BIGINT},
       resultCode = #{resultCode,jdbcType=VARCHAR},
-      querySql = #{querySql,jdbcType=varchar},
+      querySql = #{querySql,jdbcType=VARCHAR},
       description = #{description,jdbcType=VARCHAR},
       createTime = #{createTime,jdbcType=TIMESTAMP},
       lastUpdateTime = #{lastUpdateTime,jdbcType=TIMESTAMP}
