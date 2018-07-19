@@ -15,7 +15,7 @@ public class AsAlarmTriggerRecordRO {
     /**
      * 记录表ID
      */
-    private long id ;
+    private long id;
     /**
      * 预警配置ID
      */
@@ -39,7 +39,7 @@ public class AsAlarmTriggerRecordRO {
     /**
      * 预警处理上下文
      */
-    private  String context;
+    private String context;
     /**
      * info触发
      */
@@ -68,11 +68,6 @@ public class AsAlarmTriggerRecordRO {
      * 通知方式
      */
     private String notifyTypes;
-
-
-
-
-
 
 
 }

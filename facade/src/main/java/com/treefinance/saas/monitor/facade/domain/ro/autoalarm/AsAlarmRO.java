@@ -10,16 +10,16 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class AsAlarmRO extends BaseRO{
+public class AsAlarmRO extends BaseRO {
 
     /**
      * 预警配置ID
      */
-    private  Long id ;
+    private Long id;
     /**
      * 预警名称
      */
-    private  String name;
+    private String name;
     /**
      * 预警执行环境(0-所有，1-生产，2-预发布)
      */
