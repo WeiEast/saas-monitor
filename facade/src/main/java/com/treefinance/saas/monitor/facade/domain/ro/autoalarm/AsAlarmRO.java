@@ -36,4 +36,17 @@ public class AsAlarmRO extends BaseRO {
      * 预警时间间隔
      */
     private Integer timeInterval;
+    /**
+    * 通知消息标题
+    * */
+    private String titleTemplate;
+    /**
+     * 通知消息
+     * */
+    private String bodyTemplate;
+
+
+
+
+
 }
