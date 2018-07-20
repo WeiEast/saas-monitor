@@ -5,6 +5,7 @@ import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicCo
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmExecuteLogRO;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfigurationDetailRO;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmRO;
 
 import java.util.List;
@@ -22,6 +23,9 @@ public interface AlarmBasicConfigurationFacade {
      */
     MonitorResult<Void> addOrUpdate(AlarmBasicConfigurationDetailRequest request);
 
+
+    MonitorResult<AsAlarmBasicConfigurationDetailRO> queryAlarmConfigurationById(Long id);
+
     /**
      * 列表返回预警触发条件（分页）
      *
@@ -30,7 +34,7 @@ public interface AlarmBasicConfigurationFacade {
     MonitorResult<List<AlarmExecuteLogRO>> queryAlaramExecuteLogList(AlarmExcuteLogRequest alarmExcuteLogRequest);
 
     /**
-     *预警配置管理分页列表
-     * */
+     * 预警配置管理分页列表
+     */
     MonitorResult<List<AsAlarmRO>> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request);
 }

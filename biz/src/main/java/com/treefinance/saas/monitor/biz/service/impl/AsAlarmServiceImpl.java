@@ -6,9 +6,11 @@ import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.*;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.*;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -48,10 +50,10 @@ public class AsAlarmServiceImpl implements AsAlarmService {
     public List<AsAlarm> queryPagingList(AlarmBasicConfigurationRequest request) {
         AsAlarmCriteria criteria = new AsAlarmCriteria();
         AsAlarmCriteria.Criteria innerCriteria = criteria.createCriteria();
-        if(request.getName() != null){
+        if (request.getName() != null) {
             innerCriteria.andNameLike(request.getName());
         }
-        if(request.getRunEnv() != null){
+        if (request.getRunEnv() != null) {
             innerCriteria.andRunEnvEqualTo(request.getRunEnv());
         }
         criteria.setOffset(request.getOffset());
@@ -127,7 +129,69 @@ public class AsAlarmServiceImpl implements AsAlarmService {
             }
             asAlarmTriggerMapper.insertOrUpdateBySelective(asAlarmTrigger);
         }
+    }
 
+    @Override
+    public AsAlarmBasicConfigurationDetailRO queryAsAlarmBasicConfigurationDetailById(Long id) {
+        AsAlarmBasicConfigurationDetailRO result = new AsAlarmBasicConfigurationDetailRO();
 
+        //预警配置表
+        AsAlarm asAlarm = asAlarmMapper.selectByPrimaryKey(id);
+        AsAlarmRO asAlarmRO = DataConverterUtils.convert(asAlarm, AsAlarmRO.class);
+        result.setAsAlarmRO(asAlarmRO);
+
+        //预警常量表
+        AsAlarmConstantCriteria asAlarmConstantCriteria = new AsAlarmConstantCriteria();
+        asAlarmConstantCriteria.setOrderByClause("createTime asc");
+        asAlarmConstantCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmConstant> asAlarmConstantList = asAlarmConstantMapper.selectByExample(asAlarmConstantCriteria);
+        List<AsAlarmConstantRO> asAlarmConstantROList = DataConverterUtils.convert(asAlarmConstantList, AsAlarmConstantRO.class);
+        result.setAsAlarmConstantROList(asAlarmConstantROList);
+
+        //预警数据查询表
+        AsAlarmQueryCriteria asAlarmQueryCriteria = new AsAlarmQueryCriteria();
+        asAlarmQueryCriteria.setOrderByClause("createTime asc");
+        asAlarmQueryCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmQuery> asAlarmQueryList = asAlarmQueryMapper.selectByExample(asAlarmQueryCriteria);
+        List<AsAlarmQueryRO> asAlarmQueryROList = DataConverterUtils.convert(asAlarmQueryList, AsAlarmQueryRO.class);
+        result.setAsAlarmQueryROList(asAlarmQueryROList);
+
+        //预警变量表
+        AsAlarmVariableCriteria asAlarmVariableCriteria = new AsAlarmVariableCriteria();
+        asAlarmVariableCriteria.setOrderByClause("createTime asc");
+        asAlarmVariableCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmVariable> asAlarmVariableList = asAlarmVariableMapper.selectByExample(asAlarmVariableCriteria);
+        List<AsAlarmVariableRO> asAlarmVariableROList = DataConverterUtils.convert(asAlarmVariableList, AsAlarmVariableRO.class);
+        result.setAsAlarmVariableROList(asAlarmVariableROList);
+
+        //预警通知表
+        AsAlarmNotifyCriteria asAlarmNotifyCriteria = new AsAlarmNotifyCriteria();
+        asAlarmNotifyCriteria.setOrderByClause("createTime asc");
+        asAlarmNotifyCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmNotify> asAlarmNotifyList = asAlarmNotifyMapper.selectByExample(asAlarmNotifyCriteria);
+        List<AsAlarmNotifyRO> asAlarmNotifyROList = DataConverterUtils.convert(asAlarmNotifyList, AsAlarmNotifyRO.class);
+        result.setAsAlarmNotifyROList(asAlarmNotifyROList);
+
+        //预警消息模板表
+        AsAlarmMsgCriteria asAlarmMsgCriteria = new AsAlarmMsgCriteria();
+        asAlarmMsgCriteria.setOrderByClause("createTime asc");
+        asAlarmMsgCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmMsg> asAlarmMsgList = asAlarmMsgMapper.selectByExample(asAlarmMsgCriteria);
+        AsAlarmMsgRO asAlarmMsgRO = new AsAlarmMsgRO();
+        if (!CollectionUtils.isEmpty(asAlarmMsgList)) {
+            AsAlarmMsg asAlarmMsg = asAlarmMsgList.get(0);
+            asAlarmMsgRO = DataConverterUtils.convert(asAlarmMsg, AsAlarmMsgRO.class);
+        }
+        result.setAsAlarmMsgRO(asAlarmMsgRO);
+
+        //预警触发条件表
+        AsAlarmTriggerCriteria asAlarmTriggerCriteria = new AsAlarmTriggerCriteria();
+        asAlarmTriggerCriteria.setOrderByClause("createTime asc");
+        asAlarmTriggerCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerMapper.selectByExample(asAlarmTriggerCriteria);
+        List<AsAlarmTriggerRO> asAlarmTriggerROList = DataConverterUtils.convert(asAlarmTriggerList, AsAlarmTriggerRO.class);
+        result.setAsAlarmTriggerROList(asAlarmTriggerROList);
+
+        return result;
     }
 }

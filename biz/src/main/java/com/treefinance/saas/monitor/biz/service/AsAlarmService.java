@@ -4,6 +4,7 @@ import com.treefinance.saas.monitor.dao.entity.AsAlarm;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmCriteria;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationDetailRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationRequest;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfigurationDetailRO;
 
 import java.util.List;
 
@@ -20,5 +21,8 @@ public interface AsAlarmService {
     List<AsAlarm> queryPagingList(AlarmBasicConfigurationRequest request);
 
     void addOrUpdate(AlarmBasicConfigurationDetailRequest request);
+
+    AsAlarmBasicConfigurationDetailRO queryAsAlarmBasicConfigurationDetailById(Long id);
+
 
 }

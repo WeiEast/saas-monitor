@@ -16,6 +16,7 @@ import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicCo
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmExecuteLogRO;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfigurationDetailRO;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmRO;
 import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
 import com.treefinance.saas.monitor.facade.service.autoalarm.AlarmBasicConfigurationFacade;
@@ -56,6 +57,15 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         }
         asAlarmService.addOrUpdate(request);
         return MonitorResultBuilder.build();
+    }
+
+    @Override
+    public MonitorResult<AsAlarmBasicConfigurationDetailRO> queryAlarmConfigurationById(Long id) {
+        if (id == null) {
+            throw new ParamCheckerException("id不能为null");
+        }
+        AsAlarmBasicConfigurationDetailRO result = asAlarmService.queryAsAlarmBasicConfigurationDetailById(id);
+        return MonitorResultBuilder.build(result);
     }
 
     @Override
