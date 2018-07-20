@@ -17,5 +17,6 @@ public class AsAlarmQueryInfoRequest extends BaseRequest {
     private String resultCode;
     private String querySql;
     private String description;
+    private Byte toDelete;
 
 }

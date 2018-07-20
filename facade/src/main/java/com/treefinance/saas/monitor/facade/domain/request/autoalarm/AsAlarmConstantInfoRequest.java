@@ -18,5 +18,6 @@ public class AsAlarmConstantInfoRequest extends BaseRequest {
     private String code;
     private String value;
     private String description;
+    private Byte toDelete;
 
 }
