@@ -117,12 +117,11 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         for (AsAlarmRO asAlarmRO : returnList) {
             Long id = asAlarmRO.getId();
             AsAlarmMsg asAlarmMsg = map.get(id);
+            ESaasEnv env =ESaasEnv.getByValue(asAlarmRO.getRunEnv());
+            asAlarmRO.setRunEnvDesc(env.getDesc());
             if (asAlarmMsg != null) {
                 asAlarmRO.setTitleTemplate(asAlarmMsg.getTitleTemplate());
                 asAlarmRO.setBodyTemplate(asAlarmMsg.getBodyTemplate());
-                ESaasEnv env =ESaasEnv.getByValue(asAlarmRO.getRunEnv());
-                if(env == null) continue;
-                asAlarmRO.setRunEnvDesc(env.getDesc());
             }
         }
         return MonitorResultBuilder.pageResult(request, returnList, returnList.size());
