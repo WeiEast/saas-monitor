@@ -13,6 +13,7 @@ import lombok.Setter;
 public class AsAlarmMsgInfoRequest extends BaseRequest {
     private static final long serialVersionUID = 4502816433449034991L;
 
+    private Long id;
     private String titleTemplate;
     private String bodyTemplate;
 

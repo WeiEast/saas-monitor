@@ -15,10 +15,7 @@ import java.util.List;
 public class AlarmBasicConfigurationDetailRequest extends BaseRequest {
 
     private static final long serialVersionUID = 3803246362323207422L;
-    /**
-     * 预警配置表主键id
-     */
-    private Long alarmId;
+
     /**
      * 预警配置表相关信息
      */

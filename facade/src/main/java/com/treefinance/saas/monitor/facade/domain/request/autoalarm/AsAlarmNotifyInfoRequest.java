@@ -12,6 +12,8 @@ import lombok.Setter;
 @Getter
 public class AsAlarmNotifyInfoRequest extends BaseRequest {
     private static final long serialVersionUID = 4931233743200566679L;
+
+    private Long id;
     private String alarmLevel;
     private String wechatSwitch;
     private String smsSwitch;

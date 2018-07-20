@@ -13,6 +13,7 @@ import lombok.Setter;
 public class AsAlarmQueryInfoRequest extends BaseRequest {
     private static final long serialVersionUID = -4734757118395905193L;
 
+    private Long id;
     private String resultCode;
     private String querySql;
     private String description;

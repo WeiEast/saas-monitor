@@ -30,7 +30,7 @@ public interface AlarmBasicConfigurationFacade {
      * @param id 预警配置表主键id
      * @return
      */
-    MonitorResult<AsAlarmBasicConfigurationDetailRO> queryAlarmConfigurationById(Long id);
+    MonitorResult<AsAlarmBasicConfigurationDetailRO> queryAlarmConfigurationDetailById(Long id);
 
     /**
      * 列表返回预警触发条件（分页）

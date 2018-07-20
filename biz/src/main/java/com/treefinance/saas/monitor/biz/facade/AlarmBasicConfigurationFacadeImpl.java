@@ -60,7 +60,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
     }
 
     @Override
-    public MonitorResult<AsAlarmBasicConfigurationDetailRO> queryAlarmConfigurationById(Long id) {
+    public MonitorResult<AsAlarmBasicConfigurationDetailRO> queryAlarmConfigurationDetailById(Long id) {
         if (id == null) {
             throw new ParamCheckerException("id不能为null");
         }

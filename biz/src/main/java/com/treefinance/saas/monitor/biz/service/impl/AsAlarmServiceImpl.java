@@ -78,6 +78,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
             AsAlarmConstant asAlarmConstant = DataConverterUtils.convert(asAlarmConstantInfoRequest, AsAlarmConstant.class);
             if (asAlarmConstant.getId() == null) {
                 asAlarmConstant.setId(UidGenerator.getId());
+                asAlarmConstant.setAlarmId(asAlarm.getId());
             }
             asAlarmConstantMapper.insertOrUpdateBySelective(asAlarmConstant);
         }
@@ -88,6 +89,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
             AsAlarmQuery asAlarmQuery = DataConverterUtils.convert(asAlarmQueryInfoRequest, AsAlarmQuery.class);
             if (asAlarmQuery.getId() == null) {
                 asAlarmQuery.setId(UidGenerator.getId());
+                asAlarmQuery.setAlarmId(asAlarm.getId());
             }
             asAlarmQueryMapper.insertOrUpdateBySelective(asAlarmQuery);
         }
@@ -98,6 +100,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
             AsAlarmVariable asAlarmVariable = DataConverterUtils.convert(asAlarmVariableInfoRequest, AsAlarmVariable.class);
             if (asAlarmVariable.getId() == null) {
                 asAlarmVariable.setId(UidGenerator.getId());
+                asAlarmVariable.setAlarmId(asAlarm.getId());
             }
             asAlarmVariableMapper.insertOrUpdateBySelective(asAlarmVariable);
         }
@@ -108,6 +111,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
             AsAlarmNotify asAlarmNotify = DataConverterUtils.convert(asAlarmNotifyInfoRequest, AsAlarmNotify.class);
             if (asAlarmNotify.getId() == null) {
                 asAlarmNotify.setId(UidGenerator.getId());
+                asAlarmNotify.setAlarmId(asAlarm.getId());
             }
             asAlarmNotifyMapper.insertOrUpdateBySelective(asAlarmNotify);
         }
@@ -117,6 +121,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         AsAlarmMsg asAlarmMsg = DataConverterUtils.convert(asAlarmMsgInfoRequest, AsAlarmMsg.class);
         if (asAlarmMsg.getId() == null) {
             asAlarmMsg.setId(UidGenerator.getId());
+            asAlarmMsg.setAlarmId(asAlarm.getId());
         }
         asAlarmMsgMapper.insertOrUpdateBySelective(asAlarmMsg);
 
@@ -126,6 +131,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
             AsAlarmTrigger asAlarmTrigger = DataConverterUtils.convert(asAlarmTriggerInfoRequest, AsAlarmTrigger.class);
             if (asAlarmTrigger.getId() == null) {
                 asAlarmTrigger.setId(UidGenerator.getId());
+                asAlarmTrigger.setAlarmId(asAlarm.getId());
             }
             asAlarmTriggerMapper.insertOrUpdateBySelective(asAlarmTrigger);
         }
