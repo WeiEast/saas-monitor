@@ -24,6 +24,12 @@ public interface AlarmBasicConfigurationFacade {
     MonitorResult<Void> addOrUpdate(AlarmBasicConfigurationDetailRequest request);
 
 
+    /**
+     * 根据预警配置id查询预警配置详细信息
+     *
+     * @param id 预警配置表主键id
+     * @return
+     */
     MonitorResult<AsAlarmBasicConfigurationDetailRO> queryAlarmConfigurationById(Long id);
 
     /**
