@@ -4,6 +4,7 @@ import com.treefinance.saas.monitor.biz.service.AsAlarmMsgService;
 import com.treefinance.saas.monitor.biz.service.AsAlarmService;
 import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerRecordService;
 import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerService;
+import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.dao.entity.AsAlarm;
@@ -119,6 +120,9 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             if (asAlarmMsg != null) {
                 asAlarmRO.setTitleTemplate(asAlarmMsg.getTitleTemplate());
                 asAlarmRO.setBodyTemplate(asAlarmMsg.getBodyTemplate());
+                ESaasEnv env =ESaasEnv.getByValue(asAlarmRO.getRunEnv());
+                if(env == null) continue;
+                asAlarmRO.setRunEnvDesc(env.getDesc());
             }
         }
         return MonitorResultBuilder.pageResult(request, returnList, returnList.size());

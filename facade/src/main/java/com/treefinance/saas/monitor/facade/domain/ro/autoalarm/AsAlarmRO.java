@@ -24,6 +24,11 @@ public class AsAlarmRO extends BaseRO {
      * 预警执行环境(0-所有，1-生产，2-预发布)
      */
     private Byte runEnv;
+
+    /**
+     * 执行环境描述
+     * */
+    private String runEnvDesc;
     /**
      * 预警开关
      */
