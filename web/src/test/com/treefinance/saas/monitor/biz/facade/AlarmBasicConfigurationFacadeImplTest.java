@@ -31,7 +31,7 @@ public class AlarmBasicConfigurationFacadeImplTest {
 
         AsAlarmInfoRequest asAlarmInfoRequest = new AsAlarmInfoRequest();
         asAlarmInfoRequest.setId(204963666255179776L);
-        asAlarmInfoRequest.setName("测试预警配置3335");
+        asAlarmInfoRequest.setName("测试预警配置33356");
         asAlarmInfoRequest.setAlarmSwitch("on");
         asAlarmInfoRequest.setRunEnv((byte) 0);
         asAlarmInfoRequest.setRunInterval("0 0/5 * * * *");
@@ -44,7 +44,7 @@ public class AlarmBasicConfigurationFacadeImplTest {
         asAlarmConstantInfoRequest.setCode("bizType");
         asAlarmConstantInfoRequest.setValue("0");
         asAlarmConstantInfoRequest.setDescription("所有业务类型");
-        asAlarmConstantInfoRequestList.add(asAlarmConstantInfoRequest);
+//        asAlarmConstantInfoRequestList.add(asAlarmConstantInfoRequest);
         request.setAsAlarmConstantInfoRequestList(asAlarmConstantInfoRequestList);
 
         List<AsAlarmQueryInfoRequest> asAlarmQueryInfoRequestList = Lists.newArrayList();
@@ -58,7 +58,6 @@ public class AlarmBasicConfigurationFacadeImplTest {
                 "        and dataTime >= DATE_SUB(#alarmTime,INTERVAL #dataPointNum * #intervalTime MINUTE) ");
         asAlarmQueryInfoRequest.setResultCode("data");
         asAlarmQueryInfoRequest.setDescription("当前时段数据，自动根据选择模板生成");
-        asAlarmQueryInfoRequest.setToDelete((byte) 1);
         asAlarmQueryInfoRequestList.add(asAlarmQueryInfoRequest);
         request.setAsAlarmQueryInfoRequestList(asAlarmQueryInfoRequestList);
 

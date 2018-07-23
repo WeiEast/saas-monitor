@@ -21,7 +21,5 @@ public class AsAlarmTriggerInfoRequest extends BaseRequest {
     private String errorTrigger;
     private String recoveryTrigger;
     private String recoveryMessageTemplate;
-    private Byte toDelete;
-
 
 }

@@ -20,7 +20,6 @@ public class AsAlarmNotifyInfoRequest extends BaseRequest {
     private String emailSwitch;
     private String ivrSwitch;
     private Byte receiverType;
-    private Byte toDelete;
 
 
 }
