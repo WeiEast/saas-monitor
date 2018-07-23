@@ -131,6 +131,7 @@
                enableBatchUpdateByPrimaryKey="true"
                enableBatchUpdateByPrimaryKeySelective="true">
             <property name="useActualColumnNames" value="true"/>
+            <columnOverride column="context" jdbcType="varchar"/>
         </table>
 
 
