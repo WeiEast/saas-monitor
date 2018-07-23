@@ -14,6 +14,7 @@ public class AsAlarmConstantInfoRequest extends BaseRequest {
     private static final long serialVersionUID = 890542204029045166L;
 
     private Long id;
+    private Integer constIndex;
     private String name;
     private String code;
     private String value;

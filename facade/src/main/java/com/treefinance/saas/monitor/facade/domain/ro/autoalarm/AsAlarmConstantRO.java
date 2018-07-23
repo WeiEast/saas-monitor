@@ -13,6 +13,8 @@ import lombok.Setter;
 public class AsAlarmConstantRO extends BaseRO {
 
     private Long id;
+
+    private Integer constIndex;
     /**
      * 预警配置id
      */

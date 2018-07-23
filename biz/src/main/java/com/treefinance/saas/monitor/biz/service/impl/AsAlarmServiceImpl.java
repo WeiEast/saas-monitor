@@ -168,7 +168,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         //预警常量表
         AsAlarmConstantCriteria asAlarmConstantCriteria = new AsAlarmConstantCriteria();
-        asAlarmConstantCriteria.setOrderByClause("createTime asc");
+        asAlarmConstantCriteria.setOrderByClause("constIndex asc,createTime asc");
         asAlarmConstantCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmConstant> asAlarmConstantList = asAlarmConstantMapper.selectByExample(asAlarmConstantCriteria);
         List<AsAlarmConstantRO> asAlarmConstantROList = DataConverterUtils.convert(asAlarmConstantList, AsAlarmConstantRO.class);
@@ -176,7 +176,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         //预警数据查询表
         AsAlarmQueryCriteria asAlarmQueryCriteria = new AsAlarmQueryCriteria();
-        asAlarmQueryCriteria.setOrderByClause("createTime asc");
+        asAlarmQueryCriteria.setOrderByClause("queryIndex asc,createTime asc");
         asAlarmQueryCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmQuery> asAlarmQueryList = asAlarmQueryMapper.selectByExample(asAlarmQueryCriteria);
         List<AsAlarmQueryRO> asAlarmQueryROList = DataConverterUtils.convert(asAlarmQueryList, AsAlarmQueryRO.class);
@@ -184,7 +184,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         //预警变量表
         AsAlarmVariableCriteria asAlarmVariableCriteria = new AsAlarmVariableCriteria();
-        asAlarmVariableCriteria.setOrderByClause("createTime asc");
+        asAlarmVariableCriteria.setOrderByClause("varIndex asc,createTime asc");
         asAlarmVariableCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmVariable> asAlarmVariableList = asAlarmVariableMapper.selectByExample(asAlarmVariableCriteria);
         List<AsAlarmVariableRO> asAlarmVariableROList = DataConverterUtils.convert(asAlarmVariableList, AsAlarmVariableRO.class);
@@ -212,7 +212,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         //预警触发条件表
         AsAlarmTriggerCriteria asAlarmTriggerCriteria = new AsAlarmTriggerCriteria();
-        asAlarmTriggerCriteria.setOrderByClause("createTime asc");
+        asAlarmTriggerCriteria.setOrderByClause("triggerIndex asc,createTime asc");
         asAlarmTriggerCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerMapper.selectByExample(asAlarmTriggerCriteria);
         List<AsAlarmTriggerRO> asAlarmTriggerROList = DataConverterUtils.convert(asAlarmTriggerList, AsAlarmTriggerRO.class);

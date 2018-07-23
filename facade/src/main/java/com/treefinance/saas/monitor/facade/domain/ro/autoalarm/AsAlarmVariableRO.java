@@ -12,6 +12,7 @@ import lombok.Setter;
 @Setter
 public class AsAlarmVariableRO extends BaseRO {
     private Long id;
+    private Integer varIndex;
     private Long alarmId;
     private String name;
     private String code;

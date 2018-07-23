@@ -14,6 +14,7 @@ public class AsAlarmTriggerInfoRequest extends BaseRequest {
     private static final long serialVersionUID = 7719000650401292325L;
 
     private Long id;
+    private Integer triggerIndex;
     private String name;
     private Byte status;
     private String infoTrigger;

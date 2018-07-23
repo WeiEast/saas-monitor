@@ -13,6 +13,7 @@ import lombok.Setter;
 public class AsAlarmTriggerRO extends BaseRO {
 
     private Long id;
+    private Integer triggerIndex;
     private Long alarmId;
     private String name;
     private Byte status;
