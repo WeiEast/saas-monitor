@@ -83,7 +83,7 @@
                enableBatchUpdateByPrimaryKey="true"
                enableBatchUpdateByPrimaryKeySelective="true">
             <property name="useActualColumnNames" value="true"/>
-            <columnOverride column="querySql" jdbcType="varchar"/>
+            <columnOverride column="querySql" jdbcType="VARCHAR"/>
         </table>
 
         <table tableName="as_alarm_variable" domainObjectName="AsAlarmVariable"
@@ -111,8 +111,8 @@
                enableBatchUpdateByPrimaryKey="true"
                enableBatchUpdateByPrimaryKeySelective="true">
             <property name="useActualColumnNames" value="true"/>
-            <columnOverride column="titleTemplate" jdbcType="varchar"/>
-            <columnOverride column="bodyTemplate" jdbcType="varchar"/>
+            <columnOverride column="titleTemplate" jdbcType="VARCHAR"/>
+            <columnOverride column="bodyTemplate" jdbcType="VARCHAR"/>
         </table>
 
         <table tableName="as_alarm_trigger" domainObjectName="AsAlarmTrigger"
@@ -131,7 +131,7 @@
                enableBatchUpdateByPrimaryKey="true"
                enableBatchUpdateByPrimaryKeySelective="true">
             <property name="useActualColumnNames" value="true"/>
-            <columnOverride column="context" jdbcType="varchar"/>
+            <columnOverride column="context" jdbcType="VARCHAR"/>
         </table>
 
 
