@@ -20,5 +20,6 @@ public class AsAlarmNotifyRO extends BaseRO {
     private String emailSwitch;
     private String ivrSwitch;
     private Byte receiverType;
+    private String receiverIds;
 
 }
