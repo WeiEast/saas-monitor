@@ -7,12 +7,15 @@ import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.*;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.*;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.*;
+import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author:guoguoyun
@@ -75,6 +78,9 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         //预警常量表
         //添加或者更新前,先删除
         List<AsAlarmConstantInfoRequest> asAlarmConstantInfoRequestList = request.getAsAlarmConstantInfoRequestList();
+        Map<String, List<AsAlarmConstantInfoRequest>> constMap
+                = asAlarmConstantInfoRequestList.stream().collect(Collectors.groupingBy(AsAlarmConstantInfoRequest::getCode));
+        checkUniqueCode(constMap, "预警常量");
         AsAlarmConstantCriteria asAlarmConstantCriteria = new AsAlarmConstantCriteria();
         asAlarmConstantCriteria.createCriteria().andAlarmIdEqualTo(asAlarm.getId());
         asAlarmConstantMapper.deleteByExample(asAlarmConstantCriteria);
@@ -84,12 +90,15 @@ public class AsAlarmServiceImpl implements AsAlarmService {
                 asAlarmConstant.setId(UidGenerator.getId());
             }
             asAlarmConstant.setAlarmId(asAlarm.getId());
-            asAlarmConstantMapper.insertOrUpdateBySelective(asAlarmConstant);
+            asAlarmConstantMapper.insertSelective(asAlarmConstant);
         }
 
 
         //预警数据查询表
         List<AsAlarmQueryInfoRequest> asAlarmQueryInfoRequestList = request.getAsAlarmQueryInfoRequestList();
+        Map<String, List<AsAlarmQueryInfoRequest>> queryMap
+                = asAlarmQueryInfoRequestList.stream().collect(Collectors.groupingBy(AsAlarmQueryInfoRequest::getResultCode));
+        checkUniqueCode(queryMap, "预警数据查询");
         AsAlarmQueryCriteria asAlarmQueryCriteria = new AsAlarmQueryCriteria();
         asAlarmQueryCriteria.createCriteria().andAlarmIdEqualTo(asAlarm.getId());
         asAlarmQueryMapper.deleteByExample(asAlarmQueryCriteria);
@@ -99,11 +108,14 @@ public class AsAlarmServiceImpl implements AsAlarmService {
                 asAlarmQuery.setId(UidGenerator.getId());
             }
             asAlarmQuery.setAlarmId(asAlarm.getId());
-            asAlarmQueryMapper.insertOrUpdateBySelective(asAlarmQuery);
+            asAlarmQueryMapper.insertSelective(asAlarmQuery);
         }
 
         //预警变量表
         List<AsAlarmVariableInfoRequest> asAlarmVariableInfoRequestList = request.getAsAlarmVariableInfoRequestList();
+        Map<String, List<AsAlarmVariableInfoRequest>> varMap
+                = asAlarmVariableInfoRequestList.stream().collect(Collectors.groupingBy(AsAlarmVariableInfoRequest::getCode));
+        checkUniqueCode(varMap, "预警变量");
         AsAlarmVariableCriteria asAlarmVariableCriteria = new AsAlarmVariableCriteria();
         asAlarmVariableCriteria.createCriteria().andAlarmIdEqualTo(asAlarm.getId());
         asAlarmVariableMapper.deleteByExample(asAlarmVariableCriteria);
@@ -113,7 +125,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
                 asAlarmVariable.setId(UidGenerator.getId());
             }
             asAlarmVariable.setAlarmId(asAlarm.getId());
-            asAlarmVariableMapper.insertOrUpdateBySelective(asAlarmVariable);
+            asAlarmVariableMapper.insertSelective(asAlarmVariable);
         }
 
         //预警通知表
@@ -127,7 +139,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
                 asAlarmNotify.setId(UidGenerator.getId());
             }
             asAlarmNotify.setAlarmId(asAlarm.getId());
-            asAlarmNotifyMapper.insertOrUpdateBySelective(asAlarmNotify);
+            asAlarmNotifyMapper.insertSelective(asAlarmNotify);
         }
 
         //预警消息模板表
@@ -140,7 +152,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
             asAlarmMsg.setId(UidGenerator.getId());
         }
         asAlarmMsg.setAlarmId(asAlarm.getId());
-        asAlarmMsgMapper.insertOrUpdateBySelective(asAlarmMsg);
+        asAlarmMsgMapper.insertSelective(asAlarmMsg);
 
         //预警触发条件表
         List<AsAlarmTriggerInfoRequest> asAlarmTriggerInfoRequestList = request.getAsAlarmTriggerInfoRequestList();
@@ -153,8 +165,17 @@ public class AsAlarmServiceImpl implements AsAlarmService {
                 asAlarmTrigger.setId(UidGenerator.getId());
             }
             asAlarmTrigger.setAlarmId(asAlarm.getId());
-            asAlarmTriggerMapper.insertOrUpdateBySelective(asAlarmTrigger);
+            asAlarmTriggerMapper.insertSelective(asAlarmTrigger);
         }
+    }
+
+    private <T> void checkUniqueCode(Map<String, List<T>> map, String table) {
+        for (Map.Entry<String, List<T>> entry : map.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                throw new ParamCheckerException(table + ":" + entry.getKey() + "重复,请修改");
+            }
+        }
+
     }
 
     @Override
