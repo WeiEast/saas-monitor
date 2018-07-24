@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.facade;
 
+import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.service.AsAlarmMsgService;
 import com.treefinance.saas.monitor.biz.service.AsAlarmService;
 import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerRecordService;
@@ -7,6 +8,7 @@ import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerService;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.AsAlarm;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmMsg;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmTrigger;
@@ -21,12 +23,14 @@ import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfi
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmRO;
 import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
 import com.treefinance.saas.monitor.facade.service.autoalarm.AlarmBasicConfigurationFacade;
+import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -117,7 +121,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         for (AsAlarmRO asAlarmRO : returnList) {
             Long id = asAlarmRO.getId();
             AsAlarmMsg asAlarmMsg = map.get(id);
-            ESaasEnv env =ESaasEnv.getByValue(asAlarmRO.getRunEnv());
+            ESaasEnv env = ESaasEnv.getByValue(asAlarmRO.getRunEnv());
             asAlarmRO.setRunEnvDesc(env.getDesc());
             if (asAlarmMsg != null) {
                 asAlarmRO.setTitleTemplate(asAlarmMsg.getTitleTemplate());
@@ -127,4 +131,24 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         return MonitorResultBuilder.pageResult(request, returnList, returnList.size());
     }
 
+    @Override
+    public MonitorResult<Map<String, String>> getCronComputeValue(String cronExpressionStr) {
+        Map<String, String> map = Maps.newHashMap();
+        Date now = new Date();
+        Date cronDate;
+        Long intervalMilliSecond;
+        try {
+            CronExpression cronExpression = new CronExpression(cronExpressionStr);
+            Date startTime = cronExpression.getNextValidTimeAfter(now);
+            Date endTime = cronExpression.getNextValidTimeAfter(startTime);
+            cronDate = startTime;
+            intervalMilliSecond = endTime.getTime() - startTime.getTime();
+        } catch (Exception e) {
+            throw new ParamCheckerException("cron表达式错误");
+        }
+        Long intervalTime = intervalMilliSecond / (1000 * 60);
+        map.put("alarmTime", MonitorDateUtils.format(cronDate));
+        map.put("intervalTime", String.valueOf(intervalTime));
+        return MonitorResultBuilder.build(map);
+    }
 }

@@ -9,6 +9,7 @@ import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfi
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmRO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 预警基本配置管理
@@ -43,4 +44,6 @@ public interface AlarmBasicConfigurationFacade {
      * 预警配置管理分页列表
      */
     MonitorResult<List<AsAlarmRO>> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request);
+
+    MonitorResult<Map<String, String>> getCronComputeValue(String cronExpression);
 }

@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.facade;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.*;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author chengtong
@@ -109,6 +111,11 @@ public class AlarmBasicConfigurationFacadeImplTest {
     @Test
     public void queryAlarmConfigurationDetailById() {
         MonitorResult<AsAlarmBasicConfigurationDetailRO> result = facade.queryAlarmConfigurationDetailById(204917728920760320L);
+    }
+
+    @Test
+    public void getCronComputeValue() {
+        MonitorResult<Map<String, String>> result = facade.getCronComputeValue("0 0/2 * * * ?");
     }
 
 
