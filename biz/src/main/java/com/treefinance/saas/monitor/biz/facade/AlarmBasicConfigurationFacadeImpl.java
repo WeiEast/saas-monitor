@@ -5,6 +5,7 @@ import com.treefinance.saas.monitor.biz.service.AsAlarmMsgService;
 import com.treefinance.saas.monitor.biz.service.AsAlarmService;
 import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerRecordService;
 import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerService;
+import com.treefinance.saas.monitor.biz.service.*;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
@@ -13,12 +14,14 @@ import com.treefinance.saas.monitor.dao.entity.AsAlarm;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmMsg;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmTrigger;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerRecord;
+import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.facade.domain.request.AlarmExcuteLogRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationDetailRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmExecuteLogRO;
+import com.treefinance.saas.monitor.facade.domain.ro.SaasWorkerRO;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfigurationDetailRO;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmRO;
 import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
@@ -28,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,6 +58,9 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
 
     @Autowired
     private AsAlarmTriggerRecordService asAlarmTriggerRecordService;
+
+    @Autowired
+    private SaasWorkerService saasWorkerService;
 
     @Override
     public MonitorResult<Void> addOrUpdate(AlarmBasicConfigurationDetailRequest request) {
@@ -121,7 +128,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         for (AsAlarmRO asAlarmRO : returnList) {
             Long id = asAlarmRO.getId();
             AsAlarmMsg asAlarmMsg = map.get(id);
-            ESaasEnv env = ESaasEnv.getByValue(asAlarmRO.getRunEnv());
+            ESaasEnv env =ESaasEnv.getByValue(asAlarmRO.getRunEnv());
             asAlarmRO.setRunEnvDesc(env.getDesc());
             if (asAlarmMsg != null) {
                 asAlarmRO.setTitleTemplate(asAlarmMsg.getTitleTemplate());
@@ -129,6 +136,21 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             }
         }
         return MonitorResultBuilder.pageResult(request, returnList, returnList.size());
+    }
+
+    @Override
+    public MonitorResult<List<SaasWorkerRO>> queryWorkerNameByDate(Date date) {
+        if (StringUtils.isEmpty(date)) {
+            return new MonitorResult<>("查询值班人员date不能为空");
+        }
+        List<SaasWorker> saasWorkerList = saasWorkerService.getNowDateWorker(date);
+        List<SaasWorkerRO> list = new ArrayList<>();
+        for (SaasWorker saasWorker : saasWorkerList) {
+            SaasWorkerRO saasWorkerRO = new SaasWorkerRO();
+            BeanUtils.copyProperties(saasWorker, saasWorkerRO);
+            list.add(saasWorkerRO);
+        }
+        return new MonitorResult(list);
     }
 
     @Override

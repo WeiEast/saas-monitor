@@ -21,4 +21,6 @@ public interface SaasWorkerService {
     List<SaasWorker> queryPaginateByCondition(SaasWorkerCriteria criteria);
 
     long countByCondition(SaasWorkerCriteria criteria);
+
+    List<SaasWorker> getNowDateWorker(Date now);
 }

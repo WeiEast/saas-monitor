@@ -5,9 +5,11 @@ import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicCo
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmExecuteLogRO;
+import com.treefinance.saas.monitor.facade.domain.ro.SaasWorkerRO;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfigurationDetailRO;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmRO;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -46,4 +48,12 @@ public interface AlarmBasicConfigurationFacade {
     MonitorResult<List<AsAlarmRO>> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request);
 
     MonitorResult<Map<String, String>> getCronComputeValue(String cronExpression);
+
+
+    /**
+     * 根据日期返回对应的值班人员
+     * @param date
+     * @return
+     */
+    MonitorResult<List<SaasWorkerRO>>  queryWorkerNameByDate(Date date);
 }
