@@ -12,17 +12,12 @@ import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.EmailAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.EmailStatAccessDTO;
-import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmTimeConfigDTO;
-import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.MonitorAlarmLevelConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.*;
 import com.treefinance.saas.monitor.common.enumeration.*;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
-import com.treefinance.saas.monitor.dao.entity.EmailStatAccess;
-import com.treefinance.saas.monitor.dao.entity.EmailStatAccessCriteria;
-import com.treefinance.saas.monitor.dao.entity.SaasWorker;
+import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.exception.BizException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -766,9 +761,10 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     @Override
     protected String genDutyManAlarmInfo(Long id, Long orderId, List<BaseAlarmMsgDTO> dtoList, EAlarmLevel alarmLevel, Date baseTime, ESaasEnv env) {
 
-        return "${name}" + "小伙伴你好," + "邮箱发生预警:\n环境：" + env.getDesc() + "\n时间：" +
+        return "${name}" + "小伙伴你好,当前环境:${saasEnv}," + "邮箱发生预警:\n环境：" + env.getDesc() + "\n时间：" +
                 MonitorDateUtils.format(baseTime) + "\n级别:" + alarmLevel.name() +
                 "\n系统已经生成了编号为" + id + "的预警记录,请及时处理,地址："+diamondConfig.getConsoleAddress();
+
     }
 
     @Override
@@ -793,4 +789,35 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         return map;
     }
 
+    @Override
+    protected List<AlarmRecord> getUnprocessedRecords(EAlarmType alarmType, BaseAlarmConfigDTO configDTO, String summary) {
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+        EmailMonitorAlarmConfigDTO config = (EmailMonitorAlarmConfigDTO) configDTO;
+
+        List<String> list = config.getEmails();
+
+        String email = list.get(0);
+
+        boolean isAll = AlarmConstants.ALL_EMAIL.equals(email);
+
+        if (summary != null){
+            if(isAll){
+                criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
+                        .UNPROCESS.getCode()).andSummaryLike("all").andSummaryNotEqualTo(summary);
+            }else {
+                criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
+                        .UNPROCESS.getCode()).andSummaryNotLike("all").andSummaryNotEqualTo(summary);
+            }
+            return alarmRecordService.queryByCondition(criteria);
+        }
+
+        if(isAll){
+            criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
+                    .UNPROCESS.getCode()).andSummaryLike("all");
+        }else {
+            criteria.createCriteria().andAlarmTypeEqualTo(alarmType.getCode()).andIsProcessedEqualTo(EAlarmRecordStatus
+                    .UNPROCESS.getCode()).andSummaryNotLike("all");
+        }
+        return alarmRecordService.queryByCondition(criteria);
+    }
 }

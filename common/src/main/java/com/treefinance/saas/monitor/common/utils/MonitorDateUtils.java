@@ -32,6 +32,41 @@ public class MonitorDateUtils {
         return intervalTime;
     }
 
+    /**
+     * 获取dataTime在间隔时间内的结束时间,如dataTime=19:41,intervalMinutes=5,则19:45
+     *
+     * @param dataTime
+     * @return
+     */
+    public static Date getLaterIntervalDateTime(Date dataTime, Integer intervalMinutes) {
+        Date intervalTime = DateUtils.truncate(dataTime, Calendar.MINUTE);
+        Long currentMinute = DateUtils.getFragmentInMinutes(intervalTime, Calendar.HOUR_OF_DAY);
+        if (currentMinute % intervalMinutes == 0) {
+            return intervalTime;
+        }
+        intervalTime = DateUtils.addMinutes(intervalTime, (intervalMinutes - (currentMinute.intValue() % intervalMinutes)));
+        return intervalTime;
+    }
+
+    /**
+     * 获取dataTime在间隔时间内的结束时间,边界值后移
+     * 如dataTime=19:41,intervalMinutes=5,则19:45
+     * dataTime=19:40,intervalMinutes=5,则19:45
+     *
+     * @param dataTime
+     * @return
+     */
+    public static Date getLaterBorderIntervalDateTime(Date dataTime, Integer intervalMinutes) {
+        Date intervalTime = DateUtils.truncate(dataTime, Calendar.MINUTE);
+        Long currentMinute = DateUtils.getFragmentInMinutes(intervalTime, Calendar.HOUR_OF_DAY);
+        if (currentMinute % intervalMinutes == 0) {
+            return DateUtils.addMinutes(intervalTime, intervalMinutes);
+        }
+        intervalTime = DateUtils.addMinutes(intervalTime, (intervalMinutes - (currentMinute.intValue() % intervalMinutes)));
+        return intervalTime;
+    }
+
+
     public static String format(Date date) {
         return DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
     }
@@ -175,9 +210,9 @@ public class MonitorDateUtils {
 
     public static void main(String[] args) throws ParseException {
 //        System.out.println(format(getIntervalTime(new Date(), 5)));
-        String dateStr = "2018-06-25 23:50:59";
+        String dateStr = "2018-06-25 21:00:00";
         Date date = parse(dateStr);
-        System.out.println(JSON.toJSONString(format(getIntervalDateTime(date, 120))));
+        System.out.println(JSON.toJSONString(format(getLaterBorderIntervalDateTime(date, 10))));
 
 
     }

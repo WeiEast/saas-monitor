@@ -2,10 +2,7 @@ package com.treefinance.saas.monitor.facade.service;
 
 import com.treefinance.saas.monitor.facade.domain.request.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
-import com.treefinance.saas.monitor.facade.domain.ro.AlarmRecordRO;
-import com.treefinance.saas.monitor.facade.domain.ro.AlarmWorkOrderRO;
-import com.treefinance.saas.monitor.facade.domain.ro.SaasWorkerRO;
-import com.treefinance.saas.monitor.facade.domain.ro.WorkOrderLogRO;
+import com.treefinance.saas.monitor.facade.domain.ro.*;
 
 import java.util.List;
 
@@ -62,8 +59,8 @@ public interface AlarmRecordFacade {
      * */
     MonitorResult<Boolean> updateWorkerOrderStatus(UpdateWorkOrderRequest request);
 
-
-
-
     MonitorResult<List<WorkOrderLogRO>> queryWorkOrderLog(WorkOrderLogRequest request);
+
+
+    MonitorResult<List<AlarmTypeListRO>> queryAlarmTypeList();
 }

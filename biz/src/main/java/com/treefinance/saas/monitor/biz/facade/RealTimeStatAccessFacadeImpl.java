@@ -52,7 +52,8 @@ public class RealTimeStatAccessFacadeImpl implements RealTimeStatAccessFacade {
         }
         logger.info("任务实时监控7天平均数据统计查询,输入参数request={}", JSON.toJSONString(request));
         List<RealTimeStatAccessDTO> list = realTimeAvgStatAccessService.queryDataByConditions(request.getAppId(),
-                request.getSaasEnv(), request.getBizType(), request.getStartTime(), request.getEndTime(), request.getIntervalMins());
+                request.getSaasEnv(), request.getBizType(), request.getStartTime(),
+                request.getEndTime(), request.getIntervalMins(), request.getHiddenRecentPoint());
         List<RealTimeStatAccessRO> result = DataConverterUtils.convert(list, RealTimeStatAccessRO.class);
         return MonitorResultBuilder.build(result);
 

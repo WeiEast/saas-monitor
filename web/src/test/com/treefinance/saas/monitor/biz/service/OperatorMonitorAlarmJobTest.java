@@ -6,6 +6,7 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoSuccessTaskConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoTaskConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -53,7 +54,7 @@ public class OperatorMonitorAlarmJobTest {
         List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
         for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
             try {
-                operatorAlarmMonitorService.alarm(jobTime, configDTO, ETaskStatDataType.USER);
+                operatorAlarmMonitorService.alarm(jobTime, configDTO, ETaskStatDataType.USER, EAlarmType.operator_alarm);
             }catch (Exception e){
                 logger.info(e.getMessage());
                 continue;
@@ -67,7 +68,7 @@ public class OperatorMonitorAlarmJobTest {
         Date jobTime = MonitorDateUtils.parse("2018-05-17 15:15:00");
         List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(diamondConfig.getOperatorMonitorAlarmConfig(), OperatorMonitorAlarmConfigDTO.class);
         for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
-            operatorAlarmMonitorService.alarm(jobTime, configDTO, ETaskStatDataType.USER);
+            operatorAlarmMonitorService.alarm(jobTime, configDTO, ETaskStatDataType.USER, EAlarmType.operator_alarm);
         }
     }
 

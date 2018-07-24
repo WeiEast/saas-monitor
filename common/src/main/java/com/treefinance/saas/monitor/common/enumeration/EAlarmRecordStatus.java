@@ -7,29 +7,45 @@ import java.util.Map;
  * @author chengtong
  * @date 18/6/5 14:08
  */
-public enum  EAlarmRecordStatus {
-
+public enum EAlarmRecordStatus {
+    /**
+     * 未处理
+     */
     UNPROCESS(0, "未处理"),
+    /**
+     * 已处理
+     */
     PROCESSED(2, "已处理"),
+    /**
+     * 误报
+     */
     WRONG(4, "误报"),
+    /**
+     * 继续观察
+     */
     WAIT(6, "继续观察"),
-    DISABLE(8, "无法解决"),;
+    /**
+     * 由于第三方的问题，无法解决
+     */
+    DISABLE(8, "无法解决"),
+    /**
+     * 系统判定恢复
+     */
+    REPAIRED(10, "系统恢复"),;
 
     private Integer code;
     private String desc;
 
 
-    private static Map<Integer,String> map = new HashMap<>();
+    private static Map<Integer, String> map = new HashMap<>();
 
     static {
-        map.put(UNPROCESS.code, UNPROCESS.desc);
-        map.put(PROCESSED.code, PROCESSED.desc);
-        map.put(WRONG.code, WRONG.desc);
-        map.put(WAIT.code, WAIT.desc);
-        map.put(DISABLE.code, DISABLE.desc);
+        for (EAlarmRecordStatus status: values()) {
+            map.put(status.code, status.desc);
+        }
     }
 
-    public static String getDesc(Integer code){
+    public static String getDesc(Integer code) {
         return map.get(code);
     }
 

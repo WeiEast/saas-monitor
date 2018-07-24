@@ -60,6 +60,14 @@ public interface StatAccessService {
     MonitorResult<List<MerchantStatAccessRO>> queryAllAccessList(MerchantStatAccessRequest request);
 
     /**
+     * 查询所有商户访问数据
+     *
+     * @param request
+     * @return
+     */
+    MonitorResult<List<MerchantStatAccessRO>> queryAllSuccessAccessList(MerchantStatAccessRequest request);
+
+    /**
      * 查询银行访问数据
      *
      * @param request

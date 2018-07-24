@@ -50,7 +50,6 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
         criteria.createCriteria().andContentEqualTo(String.valueOf(alarmRecord.getId())).andLevelEqualTo(alarmRecord
                 .getLevel()).andSummaryEqualTo(alarmRecord.getSummary()).andIsProcessedEqualTo(EAlarmRecordStatus.UNPROCESS.getCode());
 
-
         return alarmRecordMapper.selectByExample(criteria);
     }
 
@@ -90,5 +89,18 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
     @Override
     public AlarmRecord getByPrimaryKey(Long id) {
         return alarmRecordMapper.selectByPrimaryKey(id);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void repairAlarmRecord(AlarmWorkOrder order, AlarmRecord record, WorkOrderLog orderLog) {
+        alarmRecordMapper.updateByPrimaryKey(record);
+
+        if(order!= null){
+            workOrderMapper.updateByPrimaryKey(order);
+        }
+        if(orderLog != null){
+            workOrderLogMapper.insert(orderLog);
+        }
     }
 }

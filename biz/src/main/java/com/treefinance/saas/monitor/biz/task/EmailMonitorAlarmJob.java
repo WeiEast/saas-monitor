@@ -7,6 +7,7 @@ import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
 import com.treefinance.saas.monitor.biz.service.MonitorAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;
@@ -57,7 +58,7 @@ public class EmailMonitorAlarmJob implements SimpleJob {
                 }
 
                 ETaskStatDataType type = ETaskStatDataType.getByValue(configDTO.getAlarmType());
-                emailMonitorAlarmService.alarm(now, configDTO, type);
+                emailMonitorAlarmService.alarm(now, configDTO, type, EAlarmType.email_alarm);
             }
         } catch (Exception e) {
             logger.error("邮箱监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(now), e);

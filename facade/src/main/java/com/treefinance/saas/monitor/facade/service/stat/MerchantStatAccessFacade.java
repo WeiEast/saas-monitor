@@ -61,6 +61,8 @@ public interface MerchantStatAccessFacade {
      */
     MonitorResult<List<MerchantStatAccessRO>> queryAllAccessList(MerchantStatAccessRequest request);
 
+    MonitorResult<List<MerchantStatAccessRO>> queryAllSuccessAccessList(MerchantStatAccessRequest request);
+
     /**
      * 查询银行访问数据
      *

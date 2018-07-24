@@ -78,4 +78,14 @@ public interface AlarmRecordService {
      */
     AlarmRecord getByPrimaryKey(Long id);
 
+
+    /**
+     * 保存预警记录、工单、工单操作记录
+     *
+     * @param order    工单
+     * @param orderLog 操作记录
+     * @param record   预警记录
+     */
+    void repairAlarmRecord(AlarmWorkOrder order, AlarmRecord record, WorkOrderLog orderLog);
+
 }
