@@ -29,9 +29,9 @@ public class AlarmExecuteLogRO extends BaseRO{
     private String conditionName;
 
     /**
-     * 预警触发状态
+     * 预警条件状态
      */
-    private Byte status;
+    private String conditionStatus;
 
 
     /**
