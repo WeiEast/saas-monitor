@@ -11,6 +11,11 @@
     <artifactId>monitor-biz</artifactId>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+        </dependency>
         <dependency>
             <artifactId>gateway-facade</artifactId>
             <groupId>com.treefinance.saas.gateway</groupId>
