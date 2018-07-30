@@ -2,6 +2,8 @@ package com.treefinance.saas.monitor.biz.alarm.model;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerRecord;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -31,6 +33,11 @@ public class AlarmContext {
     private List<Map<String, Object>> dataList = Lists.newArrayList();
 
     /**
+     * 预警消息
+     */
+    private List<AlaramMessage> alaramMessageList = Lists.newArrayList();
+
+    /**
      * 本次警时间
      */
     private Date alarmTime;
@@ -57,6 +64,16 @@ public class AlarmContext {
     }
 
     /**
+     * 添加预警发送消息
+     * @param title
+     * @param message
+     * @param alarmLevel
+     */
+    public void addMessage(String title, String message, EAlarmLevel alarmLevel) {
+        alaramMessageList.add(new AlaramMessage(title, message, alarmLevel));
+    }
+
+    /**
      * 分组项
      *
      * @return
@@ -72,6 +89,7 @@ public class AlarmContext {
      * @return
      */
     private void descartes() {
+        dataList.clear();
         // 计算总数
         int totalCount = 1;
         for (Object groupValue : groupContext.values()) {
@@ -113,4 +131,9 @@ public class AlarmContext {
     public void setIntervalTime(Long intervalTime) {
         this.intervalTime = intervalTime;
     }
+
+    public List<AlaramMessage> getAlaramMessageList() {
+        return alaramMessageList;
+    }
+
 }

@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.biz.alarm.service.handler.impl;
+package com.treefinance.saas.monitor.biz.alarm.service.handler.chain;
 
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;

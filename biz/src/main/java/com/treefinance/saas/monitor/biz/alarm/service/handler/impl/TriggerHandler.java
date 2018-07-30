@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.alarm.expression.ExpressionParser;
+import com.treefinance.saas.monitor.biz.alarm.expression.spel.MessageExpressionParser;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandler;
@@ -45,7 +46,10 @@ public class TriggerHandler implements AlarmHandler {
     private ExpressionParser expressionParser;
 
     @Autowired
-    private AsAlarmTriggerRecordMapper asAlarmTriggerRecordMapper;
+    private AsAlarmTriggerRecordMapper alarmTriggerRecordMapper;
+
+    @Autowired
+    private MessageExpressionParser messageExpressionParser;
 
     @Override
     public void handle(AlarmConfig config, AlarmContext context) {
@@ -62,13 +66,15 @@ public class TriggerHandler implements AlarmHandler {
         // 数据分组
         List<Map<String, Object>> groups = context.groups();
         List<AsAlarmTriggerRecord> recordList = Lists.newArrayList();
+
+
         // 预警级别
-        EAlarmLevel[] alarmLevels = new EAlarmLevel[]{EAlarmLevel.info, EAlarmLevel.warning, EAlarmLevel.error};
+        EAlarmLevel[] alarmLevels = new EAlarmLevel[]{EAlarmLevel.error, EAlarmLevel.warning, EAlarmLevel.info};
         for (AsAlarmTrigger trigger : sortedTriggers) {
             long start = System.currentTimeMillis();
             Long triggerId = trigger.getId();
             Long alarmId = trigger.getAlarmId();
-            String recover = trigger.getRecoveryTrigger();
+
 
             // 各级别触发条件
             Map<EAlarmLevel, String> triggerMap = Maps.newHashMap();
@@ -80,50 +86,77 @@ public class TriggerHandler implements AlarmHandler {
             for (Map<String, Object> data : groups) {
                 AsAlarmTriggerRecord record = new AsAlarmTriggerRecord();
                 recordList.add(record);
+                try {
+                    record.setId(UidGenerator.getId());
+                    record.setAlarmId(alarmId);
+                    record.setConditionId(triggerId);
+                    record.setContext(JSON.toJSONString(data));
+                    record.setCreateTime(new Date());
+                    record.setRunEnv(config.getAlarm().getRunEnv());
+                    record.setRunTime(alarmTime);
 
-                record.setId(UidGenerator.getId());
-                record.setAlarmId(alarmId);
-                record.setConditionId(triggerId);
-                record.setContext(JSON.toJSONString(data));
-                record.setCreateTime(new Date());
-                record.setRunEnv(config.getAlarm().getRunEnv());
-                record.setRunTime(alarmTime);
-
-                // 触发条件禁用
-                record.setConditionStatus(Byte.valueOf("0").equals(trigger.getStatus()) ? "启用" : "未启用");
-                if (!Byte.valueOf("0").equals(trigger.getStatus())) {
-                    record.setCostTime(Long.valueOf((System.currentTimeMillis() - start) / 1000).intValue());
-                    logger.info("alarm trigger is un-used: trigger={}", JSON.toJSONString(trigger));
-                    continue;
-                }
-                // 预警触发级别：error -> warning -> info
-                EAlarmLevel currentLevel = null;
-                Map<EAlarmLevel, Object> alarmResultMap = Maps.newHashMap();
-                for (EAlarmLevel alarmLevel : alarmLevels) {
-                    String alarmLevelTrigger = triggerMap.get(alarmLevel);
-                    if (StringUtils.isEmpty(alarmLevelTrigger)) {
-                        alarmResultMap.put(alarmLevel, "未配置");
+                    // 触发条件禁用
+                    record.setConditionStatus(Byte.valueOf("0").equals(trigger.getStatus()) ? "启用" : "未启用");
+                    if (!Byte.valueOf("0").equals(trigger.getStatus())) {
+                        record.setCostTime(Long.valueOf((System.currentTimeMillis() - start) / 1000).intValue());
+                        logger.info("alarm trigger is un-used: trigger={}", JSON.toJSONString(trigger));
                         continue;
                     }
-                    Object result = expressionParser.parse(alarmLevelTrigger, data);
-                    if (Boolean.TRUE.equals(result)) {
-                        currentLevel = alarmLevel;
+                    // 预警触发级别：error -> warning -> info
+                    EAlarmLevel currentLevel = null;
+                    Map<EAlarmLevel, Object> alarmResultMap = Maps.newHashMap();
+                    for (EAlarmLevel alarmLevel : alarmLevels) {
+                        String alarmLevelTrigger = triggerMap.get(alarmLevel);
+                        if (StringUtils.isEmpty(alarmLevelTrigger)) {
+                            alarmResultMap.put(alarmLevel, "未配置");
+                            continue;
+                        }
+                        Object result = expressionParser.parse(alarmLevelTrigger, data);
+                        if (Boolean.TRUE.equals(result)) {
+                            currentLevel = alarmLevel;
+                            break;
+                        }
+                        alarmResultMap.put(alarmLevel, result);
                     }
-                    alarmResultMap.put(alarmLevel, result);
+                    record.setErrorTrigger(alarmResultMap.get(EAlarmLevel.error) + "");
+                    record.setWarningTrigger(alarmResultMap.get(EAlarmLevel.warning) + "");
+                    record.setInfoTrigger(alarmResultMap.get(EAlarmLevel.info) + "");
+                    // 未触发预警
+                    if (currentLevel == null) {
+                        // 是否配置恢复触发条件
+                        String recover = trigger.getRecoveryTrigger();
+                        if (StringUtils.isEmpty(recover)) {
+                            record.setRecoveryTrigger("未配置");
+                            record.setRecoveryMessage("");
+                            continue;
+                        }
+                        // 上次无预警，本次无预警本，不触发恢复
+                        AsAlarmTriggerRecord lastAlarm = getLastAlarm(triggerId, alarmTime, alarmId);
+                        if (lastAlarm == null) {
+                            record.setRecoveryTrigger("上次无预警，本次不触发恢复");
+                            continue;
+                        }
+                        // 上次有预警，本次无预警，触发恢复
+                        Object recoverResult = expressionParser.parse(recover, data);
+                        if (Boolean.TRUE.equals(recoverResult)) {
+                            String messageExpression = trigger.getRecoveryMessageTemplate();
+                            String message = (String) messageExpressionParser.parse(messageExpression, data);
+                            record.setRecoveryMessage(message);
+
+                            context.addMessage("预警解除",message, EAlarmLevel.getLevel());
+                        }
+                        record.setRecoveryTrigger(recoverResult + "");
+                        continue;
+                    }
+                    // 触发预警
+
+                } finally {
+                    // 计算耗时
+                    record.setCostTime(Long.valueOf((System.currentTimeMillis() - start) / 1000).intValue());
                 }
-                record.setErrorTrigger(JSON.toJSONString(alarmResultMap.get(EAlarmLevel.error)));
-                record.setWarningTrigger(JSON.toJSONString(alarmResultMap.get(EAlarmLevel.warning)));
-                record.setInfoTrigger(JSON.toJSONString(alarmResultMap.get(EAlarmLevel.info)));
-                // 本次是否触发预警
-                if (currentLevel == null) {
-                    // 本次不触发预警，判断是否恢复，并发送预警恢复消息
-                } else {
-                    // 本次预警，发送预警消息
-                }
-                // 计算耗时
-                record.setCostTime(Long.valueOf((System.currentTimeMillis() - start) / 1000).intValue());
             }
         }
+        alarmTriggerRecordMapper.batchInsert(recordList);
     }
 
     /**
@@ -134,21 +167,21 @@ public class TriggerHandler implements AlarmHandler {
      * @param intervalTime
      * @return
      */
-    private boolean isLastAlarm(Long conditionId, Date alarmTime, Long intervalTime) {
+    private AsAlarmTriggerRecord getLastAlarm(Long conditionId, Date alarmTime, Long intervalTime) {
         Date lastDate = DateUtils.addSeconds(alarmTime, -intervalTime.intValue());
         AsAlarmTriggerRecordCriteria criteria = new AsAlarmTriggerRecordCriteria();
         criteria.createCriteria().andConditionIdEqualTo(conditionId).andRunTimeEqualTo(lastDate);
-        List<AsAlarmTriggerRecord> lasts = asAlarmTriggerRecordMapper.selectByExample(criteria);
+        List<AsAlarmTriggerRecord> lasts = alarmTriggerRecordMapper.selectByExample(criteria);
         if (CollectionUtils.isEmpty(lasts)) {
-            return false;
+            return null;
         }
         AsAlarmTriggerRecord record = lasts.get(0);
         if (!StringUtils.isEmpty(record.getErrorTrigger()) && !"未配置".equalsIgnoreCase(record.getErrorTrigger())) {
-            return true;
+            return record;
         }
         if (!StringUtils.isEmpty(record.getWarningTrigger()) && !"未配置".equalsIgnoreCase(record.getWarningTrigger())) {
-            return true;
+            return record;
         }
-        return false;
+        return null;
     }
 }
