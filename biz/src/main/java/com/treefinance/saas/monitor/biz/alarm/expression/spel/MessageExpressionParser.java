@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 /**
  * Created by yh-treefinance on 2018/7/26.
  */
-@Component
+@Component("messageExpressionParser")
 public class MessageExpressionParser implements ExpressionParser {
 
     /**

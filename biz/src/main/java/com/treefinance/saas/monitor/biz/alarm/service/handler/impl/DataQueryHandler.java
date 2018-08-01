@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,7 @@ public class DataQueryHandler implements AlarmHandler {
     /**
      * expression
      */
-    @Autowired
+    @Resource(name = "spelExpressionParser")
     private ExpressionParser expressionParser;
 
     public List<Map<String, Object>> queryData(String sql, Map<String, Object> params) {

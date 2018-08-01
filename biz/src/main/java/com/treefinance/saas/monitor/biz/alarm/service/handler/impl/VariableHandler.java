@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +33,9 @@ public class VariableHandler implements AlarmHandler {
     /**
      * expression
      */
-    @Autowired
-    private ExpressionParser expressionParser;
 
+    @Resource(name = "spelExpressionParser")
+    private ExpressionParser expressionParser;
 
     @Override
     public void handle(AlarmConfig config, AlarmContext context) {

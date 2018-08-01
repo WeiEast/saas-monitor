@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -43,14 +44,14 @@ public class TriggerHandler implements AlarmHandler {
     /**
      * expression
      */
-    @Autowired
+    @Resource(name = "spelExpressionParser")
     private ExpressionParser expressionParser;
 
     @Autowired
     private AsAlarmTriggerRecordMapper alarmTriggerRecordMapper;
 
-    @Autowired
-    private MessageExpressionParser messageExpressionParser;
+    @Resource(name = "messageExpressionParser")
+    private ExpressionParser messageExpressionParser;
 
     @Override
     public void handle(AlarmConfig config, AlarmContext context) {
