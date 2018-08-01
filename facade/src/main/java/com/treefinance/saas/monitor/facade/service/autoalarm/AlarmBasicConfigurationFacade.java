@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.facade.service.autoalarm;
 import com.treefinance.saas.monitor.facade.domain.request.AlarmExcuteLogRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationDetailRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationTestRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmExecuteLogRO;
 import com.treefinance.saas.monitor.facade.domain.ro.SaasWorkerRO;
@@ -23,6 +24,9 @@ public interface AlarmBasicConfigurationFacade {
 
     /**
      * 添加或修改预警配置
+     *
+     * @param request
+     * @return
      */
     MonitorResult<Void> addOrUpdate(AlarmBasicConfigurationDetailRequest request);
 
@@ -47,13 +51,26 @@ public interface AlarmBasicConfigurationFacade {
      */
     MonitorResult<List<AsAlarmRO>> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request);
 
+    /**
+     * 根据cron表达式得到下次预警时间与预警间隔时间
+     *
+     * @param cronExpression
+     * @return
+     */
     MonitorResult<Map<String, String>> getCronComputeValue(String cronExpression);
 
+    /**
+     * 测试预警配置
+     *
+     * @return
+     */
+    MonitorResult<Object> testAlarmConfiguration(AlarmBasicConfigurationTestRequest request);
 
     /**
      * 根据日期返回对应的值班人员
+     *
      * @param date
      * @return
      */
-    MonitorResult<List<SaasWorkerRO>>  queryWorkerNameByDate(Date date);
+    MonitorResult<List<SaasWorkerRO>> queryWorkerNameByDate(Date date);
 }

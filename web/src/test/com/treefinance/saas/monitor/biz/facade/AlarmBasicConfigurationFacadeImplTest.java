@@ -1,8 +1,12 @@
 package com.treefinance.saas.monitor.biz.facade;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
+import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
+import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
+import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
+import com.treefinance.saas.monitor.dao.entity.AsAlarm;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmQuery;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfigurationDetailRO;
@@ -26,6 +30,9 @@ public class AlarmBasicConfigurationFacadeImplTest {
 
     @Autowired
     AlarmBasicConfigurationFacade facade;
+    @Autowired
+    AlarmHandlerChain alarmHandlerChain;
+
 
     @Test
     public void addOrUpdate() {
@@ -116,6 +123,31 @@ public class AlarmBasicConfigurationFacadeImplTest {
     @Test
     public void getCronComputeValue() {
         MonitorResult<Map<String, String>> result = facade.getCronComputeValue("0 0/2 * * * ?");
+    }
+
+    @Test
+    public void testAlarmHandlerChainHandle() {
+        AlarmConfig alarmConfig = new AlarmConfig();
+        AsAlarm asAlarm = new AsAlarm();
+        asAlarm.setAlarmSwitch("on");
+        asAlarm.setName("测试");
+        asAlarm.setRunEnv((byte) 1);
+        asAlarm.setRunInterval("0 0/2 * * * ?");
+        asAlarm.setTimeInterval(0);
+        alarmConfig.setAlarm(asAlarm);
+
+        List<AsAlarmQuery> queryList = Lists.newArrayList();
+        AsAlarmQuery asAlarmQuery = new AsAlarmQuery();
+        asAlarmQuery.setResultCode("data");
+        asAlarmQuery.setQueryIndex(1);
+        asAlarmQuery.setQuerySql("select now();");
+        queryList.add(asAlarmQuery);
+        alarmConfig.setAlarmQueries(queryList);
+
+        AlarmContext alarmContext = alarmHandlerChain.handle(alarmConfig);
+        System.out.println(alarmContext);
+
+
     }
 
 

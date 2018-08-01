@@ -1,23 +1,19 @@
 package com.treefinance.saas.monitor.biz.facade;
 
 import com.google.common.collect.Maps;
-import com.treefinance.saas.monitor.biz.service.AsAlarmMsgService;
-import com.treefinance.saas.monitor.biz.service.AsAlarmService;
-import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerRecordService;
-import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerService;
+import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
+import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
+import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
 import com.treefinance.saas.monitor.biz.service.*;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.AsAlarm;
-import com.treefinance.saas.monitor.dao.entity.AsAlarmMsg;
-import com.treefinance.saas.monitor.dao.entity.AsAlarmTrigger;
-import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerRecord;
 import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.facade.domain.request.AlarmExcuteLogRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationDetailRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationTestRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.AlarmExecuteLogRO;
@@ -31,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -61,6 +58,9 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
 
     @Autowired
     private SaasWorkerService saasWorkerService;
+
+    @Autowired
+    private AlarmHandlerChain alarmHandlerChain;
 
     @Override
     public MonitorResult<Void> addOrUpdate(AlarmBasicConfigurationDetailRequest request) {
@@ -128,7 +128,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         for (AsAlarmRO asAlarmRO : returnList) {
             Long id = asAlarmRO.getId();
             AsAlarmMsg asAlarmMsg = map.get(id);
-            ESaasEnv env =ESaasEnv.getByValue(asAlarmRO.getRunEnv());
+            ESaasEnv env = ESaasEnv.getByValue(asAlarmRO.getRunEnv());
             asAlarmRO.setRunEnvDesc(env.getDesc());
             if (asAlarmMsg != null) {
                 asAlarmRO.setTitleTemplate(asAlarmMsg.getTitleTemplate());
@@ -172,5 +172,58 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         map.put("alarmTime", MonitorDateUtils.format(cronDate));
         map.put("intervalTime", String.valueOf(intervalTime));
         return MonitorResultBuilder.build(map);
+    }
+
+    @Override
+    public MonitorResult<Object> testAlarmConfiguration(AlarmBasicConfigurationTestRequest request) {
+        if (StringUtils.isEmpty(request.getTestCode())) {
+            throw new ParamCheckerException("testCode不能为空");
+        }
+        String testCode = request.getTestCode();
+        AlarmConfig alarmConfig = new AlarmConfig();
+
+        AsAlarm alarm = DataConverterUtils.convert(request.getAsAlarmInfoRequest(), AsAlarm.class);
+        alarmConfig.setAlarm(alarm);
+
+        List<AsAlarmConstant> alarmConstantList
+                = DataConverterUtils.convert(request.getAsAlarmConstantInfoRequestList(), AsAlarmConstant.class);
+        alarmConfig.setAlarmConstants(alarmConstantList);
+
+        List<AsAlarmQuery> alarmQueryList
+                = DataConverterUtils.convert(request.getAsAlarmQueryInfoRequestList(), AsAlarmQuery.class);
+        alarmConfig.setAlarmQueries(alarmQueryList);
+
+        List<AsAlarmVariable> alarmVariableList
+                = DataConverterUtils.convert(request.getAsAlarmVariableInfoRequestList(), AsAlarmVariable.class);
+        alarmConfig.setAlarmVariables(alarmVariableList);
+
+        List<AsAlarmNotify> alarmNotifyList
+                = DataConverterUtils.convert(request.getAsAlarmNotifyInfoRequestList(), AsAlarmNotify.class);
+        alarmConfig.setAlarmNotifies(alarmNotifyList);
+
+        AsAlarmMsg alarmMsg = DataConverterUtils.convert(request.getAsAlarmMsgInfoRequest(), AsAlarmMsg.class);
+        alarmConfig.setAlarmMsg(alarmMsg);
+
+        List<AsAlarmTrigger> alarmTriggerList
+                = DataConverterUtils.convert(request.getAsAlarmTriggerInfoRequestList(), AsAlarmTrigger.class);
+        alarmConfig.setAlarmTriggers(alarmTriggerList);
+
+        AlarmContext alarmContext = alarmHandlerChain.handle(alarmConfig);
+        Map<String, Object> result = Maps.newHashMap();
+        if (CollectionUtils.isEmpty(alarmContext.getDataList())) {
+            return MonitorResultBuilder.build(result);
+        }
+        result.put("context", alarmContext.getDataList());
+        Object valueResult = null;
+        for (Map<String, Object> map : alarmContext.getDataList()) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (org.apache.commons.lang3.StringUtils.equals(entry.getKey(), testCode)) {
+                    valueResult = entry.getValue();
+                    break;
+                }
+            }
+        }
+        result.put("result", valueResult);
+        return MonitorResultBuilder.build(result);
     }
 }
