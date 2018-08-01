@@ -299,6 +299,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 "的预警由系统判定恢复。";
         logger.info("发出预警恢复消息：{}",stringBuilder);
         alarmMessageProducer.sendWebChart4OperatorMonitor(stringBuilder, new Date());
+        alarmMessageProducer.sendMail4OperatorMonitor(stringBuilder,stringBuilder,new Date());
     }
 
 
