@@ -255,4 +255,20 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         return result;
     }
+
+    @Override
+    public void updateAlarmSwitch(Long alarmId) {
+        AsAlarm asAlarm = asAlarmMapper.selectByPrimaryKey(alarmId);
+
+        if(("off").equals(asAlarm.getAlarmSwitch()))
+        {
+            asAlarm.setAlarmSwitch("on");
+        }
+        else
+        {
+            asAlarm.setAlarmSwitch("off");
+        }
+        asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
+
+    }
 }

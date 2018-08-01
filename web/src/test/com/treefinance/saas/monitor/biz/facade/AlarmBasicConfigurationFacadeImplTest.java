@@ -162,4 +162,10 @@ public class AlarmBasicConfigurationFacadeImplTest {
         request.setRunEnv((byte) 0);
         facade.queryAlarmConfigurationList(request);
     }
+
+    @Test
+    public  void updateAlarmSwitch()
+    {
+        facade.updateAlarmSwitch((long)1);
+    }
 }

@@ -74,6 +74,13 @@ public interface AlarmBasicConfigurationFacade {
      */
     MonitorResult<List<SaasWorkerRO>> queryWorkerNameByDate(Date date);
 
+    /**
+     * 打开或者关闭预警开关
+     * @param alarmId
+     * @return
+     */
+    MonitorResult<Object> updateAlarmSwitch(Long alarmId);
+
 
 
 

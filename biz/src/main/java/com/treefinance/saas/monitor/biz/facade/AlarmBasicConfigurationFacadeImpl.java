@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.facade;
 
 import com.google.common.collect.Maps;
+import com.treefinance.saas.knife.result.Results;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
@@ -228,5 +229,16 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         }
         result.put("result", valueResult);
         return MonitorResultBuilder.build(result);
+    }
+
+    @Override
+    public MonitorResult<Object> updateAlarmSwitch(Long alarmId) {
+        if (alarmId == null) {
+            return new MonitorResult<>("操作预警开关预警id不能为空");
+        }
+        asAlarmService.updateAlarmSwitch(alarmId);
+        return  MonitorResultBuilder.build();
+
+
     }
 }
