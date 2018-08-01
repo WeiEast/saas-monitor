@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.alarm.model;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerRecord;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -35,6 +36,10 @@ public class AlarmContext {
      * 预警消息
      */
     private List<AlarmMessage> alaramMessageList = Lists.newArrayList();
+    /**
+     * 预警记录
+     */
+    private List<AsAlarmTriggerRecord> triggerRecords = Lists.newArrayList();
 
     /**
      * 本次警时间
@@ -138,5 +143,9 @@ public class AlarmContext {
 
     public List<Map<String, Object>> getDataList() {
         return dataList;
+    }
+
+    public List<AsAlarmTriggerRecord> getTriggerRecords() {
+        return triggerRecords;
     }
 }

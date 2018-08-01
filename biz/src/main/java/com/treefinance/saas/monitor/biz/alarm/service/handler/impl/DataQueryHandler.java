@@ -95,9 +95,10 @@ public class DataQueryHandler implements AlarmHandler {
                 sqlBf.append(sqlpart);
                 if (i < expressions.size()) {
                     String expression = expressions.get(i);
-                    String dynamicKey = "param.p" + i;
-                    dynamicMap.put(dynamicKey, expression);
-                    sqlBf.append("${" + dynamicKey + "}");
+                    String key = "p" + i;
+                    String dynamicKey = "param" + key;
+                    dynamicMap.put(key, expression);
+                    sqlBf.append("#{" + dynamicKey + "}");
                 }
             }
             // 计算sql中表达式值
