@@ -48,7 +48,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
         EBizType bizType = EBizType.getBizType(config.getBizType());
         if (StringUtils.equalsIgnoreCase(config.getMailAlarmSwitch(), "on")) {
             String mailDataBody = generateNoSuccessTaskWithTypeMailDataBody(startTime, endTime, config);
-            String title = "【Error】 "+"【"+diamondConfig.getSaasMonitorEnvironment() + "】"+ "【" + config.getSaasEnvDesc() + "】" + "【" + config.getBizTypeDesc() + "】" + "无成功任务预警";
+            String title = "【"+diamondConfig.getSaasMonitorEnvironment() + "】"+ "【" + config.getSaasEnvDesc() + "】" + "【" + config.getBizTypeDesc() + "】" + "无成功任务预警";
             alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
         } else {
             logger.info("无成功任务预警,发送邮件开关已关闭");
@@ -76,7 +76,7 @@ public class TaskExistMonitorAlarmServiceImpl implements TaskExistMonitorAlarmSe
 
         if (StringUtils.equalsIgnoreCase(config.getMailAlarmSwitch(), "on")) {
             String mailDataBody = generateNoTaskMailDataBody(startTime, endTime, config);
-            String title = "【Error】 "+"【"+diamondConfig.getSaasMonitorEnvironment() + "】"+"【" + config.getSaasEnvDesc() + "】" + "【" + config.getBizTypeDesc() + "】" + "无任务预警";
+            String title = "【"+diamondConfig.getSaasMonitorEnvironment() + "】"+"【" + config.getSaasEnvDesc() + "】" + "【" + config.getBizTypeDesc() + "】" + "无任务预警";
             alarmMessageProducer.sendMail4TaskExistMonitor(title, mailDataBody);
         } else {
             logger.info("无任务预警,发送邮件开关已关闭");
