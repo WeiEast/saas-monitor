@@ -115,11 +115,11 @@ public class TriggerHandler implements AlarmHandler {
                             continue;
                         }
                         Object result = expressionParser.parse(alarmLevelTrigger, data);
+                        alarmResultMap.put(alarmLevel, result);
                         if (Boolean.TRUE.equals(result)) {
                             currentLevel = alarmLevel;
                             break;
                         }
-                        alarmResultMap.put(alarmLevel, result);
                     }
                     record.setErrorTrigger(alarmResultMap.get(EAlarmLevel.error) + "");
                     record.setWarningTrigger(alarmResultMap.get(EAlarmLevel.warning) + "");

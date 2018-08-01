@@ -36,6 +36,9 @@ public class AlarmConfigService {
     @Autowired
     AsAlarmTriggerMapper alarmTriggerMapper;
 
+    @Autowired
+    AsAlarmNotifyMapper alarmNotifyMapper;
+
     /**
      * @return
      */
@@ -69,6 +72,9 @@ public class AlarmConfigService {
         List<AsAlarmTrigger> alarmTriggers = getAlarmTriggers(alarmIds);
         Map<Long, List<AsAlarmTrigger>> alarmTriggerMap = alarmTriggers.stream().collect(Collectors.groupingBy(AsAlarmTrigger::getAlarmId));
 
+        List<AsAlarmNotify> notifys = getAlarmNotifys(alarmIds);
+        Map<Long, List<AsAlarmNotify>> notifysMap = notifys.stream().collect(Collectors.groupingBy(AsAlarmNotify::getAlarmId));
+
         // config组装
         List<AlarmConfig> alarmConfigs = Lists.newArrayList();
         alarms.forEach(asAlarm -> {
@@ -84,6 +90,7 @@ public class AlarmConfigService {
                 alarmConfig.setAlarmMsg(_alarmMsgs.get(0));
             }
             alarmConfig.setAlarmTriggers(alarmTriggerMap.get(alarmId));
+            alarmConfig.setAlarmNotifies(notifysMap.get(alarmId));
             alarmConfigs.add(alarmConfig);
         });
         return alarmConfigs;
@@ -114,6 +121,9 @@ public class AlarmConfigService {
         }
         // 6.Trigger
         alarmConfig.setAlarmTriggers(getAlarmTriggers(alarmIds));
+
+        // 7.notifys
+        alarmConfig.setAlarmNotifies(getAlarmNotifys(alarmIds));
         return alarmConfig;
     }
 
@@ -128,6 +138,14 @@ public class AlarmConfigService {
         msgCriteria.createCriteria().andAlarmIdIn(alarmIds);
         return alarmMsgMapper.selectByExample(msgCriteria);
     }
+
+
+    private List<AsAlarmNotify> getAlarmNotifys(List<Long> alarmIds) {
+        AsAlarmNotifyCriteria criteria = new AsAlarmNotifyCriteria();
+        criteria.createCriteria().andAlarmIdIn(alarmIds);
+        return alarmNotifyMapper.selectByExample(criteria);
+    }
+
 
     private List<AsAlarmVariable> getAsAlarmVariables(List<Long> alarmIds) {
         AsAlarmVariableCriteria variableCriteria = new AsAlarmVariableCriteria();

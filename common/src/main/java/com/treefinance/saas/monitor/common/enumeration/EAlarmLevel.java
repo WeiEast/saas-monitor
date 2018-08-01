@@ -15,7 +15,9 @@ public enum EAlarmLevel {
 
     public static EAlarmLevel getLevel(String alarmLever) {
         for (EAlarmLevel alarmLevel : values()) {
-
+            if (alarmLevel.name().equalsIgnoreCase(alarmLever)) {
+                return alarmLevel;
+            }
         }
         return null;
     }
