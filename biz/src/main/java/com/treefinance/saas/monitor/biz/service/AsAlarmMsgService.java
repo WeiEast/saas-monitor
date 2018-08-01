@@ -10,4 +10,5 @@ public interface AsAlarmMsgService {
     List<AsAlarmMsg> selectByExample(AsAlarmMsgCriteria alarmMsgCriteria);
 
     List<AsAlarmMsg> queryMsgInIdList(List<Long> ids);
+
 }

@@ -28,7 +28,7 @@ public class AsAlarmMsgServiceImpl implements AsAlarmMsgService {
     @Override
     public List<AsAlarmMsg> queryMsgInIdList(List<Long> ids) {
         AsAlarmMsgCriteria alarmMsgCriteria = new AsAlarmMsgCriteria();
-        alarmMsgCriteria.createCriteria().andIdIn(ids);
+        alarmMsgCriteria.createCriteria().andAlarmIdIn(ids);
         return selectByExample(alarmMsgCriteria);
     }
 }

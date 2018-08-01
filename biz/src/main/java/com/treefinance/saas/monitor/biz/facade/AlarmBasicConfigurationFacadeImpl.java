@@ -30,10 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -113,6 +110,12 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
     public MonitorResult<List<AsAlarmRO>> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request) {
         logger.info("分页查询预警配置：{}", request);
 
+        long count = asAlarmService.countByCondition(request);
+
+        if (count == 0) {
+            return MonitorResultBuilder.pageResult(request, new ArrayList<>(), 0);
+        }
+
         List<AsAlarm> list = asAlarmService.queryPagingList(request);
 
         if (list.isEmpty()) {
@@ -135,7 +138,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
                 asAlarmRO.setBodyTemplate(asAlarmMsg.getBodyTemplate());
             }
         }
-        return MonitorResultBuilder.pageResult(request, returnList, returnList.size());
+        return MonitorResultBuilder.pageResult(request, returnList, count);
     }
 
     @Override

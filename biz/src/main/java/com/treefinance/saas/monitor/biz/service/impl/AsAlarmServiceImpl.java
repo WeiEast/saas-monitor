@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
     public List<AsAlarm> queryPagingList(AlarmBasicConfigurationRequest request) {
         AsAlarmCriteria criteria = new AsAlarmCriteria();
         AsAlarmCriteria.Criteria innerCriteria = criteria.createCriteria();
-        if (request.getName() != null) {
+        if (!StringUtils.isEmpty(request.getName())) {
             innerCriteria.andNameLike(request.getName());
         }
         if (request.getRunEnv() != null) {
@@ -62,6 +63,19 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         criteria.setOffset(request.getOffset());
         criteria.setLimit(request.getPageSize());
         return asAlarmMapper.selectPaginationByExample(criteria);
+    }
+
+    @Override
+    public long countByCondition(AlarmBasicConfigurationRequest request) {
+        AsAlarmCriteria criteria = new AsAlarmCriteria();
+        AsAlarmCriteria.Criteria innerCriteria = criteria.createCriteria();
+        if (!StringUtils.isEmpty(request.getName())) {
+            innerCriteria.andNameLike(request.getName());
+        }
+        if (request.getRunEnv() != null) {
+            innerCriteria.andRunEnvEqualTo(request.getRunEnv());
+        }
+        return asAlarmMapper.countByExample(criteria);
     }
 
     @Override

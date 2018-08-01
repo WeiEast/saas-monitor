@@ -24,5 +24,5 @@ public interface AsAlarmService {
 
     AsAlarmBasicConfigurationDetailRO queryAsAlarmBasicConfigurationDetailById(Long id);
 
-
+    long countByCondition(AlarmBasicConfigurationRequest request);
 }
