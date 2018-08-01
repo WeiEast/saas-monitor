@@ -96,7 +96,7 @@ public class DataQueryHandler implements AlarmHandler {
                 if (i < expressions.size()) {
                     String expression = expressions.get(i);
                     String key = "p" + i;
-                    String dynamicKey = "param" + key;
+                    String dynamicKey = "param." + key;
                     dynamicMap.put(key, expression);
                     sqlBf.append("#{" + dynamicKey + "}");
                 }

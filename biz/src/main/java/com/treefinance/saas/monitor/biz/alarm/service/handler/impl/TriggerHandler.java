@@ -152,6 +152,7 @@ public class TriggerHandler implements AlarmHandler {
                         continue;
                     }
                     // 触发预警
+                    record.setAlarmLevel(currentLevel.name());
                     String title = (String) messageExpressionParser.parse(alarmMsg.getTitleTemplate(), data);
                     String message = (String) messageExpressionParser.parse(alarmMsg.getBodyTemplate(), data);
                     context.addMessage(title, message, currentLevel);
