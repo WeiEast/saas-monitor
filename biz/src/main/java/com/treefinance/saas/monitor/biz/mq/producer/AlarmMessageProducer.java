@@ -3,7 +3,6 @@ package com.treefinance.saas.monitor.biz.mq.producer;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
 import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.common.message.Message;
@@ -18,6 +17,7 @@ import com.datatrees.notify.async.util.BeanUtil;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.treefinance.saas.monitor.biz.alarm.service.message.ProducerHolder;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -29,8 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,24 +42,13 @@ import java.util.UUID;
 public class AlarmMessageProducer {
     private static final Logger logger = LoggerFactory.getLogger(AlarmMessageProducer.class);
 
-    private DefaultMQProducer producer;
     @Autowired
     private DiamondConfig diamondConfig;
 
     private static final String AGENT_ID = "67";
 
-    @PostConstruct
-    public void init() throws MQClientException {
-        producer = new DefaultMQProducer(diamondConfig.getMonitorAlarmGroupName());
-        producer.setNamesrvAddr(diamondConfig.getNamesrvAddr());
-        producer.setMaxMessageSize(1024 * 1024 * 2);
-        producer.start();
-    }
-
-    @PreDestroy
-    public void destroy() {
-        producer.shutdown();
-    }
+    @Autowired
+    private ProducerHolder producerHolder;
 
 
     public void sendMail(String title, String dataBody, MailEnum mailEnum) {
@@ -303,7 +290,7 @@ public class AlarmMessageProducer {
      */
     private void sendMessage(String topic, String tag, String key, byte[] body) {
         try {
-            SendResult sendResult = producer.send(new Message(topic, tag, key, body));
+            SendResult sendResult = producerHolder.get().send(new Message(topic, tag, key, body));
             if (logger.isInfoEnabled()) {
                 logger.info("已发送消息[topic={},tag={},key={},body={},发送状态={}]", topic, tag, key, body, JSON.toJSONString(sendResult));
             }

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +34,39 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
     @Override
     public List<SaasWorker> getDutyWorker(Date baseTime) {
         return getOnDutyWorker();
+    }
+
+    @Override
+    public List<SaasWorker> getNowDateWorker(Date now) {
+        List<SaasWorker> workers = saasWorkerMapper.selectByExample(null);
+//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return getActiveWorkers(now, workers);
+    }
+
+    /**
+     * 获取当前时刻值班人员
+     *
+     * @param now
+     * @param workers
+     * @return
+     */
+    public List<SaasWorker> getActiveWorkers(Date now, List<SaasWorker> workers) {
+        List<SaasWorker> active = new ArrayList<>();
+        for (SaasWorker worker : workers) {
+            try {
+                if (StringUtils.isEmpty(worker.getDutyCorn())) {
+                    continue;
+                }
+                CronExpression cronExpression = new CronExpression(worker.getDutyCorn());
+                cronExpression.setTimeZone(TimeZone.getDefault());
+                if (cronExpression.isSatisfiedBy(now)) {
+                    active.add(worker);
+                }
+            } catch (ParseException e) {
+                logger.error("工作人员corn表达式错误，name：{}", worker.getDutyCorn());
+            }
+        }
+        return active;
     }
 
     @Override

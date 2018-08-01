@@ -178,6 +178,9 @@ public class DiamondConfig {
     //预警消息,邮箱通知开关
     @DAttribute(key = "monitor.alarm.mail.switch")
     private String monitorAlarmMailSwitch;
+    //预警消息,短信通知开关
+    @DAttribute(key = "monitor.alarm.sms.switch")
+    private String monitorAlarmSmsSwitch;
     // 监控环境
     @DAttribute(key = "monitor.environment")
     private String monitorEnvironment;
@@ -529,5 +532,13 @@ public class DiamondConfig {
 
     public void setAllErrorWarning(Integer allErrorWarning) {
         this.allErrorWarning = allErrorWarning;
+    }
+
+    public String getMonitorAlarmSmsSwitch() {
+        return monitorAlarmSmsSwitch;
+    }
+
+    public void setMonitorAlarmSmsSwitch(String monitorAlarmSmsSwitch) {
+        this.monitorAlarmSmsSwitch = monitorAlarmSmsSwitch;
     }
 }
