@@ -58,10 +58,6 @@
 		<dependencies>
 
 			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-starter-thymeleaf</artifactId>
-			</dependency>
-			<dependency>
 				<groupId>com.treefinance.saas.monitor</groupId>
 				<artifactId>monitor-dao</artifactId>
 				<version>${saas-monitor.version}</version>
