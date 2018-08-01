@@ -11,6 +11,7 @@ import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandler;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.Order;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmMsg;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmTrigger;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerRecord;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerRecordCriteria;
@@ -61,6 +62,8 @@ public class TriggerHandler implements AlarmHandler {
         Date alarmTime = context.getAlarmTime();
         long intervalTime = context.getIntervalTime();
 
+        AsAlarmMsg alarmMsg = config.getAlarmMsg();
+
         // 已排序触发条件
         List<AsAlarmTrigger> sortedTriggers = triggers.stream().sorted(Comparator.comparing(AsAlarmTrigger::getTriggerIndex)).collect(Collectors.toList());
         // 数据分组
@@ -81,7 +84,6 @@ public class TriggerHandler implements AlarmHandler {
             triggerMap.put(EAlarmLevel.info, trigger.getInfoTrigger());
             triggerMap.put(EAlarmLevel.warning, trigger.getWarningTrigger());
             triggerMap.put(EAlarmLevel.error, trigger.getErrorTrigger());
-
 
             for (Map<String, Object> data : groups) {
                 AsAlarmTriggerRecord record = new AsAlarmTriggerRecord();
@@ -140,16 +142,19 @@ public class TriggerHandler implements AlarmHandler {
                         Object recoverResult = expressionParser.parse(recover, data);
                         if (Boolean.TRUE.equals(recoverResult)) {
                             String messageExpression = trigger.getRecoveryMessageTemplate();
-                            String message = (String) messageExpressionParser.parse(messageExpression, data);
-                            record.setRecoveryMessage(message);
-
-                            context.addMessage("预警解除",message, EAlarmLevel.getLevel());
+                            String recoverMessage = (String) messageExpressionParser.parse(messageExpression, data);
+                            record.setRecoveryMessage(recoverMessage);
+                            context.addMessage("预警解除", recoverMessage, EAlarmLevel.getLevel(lastAlarm.getAlarmLevel()));
+                            logger.info("trigger recover : trigger={}, alarmLevel ={}, message={}, data={}", JSON.toJSONString(trigger), currentLevel, recoverMessage, JSON.toJSONString(data));
                         }
                         record.setRecoveryTrigger(recoverResult + "");
                         continue;
                     }
                     // 触发预警
-
+                    String title = (String) messageExpressionParser.parse(alarmMsg.getTitleTemplate(), data);
+                    String message = (String) messageExpressionParser.parse(alarmMsg.getBodyTemplate(), data);
+                    context.addMessage(title, message, currentLevel);
+                    logger.info("trigger alarm : trigger={}, alarmLevel ={}, title={}, message={}, data={}", JSON.toJSONString(trigger), currentLevel, title, message, JSON.toJSONString(data));
                 } finally {
                     // 计算耗时
                     record.setCostTime(Long.valueOf((System.currentTimeMillis() - start) / 1000).intValue());

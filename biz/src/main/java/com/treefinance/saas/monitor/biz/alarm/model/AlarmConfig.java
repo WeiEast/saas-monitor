@@ -41,7 +41,7 @@ public class AlarmConfig {
     /**
      * 预警消息
      */
-    private List<AsAlarmMsg> alarmMsgs;
+    private AsAlarmMsg alarmMsg;
 
     /**
      * 预警触发条件

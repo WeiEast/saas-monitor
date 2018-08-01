@@ -78,7 +78,11 @@ public class AlarmConfigService {
             alarmConfig.setAlarmConstants(alarmConstantMap.get(alarmId));
             alarmConfig.setAlarmQueries(alarmQueryMap.get(alarmId));
             alarmConfig.setAlarmVariables(alarmVariableMap.get(alarmId));
-            alarmConfig.setAlarmMsgs(alarmMsgMap.get(alarmId));
+
+            List<AsAlarmMsg> _alarmMsgs = alarmMsgMap.get(alarmId);
+            if (CollectionUtils.isNotEmpty(_alarmMsgs)) {
+                alarmConfig.setAlarmMsg(_alarmMsgs.get(0));
+            }
             alarmConfig.setAlarmTriggers(alarmTriggerMap.get(alarmId));
             alarmConfigs.add(alarmConfig);
         });
@@ -86,12 +90,12 @@ public class AlarmConfigService {
     }
 
     /**
-     * 根据alarmId生产
+     * 根据alarmId查询
      *
      * @param alarmId
      * @return
      */
-    public AlarmConfig getActiveAlarmConfig(Long alarmId) {
+    public AlarmConfig getAlarmConfig(Long alarmId) {
         List<Long> alarmIds = Lists.newArrayList(alarmId);
         // 1. 主数据
         AlarmConfig alarmConfig = new AlarmConfig();
@@ -104,7 +108,10 @@ public class AlarmConfigService {
         // 4.变量
         alarmConfig.setAlarmVariables(getAsAlarmVariables(alarmIds));
         // 5.msg
-        alarmConfig.setAlarmMsgs(getAlarmMsgs(alarmIds));
+        List<AsAlarmMsg> alarmMsgs = getAlarmMsgs(alarmIds);
+        if (CollectionUtils.isNotEmpty(alarmMsgs)) {
+            alarmConfig.setAlarmMsg(alarmMsgs.get(0));
+        }
         // 6.Trigger
         alarmConfig.setAlarmTriggers(getAlarmTriggers(alarmIds));
         return alarmConfig;

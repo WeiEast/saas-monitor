@@ -12,7 +12,7 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-public class AlaramMessage implements Serializable {
+public class AlarmMessage implements Serializable {
     /**
      * 预警标题
      */
@@ -27,12 +27,12 @@ public class AlaramMessage implements Serializable {
     private EAlarmLevel alarmLevel;
 
 
-    public AlaramMessage(String title, String message, EAlarmLevel alarmLevel) {
+    public AlarmMessage(String title, String message, EAlarmLevel alarmLevel) {
         this.title = title;
         this.message = message;
         this.alarmLevel = alarmLevel;
     }
 
-    public AlaramMessage() {
+    public AlarmMessage() {
     }
 }

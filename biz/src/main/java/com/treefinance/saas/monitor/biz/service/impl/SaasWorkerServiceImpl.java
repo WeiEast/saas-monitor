@@ -35,10 +35,22 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
     public List<SaasWorker> getDutyWorker(Date baseTime) {
         return getOnDutyWorker();
     }
+
     @Override
     public List<SaasWorker> getNowDateWorker(Date now) {
         List<SaasWorker> workers = saasWorkerMapper.selectByExample(null);
 //        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return getActiveWorkers(now, workers);
+    }
+
+    /**
+     * 获取当前时刻值班人员
+     *
+     * @param now
+     * @param workers
+     * @return
+     */
+    public List<SaasWorker> getActiveWorkers(Date now, List<SaasWorker> workers) {
         List<SaasWorker> active = new ArrayList<>();
         for (SaasWorker worker : workers) {
             try {

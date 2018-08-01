@@ -23,4 +23,6 @@ public interface SaasWorkerService {
     long countByCondition(SaasWorkerCriteria criteria);
 
     List<SaasWorker> getNowDateWorker(Date now);
+
+    List<SaasWorker> getActiveWorkers(Date now, List<SaasWorker> workers);
 }

@@ -1,22 +1,34 @@
 package com.treefinance.saas.monitor.common.domain;
 
 import com.datatrees.common.conf.PropertiesConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public interface Constants {
+public class Constants {
 
-    String PREFIX_KEY = "saas-gateway:";
+    private static final Logger logger = LoggerFactory.getLogger(Constants.class);
 
-    String SAAS_ENV_PRE_PRODUCT = "preproduct";
+    public static final String PREFIX_KEY = "saas-gateway:";
+    public static final int REDIS_KEY_TIMEOUT = PropertiesConfiguration.getInstance().getInt("platform.redisKey.timeout", 600);
 
+    public static final String SAAS_ENV;
+    public static final String SAAS_ENV_VALUE;
+    public static final String SAAS_ENV_PRE_PRODUCT = "preproduct";
 
-    int REDIS_KEY_TIMEOUT = PropertiesConfiguration.getInstance().getInt("platform.redisKey.timeout", 600);
+    static {
+        String saasEnv = "";
+        String saasEnvValue = "1";
+        try {
+            saasEnv = System.getProperty("saas.env");
+            if (saasEnv != null && !"".equals(saasEnv) && "preproduct".equals(saasEnv)) {
+                saasEnvValue = "2";
+            }
+        } catch (Exception var3) {
+            logger.error("load system properties saas.env failed ", var3);
+        }
 
-    String START_LOGIN = "START_LOGIN";
-    String REFRESH_LOGIN_QR_CODE = "REFRESH_LOGIN_QR_CODE";
-    String REFRESH_LOGIN_CODE = "REFRESH_LOGIN_CODE";
-    String REFRESH_LOGIN_RANDOMPASSWORD = "REFRESH_LOGIN_RANDOMPASSWORD";
-    String RETURN_PICTURE_CODE = "RETURN_PICTURE_CODE";
-
-
-
+        SAAS_ENV = saasEnv;
+        SAAS_ENV_VALUE = saasEnvValue;
+        logger.debug("system properties saas.env=" + saasEnv + " saasEnvValue=" + saasEnvValue);
+    }
 }
