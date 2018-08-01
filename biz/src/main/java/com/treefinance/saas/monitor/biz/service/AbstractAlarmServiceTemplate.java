@@ -241,7 +241,6 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
                 "的预警由系统判定恢复。";
 
         alarmMessageProducer.sendWebChart4OperatorMonitor(stringBuilder, new Date());
-        alarmMessageProducer.sendMail4OperatorMonitor(stringBuilder,stringBuilder,new Date());
     }
 
     private void sendEmail(String content, SaasWorker saasWorker) {
