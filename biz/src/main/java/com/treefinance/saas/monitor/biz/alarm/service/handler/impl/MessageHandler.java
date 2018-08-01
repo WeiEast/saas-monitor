@@ -8,6 +8,7 @@ import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmMessage;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandler;
+import com.treefinance.saas.monitor.biz.alarm.service.handler.Order;
 import com.treefinance.saas.monitor.biz.alarm.service.message.MessageSender;
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 /**
  * Created by yh-treefinance on 2018/7/30.
  */
+@Order(5)
 @Component
 public class MessageHandler implements AlarmHandler {
     /**
