@@ -104,13 +104,14 @@ public class DataQueryHandler implements AlarmHandler {
             // 计算sql中表达式值
             String dynamicSql = sqlBf.toString();
 
-            for (Map<String, Object> paramMap : groups) {
+            for (Map<String, Object> dataMap : groups) {
+                Map<String, Object> paramMap = Maps.newHashMap(dataMap);
                 dynamicMap.keySet().forEach(paramKey -> {
                     String expression = dynamicMap.get(paramKey);
                     paramMap.put(paramKey, expressionParser.parse(expression, paramMap));
                 });
                 List<Map<String, Object>> dataList = queryData(dynamicSql, paramMap);
-                paramMap.put(code, dataList);
+                dataMap.put(code, dataList);
             }
         }
 
