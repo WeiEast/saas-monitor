@@ -1,7 +1,6 @@
 package com.treefinance.saas.monitor.biz.facade;
 
 import com.google.common.collect.Maps;
-import com.treefinance.saas.knife.result.Results;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
@@ -31,7 +30,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -183,6 +185,9 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         if (StringUtils.isEmpty(request.getTestCode())) {
             throw new ParamCheckerException("testCode不能为空");
         }
+        if (request.getTestType() == null || request.getTestType() < 1 || request.getTestType() > 4) {
+            throw new ParamCheckerException("testType不能为空,且取值为[1,4]之间");
+        }
         String testCode = request.getTestCode();
         AlarmConfig alarmConfig = new AlarmConfig();
 
@@ -219,15 +224,29 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         }
         result.put("context", alarmContext.getDataList());
         Object valueResult = null;
-        for (Map<String, Object> map : alarmContext.getDataList()) {
-            for (Map.Entry<String, Object> entry : map.entrySet()) {
-                if (org.apache.commons.lang3.StringUtils.equals(entry.getKey(), testCode)) {
-                    valueResult = entry.getValue();
-                    break;
+        if (request.getTestType() != 4) {
+            for (Map<String, Object> map : alarmContext.getDataList()) {
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    if (org.apache.commons.lang3.StringUtils.equals(entry.getKey(), testCode)) {
+                        valueResult = entry.getValue();
+                        break;
+                    }
                 }
             }
+            result.put("result", valueResult);
+        } else {
+            List<AsAlarmTriggerRecord> triggerRecordList = alarmContext.getTriggerRecords();
+            Map<String, Object> map = Maps.newHashMap();
+            if (!CollectionUtils.isEmpty(triggerRecordList)) {
+                AsAlarmTriggerRecord record = triggerRecordList.get(0);
+                map.put("infoTrigger", record.getInfoTrigger());
+                map.put("warningTrigger", record.getWarningTrigger());
+                map.put("errorTrigger", record.getErrorTrigger());
+                map.put("recoveryTrigger", record.getRecoveryTrigger());
+            }
+            result.put("result", map);
         }
-        result.put("result", valueResult);
+
         return MonitorResultBuilder.build(result);
     }
 
@@ -237,7 +256,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             return new MonitorResult<>("操作预警开关预警id不能为空");
         }
         asAlarmService.updateAlarmSwitch(alarmId);
-        return  MonitorResultBuilder.build();
+        return MonitorResultBuilder.build();
 
 
     }
