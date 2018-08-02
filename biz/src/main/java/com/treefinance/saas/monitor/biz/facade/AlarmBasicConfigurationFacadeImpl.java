@@ -182,11 +182,13 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
 
     @Override
     public MonitorResult<Object> testAlarmConfiguration(AlarmBasicConfigurationTestRequest request) {
-        if (StringUtils.isEmpty(request.getTestCode())) {
-            throw new ParamCheckerException("testCode不能为空");
-        }
         if (request.getTestType() == null || request.getTestType() < 1 || request.getTestType() > 4) {
-            throw new ParamCheckerException("testType不能为空,且取值为[1,4]之间");
+            throw new ParamCheckerException("测试表达式type不能为空,且取值为[1,4]之间");
+        }
+        if (request.getTestType() != 4) {
+            if (StringUtils.isEmpty(request.getTestCode())) {
+                throw new ParamCheckerException("测试表达式code不能为空");
+            }
         }
         String testCode = request.getTestCode();
         AlarmConfig alarmConfig = new AlarmConfig();
