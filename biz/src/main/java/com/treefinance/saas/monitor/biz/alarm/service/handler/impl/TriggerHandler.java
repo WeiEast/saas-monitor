@@ -5,9 +5,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.alarm.expression.ExpressionParser;
-import com.treefinance.saas.monitor.biz.alarm.expression.spel.MessageExpressionParser;
+
+import static com.treefinance.saas.monitor.biz.alarm.expression.spel.func.SpelFunction.*;
+
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
+import com.treefinance.saas.monitor.biz.alarm.model.AlarmMessage;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandler;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.Order;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
@@ -17,12 +20,13 @@ import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerRecord;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerRecordCriteria;
 import com.treefinance.saas.monitor.dao.mapper.AsAlarmTriggerRecordMapper;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Comparator;
@@ -60,25 +64,21 @@ public class TriggerHandler implements AlarmHandler {
             logger.info("alarm triggers is empty: triggers={}", JSON.toJSONString(triggers));
             return;
         }
-        Date alarmTime = context.getAlarmTime();
-        long intervalTime = context.getIntervalTime();
 
-        AsAlarmMsg alarmMsg = config.getAlarmMsg();
 
         // 已排序触发条件
         List<AsAlarmTrigger> sortedTriggers = triggers.stream().sorted(Comparator.comparing(AsAlarmTrigger::getTriggerIndex)).collect(Collectors.toList());
         // 数据分组
         List<Map<String, Object>> groups = context.groups();
-        List<AsAlarmTriggerRecord> recordList = Lists.newArrayList();
 
 
         // 预警级别
         EAlarmLevel[] alarmLevels = new EAlarmLevel[]{EAlarmLevel.error, EAlarmLevel.warning, EAlarmLevel.info};
         for (AsAlarmTrigger trigger : sortedTriggers) {
+            List<AsAlarmTriggerRecord> recordList = Lists.newArrayList();
             long start = System.currentTimeMillis();
             Long triggerId = trigger.getId();
             Long alarmId = trigger.getAlarmId();
-
 
             // 各级别触发条件
             Map<EAlarmLevel, String> triggerMap = Maps.newHashMap();
@@ -96,7 +96,7 @@ public class TriggerHandler implements AlarmHandler {
                     record.setContext(JSON.toJSONString(data));
                     record.setCreateTime(new Date());
                     record.setRunEnv(config.getAlarm().getRunEnv());
-                    record.setRunTime(alarmTime);
+                    record.setRunTime(context.getAlarmTime());
 
                     // 触发条件禁用
                     record.setConditionStatus(Byte.valueOf("0").equals(trigger.getStatus()) ? "启用" : "未启用");
@@ -121,9 +121,9 @@ public class TriggerHandler implements AlarmHandler {
                             break;
                         }
                     }
-                    record.setErrorTrigger(alarmResultMap.get(EAlarmLevel.error) + "");
-                    record.setWarningTrigger(alarmResultMap.get(EAlarmLevel.warning) + "");
-                    record.setInfoTrigger(alarmResultMap.get(EAlarmLevel.info) + "");
+                    record.setErrorTrigger(nvl(alarmResultMap.get(EAlarmLevel.error), "").toString());
+                    record.setWarningTrigger(nvl(alarmResultMap.get(EAlarmLevel.warning), "").toString());
+                    record.setInfoTrigger(nvl(alarmResultMap.get(EAlarmLevel.info), "").toString());
                     // 未触发预警
                     if (currentLevel == null) {
                         // 是否配置恢复触发条件
@@ -134,7 +134,7 @@ public class TriggerHandler implements AlarmHandler {
                             continue;
                         }
                         // 上次无预警，本次无预警本，不触发恢复
-                        AsAlarmTriggerRecord lastAlarm = getLastAlarm(triggerId, alarmTime, alarmId);
+                        AsAlarmTriggerRecord lastAlarm = getLastAlarm(triggerId, context.getAlarmTime(), alarmId);
                         if (lastAlarm == null) {
                             record.setRecoveryTrigger("上次无预警，本次不触发恢复");
                             continue;
@@ -146,24 +146,60 @@ public class TriggerHandler implements AlarmHandler {
                             String recoverMessage = (String) messageExpressionParser.parse(messageExpression, data);
                             record.setRecoveryMessage(recoverMessage);
                             context.addMessage("预警解除", recoverMessage, EAlarmLevel.getLevel(lastAlarm.getAlarmLevel()));
-                            logger.info("trigger recover : trigger={}, alarmLevel ={}, message={}, data={}", JSON.toJSONString(trigger), currentLevel, recoverMessage, JSON.toJSONString(data));
+                            logger.info("trigger recover : trigger={}, alarmLevel ={}, message={}, data={}",
+                                    JSON.toJSONString(trigger), currentLevel, recoverMessage, JSON.toJSONString(data));
                         }
-                        record.setRecoveryTrigger(recoverResult + "");
+                        record.setRecoveryTrigger(nvl(recoverResult, "").toString());
                         continue;
                     }
                     // 触发预警
                     record.setAlarmLevel(currentLevel.name());
-                    String title = (String) messageExpressionParser.parse(alarmMsg.getTitleTemplate(), data);
-                    String message = (String) messageExpressionParser.parse(alarmMsg.getBodyTemplate(), data);
-                    context.addMessage(title, message, currentLevel);
-                    logger.info("trigger alarm : trigger={}, alarmLevel ={}, title={}, message={}, data={}", JSON.toJSONString(trigger), currentLevel, title, message, JSON.toJSONString(data));
+                    // 生成预警消息
+                    AlarmMessage alarmMessage = generateAlarmMessage(config, context, data, currentLevel);
+                    record.setAlarmMessage(alarmMessage.getMessage());
+                    logger.info("trigger alarm : trigger={}, alarmLevel ={}, title={}, message={}, data={}",
+                            JSON.toJSONString(trigger), currentLevel, JSON.toJSONString(alarmMessage), JSON.toJSONString(data));
                 } finally {
                     // 计算耗时
                     record.setCostTime(Long.valueOf((System.currentTimeMillis() - start) / 1000).intValue());
                 }
             }
+            // 兼容测试时无alarmId
+            if (alarmId != null) {
+                alarmTriggerRecordMapper.batchInsert(recordList);
+            }
         }
-        alarmTriggerRecordMapper.batchInsert(recordList);
+
+    }
+
+    /**
+     * @param config
+     * @param context
+     * @param data
+     * @param currentLevel
+     * @return
+     */
+    private AlarmMessage generateAlarmMessage(AlarmConfig config, AlarmContext context, Map<String, Object> data, EAlarmLevel currentLevel) {
+        AsAlarmMsg alarmMsg = config.getAlarmMsg();
+        Date alarmTime = context.getAlarmTime();
+        AlarmMessage alarmMessage = new AlarmMessage();
+        String title = "【" + currentLevel.name() + "】【" +
+                DateFormatUtils.format(alarmTime, "yyyy-MM-dd HH:mm:ss")
+                + "】发生【" + config.getAlarm().getName() + "】预警";
+        String message = title + "\n \t预警数据：data=" + JSON.toJSONString(data);
+        if (alarmMsg != null) {
+            if (StringUtils.isNotEmpty(alarmMsg.getTitleTemplate())) {
+                title = (String) messageExpressionParser.parse(alarmMsg.getTitleTemplate(), data);
+            }
+            if (StringUtils.isNotEmpty(alarmMsg.getBodyTemplate())) {
+                message = (String) messageExpressionParser.parse(alarmMsg.getBodyTemplate(), data);
+            }
+            alarmMessage.setAlarmLevel(currentLevel);
+            alarmMessage.setMessage(message);
+            alarmMessage.setTitle(title);
+            context.addMessage(alarmMessage);
+        }
+        return alarmMessage;
     }
 
     /**

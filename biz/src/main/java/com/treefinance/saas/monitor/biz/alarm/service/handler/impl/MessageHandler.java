@@ -113,6 +113,7 @@ public class MessageHandler implements AlarmHandler {
             if (ESwitch.isOn(notify.getIvrSwitch())) {
                 senders.add(channelMap.get(EAlarmChannel.IVR));
             }
+            senderMap.put(alarmLevel, senders);
         }
         return senderMap;
     }

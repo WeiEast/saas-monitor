@@ -22,6 +22,15 @@ public class AlarmBasicConfigurationTestRequest extends BaseRequest {
     private String testCode;
 
     /**
+     * 要测试的选项类型
+     * 1:常量
+     * 2:预警数据查询
+     * 3:变量
+     * 4:预警触发条件
+     */
+    private Byte testType;
+
+    /**
      * 预警配置表相关信息
      */
     private AsAlarmInfoRequest asAlarmInfoRequest;
