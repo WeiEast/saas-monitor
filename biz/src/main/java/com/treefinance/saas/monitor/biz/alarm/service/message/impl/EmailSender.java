@@ -43,7 +43,7 @@ public class EmailSender extends AbstractMqSender {
 
         MailBody body = new MailBody();
         //设置邮件方式，具体看枚举值
-        body.setMailEnum(MailEnum.SIMPLE_MAIL);
+        body.setMailEnum(MailEnum.HTML_MAIL);
         //设置业务线，预警设置为alarm
         body.setBusiness("alarm");
         //设置发送给谁
