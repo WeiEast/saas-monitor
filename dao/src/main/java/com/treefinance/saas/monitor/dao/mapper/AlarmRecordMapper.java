@@ -2,9 +2,10 @@ package com.treefinance.saas.monitor.dao.mapper;
 
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.RowBounds;
+
+import java.util.List;
 
 public interface AlarmRecordMapper {
     /**
@@ -21,6 +22,7 @@ public interface AlarmRecordMapper {
      *
      * @mbg.generated Tue Jun 05 17:28:40 CST 2018
      */
+
     int deleteByExample(AlarmRecordCriteria example);
 
     /**
