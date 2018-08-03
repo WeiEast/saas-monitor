@@ -299,6 +299,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 "的预警由系统判定恢复。";
         logger.info("发出预警恢复消息：{}",stringBuilder);
         alarmMessageProducer.sendWebChart4OperatorMonitor(stringBuilder, new Date());
+        alarmMessageProducer.sendMail4OperatorMonitor(stringBuilder,stringBuilder,new Date());
     }
 
 
@@ -654,13 +655,13 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
 
     private void sendMailAlarm(List<SaasStatAccessDTO> list, EBizType bizType, EAlarmLevel alarmLevel,
                                TaskSuccRateCompareDTO compareDTO) {
-        String title = this.generateTitle(bizType);
+        String title = this.generateTitle(bizType,alarmLevel);
         String body = this.genMailBody(list, bizType, alarmLevel, compareDTO);
         alarmMessageProducer.sendMail(title, body, MailEnum.HTML_MAIL);
     }
 
-    private String generateTitle(EBizType type) {
-        return "saas-" + diamondConfig.getMonitorEnvironment() + "[" + type.getDesc() + "]任务成功率预警";
+    private String generateTitle(EBizType type,EAlarmLevel alarmLevel) {
+        return  "【" +alarmLevel+ "】" +"【saas-" + diamondConfig.getMonitorEnvironment() +"】"+ "【" + type.getDesc() + " 】任务成功率预警";
     }
 
     private void sendSmsAlarm(List<SaasStatAccessDTO> list, EBizType type, EAlarmLevel alarmLevel, TaskSuccRateCompareDTO compareDTO) {
@@ -676,7 +677,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
         } else {
             buffer.append("【").append(alarmLevel).append("】");
         }
-        buffer.append("您好，").append(generateTitle(type)).append("，监控数据如下，请及时处理：").append("\n");
+        buffer.append("您好，").append(generateTitle(type,alarmLevel)).append("，监控数据如下，请及时处理：").append("\n");
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         List<String> dataTimeList = Lists.newArrayList();
         List<Integer> totalCountList = Lists.newArrayList();
@@ -756,7 +757,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
                 buffer.append("【").append(alarmLevel).append("】");
             }
         }
-        buffer.append("您好，").append(generateTitle(type)).append("，监控数据如下，请及时处理：").append("\n");
+        buffer.append("您好，").append(generateTitle(type,alarmLevel)).append("，监控数据如下，请及时处理：").append("\n");
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         List<String> dataTimeList = Lists.newArrayList();
         List<Integer> totalCountList = Lists.newArrayList();
