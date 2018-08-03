@@ -1,12 +1,12 @@
 package com.treefinance.saas.monitor.biz.facade;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
-import com.treefinance.saas.monitor.dao.entity.AsAlarm;
-import com.treefinance.saas.monitor.dao.entity.AsAlarmQuery;
+import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfigurationDetailRO;
@@ -136,16 +136,49 @@ public class AlarmBasicConfigurationFacadeImplTest {
         asAlarm.setTimeInterval(0);
         alarmConfig.setAlarm(asAlarm);
 
+        List<AsAlarmConstant> constantList = Lists.newArrayList();
+        AsAlarmConstant constant1 = new AsAlarmConstant();
+        constant1.setCode("intervalTime");
+        constant1.setName("预警时间间隔");
+        constant1.setConstIndex(1);
+        constant1.setValue("2");
+        constantList.add(constant1);
+
+        AsAlarmConstant constant2 = new AsAlarmConstant();
+        constant2.setCode("alarmTime");
+        constant2.setName("当前预警时间");
+        constant2.setConstIndex(2);
+        constant2.setValue("2018-08-02 10:00:00");
+        constantList.add(constant2);
+
+        alarmConfig.setAlarmConstants(constantList);
+
+
         List<AsAlarmQuery> queryList = Lists.newArrayList();
         AsAlarmQuery asAlarmQuery = new AsAlarmQuery();
         asAlarmQuery.setResultCode("data");
         asAlarmQuery.setQueryIndex(1);
-        asAlarmQuery.setQuerySql("select now();");
+        asAlarmQuery.setQuerySql("select count(*) from as_alarm;");
         queryList.add(asAlarmQuery);
         alarmConfig.setAlarmQueries(queryList);
 
+        AsAlarmMsg msg = new AsAlarmMsg();
+        msg.setTitleTemplate("aaaTest");
+        msg.setBodyTemplate("bbbTest");
+        alarmConfig.setAlarmMsg(msg);
+
+        List<AsAlarmTrigger> triggerList = Lists.newArrayList();
+        AsAlarmTrigger trigger1 = new AsAlarmTrigger();
+        trigger1.setName("夜间总转化率预警");
+        trigger1.setStatus((byte) 0);
+        trigger1.setTriggerIndex(1);
+        trigger1.setInfoTrigger("true");
+        trigger1.setWarningTrigger("true");
+        triggerList.add(trigger1);
+        alarmConfig.setAlarmTriggers(triggerList);
+
         AlarmContext alarmContext = alarmHandlerChain.handle(alarmConfig);
-        System.out.println(alarmContext);
+        System.out.println(JSON.toJSONString(alarmContext));
 
 
     }
@@ -164,8 +197,7 @@ public class AlarmBasicConfigurationFacadeImplTest {
     }
 
     @Test
-    public  void updateAlarmSwitch()
-    {
-        facade.updateAlarmSwitch((long)1);
+    public void updateAlarmSwitch() {
+        facade.updateAlarmSwitch((long) 1);
     }
 }

@@ -79,6 +79,15 @@ public class AlarmContext {
     }
 
     /**
+     * 添加预警发送消息
+     *
+     * @param alarmMessage
+     */
+    public void addMessage(AlarmMessage alarmMessage) {
+        alaramMessageList.add(alarmMessage);
+    }
+
+    /**
      * 分组项
      *
      * @return
