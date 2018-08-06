@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.alarm.expression.ExpressionParser;
+import com.treefinance.saas.monitor.biz.alarm.expression.spel.MessageExpressionParser;
+import com.treefinance.saas.monitor.biz.alarm.expression.spel.SpelExpressionParser;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandler;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +46,7 @@ public class DataQueryHandler implements AlarmHandler {
 
     @Autowired
     private DataQueryMapper dataQueryMapper;
+
     /**
      * expression
      */
@@ -70,7 +74,12 @@ public class DataQueryHandler implements AlarmHandler {
                 .sorted(Comparator.comparing(AsAlarmQuery::getQueryIndex)).collect(Collectors.toList());
         List<Map<String, Object>> groups = context.groups();
         for (AsAlarmQuery query : sortedAlarmQueries) {
-            String sql = query.getQuerySql();
+            String sql = null;
+            try {
+                sql = new String(query.getQuerySql().getBytes(), "utf-8");
+            } catch (UnsupportedEncodingException e) {
+            }
+
             String code = query.getResultCode();
             if (StringUtils.isEmpty(sql)) {
                 continue;
@@ -121,13 +130,16 @@ public class DataQueryHandler implements AlarmHandler {
         // 逗号前后加空格
         sql = sql.replaceAll("\\,", " , ")
                 .replaceAll("\\*", " * ")
-                .replaceAll("/", " / ");
+                .replaceAll("/", " / ")
+                .replaceAll("\r|\n|(\r\n)", " ")
+                // 全角空格处理
+                .replaceAll(" "," ");
         // mysql 关键字换行
         for (String keyWord : MYSQL_KEYWORDS) {
             if (sql.toLowerCase().indexOf(keyWord.toLowerCase()) == -1) {
                 continue;
             }
-            Pattern keyPattern = Pattern.compile("((\\s{0,}))" + keyWord + "((\\s|\\n|\\r)+)", Pattern.CASE_INSENSITIVE);
+            Pattern keyPattern = Pattern.compile("\\s+(" + keyWord + "){1}\\s+", Pattern.CASE_INSENSITIVE);
             sql = keyPattern.matcher(sql).replaceAll("\r\n  " + keyWord + " ");
         }
         return sql;
@@ -146,6 +158,15 @@ public class DataQueryHandler implements AlarmHandler {
 //        System.out.println(sql);
 //        System.out.println(SQLUtils.formatMySql(sql.replaceAll("#", "_")));
 
+        sql = "SELECT sum(userCount) as total , sum(callbackSuccessCount) from operator_stat_access\n" +
+                "WHERE\n" +
+                "  appId='virtual_total_stat_appId-1'\n" +
+                "      AND dataType=1\n" +
+                "      AND dataTime <='2018-08-06 14:50:00'\n" +
+                "      AND dataTime >=DATE_SUB('2018-08-06 14:50:00',    INTERVAL 3 *  300 MINUTE)\n" +
+                "\n" +
+                "\n";
+        System.out.println(sql.indexOf("from"));
         // 提取sql 语句中表达式
         sql = new DataQueryHandler().formatSQL(sql);
         System.out.println("\n ========\n" + sql);
