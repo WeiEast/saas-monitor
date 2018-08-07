@@ -174,7 +174,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         } catch (Exception e) {
             throw new ParamCheckerException("cron表达式错误");
         }
-        Long intervalTime = intervalMilliSecond / (1000 * 60);
+        Long intervalTime = intervalMilliSecond / 1000;
         map.put("alarmTime", MonitorDateUtils.format(cronDate));
         map.put("intervalTime", String.valueOf(intervalTime));
         return MonitorResultBuilder.build(map);
