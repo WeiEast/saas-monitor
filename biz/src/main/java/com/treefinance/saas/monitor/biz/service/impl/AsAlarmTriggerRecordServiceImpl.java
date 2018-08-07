@@ -29,7 +29,7 @@ public class AsAlarmTriggerRecordServiceImpl implements AsAlarmTriggerRecordServ
     @Override
     public List<AsAlarmTriggerRecord> queryAsAlarmTriggerRecordPagination(AlarmExcuteLogRequest alarmExcuteLogRequest) {
         AsAlarmTriggerRecordCriteria asAlarmTriggerRecordCriteria = new AsAlarmTriggerRecordCriteria();
-        asAlarmTriggerRecordCriteria.setOrderByClause("runTime asc");
+        asAlarmTriggerRecordCriteria.setOrderByClause("runTime desc");
         asAlarmTriggerRecordCriteria.setOffset(alarmExcuteLogRequest.getOffset());
         asAlarmTriggerRecordCriteria.setLimit(alarmExcuteLogRequest.getPageSize());
 
