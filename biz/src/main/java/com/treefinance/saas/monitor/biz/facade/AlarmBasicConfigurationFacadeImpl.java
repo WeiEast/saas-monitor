@@ -222,9 +222,9 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         AlarmContext alarmContext = null;
         try {
             alarmContext = alarmHandlerChain.handle(alarmConfig);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("测试预警配置异常", e);
-            throw new ParamCheckerException(e.getCause().getMessage());
+            throw new ParamCheckerException(e.getClass().getSimpleName() + ": " + e.getMessage());
         }
         Map<String, Object> result = Maps.newHashMap();
         if (CollectionUtils.isEmpty(alarmContext.getDataList())) {
