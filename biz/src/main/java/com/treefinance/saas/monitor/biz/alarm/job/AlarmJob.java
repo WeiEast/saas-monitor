@@ -9,6 +9,7 @@ import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.AlarmConfigService;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
+import com.treefinance.saas.monitor.common.enumeration.ESwitch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,9 +52,15 @@ public class AlarmJob implements SimpleJob {
         AlarmContext context = null;
         try {
             config = alarmConfigService.getAlarmConfig(alarmId);
-            context = alarmHandlerChain.handle(config);
-            logger.info("alarm job running cost {}ms: config={},result={}",
-                    (System.currentTimeMillis() - start), JSON.toJSONString(config), JSON.toJSONString(context));
+            if (ESwitch.isOn(config.getAlarm().getAlarmSwitch())) {
+                context = alarmHandlerChain.handle(config);
+                logger.info("alarm job running cost {}ms: config={},result={}",
+                        (System.currentTimeMillis() - start), JSON.toJSONString(config), JSON.toJSONString(context));
+            } else {
+                logger.info("alarm job closed cost {}ms: config={},result={}",
+                        (System.currentTimeMillis() - start), JSON.toJSONString(config), JSON.toJSONString(context));
+            }
+
         } catch (Exception e) {
             logger.error("alarm job running exception: config={},result={}",
                     (System.currentTimeMillis() - start), JSON.toJSONString(config), JSON.toJSONString(context), e);

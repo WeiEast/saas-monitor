@@ -74,12 +74,7 @@ public class DataQueryHandler implements AlarmHandler {
                 .sorted(Comparator.comparing(AsAlarmQuery::getQueryIndex)).collect(Collectors.toList());
         List<Map<String, Object>> groups = context.groups();
         for (AsAlarmQuery query : sortedAlarmQueries) {
-            String sql = null;
-            try {
-                sql = new String(query.getQuerySql().getBytes(), "utf-8");
-            } catch (UnsupportedEncodingException e) {
-            }
-
+            String sql = query.getQuerySql();
             String code = query.getResultCode();
             if (StringUtils.isEmpty(sql)) {
                 continue;
@@ -87,7 +82,7 @@ public class DataQueryHandler implements AlarmHandler {
             // 利用关键字格式化sql
             sql = formatSQL(sql);
             // 提取sql 语句中表达式
-            Pattern pattern = Pattern.compile("(#\\S{1,}\\(.+\\)\\s?)|(#\\S{1,}\\s?)");
+            Pattern pattern = Pattern.compile("(#\\S{1,}\\(.+\\)\\s?)|(#\\S{1,}\\s?)|(#\\{([^\\{\\}])+\\})");
             List<String> sqlparts = pattern.splitAsStream(sql).collect(Collectors.toList());
             List<String> expressions = Lists.newArrayList();
             Matcher expressionMatcher = pattern.matcher(sql);
@@ -122,6 +117,14 @@ public class DataQueryHandler implements AlarmHandler {
                 List<Map<String, Object>> dataList = queryData(dynamicSql, paramMap);
                 dataMap.put(code, dataList);
             }
+
+
+//            for (Map<String, Object> dataMap : groups) {
+//                Map<String, Object> paramMap = Maps.newHashMap(dataMap);
+//                String dynamicSql = (String) expressionParser.parse(sql, paramMap);
+//                List<Map<String, Object>> dataList = queryData(dynamicSql, paramMap);
+//                dataMap.put(code, dataList);
+//            }
         }
 
     }
@@ -133,7 +136,7 @@ public class DataQueryHandler implements AlarmHandler {
                 .replaceAll("/", " / ")
                 .replaceAll("\r|\n|(\r\n)", " ")
                 // 全角空格处理
-                .replaceAll(" "," ");
+                .replaceAll(" ", " ");
         // mysql 关键字换行
         for (String keyWord : MYSQL_KEYWORDS) {
             if (sql.toLowerCase().indexOf(keyWord.toLowerCase()) == -1) {

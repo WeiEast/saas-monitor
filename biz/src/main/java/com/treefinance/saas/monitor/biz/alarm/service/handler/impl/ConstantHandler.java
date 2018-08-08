@@ -8,6 +8,7 @@ import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandler;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.Order;
 import com.treefinance.saas.monitor.biz.alarm.utils.AlarmUtils;
+import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.dao.entity.AsAlarm;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmConstant;
 import org.apache.commons.collections.CollectionUtils;
@@ -40,7 +41,6 @@ public class ConstantHandler implements AlarmHandler {
      */
     @Resource(name = "spelExpressionParser")
     private ExpressionParser expressionParser;
-
     @Override
     public void handle(AlarmConfig config, AlarmContext context) {
         List<AsAlarmConstant> constantList = config.getAlarmConstants();
@@ -78,5 +78,6 @@ public class ConstantHandler implements AlarmHandler {
             context.addGroup(code, calcValue);
             constantMap.put(code, calcValue);
         }
+        logger.info("constants handle : constantData={}, sortedConstants={}", JSON.toJSONString(constantMap), JSON.toJSONString(sortedConstants));
     }
 }
