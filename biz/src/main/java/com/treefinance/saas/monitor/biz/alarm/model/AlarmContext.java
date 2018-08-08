@@ -87,6 +87,25 @@ public class AlarmContext {
         alaramMessageList.add(alarmMessage);
     }
 
+
+    /**
+     * 原始数据存储
+     *
+     * @param dataMap
+     * @param key
+     * @param value
+     * @return
+     */
+    public Map<String, Object> origin(Map<String, Object> dataMap, String key, Object value) {
+        Map<String, Object> original = (Map<String, Object>) dataMap.get("origin");
+        if (original == null) {
+            original = Maps.newHashMap();
+            dataMap.put("origin", original);
+        }
+        original.put(key, value);
+        return original;
+    }
+
     /**
      * 分组项
      *
