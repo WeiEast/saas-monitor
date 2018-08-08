@@ -221,7 +221,12 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
                 = DataConverterUtils.convert(request.getAsAlarmTriggerInfoRequestList(), AsAlarmTrigger.class);
         alarmConfig.setAlarmTriggers(alarmTriggerList);
 
-        AlarmContext alarmContext = alarmHandlerChain.handle(alarmConfig);
+        AlarmContext alarmContext = null;
+        try {
+            alarmContext = alarmHandlerChain.handle(alarmConfig);
+        } catch (Exception e) {
+            throw new ParamCheckerException(e.getCause().getMessage());
+        }
         Map<String, Object> result = Maps.newHashMap();
         if (CollectionUtils.isEmpty(alarmContext.getDataList())) {
             return MonitorResultBuilder.build(result);
