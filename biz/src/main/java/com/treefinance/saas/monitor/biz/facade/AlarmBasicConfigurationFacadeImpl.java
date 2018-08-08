@@ -219,7 +219,13 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
                 = DataConverterUtils.convert(request.getAsAlarmTriggerInfoRequestList(), AsAlarmTrigger.class);
         alarmConfig.setAlarmTriggers(alarmTriggerList);
 
-        AlarmContext alarmContext = alarmHandlerChain.handle(alarmConfig);
+        AlarmContext alarmContext = null;
+        try {
+            alarmContext = alarmHandlerChain.handle(alarmConfig);
+        } catch (Exception e) {
+            logger.error("测试预警配置异常", e);
+            throw new ParamCheckerException(e.getCause().getMessage());
+        }
         Map<String, Object> result = Maps.newHashMap();
         if (CollectionUtils.isEmpty(alarmContext.getDataList())) {
             return MonitorResultBuilder.build(result);
@@ -238,15 +244,17 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             result.put("result", valueResult);
         } else {
             List<AsAlarmTriggerRecord> triggerRecordList = alarmContext.getTriggerRecords();
-            Map<String, Object> map = Maps.newHashMap();
             if (!CollectionUtils.isEmpty(triggerRecordList)) {
+                Map<String, Object> map = Maps.newHashMap();
                 AsAlarmTriggerRecord record = triggerRecordList.get(0);
                 map.put("infoTrigger", record.getInfoTrigger());
                 map.put("warningTrigger", record.getWarningTrigger());
                 map.put("errorTrigger", record.getErrorTrigger());
                 map.put("recoveryTrigger", record.getRecoveryTrigger());
+                result.put("result", map);
+            } else {
+                result.put("result", null);
             }
-            result.put("result", map);
         }
 
         return MonitorResultBuilder.build(result);
