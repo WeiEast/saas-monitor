@@ -274,9 +274,10 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         }
         else
         {
+            asAlarm.setAlarmSwitch("off");
             alaramJobService.stopJob(alarmId);
             asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
-            asAlarm.setAlarmSwitch("off");
+
         }
 
 
