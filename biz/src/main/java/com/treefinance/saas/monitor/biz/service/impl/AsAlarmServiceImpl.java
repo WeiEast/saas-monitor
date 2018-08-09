@@ -96,7 +96,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
             }
         } else {
-            if (asAlarmList.size() > 1) {
+            if (asAlarmList.size() >= 1) {
                 throw new ParamCheckerException("预警名称已被使用~");
             }
         }
