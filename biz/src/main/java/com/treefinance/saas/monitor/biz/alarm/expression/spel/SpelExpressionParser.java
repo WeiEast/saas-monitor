@@ -37,13 +37,11 @@ public class SpelExpressionParser implements ExpressionParser {
 
         Object result = null;
         try {
-
             // 1. 数据准备
             StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
             evaluationContext.addPropertyAccessor(new MapAccessor());
             evaluationContext.addPropertyAccessor(new BeanExpressionContextAccessor());
             evaluationContext.addPropertyAccessor(new BeanFactoryAccessor());
-
 
             evaluationContext.setRootObject(context);
             // 2.注册函数
