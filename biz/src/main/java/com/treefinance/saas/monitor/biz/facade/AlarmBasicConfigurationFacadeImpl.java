@@ -1,5 +1,7 @@
 package com.treefinance.saas.monitor.biz.facade;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
@@ -241,18 +243,22 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             }
             result.put("result", valueResult);
         } else {
-            List<AsAlarmTriggerRecord> triggerRecordList = alarmContext.getTriggerRecords();
-            if (!CollectionUtils.isEmpty(triggerRecordList)) {
-                Map<String, Object> map = Maps.newHashMap();
-                AsAlarmTriggerRecord record = triggerRecordList.get(0);
-                map.put("infoTrigger", record.getInfoTrigger());
-                map.put("warningTrigger", record.getWarningTrigger());
-                map.put("errorTrigger", record.getErrorTrigger());
-                map.put("recoveryTrigger", record.getRecoveryTrigger());
-                result.put("result", map);
-            } else {
-                result.put("result", null);
+            Map<String, Object> map = null;
+            if (!CollectionUtils.isEmpty(alarmContext.getDataList())) {
+                Map<String, Object> data = alarmContext.getDataList().get(0);
+                JSONObject dataJsonObject = JSONObject.parseObject(JSON.toJSONString(data));
+                if (dataJsonObject.get("origin") != null) {
+                    JSONObject recordJsonObject = JSONObject.parseObject(JSON.toJSONString(dataJsonObject.get("origin")));
+                    map = Maps.newHashMap();
+                    map.put("infoTrigger", recordJsonObject.get("infoTrigger"));
+                    map.put("warningTrigger", recordJsonObject.get("warningTrigger"));
+                    map.put("errorTrigger", recordJsonObject.get("errorTrigger"));
+                    map.put("recoveryTrigger", recordJsonObject.get("recoveryTrigger"));
+                }
+
             }
+            result.put("result", map);
+
         }
 
         return MonitorResultBuilder.build(result);
