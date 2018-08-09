@@ -251,12 +251,14 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
                 JSONObject dataJsonObject = JSONObject.parseObject(JSON.toJSONString(data));
                 if (dataJsonObject.get("origin") != null) {
                     JSONObject originJsonObject = JSONObject.parseObject(JSON.toJSONString(dataJsonObject.get("origin")));
-                    JSONObject record = JSONObject.parseObject(JSON.toJSONString(originJsonObject.get("record")));
-                    map = Maps.newHashMap();
-                    map.put("infoTrigger", record.get("infoTrigger"));
-                    map.put("warningTrigger", record.get("warningTrigger"));
-                    map.put("errorTrigger", record.get("errorTrigger"));
-                    map.put("recoveryTrigger", record.get("recoveryTrigger"));
+                    if (originJsonObject.get("record") != null) {
+                        JSONObject record = JSONObject.parseObject(JSON.toJSONString(originJsonObject.get("record")));
+                        map = Maps.newHashMap();
+                        map.put("infoTrigger", record.get("infoTrigger"));
+                        map.put("warningTrigger", record.get("warningTrigger"));
+                        map.put("errorTrigger", record.get("errorTrigger"));
+                        map.put("recoveryTrigger", record.get("recoveryTrigger"));
+                    }
                 }
 
             }
