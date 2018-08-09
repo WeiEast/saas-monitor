@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -87,6 +88,16 @@ public class AsAlarmServiceImpl implements AsAlarmService {
     public void addOrUpdate(AlarmBasicConfigurationDetailRequest request) {
         //预警配置表
         AsAlarmInfoRequest asAlarmInfoRequest = request.getAsAlarmInfoRequest();
+        if (StringUtils.isEmpty(asAlarmInfoRequest.getName())) {
+            throw new ParamCheckerException("预警名称不能为空~");
+        }
+        AsAlarmCriteria asAlarmCriteria = new AsAlarmCriteria();
+        asAlarmCriteria.createCriteria().andNameEqualTo(asAlarmInfoRequest.getName());
+        List<AsAlarm> asAlarmList = asAlarmMapper.selectByExample(asAlarmCriteria);
+        if (!CollectionUtils.isEmpty(asAlarmList)) {
+            throw new ParamCheckerException("预警名称已被使用~");
+
+        }
         AsAlarm asAlarm = DataConverterUtils.convert(asAlarmInfoRequest, AsAlarm.class);
         if (asAlarm.getId() == null) {
             asAlarm.setId(UidGenerator.getId());
@@ -157,6 +168,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
                 asAlarmNotify.setId(UidGenerator.getId());
             }
             asAlarmNotify.setAlarmId(asAlarm.getId());
+            asAlarmNotify.setCreateTime(new Date());
             asAlarmNotifyMapper.insertSelective(asAlarmNotify);
         }
 
