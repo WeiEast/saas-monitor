@@ -105,7 +105,7 @@ public class AlaramJobService implements SimpleJob, InitializingBean {
 
         // stop job
         criteria = new AsAlarmCriteria();
-        criteria.createCriteria().andAlarmSwitchEqualTo(ESwitch.ON.getCode());
+        criteria.createCriteria().andAlarmSwitchEqualTo(ESwitch.OFF.getCode());
         List<AsAlarm> stopAlarms = alarmConfigService.alarmMapper.selectByExample(criteria);
         stopAlarms.stream()
                 .filter(asAlarm -> asAlarm.getRunEnv() == null || saasEnvs.contains(asAlarm.getRunEnv()))
