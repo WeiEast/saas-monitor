@@ -88,13 +88,8 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         logger.info("执行日志查询条件为{}", alarmExcuteLogRequest.toString());
         AsAlarm asAlarm = asAlarmService.getAsAlarmByPrimaryKey(alarmExcuteLogRequest.getId());
 
-        AlarmExcuteLogRequest alarmExcuteLogRequest1 = new AlarmExcuteLogRequest();
-        alarmExcuteLogRequest1.setId(alarmExcuteLogRequest.getId());
-        alarmExcuteLogRequest1.setStartDate(alarmExcuteLogRequest.getStartDate());
-        alarmExcuteLogRequest1.setEndDate(alarmExcuteLogRequest.getEndDate());
 
-
-        List<AsAlarmTriggerRecord> totalasAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecord(alarmExcuteLogRequest1);
+        List<AsAlarmTriggerRecord> totalasAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecord(alarmExcuteLogRequest);
         List<AsAlarmTriggerRecord> asAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecordPagination(alarmExcuteLogRequest);
 
 
