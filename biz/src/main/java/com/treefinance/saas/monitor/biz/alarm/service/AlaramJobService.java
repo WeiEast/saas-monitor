@@ -54,7 +54,7 @@ public class AlaramJobService implements SimpleJob, InitializingBean {
      * @param alarmId
      */
     public void startJob(Long alarmId) {
-        String autoJobName = "alarm-job-" + alarmId;
+        String autoJobName = getJobName(alarmId);
         // 预警主表
         AsAlarm alarm = alarmConfigService.alarmMapper.selectByPrimaryKey(alarmId);
         if (ESwitch.isOff(alarm.getAlarmSwitch())) {
@@ -70,18 +70,46 @@ public class AlaramJobService implements SimpleJob, InitializingBean {
         logger.info("start job success : alarm={}", JSON.toJSONString(alarm));
     }
 
+    private String getJobName(Long alarmId) {
+        return "alarm-job-" + alarmId;
+    }
+
+    /**
+     * 关闭job
+     *
+     * @param alarmId
+     */
+    public void stopJob(Long alarmId) {
+        String autoJobName = getJobName(alarmId);
+        // 预警主表
+        AsAlarm alarm = alarmConfigService.alarmMapper.selectByPrimaryKey(alarmId);
+        if (ESwitch.isOn(alarm.getAlarmSwitch())) {
+            logger.info("stop job failed : job is on  alarm={}", JSON.toJSONString(alarm));
+            return;
+        }
+        elasticSimpleJobService.removeJob(autoJobName);
+        logger.info("stop job success : alarm={}", JSON.toJSONString(alarm));
+    }
+
     @Override
     public void execute(ShardingContext shardingContext) {
-        AsAlarmCriteria criteria = new AsAlarmCriteria();
-        criteria.createCriteria().andAlarmSwitchEqualTo(ESwitch.ON.getCode());
-        List<AsAlarm> alarms = alarmConfigService.alarmMapper.selectByExample(criteria);
-
         Byte currentEnv = Byte.valueOf(Constants.SAAS_ENV_VALUE);
         List<Byte> saasEnvs = Lists.newArrayList(currentEnv, Byte.valueOf("0"));
-        List<Long> alarmIds = alarms.stream()
+        // start job
+        AsAlarmCriteria criteria = new AsAlarmCriteria();
+        criteria.createCriteria().andAlarmSwitchEqualTo(ESwitch.ON.getCode());
+        List<AsAlarm> startAlarms = alarmConfigService.alarmMapper.selectByExample(criteria);
+        startAlarms.stream()
                 .filter(asAlarm -> asAlarm.getRunEnv() == null || saasEnvs.contains(asAlarm.getRunEnv()))
-                .map(AsAlarm::getId).collect(Collectors.toList());
-        alarmIds.forEach(alarmId -> startJob(alarmId));
+                .map(AsAlarm::getId).forEach(alarmId -> startJob(alarmId));
+
+        // stop job
+        criteria = new AsAlarmCriteria();
+        criteria.createCriteria().andAlarmSwitchEqualTo(ESwitch.ON.getCode());
+        List<AsAlarm> stopAlarms = alarmConfigService.alarmMapper.selectByExample(criteria);
+        stopAlarms.stream()
+                .filter(asAlarm -> asAlarm.getRunEnv() == null || saasEnvs.contains(asAlarm.getRunEnv()))
+                .map(AsAlarm::getId).forEach(alarmId -> stopJob(alarmId));
     }
 
     @Override

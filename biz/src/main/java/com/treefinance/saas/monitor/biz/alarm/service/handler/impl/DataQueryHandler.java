@@ -79,10 +79,12 @@ public class DataQueryHandler implements AlarmHandler {
             if (StringUtils.isEmpty(sql)) {
                 continue;
             }
+            // 动态sql支持
             // 利用关键字格式化sql
             sql = formatSQL(sql);
             // 提取sql 语句中表达式
-            Pattern pattern = Pattern.compile("(#\\S{1,}\\(.+\\)\\s?)|(#\\S{1,}\\s?)|(#\\{([^\\{\\}])+\\})");
+//            Pattern pattern = Pattern.compile("(#\\S{1,}\\(.+\\)\\s?)|(#\\S{1,}\\s?)|(#\\{([^\\{\\}])+\\})");
+            Pattern pattern = Pattern.compile("#\\{([^\\{\\}])+\\}");
             List<String> sqlparts = pattern.splitAsStream(sql).collect(Collectors.toList());
             List<String> expressions = Lists.newArrayList();
             Matcher expressionMatcher = pattern.matcher(sql);
@@ -106,7 +108,7 @@ public class DataQueryHandler implements AlarmHandler {
                 }
             }
             // 计算sql中表达式值
-            String dynamicSql = sqlBf.toString();
+            String dynamicSql = sqlBf.toString().replaceAll(" ", " ");
 
             for (Map<String, Object> dataMap : groups) {
                 Map<String, Object> paramMap = Maps.newHashMap(dataMap);
@@ -118,7 +120,7 @@ public class DataQueryHandler implements AlarmHandler {
                 dataMap.put(code, dataList);
             }
 
-
+            // 静态sql
 //            for (Map<String, Object> dataMap : groups) {
 //                Map<String, Object> paramMap = Maps.newHashMap(dataMap);
 //                String dynamicSql = (String) expressionParser.parse(sql, paramMap);
