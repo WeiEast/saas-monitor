@@ -90,9 +90,15 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         AsAlarmCriteria asAlarmCriteria = new AsAlarmCriteria();
         asAlarmCriteria.createCriteria().andNameEqualTo(asAlarmInfoRequest.getName());
         List<AsAlarm> asAlarmList = asAlarmMapper.selectByExample(asAlarmCriteria);
-        if (!CollectionUtils.isEmpty(asAlarmList)) {
-            throw new ParamCheckerException("预警名称已被使用~");
+        if (asAlarmInfoRequest.getId() == null) {
+            if (!CollectionUtils.isEmpty(asAlarmList)) {
+                throw new ParamCheckerException("预警名称已被使用~");
 
+            }
+        } else {
+            if (asAlarmList.size() > 1) {
+                throw new ParamCheckerException("预警名称已被使用~");
+            }
         }
         AsAlarm asAlarm = DataConverterUtils.convert(asAlarmInfoRequest, AsAlarm.class);
         if (asAlarm.getId() == null) {
