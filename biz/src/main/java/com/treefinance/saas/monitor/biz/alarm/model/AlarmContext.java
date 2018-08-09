@@ -51,6 +51,11 @@ public class AlarmContext {
     private Long intervalTime;
 
     /**
+     * 开始时间搓
+     */
+    private Long startTimeStamp = System.currentTimeMillis();
+
+    /**
      * 增加分组项
      *
      * @param key
@@ -141,7 +146,7 @@ public class AlarmContext {
             int part = totalCount / size;
             for (int i = 0; i < size; i++) {
                 Object value = groupValue.getClass().isArray() ? Array.get(groupValue, i) : ((Collection) groupValue).toArray()[i];
-                for (int j = 0; j < (i + 1) * part; j++) {
+                for (int j = i * part; j < (i + 1) * part; j++) {
                     Map<String, Object> dataMap = dataList.get(j);
                     dataMap.put(key, value);
                 }
@@ -175,5 +180,9 @@ public class AlarmContext {
 
     public List<AsAlarmTriggerRecord> getTriggerRecords() {
         return triggerRecords;
+    }
+
+    public Long getStartTimeStamp() {
+        return startTimeStamp;
     }
 }
