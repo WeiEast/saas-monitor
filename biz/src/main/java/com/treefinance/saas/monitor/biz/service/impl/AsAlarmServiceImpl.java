@@ -266,16 +266,19 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         if(("off").equals(asAlarm.getAlarmSwitch()))
         {
-            alaramJobService.startJob(alarmId);
+
             asAlarm.setAlarmSwitch("on");
+            asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
+            alaramJobService.startJob(alarmId);
 
         }
         else
         {
             alaramJobService.stopJob(alarmId);
+            asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
             asAlarm.setAlarmSwitch("off");
         }
-        asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
+
 
     }
 }
