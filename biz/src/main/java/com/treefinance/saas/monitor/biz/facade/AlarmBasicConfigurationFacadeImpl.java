@@ -88,7 +88,15 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         AsAlarm asAlarm = asAlarmService.getAsAlarmByPrimaryKey(alarmExcuteLogRequest.getId());
 
 
-        List<AsAlarmTriggerRecord> totalasAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecord(alarmExcuteLogRequest);
+        AlarmExcuteLogRequest alarmExcuteLogRequest1 =  new AlarmExcuteLogRequest();
+        alarmExcuteLogRequest1.setEndDate(alarmExcuteLogRequest.getEndDate());
+        alarmExcuteLogRequest1.setStartDate(alarmExcuteLogRequest.getStartDate());
+        alarmExcuteLogRequest1.setId(alarmExcuteLogRequest.getId());
+        alarmExcuteLogRequest1.setPageNumber(alarmExcuteLogRequest.getPageNumber());
+        alarmExcuteLogRequest1.setPageSize(alarmExcuteLogRequest.getPageSize());
+
+
+        List<AsAlarmTriggerRecord> totalasAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecord(alarmExcuteLogRequest1);
         List<AsAlarmTriggerRecord> asAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecordPagination(alarmExcuteLogRequest);
 
         List<Long> conditionIds = new ArrayList<>();
@@ -96,17 +104,22 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             Long id = asAlarmTriggerRecord.getConditionId();
             conditionIds.add(id);
         }
-        List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerService.getAsAlarmTriggerByPrimaryKey(conditionIds);
-        Map<Long,AsAlarmTrigger> asAlarmTriggerMap = asAlarmTriggerList.stream().collect(Collectors.toMap(AsAlarmTrigger::getId,AsAlarmTrigger->AsAlarmTrigger));
         List<AlarmExecuteLogRO> list = new ArrayList<>();
-        for (AsAlarmTriggerRecord asAlarmTriggerRecord : asAlarmTriggerRecordList) {
-            AlarmExecuteLogRO alarmExecuteLogRO = new AlarmExecuteLogRO();
-            BeanUtils.copyProperties(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()), alarmExecuteLogRO);
-            BeanUtils.copyProperties(asAlarm, alarmExecuteLogRO);
-            BeanUtils.copyProperties(asAlarmTriggerRecord, alarmExecuteLogRO);
-            alarmExecuteLogRO.setConditionName(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()).getName());
-            list.add(alarmExecuteLogRO);
+        if(asAlarmTriggerRecordList.size()!=0)
+        {
+            List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerService.getAsAlarmTriggerByPrimaryKey(conditionIds);
+            Map<Long,AsAlarmTrigger> asAlarmTriggerMap = asAlarmTriggerList.stream().collect(Collectors.toMap(AsAlarmTrigger::getId,AsAlarmTrigger->AsAlarmTrigger));
+
+            for (AsAlarmTriggerRecord asAlarmTriggerRecord : asAlarmTriggerRecordList) {
+                AlarmExecuteLogRO alarmExecuteLogRO = new AlarmExecuteLogRO();
+                BeanUtils.copyProperties(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()), alarmExecuteLogRO);
+                BeanUtils.copyProperties(asAlarm, alarmExecuteLogRO);
+                BeanUtils.copyProperties(asAlarmTriggerRecord, alarmExecuteLogRO);
+                alarmExecuteLogRO.setConditionName(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()).getName());
+                list.add(alarmExecuteLogRO);
+            }
         }
+
 
         return new MonitorResult<>(alarmExcuteLogRequest, list, totalasAlarmTriggerRecordList.size());
     }
