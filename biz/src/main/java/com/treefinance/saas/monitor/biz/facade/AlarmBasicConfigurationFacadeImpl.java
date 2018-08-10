@@ -32,10 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -94,15 +91,20 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         List<AsAlarmTriggerRecord> totalasAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecord(alarmExcuteLogRequest);
         List<AsAlarmTriggerRecord> asAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecordPagination(alarmExcuteLogRequest);
 
-
+        List<Long> conditionIds = new ArrayList<>();
+        for (AsAlarmTriggerRecord asAlarmTriggerRecord : asAlarmTriggerRecordList) {
+            Long id = asAlarmTriggerRecord.getConditionId();
+            conditionIds.add(id);
+        }
+        List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerService.getAsAlarmTriggerByPrimaryKey(conditionIds);
+        Map<Long,AsAlarmTrigger> asAlarmTriggerMap = asAlarmTriggerList.stream().collect(Collectors.toMap(AsAlarmTrigger::getId,AsAlarmTrigger->AsAlarmTrigger));
         List<AlarmExecuteLogRO> list = new ArrayList<>();
         for (AsAlarmTriggerRecord asAlarmTriggerRecord : asAlarmTriggerRecordList) {
             AlarmExecuteLogRO alarmExecuteLogRO = new AlarmExecuteLogRO();
-            AsAlarmTrigger asAlarmTrigger = asAlarmTriggerService.getAsAlarmTriggerByPrimaryKey(asAlarmTriggerRecord.getConditionId());
-            BeanUtils.copyProperties(asAlarmTrigger, alarmExecuteLogRO);
+            BeanUtils.copyProperties(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()), alarmExecuteLogRO);
             BeanUtils.copyProperties(asAlarm, alarmExecuteLogRO);
             BeanUtils.copyProperties(asAlarmTriggerRecord, alarmExecuteLogRO);
-            alarmExecuteLogRO.setConditionName(asAlarmTrigger.getName());
+            alarmExecuteLogRO.setConditionName(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()).getName());
             list.add(alarmExecuteLogRO);
         }
 
