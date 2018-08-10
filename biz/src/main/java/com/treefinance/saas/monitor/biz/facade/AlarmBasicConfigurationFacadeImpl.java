@@ -92,6 +92,8 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         alarmExcuteLogRequest1.setEndDate(alarmExcuteLogRequest.getEndDate());
         alarmExcuteLogRequest1.setStartDate(alarmExcuteLogRequest.getStartDate());
         alarmExcuteLogRequest1.setId(alarmExcuteLogRequest.getId());
+        alarmExcuteLogRequest1.setPageNumber(alarmExcuteLogRequest.getPageNumber());
+        alarmExcuteLogRequest1.setPageSize(alarmExcuteLogRequest.getPageSize());
 
 
         List<AsAlarmTriggerRecord> totalasAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecord(alarmExcuteLogRequest1);
