@@ -102,17 +102,22 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             Long id = asAlarmTriggerRecord.getConditionId();
             conditionIds.add(id);
         }
-        List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerService.getAsAlarmTriggerByPrimaryKey(conditionIds);
-        Map<Long,AsAlarmTrigger> asAlarmTriggerMap = asAlarmTriggerList.stream().collect(Collectors.toMap(AsAlarmTrigger::getId,AsAlarmTrigger->AsAlarmTrigger));
         List<AlarmExecuteLogRO> list = new ArrayList<>();
-        for (AsAlarmTriggerRecord asAlarmTriggerRecord : asAlarmTriggerRecordList) {
-            AlarmExecuteLogRO alarmExecuteLogRO = new AlarmExecuteLogRO();
-            BeanUtils.copyProperties(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()), alarmExecuteLogRO);
-            BeanUtils.copyProperties(asAlarm, alarmExecuteLogRO);
-            BeanUtils.copyProperties(asAlarmTriggerRecord, alarmExecuteLogRO);
-            alarmExecuteLogRO.setConditionName(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()).getName());
-            list.add(alarmExecuteLogRO);
+        if(!StringUtils.isEmpty(asAlarmTriggerRecordList))
+        {
+            List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerService.getAsAlarmTriggerByPrimaryKey(conditionIds);
+            Map<Long,AsAlarmTrigger> asAlarmTriggerMap = asAlarmTriggerList.stream().collect(Collectors.toMap(AsAlarmTrigger::getId,AsAlarmTrigger->AsAlarmTrigger));
+
+            for (AsAlarmTriggerRecord asAlarmTriggerRecord : asAlarmTriggerRecordList) {
+                AlarmExecuteLogRO alarmExecuteLogRO = new AlarmExecuteLogRO();
+                BeanUtils.copyProperties(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()), alarmExecuteLogRO);
+                BeanUtils.copyProperties(asAlarm, alarmExecuteLogRO);
+                BeanUtils.copyProperties(asAlarmTriggerRecord, alarmExecuteLogRO);
+                alarmExecuteLogRO.setConditionName(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()).getName());
+                list.add(alarmExecuteLogRO);
+            }
         }
+
 
         return new MonitorResult<>(alarmExcuteLogRequest, list, totalasAlarmTriggerRecordList.size());
     }

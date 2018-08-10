@@ -24,7 +24,7 @@ public class AsAlarmTriggerServiceImpl implements AsAlarmTriggerService {
     private AsAlarmTriggerMapper asAlarmTriggerMapper;
 
     @Override
-    public List<AsAlarmTrigger> getAsAlarmTriggerByPrimaryKey(List ids) {
+    public List<AsAlarmTrigger> getAsAlarmTriggerByPrimaryKey(List<Long> ids) {
 
         AsAlarmTriggerCriteria asAlarmTriggerCriteria = new AsAlarmTriggerCriteria();
         asAlarmTriggerCriteria.createCriteria().andIdIn(ids);
