@@ -87,7 +87,7 @@ public class TriggerHandler implements AlarmHandler {
                     // 1.触发条件禁用
                     record.setConditionStatus(Byte.valueOf("0").equals(trigger.getStatus()) ? "启用" : "未启用");
                     if (!Byte.valueOf("0").equals(trigger.getStatus())) {
-                        record.setCostTime(Long.valueOf((System.currentTimeMillis() - context.getStartTimeStamp()) ).intValue());
+                        record.setCostTime(Long.valueOf((System.currentTimeMillis() - context.getStartTimeStamp())).intValue());
                         logger.info("alarm trigger is un-used: trigger={}", JSON.toJSONString(trigger));
                         continue;
                     }
@@ -106,7 +106,7 @@ public class TriggerHandler implements AlarmHandler {
                             JSON.toJSONString(trigger), currentLevel, JSON.toJSONString(alarmMessage), JSON.toJSONString(data));
                 } finally {
                     // 计算耗时
-                    record.setCostTime(Long.valueOf((System.currentTimeMillis() - context.getStartTimeStamp()) ).intValue());
+                    record.setCostTime(Long.valueOf((System.currentTimeMillis() - context.getStartTimeStamp())).intValue());
                 }
             }
             // 兼容测试时无alarmId
@@ -165,7 +165,7 @@ public class TriggerHandler implements AlarmHandler {
             return;
         }
         // 上次无预警，本次无预警本，不触发恢复
-        AsAlarmTriggerRecord lastAlarm = getLastAlarm(triggerId, context.getAlarmTime(), alarmId);
+        AsAlarmTriggerRecord lastAlarm = getLastAlarm(triggerId, context.getAlarmTime(), context.getIntervalTime());
         if (lastAlarm == null) {
             record.setRecoveryTrigger("上次无预警，本次不触发恢复");
             return;
