@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.alarm.service.handler.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.commonservice.uid.UidGenerator;
@@ -15,6 +16,7 @@ import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandler;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.Order;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.ESwitch;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmMsg;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmTrigger;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerRecord;
@@ -78,17 +80,14 @@ public class TriggerHandler implements AlarmHandler {
         // 预警级别
         for (AsAlarmTrigger trigger : sortedTriggers) {
             List<AsAlarmTriggerRecord> recordList = Lists.newArrayList();
-            long start = System.currentTimeMillis();
-
             for (Map<String, Object> data : groups) {
                 AsAlarmTriggerRecord record = initTriggerRecord(config, context, trigger, data);
                 recordList.add(record);
-
                 try {
                     // 1.触发条件禁用
                     record.setConditionStatus(Byte.valueOf("0").equals(trigger.getStatus()) ? "启用" : "未启用");
                     if (!Byte.valueOf("0").equals(trigger.getStatus())) {
-                        record.setCostTime(Long.valueOf((System.currentTimeMillis() - start) / 1000).intValue());
+                        record.setCostTime(Long.valueOf((System.currentTimeMillis() - context.getStartTimeStamp()) ).intValue());
                         logger.info("alarm trigger is un-used: trigger={}", JSON.toJSONString(trigger));
                         continue;
                     }
@@ -102,11 +101,12 @@ public class TriggerHandler implements AlarmHandler {
                     // 3.生成预警消息
                     AlarmMessage alarmMessage = generateAlarmMessage(config, context, data, currentLevel);
                     record.setAlarmMessage(alarmMessage.getMessage());
+                    record.setNotifyTypes(getNotifyTypes(config, currentLevel));
                     logger.info("trigger alarm : trigger={}, alarmLevel ={}, title={}, message={}, data={}",
                             JSON.toJSONString(trigger), currentLevel, JSON.toJSONString(alarmMessage), JSON.toJSONString(data));
                 } finally {
                     // 计算耗时
-                    record.setCostTime(Long.valueOf((System.currentTimeMillis() - start) / 1000).intValue());
+                    record.setCostTime(Long.valueOf((System.currentTimeMillis() - context.getStartTimeStamp()) ).intValue());
                 }
             }
             // 兼容测试时无alarmId
@@ -115,6 +115,34 @@ public class TriggerHandler implements AlarmHandler {
             }
         }
 
+    }
+
+    /**
+     * 获取通知方式
+     *
+     * @param config
+     * @param currentLevel
+     * @return
+     */
+    private String getNotifyTypes(AlarmConfig config, EAlarmLevel currentLevel) {
+        List<String> notifyTypes = Lists.newArrayList();
+        config.getAlarmNotifies().stream()
+                .filter(notify -> currentLevel.name().equalsIgnoreCase(notify.getAlarmLevel()))
+                .forEach(notify -> {
+                    if (ESwitch.isOn(notify.getIvrSwitch())) {
+                        notifyTypes.add("ivr");
+                    }
+                    if (ESwitch.isOn(notify.getWechatSwitch())) {
+                        notifyTypes.add("微信");
+                    }
+                    if (ESwitch.isOn(notify.getSmsSwitch())) {
+                        notifyTypes.add("短信");
+                    }
+                    if (ESwitch.isOn(notify.getEmailSwitch())) {
+                        notifyTypes.add("邮件");
+                    }
+                });
+        return Joiner.on(",").useForNull("").join(notifyTypes);
     }
 
     /**
@@ -250,7 +278,7 @@ public class TriggerHandler implements AlarmHandler {
         Date alarmTime = context.getAlarmTime();
         AlarmMessage alarmMessage = new AlarmMessage();
 
-        String commonHeader = "【" + currentLevel.name() + "】【" + diamondConfig.getMonitorEnvironment() + "】";
+        String commonHeader = "";
         String title = commonHeader + "【" +
                 DateFormatUtils.format(alarmTime, "yyyy-MM-dd HH:mm:ss")
                 + "】发生【" + config.getAlarm().getName() + "】预警";
