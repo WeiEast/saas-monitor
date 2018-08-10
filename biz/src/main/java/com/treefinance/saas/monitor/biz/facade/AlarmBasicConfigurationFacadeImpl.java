@@ -103,7 +103,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             conditionIds.add(id);
         }
         List<AlarmExecuteLogRO> list = new ArrayList<>();
-        if(!StringUtils.isEmpty(asAlarmTriggerRecordList))
+        if(asAlarmTriggerRecordList.size()!=0)
         {
             List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerService.getAsAlarmTriggerByPrimaryKey(conditionIds);
             Map<Long,AsAlarmTrigger> asAlarmTriggerMap = asAlarmTriggerList.stream().collect(Collectors.toMap(AsAlarmTrigger::getId,AsAlarmTrigger->AsAlarmTrigger));
