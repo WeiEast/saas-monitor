@@ -41,9 +41,8 @@ public class AsAlarmServiceImpl implements AsAlarmService {
     AsAlarmMsgMapper asAlarmMsgMapper;
     @Autowired
     AsAlarmTriggerMapper asAlarmTriggerMapper;
-
     @Autowired
-    AlaramJobService  alaramJobService;
+    AlaramJobService alaramJobService;
 
     @Override
     public AsAlarm getAsAlarmByPrimaryKey(long id) {
@@ -281,23 +280,14 @@ public class AsAlarmServiceImpl implements AsAlarmService {
     public void updateAlarmSwitch(Long alarmId) {
         AsAlarm asAlarm = asAlarmMapper.selectByPrimaryKey(alarmId);
 
-        if(("off").equals(asAlarm.getAlarmSwitch()))
-        {
-
+        if (("off").equals(asAlarm.getAlarmSwitch())) {
             asAlarm.setAlarmSwitch("on");
             asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
             alaramJobService.startJob(alarmId);
-
-        }
-        else
-        {
+        } else {
             asAlarm.setAlarmSwitch("off");
             asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
             alaramJobService.stopJob(alarmId);
-
-
         }
-
-
     }
 }
