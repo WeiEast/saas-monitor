@@ -1,6 +1,7 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.saas.monitor.biz.alarm.service.AlaramJobService;
 import com.treefinance.saas.monitor.biz.service.AsAlarmService;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
@@ -40,6 +41,8 @@ public class AsAlarmServiceImpl implements AsAlarmService {
     AsAlarmMsgMapper asAlarmMsgMapper;
     @Autowired
     AsAlarmTriggerMapper asAlarmTriggerMapper;
+    @Autowired
+    AlaramJobService alaramJobService;
 
     @Override
     public AsAlarm getAsAlarmByPrimaryKey(long id) {
@@ -279,10 +282,12 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         if (("off").equals(asAlarm.getAlarmSwitch())) {
             asAlarm.setAlarmSwitch("on");
+            asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
+            alaramJobService.startJob(alarmId);
         } else {
             asAlarm.setAlarmSwitch("off");
+            asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
+            alaramJobService.stopJob(alarmId);
         }
-        asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
-
     }
 }
