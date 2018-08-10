@@ -224,7 +224,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         //预警常量表
         AsAlarmConstantCriteria asAlarmConstantCriteria = new AsAlarmConstantCriteria();
-        asAlarmConstantCriteria.setOrderByClause("constIndex asc,createTime asc");
+        asAlarmConstantCriteria.setOrderByClause("constIndex asc,id asc");
         asAlarmConstantCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmConstant> asAlarmConstantList = asAlarmConstantMapper.selectByExample(asAlarmConstantCriteria);
         List<AsAlarmConstantRO> asAlarmConstantROList = DataConverterUtils.convert(asAlarmConstantList, AsAlarmConstantRO.class);
@@ -232,7 +232,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         //预警数据查询表
         AsAlarmQueryCriteria asAlarmQueryCriteria = new AsAlarmQueryCriteria();
-        asAlarmQueryCriteria.setOrderByClause("queryIndex asc,createTime asc");
+        asAlarmQueryCriteria.setOrderByClause("queryIndex asc,id asc");
         asAlarmQueryCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmQuery> asAlarmQueryList = asAlarmQueryMapper.selectByExample(asAlarmQueryCriteria);
         List<AsAlarmQueryRO> asAlarmQueryROList = DataConverterUtils.convert(asAlarmQueryList, AsAlarmQueryRO.class);
@@ -240,7 +240,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         //预警变量表
         AsAlarmVariableCriteria asAlarmVariableCriteria = new AsAlarmVariableCriteria();
-        asAlarmVariableCriteria.setOrderByClause("varIndex asc,createTime asc");
+        asAlarmVariableCriteria.setOrderByClause("varIndex asc,id asc");
         asAlarmVariableCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmVariable> asAlarmVariableList = asAlarmVariableMapper.selectByExample(asAlarmVariableCriteria);
         List<AsAlarmVariableRO> asAlarmVariableROList = DataConverterUtils.convert(asAlarmVariableList, AsAlarmVariableRO.class);
@@ -248,7 +248,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         //预警通知表
         AsAlarmNotifyCriteria asAlarmNotifyCriteria = new AsAlarmNotifyCriteria();
-        asAlarmNotifyCriteria.setOrderByClause("createTime asc");
+        asAlarmNotifyCriteria.setOrderByClause("id asc");
         asAlarmNotifyCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmNotify> asAlarmNotifyList = asAlarmNotifyMapper.selectByExample(asAlarmNotifyCriteria);
         List<AsAlarmNotifyRO> asAlarmNotifyROList = DataConverterUtils.convert(asAlarmNotifyList, AsAlarmNotifyRO.class);
@@ -256,7 +256,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         //预警消息模板表
         AsAlarmMsgCriteria asAlarmMsgCriteria = new AsAlarmMsgCriteria();
-        asAlarmMsgCriteria.setOrderByClause("createTime asc");
+        asAlarmMsgCriteria.setOrderByClause("id asc");
         asAlarmMsgCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmMsg> asAlarmMsgList = asAlarmMsgMapper.selectByExample(asAlarmMsgCriteria);
         AsAlarmMsgRO asAlarmMsgRO = new AsAlarmMsgRO();
@@ -268,7 +268,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         //预警触发条件表
         AsAlarmTriggerCriteria asAlarmTriggerCriteria = new AsAlarmTriggerCriteria();
-        asAlarmTriggerCriteria.setOrderByClause("triggerIndex asc,createTime asc");
+        asAlarmTriggerCriteria.setOrderByClause("triggerIndex asc,id asc");
         asAlarmTriggerCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerMapper.selectByExample(asAlarmTriggerCriteria);
         List<AsAlarmTriggerRO> asAlarmTriggerROList = DataConverterUtils.convert(asAlarmTriggerList, AsAlarmTriggerRO.class);
