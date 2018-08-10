@@ -41,7 +41,7 @@ public class AsAlarmTriggerRecordServiceImpl implements AsAlarmTriggerRecordServ
         }
 
 
-        List<AsAlarmTriggerRecord> asAlarmTriggerRecordList = asAlarmTriggerRecordMapper.selectByExample(asAlarmTriggerRecordCriteria);
+        List<AsAlarmTriggerRecord> asAlarmTriggerRecordList = asAlarmTriggerRecordMapper.selectPaginationByExample(asAlarmTriggerRecordCriteria);
 
 
         return asAlarmTriggerRecordList;
