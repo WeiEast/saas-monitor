@@ -1,13 +1,19 @@
 package com.treefinance.saas.monitor.biz.facade;
 
+import com.google.common.collect.Maps;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.autostat.utils.CronUtils;
+import com.treefinance.saas.monitor.biz.config.DiamondConfig;
+import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
 import com.treefinance.saas.monitor.biz.event.AlarmClearEvent;
 import com.treefinance.saas.monitor.biz.event.OrderDelegateEvent;
+import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.service.AlarmRecordService;
 import com.treefinance.saas.monitor.biz.service.AlarmWorkOrderService;
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.biz.service.WorkOrderLogService;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
@@ -26,9 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.TASK_SUCCESS_ALARM_OPERATOR;
 
 /**
  * @author chengtong
@@ -38,6 +45,7 @@ import java.util.Objects;
 public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(AlarmRecordFacadeImpl.class);
+
     @Autowired
     private AlarmRecordService alarmRecordService;
     @Autowired
@@ -48,6 +56,22 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
     private WorkOrderLogService workOrderLogService;
     @Autowired
     private ApplicationEventPublisher publisher;
+
+    @Autowired
+    private DiamondConfig config;
+    @Autowired
+    private EmailAlarmConfig emailAlarmConfig;
+
+
+    private static Map<String, String> typeNameMapping = Maps.newHashMapWithExpectedSize(4);
+
+    static {
+        typeNameMapping.put(AlarmConstants.OPERATOR_ALARM, "运营商预警");
+        typeNameMapping.put(AlarmConstants.EMAIL_ALARM, "邮箱预警");
+        typeNameMapping.put(TASK_SUCCESS_ALARM_OPERATOR, "任务成功率运营商");
+        typeNameMapping.put(AlarmConstants.TASK_SUCCESS_ALARM_ECOMMERCE, "任务成功率电商");
+    }
+
 
     @Override
     public MonitorResult<List<AlarmRecordRO>> queryAlarmRecord(AlarmRecordRequest recordRequest) {
@@ -385,9 +409,101 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
     @Override
     public MonitorResult<List<AlarmTypeListRO>> queryAlarmTypeList() {
-
-
-
         return null;
     }
+
+
+    @Override
+    public MonitorResult<List<AlarmRecordStatisticRO>> queryAlarmStatistic(AlarmRecordStatRequest recordStatRequest) {
+
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+
+        AlarmRecordCriteria.Criteria innerCriteria = criteria.createCriteria();
+
+        List<Integer> codes = new ArrayList<>();
+        codes.add(EAlarmRecordStatus.PROCESSED.getCode());
+        codes.add(EAlarmRecordStatus.WRONG.getCode());
+        codes.add(EAlarmRecordStatus.DISABLE.getCode());
+        codes.add(EAlarmRecordStatus.REPAIRED.getCode());
+
+        innerCriteria.andLevelEqualTo(EAlarmLevel.error.name()).andIsProcessedIn(codes);
+        if (recordStatRequest.getStartTime() != null && recordStatRequest.getEndTime() != null) {
+            innerCriteria.andCreateTimeGreaterThanOrEqualTo(recordStatRequest.getStartTime()).andCreateTimeLessThan
+                    (recordStatRequest.getEndTime());
+        }
+
+        List<AlarmRecord> list = alarmRecordService.queryByCondition(criteria);
+
+        if (list.isEmpty()) {
+            return MonitorResultBuilder.build(new ArrayList<>());
+        }
+
+
+        Map<String, List<AlarmRecord>> map = list.stream().collect(Collectors.groupingBy
+                (alarmRecord -> typeNameMapping.get(alarmRecord.getAlarmType())));
+
+        List<AlarmRecordStatisticRO> returnList = new ArrayList<>();
+        boolean hasName = StringUtils.isNotEmpty(recordStatRequest.getName());
+        for (String alarmName : map.keySet()) {
+
+            if (hasName) {
+                if (!alarmName.contains(recordStatRequest.getName())) {
+                    continue;
+                }
+            }
+
+            List<AlarmRecord> innerList = map.get(alarmName);
+
+            int count = 0, processedCount = 0, wrongCount = 0, disableCount = 0, recoveryCount = 0;
+            double duration = 0d, durationAver, maxDuration = 0d;
+
+
+            for (AlarmRecord record : innerList) {
+                count += 1;
+
+                if (EAlarmRecordStatus.REPAIRED.getCode().equals(record.getIsProcessed())) {
+                    recoveryCount += 1;
+                }
+                if (EAlarmRecordStatus.WRONG.getCode().equals(record.getIsProcessed())) {
+                    wrongCount += 1;
+                }
+                if (EAlarmRecordStatus.DISABLE.getCode().equals(record.getIsProcessed())) {
+                    disableCount += 1;
+                }
+                if (EAlarmRecordStatus.PROCESSED.getCode().equals(record.getIsProcessed())) {
+                    processedCount += 1;
+                }
+
+                double subDuration = StatHelper.getDiffDuration(record.getAlarmType(), record.getEndTime(), record
+                        .getDataTime(), config, emailAlarmConfig);
+
+                duration += subDuration;
+                maxDuration = subDuration > maxDuration ? subDuration : maxDuration;
+
+            }
+
+            durationAver = duration / count;
+
+            AlarmRecordStatisticRO alarmRecordStatisticRO = new AlarmRecordStatisticRO();
+
+            alarmRecordStatisticRO.setName(alarmName);
+            alarmRecordStatisticRO.setCount(count);
+            alarmRecordStatisticRO.setDuration(duration);
+            alarmRecordStatisticRO.setDurationAver(durationAver);
+            alarmRecordStatisticRO.setMaxDuration(maxDuration);
+
+            alarmRecordStatisticRO.setProcessedCount(processedCount);
+            alarmRecordStatisticRO.setWrongCount(wrongCount);
+            alarmRecordStatisticRO.setDisableCount(disableCount);
+            alarmRecordStatisticRO.setRecoveryCount(recoveryCount);
+
+            returnList.add(alarmRecordStatisticRO);
+
+        }
+
+
+        return MonitorResultBuilder.build(returnList);
+    }
+
+
 }
