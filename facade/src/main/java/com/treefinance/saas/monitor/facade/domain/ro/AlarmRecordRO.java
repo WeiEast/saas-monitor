@@ -43,6 +43,8 @@ public class AlarmRecordRO extends BaseRO {
     private Date endTime;
     /**工单编号*/
     private Long orderId;
+    /**持续时间*/
+    private Double continueTime;
 
     /**描述*/
     private String desc;

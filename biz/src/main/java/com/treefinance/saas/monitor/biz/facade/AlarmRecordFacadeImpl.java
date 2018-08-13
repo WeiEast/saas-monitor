@@ -24,6 +24,7 @@ import com.treefinance.saas.monitor.facade.domain.request.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.*;
+import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
 import com.treefinance.saas.monitor.facade.service.AlarmRecordFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -156,14 +157,12 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         Long id = recordRequest.getId();
         Date startTime = recordRequest.getStartTime();
         Date endTime = recordRequest.getEndTime();
-
         AlarmWorkOrderCriteria criteria = new AlarmWorkOrderCriteria();
         AlarmWorkOrderCriteria.Criteria inner = criteria.createCriteria();
 
         if (null != id) {
             inner.andIdIsLike(String.valueOf(id));
         }
-
         if (StringUtils.isNotEmpty(dutyName)) {
             inner.andDutyNameLike(dutyName);
         }
@@ -190,6 +189,53 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         return MonitorResultBuilder.pageResult(recordRequest, alarmWorkOrderROS, count);
     }
+
+    @Override
+    public MonitorResult<List<AlarmRecordRO>> queryAlarmListAndhandleMessge(AlarmRecordRequest recordRequest) {
+        if(StringUtils.isEmpty(recordRequest.getAlarmType()))
+        {
+            throw new ParamCheckerException("请求参数查询记录表预警类型不能为空");
+        }
+
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+        AlarmRecordCriteria.Criteria criteriaInner = criteria.createCriteria();
+
+            criteriaInner.andAlarmTypeEqualTo(recordRequest.getAlarmType());
+
+        if (Objects.nonNull(recordRequest.getStartTime())) {
+            criteriaInner.andStartTimeGreaterThan(recordRequest.getStartTime());
+        }
+        if (Objects.nonNull(recordRequest.getEndTime())) {
+            criteriaInner.andEndTimeLessThan(recordRequest.getEndTime());
+        }
+        criteria.setOrderByClause("isProcessed asc,dataTime desc");
+        criteria.setLimit(recordRequest.getPageSize());
+        criteria.setOffset(recordRequest.getOffset());
+
+        long count = alarmRecordService.countByExample(criteria);
+
+        List<AlarmRecord> list = alarmRecordService.queryPaginateByCondition(criteria);
+
+        List<AlarmRecordRO> alarmRecordROList = DataConverterUtils.convert(list, AlarmRecordRO.class);
+
+        for (AlarmRecordRO recordRO : alarmRecordROList) {
+            recordRO.setProcessDesc(EAlarmRecordStatus.getDesc(recordRO.getIsProcessed()));
+            Long recordId = recordRO.getId();
+
+            AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByRecordId(recordId);
+            if (alarmWorkOrder == null) {
+                continue;
+            }
+            recordRO.setContinueTime(StatHelper.getDiffDuration(recordRO.getAlarmType(),recordRO.getEndTime(),recordRO.getDataTime(),config,emailAlarmConfig));
+            recordRO.setDesc(alarmWorkOrder.getRemark());
+        }
+        return MonitorResultBuilder.pageResult(recordRequest, alarmRecordROList, count);
+
+    }
+
+
+
+
 
     @Override
     public MonitorResult<Boolean> updateWorkerOrderProcessor(UpdateWorkOrderRequest request) {
