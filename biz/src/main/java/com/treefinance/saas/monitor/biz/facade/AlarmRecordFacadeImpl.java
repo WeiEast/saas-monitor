@@ -203,10 +203,10 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             criteriaInner.andAlarmTypeEqualTo(recordRequest.getAlarmType());
 
         if (Objects.nonNull(recordRequest.getStartTime())) {
-            criteriaInner.andStartTimeGreaterThan(recordRequest.getStartTime());
+            criteriaInner.andStartTimeGreaterThanOrEqualTo(recordRequest.getStartTime());
         }
         if (Objects.nonNull(recordRequest.getEndTime())) {
-            criteriaInner.andEndTimeLessThan(recordRequest.getEndTime());
+            criteriaInner.andEndTimeLessThanOrEqualTo(recordRequest.getEndTime());
         }
         criteria.setOrderByClause("isProcessed asc,dataTime desc");
         criteria.setLimit(recordRequest.getPageSize());
