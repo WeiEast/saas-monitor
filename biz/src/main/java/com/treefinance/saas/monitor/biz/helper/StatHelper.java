@@ -1,23 +1,20 @@
 package com.treefinance.saas.monitor.biz.helper;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
-import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccessRateAlarmConfigDTO;
-import com.treefinance.saas.monitor.exception.BizException;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang.time.DateUtils;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.treefinance.saas.monitor.common.constants.AlarmConstants.*;
 
 /**
  * Created by yh-treefinance on 2017/6/9.
@@ -88,44 +85,51 @@ public abstract class StatHelper {
         date = fmt.parse("2017-11-22 20:10:59");
         System.out.println(fmt.format(StatHelper.calculateIntervalTime(date, 10)));
     }
-    public static double getDiffDuration(String alarmType, Date endTime, Date dataTime,DiamondConfig config, EmailAlarmConfig
-            emailAlarmConfig) {
+    public static StartTimeModel getDiffDuration(String alarmType, Date endTime, Date dataTime,DiamondConfig config, EmailAlarmConfig
+            emailAlarmConfig,Date startTime) {
 
         Integer advanceAmount = getNeedAdvanceAmount(alarmType,config,emailAlarmConfig);
 
-        long endStemp = endTime.getTime();
-        long dataStemp = dataTime.getTime();
+        long endStamp = endTime.getTime();
+        long dataStamp = dataTime.getTime();
+        long startStamp = startTime.getTime();
         long advanceAmountInMillSec = advanceAmount * 60 * 1000;
+        long startTimeStamp = dataStamp - advanceAmountInMillSec;
 
-        long startTimeStemp = dataStemp - advanceAmountInMillSec;
+        long realTime = endStamp - startStamp;
 
-        long realTime = endStemp - startTimeStemp;
+        StartTimeModel model = new StartTimeModel();
 
-        return realTime / (60 * 1000);
+        double duration = realTime / (60 * 1000);
 
+        model.setDuration(Double.parseDouble(new DecimalFormat("#.##").format(duration)));
+        model.setStartTime(new Date(startTimeStamp));
+
+        return model;
     }
 
     private static Integer getNeedAdvanceAmount(String alarmType, DiamondConfig config, EmailAlarmConfig
             emailAlarmConfig) {
-        switch (alarmType) {
-            case TASK_SUCCESS_ALARM_OPERATOR:
-                return calcTypedDuration("OPERATOR",config);
-            case TASK_SUCCESS_ALARM_ECOMMERCE:
-                return calcTypedDuration("ECOMMERCE",config);
-            case OPERATOR_ALARM:
-                String configStr = config.getOperatorMonitorAlarmConfig();
-                List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
-                OperatorMonitorAlarmConfigDTO operatorMonitorAlarmConfigDTO = configList.get(0);
-                return operatorMonitorAlarmConfigDTO.getIntervalMins();
-            case EMAIL_ALARM:
-                List<EmailMonitorAlarmConfigDTO> configDTOList = JSON.parseArray(emailAlarmConfig.getEmailAlarmConfig(),
-                        EmailMonitorAlarmConfigDTO
-                                .class);
-                EmailMonitorAlarmConfigDTO configDTO = configDTOList.get(0);
-                return configDTO.getIntervalMins();
-            default:
-                throw new BizException("不支持的预警类型");
-        }
+        return 0;
+//        switch (alarmType) {
+//            case TASK_SUCCESS_ALARM_OPERATOR:
+//                return calcTypedDuration("OPERATOR",config);
+//            case TASK_SUCCESS_ALARM_ECOMMERCE:
+//                return calcTypedDuration("ECOMMERCE",config);
+//            case OPERATOR_ALARM:
+//                String configStr = config.getOperatorMonitorAlarmConfig();
+//                List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
+//                OperatorMonitorAlarmConfigDTO operatorMonitorAlarmConfigDTO = configList.get(0);
+//                return operatorMonitorAlarmConfigDTO.getIntervalMins();
+//            case EMAIL_ALARM:
+//                List<EmailMonitorAlarmConfigDTO> configDTOList = JSON.parseArray(emailAlarmConfig.getEmailAlarmConfig(),
+//                        EmailMonitorAlarmConfigDTO
+//                                .class);
+//                EmailMonitorAlarmConfigDTO configDTO = configDTOList.get(0);
+//                return configDTO.getIntervalMins();
+//            default:
+//                throw new BizException("不支持的预警类型");
+//        }
     }
 
     private static Integer calcTypedDuration(String type,DiamondConfig config) {
@@ -142,5 +146,16 @@ public abstract class StatHelper {
 
         return times * intervals;
     }
+
+    @Setter
+    @Getter
+    public static class StartTimeModel{
+
+        private Date startTime;
+
+        private Double duration;
+
+    }
+
 
 }

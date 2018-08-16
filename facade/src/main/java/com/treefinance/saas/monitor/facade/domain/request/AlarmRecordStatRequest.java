@@ -18,4 +18,5 @@ public class AlarmRecordStatRequest extends BaseRequest {
 
     private Date endTime;
 
+    private Integer dateType;
 }

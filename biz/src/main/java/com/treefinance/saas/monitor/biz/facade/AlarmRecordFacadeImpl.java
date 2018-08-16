@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.facade;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.autostat.utils.CronUtils;
@@ -24,7 +25,6 @@ import com.treefinance.saas.monitor.facade.domain.request.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.*;
-import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
 import com.treefinance.saas.monitor.facade.service.AlarmRecordFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -189,53 +189,6 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         return MonitorResultBuilder.pageResult(recordRequest, alarmWorkOrderROS, count);
     }
-
-    @Override
-    public MonitorResult<List<AlarmRecordRO>> queryAlarmListAndhandleMessge(AlarmRecordRequest recordRequest) {
-        if(StringUtils.isEmpty(recordRequest.getAlarmType()))
-        {
-            throw new ParamCheckerException("请求参数查询记录表预警类型不能为空");
-        }
-
-        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
-        AlarmRecordCriteria.Criteria criteriaInner = criteria.createCriteria();
-
-            criteriaInner.andAlarmTypeEqualTo(recordRequest.getAlarmType());
-
-        if (Objects.nonNull(recordRequest.getStartTime())) {
-            criteriaInner.andStartTimeGreaterThanOrEqualTo(recordRequest.getStartTime());
-        }
-        if (Objects.nonNull(recordRequest.getEndTime())) {
-            criteriaInner.andEndTimeLessThanOrEqualTo(recordRequest.getEndTime());
-        }
-        criteria.setOrderByClause("isProcessed asc,dataTime desc");
-        criteria.setLimit(recordRequest.getPageSize());
-        criteria.setOffset(recordRequest.getOffset());
-
-        long count = alarmRecordService.countByExample(criteria);
-
-        List<AlarmRecord> list = alarmRecordService.queryPaginateByCondition(criteria);
-
-        List<AlarmRecordRO> alarmRecordROList = DataConverterUtils.convert(list, AlarmRecordRO.class);
-
-        for (AlarmRecordRO recordRO : alarmRecordROList) {
-            recordRO.setProcessDesc(EAlarmRecordStatus.getDesc(recordRO.getIsProcessed()));
-            Long recordId = recordRO.getId();
-
-            AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByRecordId(recordId);
-            if (alarmWorkOrder == null) {
-                continue;
-            }
-            recordRO.setContinueTime(StatHelper.getDiffDuration(recordRO.getAlarmType(),recordRO.getEndTime(),recordRO.getDataTime(),config,emailAlarmConfig));
-            recordRO.setDesc(alarmWorkOrder.getRemark());
-        }
-        return MonitorResultBuilder.pageResult(recordRequest, alarmRecordROList, count);
-
-    }
-
-
-
-
 
     @Override
     public MonitorResult<Boolean> updateWorkerOrderProcessor(UpdateWorkOrderRequest request) {
@@ -442,12 +395,9 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
                 ro.setNextOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getNextMeetDay(ro.getDutyCorn(), now)));
                 ro.setPreOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getPreMeetDay(ro.getDutyCorn(), now)));
             }
-
             ro.setCreateTimeStr(MonitorDateUtils.format(ro.getCreateTime()));
             ro.setLastUpdateTimeStr(MonitorDateUtils.format(ro.getLastUpdateTime()));
-
         }
-
 
         return MonitorResultBuilder.pageResult(request, saasWorkerROS, count);
     }
@@ -463,21 +413,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
     public MonitorResult<List<AlarmRecordStatisticRO>> queryAlarmStatistic(AlarmRecordStatRequest recordStatRequest) {
 
         AlarmRecordCriteria criteria = new AlarmRecordCriteria();
-
-        AlarmRecordCriteria.Criteria innerCriteria = criteria.createCriteria();
-
-        List<Integer> codes = new ArrayList<>();
-        codes.add(EAlarmRecordStatus.PROCESSED.getCode());
-        codes.add(EAlarmRecordStatus.WRONG.getCode());
-        codes.add(EAlarmRecordStatus.DISABLE.getCode());
-        codes.add(EAlarmRecordStatus.REPAIRED.getCode());
-
-        innerCriteria.andLevelEqualTo(EAlarmLevel.error.name()).andIsProcessedIn(codes);
-        if (recordStatRequest.getStartTime() != null && recordStatRequest.getEndTime() != null) {
-            innerCriteria.andCreateTimeGreaterThanOrEqualTo(recordStatRequest.getStartTime()).andCreateTimeLessThan
-                    (recordStatRequest.getEndTime());
-        }
-
+        buildCriteria(recordStatRequest, criteria);
         List<AlarmRecord> list = alarmRecordService.queryByCondition(criteria);
 
         if (list.isEmpty()) {
@@ -490,14 +426,17 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         List<AlarmRecordStatisticRO> returnList = new ArrayList<>();
         boolean hasName = StringUtils.isNotEmpty(recordStatRequest.getName());
-        for (String alarmName : map.keySet()) {
 
+        AlarmRecordStatisticRO total = new AlarmRecordStatisticRO();
+        int countTotal = 0, processedCountTotal = 0, wrongCountTotal = 0, disableCountTotal = 0, recoveryCountTotal = 0;
+        double durationTotal = 0d, durationAverTotal = 0d, maxDurationTotal = 0d;
+
+        for (String alarmName : map.keySet()) {
             if (hasName) {
                 if (!alarmName.contains(recordStatRequest.getName())) {
                     continue;
                 }
             }
-
             List<AlarmRecord> innerList = map.get(alarmName);
 
             int count = 0, processedCount = 0, wrongCount = 0, disableCount = 0, recoveryCount = 0;
@@ -505,6 +444,13 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
 
             for (AlarmRecord record : innerList) {
+                try{
+                    Long.parseLong(record.getContent());
+                    continue;
+                }catch (NumberFormatException ignore){
+
+                }
+
                 count += 1;
 
                 if (EAlarmRecordStatus.REPAIRED.getCode().equals(record.getIsProcessed())) {
@@ -521,7 +467,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
                 }
 
                 double subDuration = StatHelper.getDiffDuration(record.getAlarmType(), record.getEndTime(), record
-                        .getDataTime(), config, emailAlarmConfig);
+                        .getDataTime(), config, emailAlarmConfig,record.getStartTime()).getDuration();
 
                 duration += subDuration;
                 maxDuration = subDuration > maxDuration ? subDuration : maxDuration;
@@ -545,11 +491,114 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
             returnList.add(alarmRecordStatisticRO);
 
+            countTotal += count;
+            processedCountTotal += processedCount;
+            wrongCountTotal += wrongCount;
+            disableCountTotal += disableCount;
+            recoveryCountTotal += recoveryCount;
+            durationTotal += duration;
+            durationAverTotal = durationTotal / countTotal;
+            maxDurationTotal = maxDuration>=maxDurationTotal?maxDuration:maxDurationTotal;
         }
+        total.setName("total");
+        total.setCount(countTotal);
+        total.setDuration(durationTotal);
+        total.setDurationAver(durationAverTotal);
+        total.setMaxDuration(maxDurationTotal);
 
+        total.setProcessedCount(processedCountTotal);
+        total.setWrongCount(wrongCountTotal);
+        total.setDisableCount(disableCountTotal);
+        total.setRecoveryCount(recoveryCountTotal);
+
+        returnList.add(total);
 
         return MonitorResultBuilder.build(returnList);
     }
 
+    private void buildCriteria(AlarmRecordStatRequest recordStatRequest, AlarmRecordCriteria criteria) {
+        AlarmRecordCriteria.Criteria innerCriteria = criteria.createCriteria();
 
+        List<Integer> codes = new ArrayList<>();
+        codes.add(EAlarmRecordStatus.PROCESSED.getCode());
+        codes.add(EAlarmRecordStatus.WRONG.getCode());
+        codes.add(EAlarmRecordStatus.DISABLE.getCode());
+        codes.add(EAlarmRecordStatus.REPAIRED.getCode());
+
+        innerCriteria.andLevelEqualTo(EAlarmLevel.error.name()).andIsProcessedIn(codes);
+
+        if (recordStatRequest.getDateType() != null && recordStatRequest.getDateType() != 0) {
+            Date now = new Date();
+            Date start = getStartDate(recordStatRequest.getDateType(),now);
+
+            innerCriteria.andCreateTimeGreaterThanOrEqualTo(start).andCreateTimeLessThan
+                    (now);
+        } else {
+            if (recordStatRequest.getStartTime() != null && recordStatRequest.getEndTime() != null) {
+                innerCriteria.andCreateTimeGreaterThanOrEqualTo(recordStatRequest.getStartTime()).andCreateTimeLessThan
+                        (recordStatRequest.getEndTime());
+            }
+        }
+    }
+
+    @Override
+    public MonitorResult<List<AlarmRecordRO>> queryAlarmListAndHandleMessage(AlarmRecordStatRequest recordStatRequest) {
+
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+        buildCriteria(recordStatRequest, criteria);
+        List<AlarmRecord> list = alarmRecordService.queryByCondition(criteria);
+
+        List<AlarmRecordRO> alarmRecordROList = DataConverterUtils.convert(list, AlarmRecordRO.class);
+        List<AlarmRecordRO> newList = Lists.newArrayList();
+
+        boolean hasName = StringUtils.isNotEmpty(recordStatRequest.getName());
+
+        for (AlarmRecordRO recordRO : alarmRecordROList) {
+
+            try{
+                Long.parseLong(recordRO.getContent());
+                continue;
+            }catch (NumberFormatException ignore){
+
+            }
+
+            String alarmName = typeNameMapping.get(recordRO.getAlarmType());
+            if (hasName){
+                if(!alarmName.contains(recordStatRequest.getName())){
+                    continue;
+                }
+            }
+
+            recordRO.setProcessDesc(EAlarmRecordStatus.getDesc(recordRO.getIsProcessed()));
+            Long recordId = recordRO.getId();
+
+            AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByRecordId(recordId);
+            if (alarmWorkOrder == null) {
+                continue;
+            }
+            StatHelper.StartTimeModel model = StatHelper.getDiffDuration(recordRO.getAlarmType(), recordRO.getEndTime(), recordRO.getDataTime(), config, emailAlarmConfig,recordRO.getStartTime());
+
+            recordRO.setStartTime(model.getStartTime());
+            recordRO.setContinueTime(model.getDuration());
+            recordRO.setDesc(alarmWorkOrder.getRemark());
+
+            newList.add(recordRO);
+        }
+        newList.sort(Comparator.comparing(AlarmRecordRO::getDataTime));
+        return MonitorResultBuilder.build(newList);
+    }
+
+    private Date getStartDate(Integer dateType, Date now) {
+
+        switch (dateType) {
+            case 1:
+                return MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -1);
+            case 2:
+                return MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -15);
+            case 3:
+                return MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -30);
+            default:
+                return MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -30);
+        }
+    }
 }

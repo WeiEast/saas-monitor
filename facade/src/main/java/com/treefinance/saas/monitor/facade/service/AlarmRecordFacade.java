@@ -45,17 +45,12 @@ public interface AlarmRecordFacade {
      */
     MonitorResult<List<AlarmWorkOrderRO>> queryAlarmWorkerOrder(WorkOrderRequest recordRequest);
 
-
-
     /**
      * 获取预警记录的列表（增加记录开始时间 持续时间等返回结果）
      *
      * @return 数据列表
      */
-    MonitorResult<List<AlarmRecordRO>> queryAlarmListAndhandleMessge(AlarmRecordRequest recordRequest);
-
-
-
+    MonitorResult<List<AlarmRecordRO>> queryAlarmListAndHandleMessage(AlarmRecordStatRequest recordRequest);
 
     /**
      * 更新工单的接口

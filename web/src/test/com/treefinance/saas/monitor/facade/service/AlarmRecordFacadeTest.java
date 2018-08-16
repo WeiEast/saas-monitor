@@ -42,9 +42,6 @@ public class AlarmRecordFacadeTest extends BaseTest {
         result = alarmRecordFacade.querySaasWorkerPaginate(new SaasWorkerRequest());
     }
 
-
-
-
     @Test
     public void queryAlarmWorkerOrder() {
         WorkOrderRequest request = new WorkOrderRequest();
@@ -71,11 +68,9 @@ public class AlarmRecordFacadeTest extends BaseTest {
 
     @Test
     public void queryWorkOrderLog() {
-
         WorkOrderLogRequest request = new WorkOrderLogRequest();
         request.setOrderId(186791617926033408L);
         result = alarmRecordFacade.queryWorkOrderLog(request);
-
     }
 
     @Test
