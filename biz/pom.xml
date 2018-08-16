@@ -11,6 +11,11 @@
     <artifactId>monitor-biz</artifactId>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
         <dependency>
             <artifactId>gateway-facade</artifactId>
             <groupId>com.treefinance.saas.gateway</groupId>

@@ -33,7 +33,7 @@ public class FacadeAop {
             result = MonitorResultBuilder.build(e.getMessage());
         } catch (Throwable e) {
             logger.error(point.getTarget().getClass() + " 处理请求失败：args=" + JSON.toJSONString(point.getArgs()), e);
-            result = MonitorResultBuilder.build("服务器内部异常：errorMsg=" + e.getMessage());
+            result = MonitorResultBuilder.build("服务器内部异常");
         }
 
         if (logger.isDebugEnabled()) {
