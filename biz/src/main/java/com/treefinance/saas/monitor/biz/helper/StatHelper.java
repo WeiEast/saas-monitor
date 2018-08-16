@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
  */
 public abstract class StatHelper {
 
+
+    public static DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.##");
+
     /**
      * 计算最近间隔时间
      *
@@ -94,16 +97,16 @@ public abstract class StatHelper {
         long dataStamp = dataTime.getTime();
         long startStamp = startTime.getTime();
         long advanceAmountInMillSec = advanceAmount * 60 * 1000;
-        long startTimeStamp = dataStamp - advanceAmountInMillSec;
+//        long startTimeStamp = dataStamp - advanceAmountInMillSec;
 
         long realTime = endStamp - startStamp;
 
         StartTimeModel model = new StartTimeModel();
 
-        double duration = realTime / (60 * 1000);
+        double duration = Double.parseDouble(DECIMAL_FORMAT.format(realTime / (60 * 1000)));
 
-        model.setDuration(Double.parseDouble(new DecimalFormat("#.##").format(duration)));
-        model.setStartTime(new Date(startTimeStamp));
+        model.setDuration(duration);
+//        model.setStartTime(new Date(startTimeStamp));
 
         return model;
     }

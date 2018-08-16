@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -430,7 +431,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         AlarmRecordStatisticRO total = new AlarmRecordStatisticRO();
         int countTotal = 0, processedCountTotal = 0, wrongCountTotal = 0, disableCountTotal = 0, recoveryCountTotal = 0;
         double durationTotal = 0d, durationAverTotal = 0d, maxDurationTotal = 0d;
-
+        DecimalFormat df = new DecimalFormat("#.##");
         for (String alarmName : map.keySet()) {
             if (hasName) {
                 if (!alarmName.contains(recordStatRequest.getName())) {
@@ -444,10 +445,10 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
 
             for (AlarmRecord record : innerList) {
-                try{
+                try {
                     Long.parseLong(record.getContent());
                     continue;
-                }catch (NumberFormatException ignore){
+                } catch (NumberFormatException ignore) {
 
                 }
 
@@ -467,14 +468,14 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
                 }
 
                 double subDuration = StatHelper.getDiffDuration(record.getAlarmType(), record.getEndTime(), record
-                        .getDataTime(), config, emailAlarmConfig,record.getStartTime()).getDuration();
+                        .getDataTime(), config, emailAlarmConfig, record.getStartTime()).getDuration();
 
                 duration += subDuration;
                 maxDuration = subDuration > maxDuration ? subDuration : maxDuration;
 
             }
 
-            durationAver = duration / count;
+            durationAver = Double.parseDouble(df.format(duration / count));
 
             AlarmRecordStatisticRO alarmRecordStatisticRO = new AlarmRecordStatisticRO();
 
@@ -497,8 +498,8 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             disableCountTotal += disableCount;
             recoveryCountTotal += recoveryCount;
             durationTotal += duration;
-            durationAverTotal = durationTotal / countTotal;
-            maxDurationTotal = maxDuration>=maxDurationTotal?maxDuration:maxDurationTotal;
+            durationAverTotal = Double.parseDouble(df.format(durationTotal / countTotal));
+            maxDurationTotal = maxDuration >= maxDurationTotal ? maxDuration : maxDurationTotal;
         }
         total.setName("total");
         total.setCount(countTotal);
@@ -529,7 +530,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         if (recordStatRequest.getDateType() != null && recordStatRequest.getDateType() != 0) {
             Date now = new Date();
-            Date start = getStartDate(recordStatRequest.getDateType(),now);
+            Date start = getStartDate(recordStatRequest.getDateType(), now);
 
             innerCriteria.andCreateTimeGreaterThanOrEqualTo(start).andCreateTimeLessThan
                     (now);
@@ -555,16 +556,16 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         for (AlarmRecordRO recordRO : alarmRecordROList) {
 
-            try{
+            try {
                 Long.parseLong(recordRO.getContent());
                 continue;
-            }catch (NumberFormatException ignore){
+            } catch (NumberFormatException ignore) {
 
             }
 
             String alarmName = typeNameMapping.get(recordRO.getAlarmType());
-            if (hasName){
-                if(!alarmName.contains(recordStatRequest.getName())){
+            if (hasName) {
+                if (!alarmName.contains(recordStatRequest.getName())) {
                     continue;
                 }
             }
@@ -576,9 +577,8 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             if (alarmWorkOrder == null) {
                 continue;
             }
-            StatHelper.StartTimeModel model = StatHelper.getDiffDuration(recordRO.getAlarmType(), recordRO.getEndTime(), recordRO.getDataTime(), config, emailAlarmConfig,recordRO.getStartTime());
+            StatHelper.StartTimeModel model = StatHelper.getDiffDuration(recordRO.getAlarmType(), recordRO.getEndTime(), recordRO.getDataTime(), config, emailAlarmConfig, recordRO.getStartTime());
 
-            recordRO.setStartTime(model.getStartTime());
             recordRO.setContinueTime(model.getDuration());
             recordRO.setDesc(alarmWorkOrder.getRemark());
 
