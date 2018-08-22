@@ -16,5 +16,8 @@ public class AsAlarmMsgInfoRequest extends BaseRequest {
     private Long id;
     private String titleTemplate;
     private String bodyTemplate;
+    private Byte msgType;
+    private Byte analysisType;
+    private String notifyChannel;
 
 }

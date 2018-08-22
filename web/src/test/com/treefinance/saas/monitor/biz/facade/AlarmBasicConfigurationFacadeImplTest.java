@@ -39,16 +39,16 @@ public class AlarmBasicConfigurationFacadeImplTest {
         AlarmBasicConfigurationDetailRequest request = new AlarmBasicConfigurationDetailRequest();
 
         AsAlarmInfoRequest asAlarmInfoRequest = new AsAlarmInfoRequest();
-        asAlarmInfoRequest.setId(204963666255179776L);
+        asAlarmInfoRequest.setId(304963666255179776L);
         asAlarmInfoRequest.setName("测试预警配置33356");
-        asAlarmInfoRequest.setAlarmSwitch("on");
+        asAlarmInfoRequest.setAlarmSwitch("off");
         asAlarmInfoRequest.setRunEnv((byte) 0);
         asAlarmInfoRequest.setRunInterval("0 0/5 * * * *");
         request.setAsAlarmInfoRequest(asAlarmInfoRequest);
 
         List<AsAlarmConstantInfoRequest> asAlarmConstantInfoRequestList = Lists.newArrayList();
         AsAlarmConstantInfoRequest asAlarmConstantInfoRequest = new AsAlarmConstantInfoRequest();
-        asAlarmConstantInfoRequest.setId(204963667748352000L);
+        asAlarmConstantInfoRequest.setId(304963667748352000L);
         asAlarmConstantInfoRequest.setName("业务类型");
         asAlarmConstantInfoRequest.setCode("bizType");
         asAlarmConstantInfoRequest.setValue("0");
@@ -58,7 +58,7 @@ public class AlarmBasicConfigurationFacadeImplTest {
 
         List<AsAlarmQueryInfoRequest> asAlarmQueryInfoRequestList = Lists.newArrayList();
         AsAlarmQueryInfoRequest asAlarmQueryInfoRequest = new AsAlarmQueryInfoRequest();
-        asAlarmQueryInfoRequest.setId(204963667970650112L);
+        asAlarmQueryInfoRequest.setId(304963667970650112L);
         asAlarmQueryInfoRequest.setQuerySql("select sum(total) as total,sum(success) as success\n" +
                 "from  ecommerce_all_stat_access \n" +
                 "where appId = #appId \n" +
@@ -72,7 +72,7 @@ public class AlarmBasicConfigurationFacadeImplTest {
 
         List<AsAlarmVariableInfoRequest> asAlarmVariableInfoRequestList = Lists.newArrayList();
         AsAlarmVariableInfoRequest asAlarmVariableInfoRequest = new AsAlarmVariableInfoRequest();
-        asAlarmVariableInfoRequest.setId(204963668138422272L);
+        asAlarmVariableInfoRequest.setId(304963668138422272L);
         asAlarmVariableInfoRequest.setName("总转化率333");
         asAlarmVariableInfoRequest.setCode("totalRate");
         asAlarmVariableInfoRequest.setValue("100* (#data.callback / #data.total)");
@@ -82,7 +82,7 @@ public class AlarmBasicConfigurationFacadeImplTest {
 
         List<AsAlarmNotifyInfoRequest> asAlarmNotifyInfoRequestList = Lists.newArrayList();
         AsAlarmNotifyInfoRequest asAlarmNotifyInfoRequest = new AsAlarmNotifyInfoRequest();
-        asAlarmNotifyInfoRequest.setId(204963668281028608L);
+        asAlarmNotifyInfoRequest.setId(304963668281028608L);
         asAlarmNotifyInfoRequest.setAlarmLevel("info");
         asAlarmNotifyInfoRequest.setEmailSwitch("on");
         asAlarmNotifyInfoRequest.setIvrSwitch("on");
@@ -92,17 +92,22 @@ public class AlarmBasicConfigurationFacadeImplTest {
         asAlarmNotifyInfoRequestList.add(asAlarmNotifyInfoRequest);
         request.setAsAlarmNotifyInfoRequestList(asAlarmNotifyInfoRequestList);
 
+        List<AsAlarmMsgInfoRequest> asAlarmMsgInfoRequestList = Lists.newArrayList();
         AsAlarmMsgInfoRequest asAlarmMsgInfoRequest = new AsAlarmMsgInfoRequest();
-        asAlarmMsgInfoRequest.setId(204963668482355200L);
+        asAlarmMsgInfoRequest.setId(304963668482355200L);
         asAlarmMsgInfoRequest.setBodyTemplate("【#{level}】您好33335，#{saasEnv}【所有环境】运营商监控(按人数统计)预警,在2018-07-09 03:00:00--2018-07-09 03:30:00时段数据存在问题，此时监控数据如下，请及时处理：\n" +
                 "运营商     预警描述     当前指标值     指标阀值     偏离阀值程度\n" +
                 "中国联通     回调成功率低于前7天平均值的70%     54.55% (6/11)     55.22% (9.5/12.0*0.7)     1.21%");
         asAlarmMsgInfoRequest.setTitleTemplate("【#level】【#level】【所有环境】【运营商-人数】发生总转化率预警");
-        request.setAsAlarmMsgInfoRequest(asAlarmMsgInfoRequest);
+        asAlarmMsgInfoRequest.setMsgType((byte) 1);
+        asAlarmMsgInfoRequest.setAnalysisType((byte) 1);
+        asAlarmMsgInfoRequest.setNotifyChannel("wechat");
+        asAlarmMsgInfoRequestList.add(asAlarmMsgInfoRequest);
+        request.setAsAlarmMsgInfoRequestList(asAlarmMsgInfoRequestList);
 
         List<AsAlarmTriggerInfoRequest> asAlarmTriggerInfoRequestList = Lists.newArrayList();
         AsAlarmTriggerInfoRequest asAlarmTriggerInfoRequest = new AsAlarmTriggerInfoRequest();
-        asAlarmTriggerInfoRequest.setId(204963668725624832L);
+        asAlarmTriggerInfoRequest.setId(304963668725624832L);
         asAlarmTriggerInfoRequest.setName("夜间总转化率预警");
         asAlarmTriggerInfoRequest.setStatus((byte) 0);
         asAlarmTriggerInfoRequest.setInfoTrigger("#hour(#alarmTime) >= 22 && #hour(#alarmTime) <= 7 && #totalRate <= #historyTotalRate * 0.9");
@@ -117,7 +122,7 @@ public class AlarmBasicConfigurationFacadeImplTest {
 
     @Test
     public void queryAlarmConfigurationDetailById() {
-        MonitorResult<AsAlarmBasicConfigurationDetailRO> result = facade.queryAlarmConfigurationDetailById(204917728920760320L);
+        MonitorResult<AsAlarmBasicConfigurationDetailRO> result = facade.queryAlarmConfigurationDetailById(304963666255179776L);
     }
 
     @Test
