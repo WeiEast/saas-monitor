@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author haojiahong
  * @date 2017/11/24
  */
@@ -38,6 +37,9 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
+        if (!diamondConfig.isOldAlarmAllSwitchOn()) {
+            return;
+        }
         if (MonitorUtils.isPreProductContext()) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
@@ -57,13 +59,13 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
             }
             for (EBizType bizType : EBizType.values()) {
                 List<TaskSuccessRateAlarmConfigDTO> configDTOList = configMap.get(bizType.getText());
-                logger.info("bizType：{}，config：{}",bizType.getDesc(),configDTOList);
+                logger.info("bizType：{}，config：{}", bizType.getDesc(), configDTOList);
                 if (CollectionUtils.isEmpty(configDTOList)) {
                     continue;
                 }
                 for (TaskSuccessRateAlarmConfigDTO config : configDTOList) {
-                    if(!AlarmConstants.SWITCH_ON.equals(config.getAlarmSwitch())){
-                        logger.info("任务成功率总开关关闭。。{}不预警",jobTime);
+                    if (!AlarmConstants.SWITCH_ON.equals(config.getAlarmSwitch())) {
+                        logger.info("任务成功率总开关关闭。。{}不预警", jobTime);
                         continue;
                     }
 
