@@ -1,10 +1,12 @@
 package com.treefinance.saas.monitor.biz.alarm.model;
 
+import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 预警消息
@@ -13,6 +15,15 @@ import java.io.Serializable;
 @Getter
 @Setter
 public class AlarmMessage implements Serializable {
+    /**
+     * 预警编号
+     */
+    private Long alarmNo;
+
+    /**
+     * 预警记录ID
+     */
+    private Long recordId;
     /**
      * 预警标题
      */
@@ -26,13 +37,12 @@ public class AlarmMessage implements Serializable {
      */
     private EAlarmLevel alarmLevel;
 
-
-    public AlarmMessage(String title, String message, EAlarmLevel alarmLevel) {
-        this.title = title;
-        this.message = message;
-        this.alarmLevel = alarmLevel;
-    }
-
-    public AlarmMessage() {
-    }
+    /**
+     * 预警消息类型
+     */
+    private EMessageType messageType;
+    /**
+     * 消息通道
+     */
+    private List<EAlarmChannel> alarmChannels;
 }

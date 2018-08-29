@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
@@ -88,7 +89,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         AsAlarm asAlarm = asAlarmService.getAsAlarmByPrimaryKey(alarmExcuteLogRequest.getId());
 
 
-        AlarmExcuteLogRequest alarmExcuteLogRequest1 =  new AlarmExcuteLogRequest();
+        AlarmExcuteLogRequest alarmExcuteLogRequest1 = new AlarmExcuteLogRequest();
         alarmExcuteLogRequest1.setEndDate(alarmExcuteLogRequest.getEndDate());
         alarmExcuteLogRequest1.setStartDate(alarmExcuteLogRequest.getStartDate());
         alarmExcuteLogRequest1.setId(alarmExcuteLogRequest.getId());
@@ -105,10 +106,9 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             conditionIds.add(id);
         }
         List<AlarmExecuteLogRO> list = new ArrayList<>();
-        if(asAlarmTriggerRecordList.size()!=0)
-        {
+        if (asAlarmTriggerRecordList.size() != 0) {
             List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerService.getAsAlarmTriggerByPrimaryKey(conditionIds);
-            Map<Long,AsAlarmTrigger> asAlarmTriggerMap = asAlarmTriggerList.stream().collect(Collectors.toMap(AsAlarmTrigger::getId,AsAlarmTrigger->AsAlarmTrigger));
+            Map<Long, AsAlarmTrigger> asAlarmTriggerMap = asAlarmTriggerList.stream().collect(Collectors.toMap(AsAlarmTrigger::getId, AsAlarmTrigger -> AsAlarmTrigger));
 
             for (AsAlarmTriggerRecord asAlarmTriggerRecord : asAlarmTriggerRecordList) {
                 AlarmExecuteLogRO alarmExecuteLogRO = new AlarmExecuteLogRO();
@@ -228,7 +228,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         alarmConfig.setAlarmNotifies(alarmNotifyList);
 
         AsAlarmMsg alarmMsg = DataConverterUtils.convert(request.getAsAlarmMsgInfoRequest(), AsAlarmMsg.class);
-        alarmConfig.setAlarmMsg(alarmMsg);
+        alarmConfig.setAlarmMsgs(Lists.newArrayList(alarmMsg));
 
         List<AsAlarmTrigger> alarmTriggerList
                 = DataConverterUtils.convert(request.getAsAlarmTriggerInfoRequestList(), AsAlarmTrigger.class);

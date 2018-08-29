@@ -75,23 +75,20 @@ public class AlarmContext {
     /**
      * 添加预警发送消息
      *
-     * @param title
-     * @param message
-     * @param alarmLevel
-     */
-    public void addMessage(String title, String message, EAlarmLevel alarmLevel) {
-        alaramMessageList.add(new AlarmMessage(title, message, alarmLevel));
-    }
-
-    /**
-     * 添加预警发送消息
-     *
      * @param alarmMessage
      */
     public void addMessage(AlarmMessage alarmMessage) {
         alaramMessageList.add(alarmMessage);
     }
 
+    /**
+     * 添加预警记录
+     *
+     * @param records
+     */
+    public void addRecords(List<AsAlarmTriggerRecord> records) {
+        triggerRecords.addAll(records);
+    }
 
     /**
      * 原始数据存储
