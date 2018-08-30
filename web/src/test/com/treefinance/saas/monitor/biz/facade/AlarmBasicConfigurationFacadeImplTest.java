@@ -6,7 +6,10 @@ import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
-import com.treefinance.saas.monitor.dao.entity.*;
+import com.treefinance.saas.monitor.dao.entity.AsAlarm;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmConstant;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmQuery;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmTrigger;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.*;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfigurationDetailRO;
@@ -166,11 +169,6 @@ public class AlarmBasicConfigurationFacadeImplTest {
         asAlarmQuery.setQuerySql("select count(*) from as_alarm;");
         queryList.add(asAlarmQuery);
         alarmConfig.setAlarmQueries(queryList);
-
-        AsAlarmMsg msg = new AsAlarmMsg();
-        msg.setTitleTemplate("aaaTest");
-        msg.setBodyTemplate("bbbTest");
-        alarmConfig.setAlarmMsg(msg);
 
         List<AsAlarmTrigger> triggerList = Lists.newArrayList();
         AsAlarmTrigger trigger1 = new AsAlarmTrigger();
