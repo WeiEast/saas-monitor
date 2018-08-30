@@ -63,7 +63,7 @@ public class TriggerHandler implements AlarmHandler {
     private List<ExpressionParser> expressionParsers;
 
     @Override
-    @Transactional(propagation= Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public void handle(AlarmConfig config, AlarmContext context) {
         List<AsAlarmTrigger> triggers = config.getAlarmTriggers();
         if (CollectionUtils.isEmpty(triggers)) {
@@ -203,6 +203,7 @@ public class TriggerHandler implements AlarmHandler {
         }
         // 恢复消息为上次预警编号
         context.origin(data, "alarmNo", lastAlarm.getId());
+        currentLevel = EAlarmLevel.getLevel(lastAlarm.getAlarmLevel());
 
         Object recoverResult = expressionParser.parse(recoveryTrigger, data);
         if (!Boolean.TRUE.equals(recoverResult)) {
