@@ -43,7 +43,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
     AsAlarmTriggerMapper asAlarmTriggerMapper;
 
     @Autowired
-    AlaramJobService  alaramJobService;
+    AlaramJobService alaramJobService;
 
     @Override
     public AsAlarm getAsAlarmByPrimaryKey(long id) {
@@ -178,16 +178,18 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         }
 
         //预警消息模板表
+        List<AsAlarmMsgInfoRequest> asAlarmMsgInfoRequestList = request.getAsAlarmMsgInfoRequestList();
         AsAlarmMsgCriteria asAlarmMsgCriteria = new AsAlarmMsgCriteria();
         asAlarmMsgCriteria.createCriteria().andAlarmIdEqualTo(asAlarm.getId());
         asAlarmMsgMapper.deleteByExample(asAlarmMsgCriteria);
-        AsAlarmMsgInfoRequest asAlarmMsgInfoRequest = request.getAsAlarmMsgInfoRequest();
-        AsAlarmMsg asAlarmMsg = DataConverterUtils.convert(asAlarmMsgInfoRequest, AsAlarmMsg.class);
-        if (asAlarmMsg.getId() == null) {
-            asAlarmMsg.setId(UidGenerator.getId());
+        for (AsAlarmMsgInfoRequest asAlarmMsgInfoRequest : asAlarmMsgInfoRequestList) {
+            AsAlarmMsg asAlarmMsg = DataConverterUtils.convert(asAlarmMsgInfoRequest, AsAlarmMsg.class);
+            if (asAlarmMsg.getId() == null) {
+                asAlarmMsg.setId(UidGenerator.getId());
+            }
+            asAlarmMsg.setAlarmId(asAlarm.getId());
+            asAlarmMsgMapper.insertSelective(asAlarmMsg);
         }
-        asAlarmMsg.setAlarmId(asAlarm.getId());
-        asAlarmMsgMapper.insertSelective(asAlarmMsg);
 
         //预警触发条件表
         List<AsAlarmTriggerInfoRequest> asAlarmTriggerInfoRequestList = request.getAsAlarmTriggerInfoRequestList();
@@ -259,12 +261,8 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmMsgCriteria.setOrderByClause("id asc");
         asAlarmMsgCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmMsg> asAlarmMsgList = asAlarmMsgMapper.selectByExample(asAlarmMsgCriteria);
-        AsAlarmMsgRO asAlarmMsgRO = new AsAlarmMsgRO();
-        if (!CollectionUtils.isEmpty(asAlarmMsgList)) {
-            AsAlarmMsg asAlarmMsg = asAlarmMsgList.get(0);
-            asAlarmMsgRO = DataConverterUtils.convert(asAlarmMsg, AsAlarmMsgRO.class);
-        }
-        result.setAsAlarmMsgRO(asAlarmMsgRO);
+        List<AsAlarmMsgRO> asAlarmMsgROList = DataConverterUtils.convert(asAlarmMsgList, AsAlarmMsgRO.class);
+        result.setAsAlarmMsgROList(asAlarmMsgROList);
 
         //预警触发条件表
         AsAlarmTriggerCriteria asAlarmTriggerCriteria = new AsAlarmTriggerCriteria();
@@ -281,16 +279,13 @@ public class AsAlarmServiceImpl implements AsAlarmService {
     public void updateAlarmSwitch(Long alarmId) {
         AsAlarm asAlarm = asAlarmMapper.selectByPrimaryKey(alarmId);
 
-        if(("off").equals(asAlarm.getAlarmSwitch()))
-        {
+        if (("off").equals(asAlarm.getAlarmSwitch())) {
 
             asAlarm.setAlarmSwitch("on");
             asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
             alaramJobService.startJob(alarmId);
 
-        }
-        else
-        {
+        } else {
             asAlarm.setAlarmSwitch("off");
             asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
             alaramJobService.stopJob(alarmId);

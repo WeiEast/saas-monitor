@@ -24,5 +24,9 @@ public class AsAlarmMsgRO extends BaseRO {
      * 通知消息模板
      */
     private String bodyTemplate;
+    private Byte msgType;
+    private Byte analysisType;
+    private String notifyChannel;
+
 
 }

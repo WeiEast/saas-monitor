@@ -51,7 +51,16 @@ public class WechatSender extends AbstractMqSender {
         TXTMessage msg = new TXTMessage();
         msg.setMessage(alarmMessage.getMessage());
         body.setMessage(msg);
-        body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
+
+        //设置邮件方式，具体看枚举值
+        switch (alarmMessage.getMessageType()) {
+            case HTML:
+                body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXPIC);
+                break;
+            case TEXT:
+                body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
+                break;
+        }
         body.setNotifyEnum(NotifyEnum.WECHAT);
         return body;
     }

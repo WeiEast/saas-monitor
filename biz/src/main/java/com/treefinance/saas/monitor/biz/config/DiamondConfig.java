@@ -4,6 +4,7 @@ import com.github.diamond.client.extend.annotation.AfterUpdate;
 import com.github.diamond.client.extend.annotation.BeforeUpdate;
 import com.github.diamond.client.extend.annotation.DAttribute;
 import com.github.diamond.client.extend.annotation.DResource;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -197,6 +198,12 @@ public class DiamondConfig {
      */
     @DAttribute(key = "auth.ivr.token")
     private String ivrToken;
+
+    /**
+     * 原预警总开关
+     */
+    @DAttribute(key = "old.alarm.all.switch")
+    private String oldAlarmAllSwitch;
 
     public String getEcommerceMonitorAlarmBounds() {
         return ecommerceMonitorAlarmBounds;
@@ -540,5 +547,21 @@ public class DiamondConfig {
 
     public void setMonitorAlarmSmsSwitch(String monitorAlarmSmsSwitch) {
         this.monitorAlarmSmsSwitch = monitorAlarmSmsSwitch;
+    }
+
+    public String getOldAlarmAllSwitch() {
+        return oldAlarmAllSwitch;
+    }
+
+    public void setOldAlarmAllSwitch(String oldAlarmAllSwitch) {
+        this.oldAlarmAllSwitch = oldAlarmAllSwitch;
+    }
+
+    public Boolean isOldAlarmAllSwitchOn() {
+        if (StringUtils.equals(this.oldAlarmAllSwitch, "on")) {
+            return true;
+        }
+        logger.info("原预警总开关已关闭...");
+        return false;
     }
 }

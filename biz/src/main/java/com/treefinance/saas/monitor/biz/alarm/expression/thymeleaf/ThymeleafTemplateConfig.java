@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.biz.alarm.expression;
+package com.treefinance.saas.monitor.biz.alarm.expression.thymeleaf;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

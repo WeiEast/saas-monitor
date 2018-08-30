@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.task;
 import com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
 import com.treefinance.saas.monitor.biz.service.MonitorAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
@@ -30,6 +31,8 @@ public class EmailMonitorAlarmJob implements SimpleJob {
 
     @Autowired
     private EmailAlarmConfig config;
+    @Autowired
+    private DiamondConfig diamondConfig;
 
     @Resource
     @Qualifier("emailAlarmMonitorService")
@@ -37,7 +40,9 @@ public class EmailMonitorAlarmJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-
+        if (!diamondConfig.isOldAlarmAllSwitchOn()) {
+            return;
+        }
         if (MonitorUtils.isPreProductContext()) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
@@ -52,8 +57,8 @@ public class EmailMonitorAlarmJob implements SimpleJob {
         try {
             for (EmailMonitorAlarmConfigDTO configDTO : configDTOList) {
 
-                if(!AlarmConstants.SWITCH_ON.equals(configDTO.getAlarmSwitch())){
-                    logger.info(configDTO.getAlarmTypeDesc()+" 邮箱预警开关关闭。。。");
+                if (!AlarmConstants.SWITCH_ON.equals(configDTO.getAlarmSwitch())) {
+                    logger.info(configDTO.getAlarmTypeDesc() + " 邮箱预警开关关闭。。。");
                     continue;
                 }
 

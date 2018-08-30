@@ -43,7 +43,7 @@ public class AsAlarmBasicConfigurationDetailRO implements Serializable {
     /**
      * 预警消息模板表
      */
-    private AsAlarmMsgRO asAlarmMsgRO;
+    private List<AsAlarmMsgRO> asAlarmMsgROList;
 
     /**
      * 预警触发条件表

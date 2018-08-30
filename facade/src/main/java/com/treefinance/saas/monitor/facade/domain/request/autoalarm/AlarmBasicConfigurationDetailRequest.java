@@ -44,7 +44,7 @@ public class AlarmBasicConfigurationDetailRequest extends BaseRequest {
     /**
      * 预警消息模板表相关信息
      */
-    private AsAlarmMsgInfoRequest asAlarmMsgInfoRequest;
+    private List<AsAlarmMsgInfoRequest> asAlarmMsgInfoRequestList;
 
     /**
      * 预警触发条件表相关信息

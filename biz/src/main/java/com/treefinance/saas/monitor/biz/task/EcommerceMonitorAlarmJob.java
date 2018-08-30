@@ -33,6 +33,9 @@ public class EcommerceMonitorAlarmJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
+        if (!diamondConfig.isOldAlarmAllSwitchOn()) {
+            return;
+        }
         if (MonitorUtils.isPreProductContext()) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
