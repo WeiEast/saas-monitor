@@ -7,7 +7,6 @@ import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
 import com.treefinance.saas.monitor.biz.service.*;
-import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -32,7 +31,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -140,22 +142,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             return MonitorResultBuilder.pageResult(request, new ArrayList<>(), 0);
         }
 
-        List<Long> ids = list.stream().map(AsAlarm::getId).collect(Collectors.toList());
-        List<AsAlarmMsg> asAlarmMsgs = asAlarmMsgService.queryMsgInIdList(ids);
-
         List<AsAlarmRO> returnList = DataConverterUtils.convert(list, AsAlarmRO.class);
-        Map<Long, AsAlarmMsg> map = asAlarmMsgs.stream().collect(Collectors.toMap(AsAlarmMsg::getAlarmId,
-                asAlarmMsg -> asAlarmMsg));
-        for (AsAlarmRO asAlarmRO : returnList) {
-            Long id = asAlarmRO.getId();
-            AsAlarmMsg asAlarmMsg = map.get(id);
-            ESaasEnv env = ESaasEnv.getByValue(asAlarmRO.getRunEnv());
-            asAlarmRO.setRunEnvDesc(env.getDesc());
-            if (asAlarmMsg != null) {
-                asAlarmRO.setTitleTemplate(asAlarmMsg.getTitleTemplate());
-                asAlarmRO.setBodyTemplate(asAlarmMsg.getBodyTemplate());
-            }
-        }
         return MonitorResultBuilder.pageResult(request, returnList, count);
     }
 
