@@ -33,6 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -60,8 +62,8 @@ public class TriggerHandler implements AlarmHandler {
     @Autowired
     private List<ExpressionParser> expressionParsers;
 
-
     @Override
+    @Transactional(propagation= Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
     public void handle(AlarmConfig config, AlarmContext context) {
         List<AsAlarmTrigger> triggers = config.getAlarmTriggers();
         if (CollectionUtils.isEmpty(triggers)) {
@@ -109,10 +111,10 @@ public class TriggerHandler implements AlarmHandler {
                     record.setCostTime(Long.valueOf((System.currentTimeMillis() - context.getStartTimeStamp())).intValue());
                 }
             }
+            context.addRecords(recordList);
             // 兼容测试时无alarmId
             if (trigger.getAlarmId() != null) {
                 alarmTriggerRecordMapper.batchInsert(recordList);
-                context.addRecords(recordList);
             }
         }
 

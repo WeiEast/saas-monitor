@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.alarm.service.handler;
 
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by yh-treefinance on 2018/7/23.
