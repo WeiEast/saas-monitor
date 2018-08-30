@@ -1,8 +1,10 @@
 package com.treefinance.saas.monitor.biz.alarm.expression.spel;
 
 import com.alibaba.fastjson.JSON;
+import com.treefinance.saas.monitor.biz.alarm.expression.Analysis;
 import com.treefinance.saas.monitor.biz.alarm.expression.ExpressionParser;
 import com.treefinance.saas.monitor.biz.alarm.expression.spel.func.SpelFunction;
+import com.treefinance.saas.monitor.biz.alarm.model.EMessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.expression.BeanExpressionContextAccessor;
@@ -21,6 +23,7 @@ import java.util.Map;
 /**
  * Created by yh-treefinance on 2018/7/23.
  */
+@Analysis(EMessageType.TEXT)
 @Component("spelExpressionParser")
 public class SpelExpressionParser implements ExpressionParser {
 

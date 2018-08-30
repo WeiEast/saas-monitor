@@ -9,6 +9,7 @@ import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandler;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.Order;
 import com.treefinance.saas.monitor.biz.alarm.utils.AlarmUtils;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
+import com.treefinance.saas.monitor.common.domain.Constants;
 import com.treefinance.saas.monitor.dao.entity.AsAlarm;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmConstant;
 import org.apache.commons.collections.CollectionUtils;
@@ -41,6 +42,9 @@ public class ConstantHandler implements AlarmHandler {
      */
     @Resource(name = "spelExpressionParser")
     private ExpressionParser expressionParser;
+    @Autowired
+    private DiamondConfig diamondConfig;
+
     @Override
     public void handle(AlarmConfig config, AlarmContext context) {
         List<AsAlarmConstant> constantList = config.getAlarmConstants();
@@ -78,6 +82,14 @@ public class ConstantHandler implements AlarmHandler {
             context.addGroup(code, calcValue);
             constantMap.put(code, calcValue);
         }
+
+        // 初始化全局参数
+        context.groups().forEach(data -> {
+            context.origin(data, "alarmTime", context.getAlarmTime());
+            context.origin(data, "intervalTime", context.getIntervalTime());
+            context.origin(data, "systemEnv", diamondConfig.getMonitorEnvironment());
+            context.origin(data, "runEnv", Constants.SAAS_ENV);
+        });
         logger.info("constants handle : constantData={}, sortedConstants={}", JSON.toJSONString(constantMap), JSON.toJSONString(sortedConstants));
     }
 }

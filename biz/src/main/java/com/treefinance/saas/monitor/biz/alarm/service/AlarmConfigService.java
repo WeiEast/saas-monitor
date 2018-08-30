@@ -87,7 +87,14 @@ public class AlarmConfigService {
 
             List<AsAlarmMsg> _alarmMsgs = alarmMsgMap.get(alarmId);
             if (CollectionUtils.isNotEmpty(_alarmMsgs)) {
-                alarmConfig.setAlarmMsg(_alarmMsgs.get(0));
+                // 1：预警通知消息
+                alarmConfig.setAlarmMsgs(_alarmMsgs.stream()
+                        .filter(msg -> Byte.valueOf("1").equals(msg.getMsgType()))
+                        .collect(Collectors.toList()));
+                // 2：预警恢复消息
+                alarmConfig.setRecoverMsgs(_alarmMsgs.stream()
+                        .filter(msg -> Byte.valueOf("2").equals(msg.getMsgType()))
+                        .collect(Collectors.toList()));
             }
             alarmConfig.setAlarmTriggers(alarmTriggerMap.get(alarmId));
             alarmConfig.setAlarmNotifies(notifysMap.get(alarmId));
@@ -117,7 +124,15 @@ public class AlarmConfigService {
         // 5.msg
         List<AsAlarmMsg> alarmMsgs = getAlarmMsgs(alarmIds);
         if (CollectionUtils.isNotEmpty(alarmMsgs)) {
-            alarmConfig.setAlarmMsg(alarmMsgs.get(0));
+
+            // 1：预警通知消息
+            alarmConfig.setAlarmMsgs(alarmMsgs.stream()
+                    .filter(msg -> Byte.valueOf("1").equals(msg.getMsgType()))
+                    .collect(Collectors.toList()));
+            // 2：预警恢复消息
+            alarmConfig.setRecoverMsgs(alarmMsgs.stream()
+                    .filter(msg -> Byte.valueOf("2").equals(msg.getMsgType()))
+                    .collect(Collectors.toList()));
         }
         // 6.Trigger
         alarmConfig.setAlarmTriggers(getAlarmTriggers(alarmIds));

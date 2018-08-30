@@ -1,22 +1,24 @@
 package com.treefinance.saas.monitor.biz.alarm.service.handler.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmMessage;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandler;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.Order;
 import com.treefinance.saas.monitor.biz.alarm.service.message.MessageSender;
+import com.treefinance.saas.monitor.biz.service.AlarmRecordService;
+import com.treefinance.saas.monitor.biz.service.AlarmWorkOrderService;
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
-import com.treefinance.saas.monitor.common.enumeration.ESwitch;
-import com.treefinance.saas.monitor.dao.entity.AsAlarmNotify;
-import com.treefinance.saas.monitor.dao.entity.SaasWorker;
+import com.treefinance.saas.monitor.common.enumeration.*;
+import com.treefinance.saas.monitor.dao.entity.*;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +62,8 @@ public class MessageHandler implements AlarmHandler {
         Map<EAlarmLevel, AsAlarmNotify> notifyMap = notifies.stream()
                 .collect(Collectors.toMap(notify -> EAlarmLevel.getLevel(notify.getAlarmLevel()), notify -> notify));
         // 预警接受人
-        Map<EAlarmLevel, List<SaasWorker>> reciverMap = mappingReciver(notifyMap, context.getAlarmTime());
+        List<SaasWorker> saasWorkers = saasWorkerService.getAllSaasWorker();
+        Map<EAlarmLevel, List<SaasWorker>> reciverMap = mappingReciver(saasWorkers, notifyMap, context.getAlarmTime());
         // 消息发送器
         Map<EAlarmLevel, List<MessageSender>> senderMap = mappingSender(notifyMap);
         // 发送消息
@@ -68,11 +71,15 @@ public class MessageHandler implements AlarmHandler {
             EAlarmLevel alarmLevel = alarmMessage.getAlarmLevel();
             List<SaasWorker> recivers = reciverMap.get(alarmLevel);
             List<MessageSender> senders = senderMap.get(alarmLevel);
-            if (CollectionUtils.isEmpty(senders)) {
+            if (CollectionUtils.isEmpty(senders) || CollectionUtils.isEmpty(alarmMessage.getAlarmChannels())) {
                 logger.info("alarm message handler:  sender-config is empty, alarmlevel={}, message={}, config={}", alarmLevel, JSON.toJSONString(alarmMessage), JSON.toJSONString(config));
                 continue;
             }
-            senders.forEach(messageSender -> {
+            Map<EAlarmChannel, MessageSender> channelMessageSenderMap = senders.stream()
+                    .collect(Collectors.toMap(MessageSender::channel, messageSender -> messageSender));
+
+            alarmMessage.getAlarmChannels().stream().filter(channel -> channelMessageSenderMap.containsKey(channel)).forEach(channel -> {
+                MessageSender messageSender = channelMessageSenderMap.get(channel);
                 try {
                     messageSender.sendMessage(alarmMessage, recivers);
                     logger.info("alarm message handler:  send {}-message success, alarmlevel={}, message={}, config={}",
@@ -82,7 +89,6 @@ public class MessageHandler implements AlarmHandler {
                             messageSender.channel(), alarmLevel, JSON.toJSONString(alarmMessage), JSON.toJSONString(config), e);
                 }
             });
-
         }
     }
 
@@ -125,9 +131,7 @@ public class MessageHandler implements AlarmHandler {
      * @param alarmTime
      * @return
      */
-    private Map<EAlarmLevel, List<SaasWorker>> mappingReciver(Map<EAlarmLevel, AsAlarmNotify> notifyMap, Date alarmTime) {
-        // 全部值班人员
-        List<SaasWorker> saasWorkers = saasWorkerService.getAllSaasWorker();
+    private Map<EAlarmLevel, List<SaasWorker>> mappingReciver(List<SaasWorker> saasWorkers, Map<EAlarmLevel, AsAlarmNotify> notifyMap, Date alarmTime) {
         // 当前值班人员
         List<SaasWorker> activeWorkers = saasWorkerService.getActiveWorkers(alarmTime, saasWorkers);
         Map<EAlarmLevel, List<SaasWorker>> reciverMap = Maps.newHashMap();

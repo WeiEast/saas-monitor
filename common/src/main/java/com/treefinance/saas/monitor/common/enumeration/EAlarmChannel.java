@@ -9,9 +9,7 @@ public enum EAlarmChannel {
     IVR("ivr"),
     SMS("sms"),
     EMAIL("email"),
-    WECHAT("wechat"),
-
-    ;
+    WECHAT("wechat"),;
 
     public String getValue() {
         return value;
@@ -28,15 +26,14 @@ public enum EAlarmChannel {
         this.value = value;
     }
 
-    public static EAlarmChannel getByValue(String value){
-        for(EAlarmChannel channel:values()){
-            if(value.equals(channel.getValue())){
+    public static EAlarmChannel getByValue(String value) {
+        for (EAlarmChannel channel : values()) {
+            if (channel.value.equalsIgnoreCase(value)) {
                 return channel;
             }
         }
         return null;
     }
-
 
 
 }
