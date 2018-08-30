@@ -2,7 +2,6 @@ package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
@@ -214,8 +213,11 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
                 = DataConverterUtils.convert(request.getAsAlarmNotifyInfoRequestList(), AsAlarmNotify.class);
         alarmConfig.setAlarmNotifies(alarmNotifyList);
 
-        AsAlarmMsg alarmMsg = DataConverterUtils.convert(request.getAsAlarmMsgInfoRequest(), AsAlarmMsg.class);
-        alarmConfig.setAlarmMsgs(Lists.newArrayList(alarmMsg));
+        List<AsAlarmMsg> alarmNotifyMsgList = DataConverterUtils.convert(request.getAsAlarmNotifyMsgInfoRequestList(), AsAlarmMsg.class);
+        alarmConfig.setAlarmMsgs(alarmNotifyMsgList);
+
+        List<AsAlarmMsg> alarmRecoveryMsgList = DataConverterUtils.convert(request.getAsAlarmRecoveryMsgInfoRequestList(), AsAlarmMsg.class);
+        alarmConfig.setRecoverMsgs(alarmRecoveryMsgList);
 
         List<AsAlarmTrigger> alarmTriggerList
                 = DataConverterUtils.convert(request.getAsAlarmTriggerInfoRequestList(), AsAlarmTrigger.class);

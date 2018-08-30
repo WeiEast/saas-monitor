@@ -56,9 +56,13 @@ public class AlarmBasicConfigurationTestRequest extends BaseRequest {
     private List<AsAlarmNotifyInfoRequest> asAlarmNotifyInfoRequestList;
 
     /**
-     * 预警消息模板表相关信息
+     * 预警通知消息
      */
-    private AsAlarmMsgInfoRequest asAlarmMsgInfoRequest;
+    private List<AsAlarmMsgInfoRequest> asAlarmNotifyMsgInfoRequestList;
+    /**
+     * 预警恢复消息
+     */
+    private List<AsAlarmMsgInfoRequest> asAlarmRecoveryMsgInfoRequestList;
 
     /**
      * 预警触发条件表相关信息
