@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -106,6 +107,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             Long id = asAlarmTriggerRecord.getConditionId();
             conditionIds.add(id);
         }
+
         List<AlarmExecuteLogRO> list = new ArrayList<>();
         if (asAlarmTriggerRecordList.size() != 0) {
             List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerService.getAsAlarmTriggerByPrimaryKey(conditionIds);
@@ -117,6 +119,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
                 BeanUtils.copyProperties(asAlarm, alarmExecuteLogRO);
                 BeanUtils.copyProperties(asAlarmTriggerRecord, alarmExecuteLogRO);
                 alarmExecuteLogRO.setConditionName(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()).getName());
+                alarmExecuteLogRO.setCostTime(new BigDecimal(asAlarmTriggerRecord.getCostTime()).divide(new BigDecimal(1000)).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
                 list.add(alarmExecuteLogRO);
             }
         }
