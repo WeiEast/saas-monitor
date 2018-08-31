@@ -281,7 +281,5 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         }
         asAlarmService.updateAlarmSwitch(alarmId);
         return MonitorResultBuilder.build();
-
-
     }
 }

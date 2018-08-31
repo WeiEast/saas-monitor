@@ -385,9 +385,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
     @Override
     public MonitorResult<List<AlarmTypeListRO>> queryAlarmTypeList() {
-
-
-
-        return null;
+        List<AlarmTypeListRO> listROS = alarmWorkOrderService.queryAlarmTypeList();
+        return MonitorResultBuilder.build(listROS);
     }
 }
