@@ -79,4 +79,10 @@ public class AlarmRecordFacadeTest extends BaseTest {
 
         result = alarmRecordFacade.queryAlarmStatistic(recordStatRequest);
     }
+
+    @Test
+    public void queryAlarmTypeList() {
+        result = alarmRecordFacade.queryAlarmTypeList();
+    }
+
 }

@@ -47,7 +47,6 @@ import static com.treefinance.saas.monitor.common.constants.AlarmConstants.TASK_
 public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(AlarmRecordFacadeImpl.class);
-
     @Autowired
     private AlarmRecordService alarmRecordService;
     @Autowired
@@ -406,7 +405,8 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
     @Override
     public MonitorResult<List<AlarmTypeListRO>> queryAlarmTypeList() {
-        return null;
+        List<AlarmTypeListRO> listROS = alarmWorkOrderService.queryAlarmTypeList();
+        return MonitorResultBuilder.build(listROS);
     }
 
 

@@ -1,17 +1,17 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.treefinance.saas.monitor.biz.service.AlarmWorkOrderService;
-import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
-import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
-import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrderCriteria;
-import com.treefinance.saas.monitor.dao.entity.WorkOrderLog;
+import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.AlarmRecordMapper;
 import com.treefinance.saas.monitor.dao.mapper.AlarmWorkOrderMapper;
+import com.treefinance.saas.monitor.dao.mapper.AsAlarmMapper;
 import com.treefinance.saas.monitor.dao.mapper.WorkOrderLogMapper;
+import com.treefinance.saas.monitor.facade.domain.ro.AlarmTypeListRO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,6 +27,8 @@ public class AlarmWorkOrderServiceImpl implements AlarmWorkOrderService {
     WorkOrderLogMapper workOrderLogMapper;
     @Autowired
     AlarmRecordMapper alarmRecordMapper;
+    @Autowired
+    AsAlarmMapper asAlarmMapper;
 
     @Override
     public List<AlarmWorkOrder> queryByCondition(AlarmWorkOrderCriteria criteria) {
@@ -75,5 +77,22 @@ public class AlarmWorkOrderServiceImpl implements AlarmWorkOrderService {
         List<AlarmWorkOrder> list = alarmWorkOrderMapper.selectByExample(criteria);
         if (list.isEmpty()) return null;
         return list.get(0);
+    }
+
+    @Override
+    public List<AlarmTypeListRO> queryAlarmTypeList() {
+        AsAlarmCriteria criteria = new AsAlarmCriteria();
+        criteria.setDistinct(true);
+
+        List<AsAlarm> list = asAlarmMapper.selectByExample(criteria);
+        List<AlarmTypeListRO> returnList = new ArrayList<>();
+        for(AsAlarm asAlarm :list){
+            AlarmTypeListRO ro = new AlarmTypeListRO();
+            ro.setName(asAlarm.getName());
+            ro.setValue(asAlarm.getName());
+            returnList.add(ro);
+        }
+
+        return returnList;
     }
 }
