@@ -47,7 +47,7 @@ public class AlarmExecuteLogRO extends BaseRO{
     /**
      * 预警耗时
      */
-    private Integer costTime;
+    private Double costTime;
 
     /**
      * Info触发
