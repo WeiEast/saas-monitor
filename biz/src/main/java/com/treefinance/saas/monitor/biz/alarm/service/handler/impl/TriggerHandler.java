@@ -253,6 +253,7 @@ public class TriggerHandler implements AlarmHandler {
         alarmMessage.setMessage(message);
         alarmMessage.setTitle(title);
         alarmMessage.setAlarmChannels(alarmChannels);
+        alarmMessage.setMessageType(EMessageType.code(alarmMsg.getMsgType()));
         return alarmMessage;
     }
 
