@@ -7,6 +7,7 @@ import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
 import com.treefinance.saas.monitor.biz.service.*;
+import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
@@ -119,7 +120,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
                 BeanUtils.copyProperties(asAlarm, alarmExecuteLogRO);
                 BeanUtils.copyProperties(asAlarmTriggerRecord, alarmExecuteLogRO);
                 alarmExecuteLogRO.setConditionName(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()).getName());
-                alarmExecuteLogRO.setCostTime(new BigDecimal(asAlarmTriggerRecord.getCostTime()).divide(new BigDecimal(1000)).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+                alarmExecuteLogRO.setCostTime(new BigDecimal(asAlarmTriggerRecord.getCostTime()).divide(new BigDecimal(1000)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                 list.add(alarmExecuteLogRO);
             }
         }
@@ -145,6 +146,13 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         }
 
         List<AsAlarmRO> returnList = DataConverterUtils.convert(list, AsAlarmRO.class);
+
+        for (AsAlarmRO asAlarmRO : returnList) {
+            ESaasEnv env = ESaasEnv.getByValue(asAlarmRO.getRunEnv());
+            if (env != null) {
+                asAlarmRO.setRunEnvDesc(env.getDesc());
+            }
+        }
         return MonitorResultBuilder.pageResult(request, returnList, count);
     }
 
