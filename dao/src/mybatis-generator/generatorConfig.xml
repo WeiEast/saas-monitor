@@ -50,90 +50,101 @@
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
         <!--<table tableName="as_basic_data_history" domainObjectName="AsBasicDataHistory"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
         <!--</table>-->
 
         <!--<table tableName="as_alarm" domainObjectName="AsAlarm"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
         <!--</table>-->
 
         <!--<table tableName="as_alarm_constant" domainObjectName="AsAlarmConstant"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
         <!--</table>-->
 
         <!--<table tableName="as_alarm_query" domainObjectName="AsAlarmQuery"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
-            <!--<columnOverride column="querySql" jdbcType="VARCHAR"/>-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--<columnOverride column="querySql" jdbcType="VARCHAR"/>-->
         <!--</table>-->
 
         <!--<table tableName="as_alarm_variable" domainObjectName="AsAlarmVariable"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
         <!--</table>-->
 
         <!--<table tableName="as_alarm_notify" domainObjectName="AsAlarmNotify"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
         <!--</table>-->
 
         <!--<table tableName="as_alarm_msg" domainObjectName="AsAlarmMsg"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
-            <!--<columnOverride column="titleTemplate" jdbcType="VARCHAR"/>-->
-            <!--<columnOverride column="bodyTemplate" jdbcType="VARCHAR"/>-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--<columnOverride column="titleTemplate" jdbcType="VARCHAR"/>-->
+        <!--<columnOverride column="bodyTemplate" jdbcType="VARCHAR"/>-->
         <!--</table>-->
 
         <!--<table tableName="as_alarm_trigger" domainObjectName="AsAlarmTrigger"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
         <!--</table>-->
 
-        <table tableName="as_alarm_trigger_record" domainObjectName="AsAlarmTriggerRecord"
+        <!--<table tableName="as_alarm_trigger_record" domainObjectName="AsAlarmTriggerRecord"-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--<columnOverride column="context" jdbcType="VARCHAR"/>-->
+        <!--</table>-->
+
+        <table tableName="alarm_record" domainObjectName="AlarmRecord"
                enableSelectPaginationByExample="true"
                enableInsertOrUpdateBySelective="true"
                enableBatchInsert="true"
                enableBatchUpdateByPrimaryKey="true"
                enableBatchUpdateByPrimaryKeySelective="true">
             <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="id" sqlStatement="id"/>
             <columnOverride column="context" jdbcType="VARCHAR"/>
+            <columnOverride column="isProcessed" javaType="Integer"/>
         </table>
-
 
 
         <!--
@@ -232,23 +243,23 @@
         <!--</table>-->
 
         <!--<table tableName="operator_all_stat_access" domainObjectName="OperatorAllStatAccess"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
-            <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
         <!--</table>-->
 
         <!--<table tableName="operator_all_stat_day_access" domainObjectName="OperatorAllStatDayAccess"-->
-               <!--enableSelectPaginationByExample="true"-->
-               <!--enableInsertOrUpdateBySelective="true"-->
-               <!--enableBatchInsert="true"-->
-               <!--enableBatchUpdateByPrimaryKey="true"-->
-               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
-            <!--<property name="useActualColumnNames" value="true"/>-->
-            <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
+        <!--enableSelectPaginationByExample="true"-->
+        <!--enableInsertOrUpdateBySelective="true"-->
+        <!--enableBatchInsert="true"-->
+        <!--enableBatchUpdateByPrimaryKey="true"-->
+        <!--enableBatchUpdateByPrimaryKeySelective="true">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--&lt;!&ndash;<generatedKey column="Id" sqlStatement="MySql" identity="true"/>&ndash;&gt;-->
         <!--</table>-->
 
         <!--<table tableName="operator_stat_day_access" domainObjectName="OperatorStatDayAccess"-->

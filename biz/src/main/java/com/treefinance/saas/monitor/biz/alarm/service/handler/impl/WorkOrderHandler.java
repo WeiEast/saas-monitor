@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.alarm.service.handler.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.treefinance.commonservice.uid.UidGenerator;
@@ -14,6 +15,7 @@ import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
 import com.treefinance.saas.monitor.dao.entity.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +54,11 @@ public class WorkOrderHandler implements AlarmHandler {
         Date now = new Date();
 
         //获取值班人员
+        Long alarmId = config.getAlarm().getId();
+        if (alarmId == null) {
+            logger.info(" alarm id is empty： config={}", JSON.toJSONString(config));
+            return;
+        }
         List<SaasWorker> activeWorkers = saasWorkerService.getActiveWorkers(context.getAlarmTime(), saasWorkers);
         String dutyNames = Joiner.on(",").join(activeWorkers.stream().map(SaasWorker::getName).collect(Collectors.toList()));
         context.getTriggerRecords().stream().filter(triggerRecord -> StringUtils.isNotEmpty(triggerRecord.getAlarmLevel()))
@@ -63,6 +70,7 @@ public class WorkOrderHandler implements AlarmHandler {
                     alarmRecord.setCreateTime(now);
                     alarmRecord.setDataTime(triggerRecord.getRunTime());
                     alarmRecord.setIsProcessed(EAlarmRecordStatus.UNPROCESS.getCode());
+                    alarmRecord.setTriggerId(triggerRecord.getConditionId());
                     alarmRecord.setLevel(triggerRecord.getAlarmLevel());
                     alarmRecord.setSummary(triggerNameMap.get(triggerRecord.getConditionId()));
                     alarmRecord.setAlarmType(config.getAlarm().getName());
@@ -95,30 +103,42 @@ public class WorkOrderHandler implements AlarmHandler {
             alarmNoMap.put(alarmMessage.getRecordId(), alarmMessage.getAlarmNo());
         }
         // 消息发送完成，未处理的工单恢复工单
-        context.getTriggerRecords().stream().filter(triggerRecord -> Boolean.TRUE.toString().equalsIgnoreCase(triggerRecord.getRecoveryTrigger()))
-                .forEach(triggerRecord -> {
-                    Long recordId = alarmNoMap.get(triggerRecord.getId());
-                    AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByRecordId(recordId);
-                    alarmWorkOrder.setLastUpdateTime(now);
-                    alarmWorkOrder.setStatus(EOrderStatus.REPAIRED.getCode());
-                    alarmWorkOrder.setRemark("系统判定修复");
-                    alarmWorkOrder.setProcessorName("system");
+        List<Long> triggerIds = context.getTriggerRecords().stream().filter(triggerRecord -> Boolean.TRUE.toString().equalsIgnoreCase(triggerRecord.getRecoveryTrigger()))
+                .map(AsAlarmTriggerRecord::getConditionId).distinct().collect(Collectors.toList());
+        // 获取未处理的工单列表
+        if (CollectionUtils.isEmpty(triggerIds)) {
+            logger.info("no recover work-order： config={}", JSON.toJSONString(config));
+            return;
+        }
 
-                    if (EAlarmRecordStatus.UNPROCESS.getCode().equals(alarmWorkOrder.getStatus())) {
-                        AlarmRecord alarmRecord = alarmRecordService.getByPrimaryKey(recordId);
-                        alarmRecord.setEndTime(now);
-                        alarmRecord.setIsProcessed(EAlarmRecordStatus.REPAIRED.getCode());
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+        criteria.createCriteria().andTriggerIdIn(triggerIds).andIsProcessedEqualTo(EAlarmRecordStatus.UNPROCESS.getCode());
+        List<AlarmRecord> alarmRecords = alarmRecordService.queryByCondition(criteria);
+        alarmRecords.stream().forEach(alarmRecord -> {
+            try {
+                Long recordId = alarmRecord.getId();
+                alarmRecord.setEndTime(now);
+                alarmRecord.setIsProcessed(EAlarmRecordStatus.REPAIRED.getCode());
 
-                        WorkOrderLog workOrderLog = new WorkOrderLog();
-                        workOrderLog.setId(UidGenerator.getId());
-                        workOrderLog.setOrderId(alarmWorkOrder.getId());
-                        workOrderLog.setRecordId(triggerRecord.getId());
-                        workOrderLog.setOpDesc("系统判定预警恢复");
-                        workOrderLog.setOpName("system");
-                        workOrderLog.setLastUpdateTime(now);
-                        workOrderLog.setCreateTime(now);
-                        alarmRecordService.repairAlarmRecord(alarmWorkOrder, alarmRecord, workOrderLog);
-                    }
-                });
+                AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByRecordId(recordId);
+                alarmWorkOrder.setLastUpdateTime(now);
+                alarmWorkOrder.setStatus(EOrderStatus.REPAIRED.getCode());
+                alarmWorkOrder.setRemark("系统判定修复");
+                alarmWorkOrder.setProcessorName("system");
+
+                WorkOrderLog workOrderLog = new WorkOrderLog();
+                workOrderLog.setId(UidGenerator.getId());
+                workOrderLog.setOrderId(alarmWorkOrder.getId());
+                workOrderLog.setRecordId(recordId);
+                workOrderLog.setOpDesc("系统判定预警恢复");
+                workOrderLog.setOpName("system");
+                workOrderLog.setLastUpdateTime(now);
+                workOrderLog.setCreateTime(now);
+                alarmRecordService.repairAlarmRecord(alarmWorkOrder, alarmRecord, workOrderLog);
+                logger.info("系统判定恢复：workorder={},record={},log={}", JSON.toJSONString(alarmWorkOrder), JSON.toJSONString(alarmRecord), JSON.toJSONString(workOrderLog));
+            } catch (Exception e) {
+                logger.error("repairAlarmRecord error：alarmRecord={}", JSON.toJSONString(alarmRecord));
+            }
+        });
     }
 }
