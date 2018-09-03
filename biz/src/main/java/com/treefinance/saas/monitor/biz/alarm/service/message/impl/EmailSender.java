@@ -46,13 +46,14 @@ public class EmailSender extends AbstractMqSender {
         switch (alarmMessage.getMessageType()) {
             case HTML:
                 body.setMailEnum(MailEnum.HTML_MAIL);
+                body.setBusiness("alarm-html");
                 break;
             case TEXT:
                 body.setMailEnum(MailEnum.SIMPLE_MAIL);
+                body.setBusiness("alarm-text");
                 break;
         }
         //设置业务线，预警设置为alarm
-        body.setBusiness("alarm");
         //设置发送给谁
         body.setToList(tolist);
         body.setSubject(alarmMessage.getTitle());

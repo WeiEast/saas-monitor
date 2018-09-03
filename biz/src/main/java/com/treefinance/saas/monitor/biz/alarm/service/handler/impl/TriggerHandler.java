@@ -328,7 +328,6 @@ public class TriggerHandler implements AlarmHandler {
         record.setRunEnv(config.getAlarm().getRunEnv());
         record.setRunTime(context.getAlarmTime());
 
-
         // 记录原始数据
         context.origin(data, "record", record);
         context.origin(data, "trigger", trigger);
