@@ -1,9 +1,12 @@
 package com.treefinance.saas.monitor.biz.alarm.service.handler.chain;
 
+import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandler;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +25,11 @@ import java.util.stream.Collectors;
 @Component
 public class FiveAlarmHandlerChain implements AlarmHandlerChain {
 
+    /**
+     * logger
+     */
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     @Autowired
     private List<AlarmHandler> handlerList;
 
@@ -31,7 +39,14 @@ public class FiveAlarmHandlerChain implements AlarmHandlerChain {
         // 根据order排序
         List<AlarmHandler> handlerList = this.handlerList.stream().sorted(AlarmHandler::compareTo).collect(Collectors.toList());
         // 调用处理链处理
-        handlerList.forEach(alarmHandler -> alarmHandler.handle(config, context));
+        handlerList.forEach(alarmHandler -> {
+            long start = System.currentTimeMillis();
+            try {
+                alarmHandler.handle(config, context);
+            } finally {
+                logger.info("alarm handle chain running:  handle={} , alarm={} cost {}ms,", alarmHandler.getClass(), JSON.toJSONString(config.getAlarm()), System.currentTimeMillis() - start);
+            }
+        });
         return context;
     }
 }

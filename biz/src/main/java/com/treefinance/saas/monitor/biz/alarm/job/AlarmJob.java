@@ -62,8 +62,7 @@ public class AlarmJob implements SimpleJob {
             }
 
         } catch (Exception e) {
-            logger.error("alarm job running exception: config={},result={}",
-                    (System.currentTimeMillis() - start), JSON.toJSONString(config), JSON.toJSONString(context), e);
+            logger.error("alarm job running exception: config={},result={}", JSON.toJSONString(config), JSON.toJSONString(context), e);
         }
     }
 }
