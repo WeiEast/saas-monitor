@@ -141,7 +141,6 @@
                enableBatchUpdateByPrimaryKey="true"
                enableBatchUpdateByPrimaryKeySelective="true">
             <property name="useActualColumnNames" value="true"/>
-            <generatedKey column="id" sqlStatement="id"/>
             <columnOverride column="context" jdbcType="VARCHAR"/>
             <columnOverride column="isProcessed" javaType="Integer"/>
         </table>
