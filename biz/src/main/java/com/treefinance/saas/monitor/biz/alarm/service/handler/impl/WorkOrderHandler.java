@@ -118,6 +118,7 @@ public class WorkOrderHandler implements AlarmHandler {
         AlarmRecordCriteria criteria = new AlarmRecordCriteria();
         criteria.createCriteria().andTriggerIdIn(triggerIds).andIsProcessedEqualTo(EAlarmRecordStatus.UNPROCESS.getCode());
         List<AlarmRecord> alarmRecords = alarmRecordService.queryByCondition(criteria);
+        logger.info("handle unprocess work order: triggerIds={},alarmRecords={}", JSON.toJSONString(triggerIds), JSON.toJSONString(alarmRecords));
         alarmRecords.stream().forEach(alarmRecord -> {
             try {
                 Long recordId = alarmRecord.getId();
@@ -140,7 +141,7 @@ public class WorkOrderHandler implements AlarmHandler {
                 workOrderLog.setCreateTime(now);
                 try {
                     alarmRecordService.repairAlarmRecord(alarmWorkOrder, alarmRecord, workOrderLog);
-                }finally {
+                } finally {
                     logger.info("系统判定恢复：workorder={},record={},log={}", JSON.toJSONString(alarmWorkOrder), JSON.toJSONString(alarmRecord), JSON.toJSONString(workOrderLog));
                 }
             } catch (Exception e) {
