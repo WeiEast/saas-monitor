@@ -1,6 +1,6 @@
 package com.treefinance.saas.monitor.biz.alarm.expression;
 
-import com.treefinance.saas.monitor.biz.alarm.model.EMessageType;
+import com.treefinance.saas.monitor.biz.alarm.model.EAnalysisType;
 
 import java.util.Map;
 
@@ -23,7 +23,7 @@ public interface ExpressionParser {
      * 解析的消息类型
      * @return
      */
-    default EMessageType type() {
+    default EAnalysisType type() {
         return this.getClass().getAnnotation(Analysis.class).value();
     }
 }

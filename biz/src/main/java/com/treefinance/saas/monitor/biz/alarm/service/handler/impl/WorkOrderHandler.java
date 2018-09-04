@@ -56,7 +56,7 @@ public class WorkOrderHandler implements AlarmHandler {
         //获取值班人员
         Long alarmId = config.getAlarm().getId();
         if (alarmId == null) {
-            logger.info(" alarm id is empty： config={}", JSON.toJSONString(config));
+            logger.info(" work-order : alarm id is empty： config={}", JSON.toJSONString(config));
             return;
         }
         List<SaasWorker> activeWorkers = saasWorkerService.getActiveWorkers(context.getAlarmTime(), saasWorkers);
@@ -98,7 +98,7 @@ public class WorkOrderHandler implements AlarmHandler {
                     try {
                         alarmRecordService.saveAlarmRecords(workOrder, alarmRecord, orderLog);
                     } finally {
-                        logger.info("create new alarm work order：workorder={},record={},log={}", JSON.toJSONString(workOrder), JSON.toJSONString(alarmRecord), JSON.toJSONString(orderLog));
+                        logger.info("create new alarm work-order：workorder={},record={},log={}", JSON.toJSONString(workOrder), JSON.toJSONString(alarmRecord), JSON.toJSONString(orderLog));
                     }
                 });
         // 预警记录-预警编号
@@ -142,10 +142,10 @@ public class WorkOrderHandler implements AlarmHandler {
                 try {
                     alarmRecordService.repairAlarmRecord(alarmWorkOrder, alarmRecord, workOrderLog);
                 } finally {
-                    logger.info("系统判定恢复：workorder={},record={},log={}", JSON.toJSONString(alarmWorkOrder), JSON.toJSONString(alarmRecord), JSON.toJSONString(workOrderLog));
+                    logger.info("系统判定恢复：work-order={},record={},log={}", JSON.toJSONString(alarmWorkOrder), JSON.toJSONString(alarmRecord), JSON.toJSONString(workOrderLog));
                 }
             } catch (Exception e) {
-                logger.error("repairAlarmRecord error：alarmRecord={}", JSON.toJSONString(alarmRecord));
+                logger.error("repair work-order error：alarmRecord={}", JSON.toJSONString(alarmRecord));
             }
         });
     }

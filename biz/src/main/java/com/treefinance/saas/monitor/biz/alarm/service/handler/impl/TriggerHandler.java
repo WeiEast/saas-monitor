@@ -7,16 +7,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.monitor.biz.alarm.expression.ExpressionParser;
-
-import static com.treefinance.saas.monitor.biz.alarm.expression.spel.func.SpelFunction.*;
-
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmMessage;
-import com.treefinance.saas.monitor.biz.alarm.model.EMessageType;
+import com.treefinance.saas.monitor.biz.alarm.model.EAnalysisType;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandler;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.Order;
-import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.ESwitch;
@@ -37,8 +33,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.treefinance.saas.monitor.biz.alarm.expression.spel.func.SpelFunction.nvl;
 
 /**
  * Created by yh-treefinance on 2018/7/24.
@@ -161,13 +162,9 @@ public class TriggerHandler implements AlarmHandler {
     private List<AlarmMessage> generateAlarmMessage(Long alarmNo, AlarmConfig config, AlarmContext context, Map<String, Object> data, EAlarmLevel currentLevel) {
         List<AsAlarmMsg> alarmMsgs = config.getAlarmMsgs();
         List<AlarmMessage> alarmMessages = Lists.newArrayList();
-        Map<EMessageType, ExpressionParser> parserMap = expressionParsers.stream()
-                .collect(Collectors.toMap(ExpressionParser::type, parser -> parser));
 
         alarmMsgs.forEach(alarmMsg -> {
-            // messageType
-            EMessageType messageType = EMessageType.code(alarmMsg.getMsgType());
-            AlarmMessage alarmMessage = initMessage(data, currentLevel, parserMap.get(messageType), alarmMsg);
+            AlarmMessage alarmMessage = initMessage(data, currentLevel, alarmMsg);
             alarmMessage.setAlarmNo(alarmNo);
             alarmMessage.setRecordId(alarmNo);
             context.addMessage(alarmMessage);
@@ -212,14 +209,8 @@ public class TriggerHandler implements AlarmHandler {
             return;
         }
         List<AlarmMessage> alarmMessages = Lists.newArrayList();
-        Map<EMessageType, ExpressionParser> parserMap = expressionParsers.stream()
-                .collect(Collectors.toMap(ExpressionParser::type, parser -> parser));
         for (AsAlarmMsg alarmMsg : recoverMsgs) {
-            // messageType
-            EMessageType messageType = EMessageType.code(alarmMsg.getMsgType());
-            ExpressionParser expressionParser = parserMap.get(messageType);
-
-            AlarmMessage alarmMessage = initMessage(data, currentLevel, expressionParser, alarmMsg);
+            AlarmMessage alarmMessage = initMessage(data, currentLevel, alarmMsg);
             alarmMessage.setAlarmNo(lastAlarm.getId());
             alarmMessage.setRecordId(record.getId());
 
@@ -237,11 +228,15 @@ public class TriggerHandler implements AlarmHandler {
      *
      * @param data
      * @param currentLevel
-     * @param expressionParser
      * @param alarmMsg
      * @return
      */
-    private AlarmMessage initMessage(Map<String, Object> data, EAlarmLevel currentLevel, ExpressionParser expressionParser, AsAlarmMsg alarmMsg) {
+    private AlarmMessage initMessage(Map<String, Object> data, EAlarmLevel currentLevel, AsAlarmMsg alarmMsg) {
+        // messageType
+        ExpressionParser expressionParser = expressionParsers.stream()
+                .filter(_expressionParser -> EAnalysisType.code(alarmMsg.getAnalysisType()).equals(_expressionParser.type()))
+                .findFirst()
+                .get();
         // 预警通道
         List<EAlarmChannel> alarmChannels = Splitter.on(",").trimResults().splitToList(alarmMsg.getNotifyChannel())
                 .stream().map(EAlarmChannel::getByValue).collect(Collectors.toList());
@@ -254,8 +249,8 @@ public class TriggerHandler implements AlarmHandler {
         alarmMessage.setTitle(title);
         alarmMessage.setAlarmChannels(alarmChannels);
         // 预警解析方式：1-文本，2-html
-        alarmMessage.setMessageType(EMessageType.code(alarmMsg.getAnalysisType()));
-        logger.info("init-message : message={}", JSON.toJSONString(alarmMessage));
+        alarmMessage.setMessageType(EAnalysisType.code(alarmMsg.getAnalysisType()));
+        logger.info("init-message : expressionParser={}，message={}", expressionParser.type(), JSON.toJSONString(alarmMessage));
         return alarmMessage;
     }
 
