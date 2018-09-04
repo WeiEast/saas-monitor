@@ -125,17 +125,18 @@ public class WorkOrderHandler implements AlarmHandler {
                 alarmRecord.setEndTime(now);
                 alarmRecord.setIsProcessed(EAlarmRecordStatus.REPAIRED.getCode());
 
+                WorkOrderLog workOrderLog = new WorkOrderLog();
                 AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByRecordId(recordId);
                 if(alarmWorkOrder != null){
                     alarmWorkOrder.setLastUpdateTime(now);
                     alarmWorkOrder.setStatus(EOrderStatus.REPAIRED.getCode());
                     alarmWorkOrder.setRemark("系统判定修复");
                     alarmWorkOrder.setProcessorName("system");
+
+                    workOrderLog.setOrderId(alarmWorkOrder.getId());
                 }
 
-                WorkOrderLog workOrderLog = new WorkOrderLog();
                 workOrderLog.setId(UidGenerator.getId());
-                workOrderLog.setOrderId(alarmWorkOrder.getId());
                 workOrderLog.setRecordId(recordId);
                 workOrderLog.setOpDesc("系统判定预警恢复");
                 workOrderLog.setOpName("system");
