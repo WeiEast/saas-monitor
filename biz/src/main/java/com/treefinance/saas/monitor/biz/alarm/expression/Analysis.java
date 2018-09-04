@@ -1,6 +1,6 @@
 package com.treefinance.saas.monitor.biz.alarm.expression;
 
-import com.treefinance.saas.monitor.biz.alarm.model.EMessageType;
+import com.treefinance.saas.monitor.biz.alarm.model.EAnalysisType;
 
 import java.lang.annotation.*;
 
@@ -17,5 +17,5 @@ public @interface Analysis {
      *
      * @return
      */
-    EMessageType value();
+    EAnalysisType value();
 }

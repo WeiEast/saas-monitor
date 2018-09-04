@@ -40,7 +40,7 @@ public class AlarmMessage implements Serializable {
     /**
      * 预警消息类型
      */
-    private EMessageType messageType;
+    private EAnalysisType messageType;
     /**
      * 消息通道
      */
