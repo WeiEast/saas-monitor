@@ -96,6 +96,7 @@ public class WorkOrderHandler implements AlarmHandler {
                     orderLog.setCreateTime(now);
                     orderLog.setLastUpdateTime(now);
                     alarmRecordService.saveAlarmRecords(workOrder, alarmRecord, orderLog);
+                    logger.info("create new alarm work order：workorder={},record={},log={}", JSON.toJSONString(workOrder), JSON.toJSONString(alarmRecord), JSON.toJSONString(orderLog));
                 });
         // 预警记录-预警编号
         Map<Long, Long> alarmNoMap = Maps.newHashMap();
