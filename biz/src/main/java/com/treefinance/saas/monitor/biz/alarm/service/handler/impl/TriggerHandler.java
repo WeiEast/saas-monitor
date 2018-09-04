@@ -196,7 +196,7 @@ public class TriggerHandler implements AlarmHandler {
             return;
         }
         // 上次无预警，本次无预警本，不触发恢复
-        AsAlarmTriggerRecord lastAlarm = getLastAlarm(trigger.getId(), context.getAlarmTime(), context.getIntervalTime());
+        AsAlarmTriggerRecord lastAlarm = getLastAlarm(trigger.getId(), context.getAlarmTime());
         if (lastAlarm == null) {
             record.setRecoveryTrigger("上次无预警，本次不触发恢复");
             return;
@@ -206,8 +206,8 @@ public class TriggerHandler implements AlarmHandler {
         currentLevel = EAlarmLevel.getLevel(lastAlarm.getAlarmLevel());
 
         Object recoverResult = expressionParser.parse(recoveryTrigger, data);
+        record.setRecoveryTrigger(nvl(recoverResult, "").toString());
         if (!Boolean.TRUE.equals(recoverResult)) {
-            record.setRecoveryTrigger(nvl(recoverResult, "").toString());
             record.setRecoveryMessage("");
             return;
         }
@@ -228,8 +228,8 @@ public class TriggerHandler implements AlarmHandler {
         }
         String alarmMessageJson = JSON.toJSONString(alarmMessages);
         record.setRecoveryMessage(alarmMessageJson);
-        logger.info("trigger recover : trigger={}, alarmLevel ={}, message={}, data={}",
-                JSON.toJSONString(trigger), currentLevel, alarmMessageJson, JSON.toJSONString(data));
+        logger.info("trigger recover : alarmLevel ={}，record={}, trigger={}, message={}, data={}",
+                currentLevel, JSON.toJSONString(record), JSON.toJSONString(trigger), alarmMessageJson, JSON.toJSONString(data));
     }
 
     /**
@@ -255,6 +255,7 @@ public class TriggerHandler implements AlarmHandler {
         alarmMessage.setAlarmChannels(alarmChannels);
         // 预警解析方式：1-文本，2-html
         alarmMessage.setMessageType(EMessageType.code(alarmMsg.getAnalysisType()));
+        logger.info("init-message : message={}", JSON.toJSONString(alarmMessage));
         return alarmMessage;
     }
 
@@ -342,10 +343,9 @@ public class TriggerHandler implements AlarmHandler {
      *
      * @param conditionId
      * @param alarmTime
-     * @param intervalTime
      * @return
      */
-    private AsAlarmTriggerRecord getLastAlarm(Long conditionId, Date alarmTime, Long intervalTime) {
+    private AsAlarmTriggerRecord getLastAlarm(Long conditionId, Date alarmTime) {
         AsAlarmTriggerRecordCriteria criteria = new AsAlarmTriggerRecordCriteria();
         criteria.createCriteria()
                 .andRunTimeLessThan(alarmTime)
@@ -355,6 +355,8 @@ public class TriggerHandler implements AlarmHandler {
         criteria.setLimit(3);
         criteria.setOffset(0);
         List<AsAlarmTriggerRecord> lasts = alarmTriggerRecordMapper.selectPaginationByExample(criteria);
+        logger.info("getLastAlarm: conditionId={}, alarmTime={},lasts={}",
+                conditionId, DateFormatUtils.format(alarmTime, "yyyy-MM-dd'T'HH:mm:ss"), JSON.toJSONString(lasts));
         if (CollectionUtils.isEmpty(lasts)) {
             return null;
         }

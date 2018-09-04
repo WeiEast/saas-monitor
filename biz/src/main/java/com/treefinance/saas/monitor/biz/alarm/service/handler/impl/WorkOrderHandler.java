@@ -118,7 +118,7 @@ public class WorkOrderHandler implements AlarmHandler {
         AlarmRecordCriteria criteria = new AlarmRecordCriteria();
         criteria.createCriteria().andTriggerIdIn(triggerIds).andIsProcessedEqualTo(EAlarmRecordStatus.UNPROCESS.getCode());
         List<AlarmRecord> alarmRecords = alarmRecordService.queryByCondition(criteria);
-        logger.info("handle unprocess work order: triggerIds={},alarmRecords={}", JSON.toJSONString(triggerIds), JSON.toJSONString(alarmRecords));
+        logger.info("handle unprocess work-order: triggerIds={},alarmRecords={}", JSON.toJSONString(triggerIds), JSON.toJSONString(alarmRecords));
         alarmRecords.stream().forEach(alarmRecord -> {
             try {
                 Long recordId = alarmRecord.getId();
