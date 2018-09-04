@@ -147,7 +147,7 @@ public class WorkOrderHandler implements AlarmHandler {
                     logger.info("系统判定恢复：work-order={},record={},log={}", JSON.toJSONString(alarmWorkOrder), JSON.toJSONString(alarmRecord), JSON.toJSONString(workOrderLog));
                 }
             } catch (Exception e) {
-                logger.error("repair work-order error：alarmRecord={}", JSON.toJSONString(alarmRecord));
+                logger.error("repair work-order error：alarmRecord={}", JSON.toJSONString(alarmRecord),e);
             }
         });
     }
