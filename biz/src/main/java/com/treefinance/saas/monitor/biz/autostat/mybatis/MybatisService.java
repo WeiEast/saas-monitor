@@ -159,9 +159,9 @@ public class MybatisService {
                             result, tableName, JSON.toJSONString(dbColumns), JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
                 }
             } else {
-                logger.error("batchInsertOrUpdate:获取分布式锁失败.result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
+                logger.error("batchInsertOrUpdate:获取分布式锁失败.result={}, tableName={}, dbColumns={}, paramsMap={}",
                         result, tableName, JSON.toJSONString(dbColumns),
-                        JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
+                        JSON.toJSONString(paramsMap));
             }
         } catch (Exception e) {
             logger.error("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
@@ -169,9 +169,9 @@ public class MybatisService {
                     JSON.toJSONString(paramsMap), JSON.toJSONString(dataList), e);
             throw new RuntimeException(e);
         } finally {
-            logger.info("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}, dataList={}",
+            logger.info("batchInsertOrUpdate : result={}, tableName={}, dbColumns={}, paramsMap={}",
                     result, tableName, JSON.toJSONString(dbColumns),
-                    JSON.toJSONString(paramsMap), JSON.toJSONString(dataList));
+                    JSON.toJSONString(paramsMap));
             redisDao.releaseLock(lockKey, lockMap, 60 * 1000L);
             logger.info("unlock table for batchInsertOrUpdate: tableName={}", tableName);
         }
