@@ -1,6 +1,5 @@
 package com.treefinance.saas.monitor.common.utils;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -10,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by haojiahong on 2017/11/3.
@@ -208,13 +208,28 @@ public class MonitorDateUtils {
     }
 
 
+    public static boolean isSameDay(Date dayOne, Date dayTwo) {
+
+        Calendar calendarOne = Calendar.getInstance(Locale.CHINA);
+        calendarOne.setTime(dayOne);
+
+        Calendar calendarTwo = Calendar.getInstance(Locale.CHINA);
+        calendarTwo.setTime(dayTwo);
+//
+//        calendarOne.set(Calendar.MINUTE, 0);
+//        calendarOne.set(Calendar.HOUR, 0);
+//        calendarOne.set(Calendar.SECOND, 0);
+//        calendarTwo.set(Calendar.MINUTE, 0);
+//        calendarTwo.set(Calendar.HOUR, 0);
+//        calendarTwo.set(Calendar.SECOND, 0);
+
+        return (calendarOne.get(Calendar.YEAR) == calendarTwo.get(Calendar.YEAR)) && (calendarOne.get(Calendar.MONTH) == calendarTwo.get(Calendar.MONTH) && calendarOne.get(Calendar.DATE) == calendarTwo.get(Calendar.DATE));
+
+    }
+
+
     public static void main(String[] args) throws ParseException {
-//        System.out.println(format(getIntervalTime(new Date(), 5)));
-        String dateStr = "2018-06-25 21:00:00";
-        Date date = parse(dateStr);
-        System.out.println(JSON.toJSONString(format(getLaterBorderIntervalDateTime(date, 10))));
-
-
+        System.out.println(isSameDay(new Date(),parse("2018-09-12 00:08:00")));
     }
 
 
