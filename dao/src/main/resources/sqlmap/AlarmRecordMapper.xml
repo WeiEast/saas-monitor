@@ -733,42 +733,52 @@
         </if>
     </select>
 
-    <select id="queryAlarmRecordInBizType" resultType="AlarmRecord">
+    <select id="queryAlarmRecordInBizType" resultType="com.treefinance.saas.monitor.dao.entity.AlarmRecord">
         select
         <include refid="Base_Column_List"/>
         from alarm_record
         <where>
             level = 'error'
-            AND datatime <![CDATA[>=]]]>  #{stratTime} and dataTime <![CDATA[<]]]> #{endTime}
-            <if test="#{bizType} == 'operator'">
+            <if test="startTime != null and startTime != 'null'">
+                AND datatime <![CDATA[>=]]>  #{startTime}
+            </if>
+            <if test="endTime != null and endTime != 'null'">
+                and dataTime <![CDATA[<]]> #{endTime}
+            </if>
+            <if test="bizType == 'operator'">
                 AND (alarmType like '%operator%' or alarmType like '运营商')
             </if>
-            <if test="#{bizType} == 'ecommerce'">
+            <if test="bizType == 'ecommerce'">
                 AND (alarmType like '%ecommerce%' or alarmType like '电商')
             </if>
-            <if test="#{bizType} == 'email'">
+            <if test="bizType == 'email'">
                 AND (alarmType like '%email%' or alarmType like '邮箱')
             </if>
 
         </where>
+        order by (dataTime) desc
         limit #{offset},#{pageSize}
-        order by (dataTime) desc;
     </select>
 
-    <select id="countInBizType" resultType="Integer">
+    <select id="countInBizType" resultType="java.lang.Integer">
         select
         COUNT(1)
         from alarm_record
         <where>
             level = 'error'
-            AND datatime <![CDATA[>=]]]>  #{stratTime} and dataTime <![CDATA[<]]]> #{endTime}
-            <if test="#{bizType} == 'operator'">
+            <if test="startTime != null and startTime != 'null'">
+                AND datatime <![CDATA[>=]]>  #{startTime}
+            </if>
+            <if test="endTime != null and endTime != 'null'">
+                and dataTime <![CDATA[<]]> #{endTime}
+            </if>
+            <if test="bizType == 'operator'">
                 AND (alarmType like '%operator%' or alarmType like '运营商')
             </if>
-            <if test="#{bizType} == 'ecommerce'">
+            <if test="bizType == 'ecommerce'">
                 AND (alarmType like '%ecommerce%' or alarmType like '电商')
             </if>
-            <if test="#{bizType} == 'email'">
+            <if test="bizType == 'email'">
                 AND (alarmType like '%email%' or alarmType like '邮箱')
             </if>
         </where>
