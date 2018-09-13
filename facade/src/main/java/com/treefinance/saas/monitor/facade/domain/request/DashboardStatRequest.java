@@ -2,7 +2,6 @@ package com.treefinance.saas.monitor.facade.domain.request;
 
 import com.treefinance.saas.monitor.facade.domain.base.BaseRequest;
 import lombok.Data;
-import lombok.NonNull;
 
 import java.util.Date;
 
@@ -13,7 +12,6 @@ import java.util.Date;
 @Data
 public class DashboardStatRequest extends BaseRequest {
 
-    @NonNull
     private Byte bizType;
 
     private Date startTime;

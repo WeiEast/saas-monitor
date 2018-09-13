@@ -57,6 +57,7 @@ public interface AlarmRecordService {
      * @param level   预警等级
      * @param summary 摘要信息
      * @param status  状态
+
      * @return 满足条件的最早的记录
      */
     AlarmRecord getFirstStatusRecord(EAlarmLevel level, String summary, EAlarmRecordStatus status);
@@ -87,5 +88,13 @@ public interface AlarmRecordService {
      * @param record   预警记录
      */
     void repairAlarmRecord(AlarmWorkOrder order, AlarmRecord record, WorkOrderLog orderLog);
+
+
+    /**
+     * 查询当天error等级的预警和记录
+     *
+     * */
+    List<AlarmRecord> queryTodayErrorList();
+
 
 }

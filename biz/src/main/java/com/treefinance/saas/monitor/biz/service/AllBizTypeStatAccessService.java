@@ -1,6 +1,8 @@
 package com.treefinance.saas.monitor.biz.service;
 
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
+import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
+import com.treefinance.saas.monitor.facade.domain.ro.AppTaskStatResult;
 import com.treefinance.saas.monitor.facade.domain.ro.WholeConversionResult;
 
 /**
@@ -9,7 +11,8 @@ import com.treefinance.saas.monitor.facade.domain.ro.WholeConversionResult;
  */
 public interface AllBizTypeStatAccessService {
 
-    WholeConversionResult calcConversionResult(EBizType bizType);
+    WholeConversionResult calcConversionResult(EBizType bizType, ESaasEnv saasEnv);
 
+    AppTaskStatResult getAppTaskStatResult(EBizType bizType,ESaasEnv saasEnv);
 
 }

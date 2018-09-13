@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.service.impl;
 import com.treefinance.saas.monitor.biz.service.AlarmRecordService;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
+import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
 import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -102,5 +104,16 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
         if(orderLog != null){
             workOrderLogMapper.insert(orderLog);
         }
+    }
+
+    @Override
+    public List<AlarmRecord> queryTodayErrorList() {
+
+        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
+
+        criteria.createCriteria().andLevelEqualTo(EAlarmLevel.error.name()).andDataTimeGreaterThanOrEqualTo
+                (MonitorDateUtils.getOClockTime(new Date()));
+
+        return alarmRecordMapper.selectByExample(criteria);
     }
 }
