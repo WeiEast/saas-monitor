@@ -3,7 +3,6 @@ package com.treefinance.saas.monitor.biz.service.impl;
 import com.treefinance.saas.monitor.biz.service.AlarmRecordService;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
 import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
@@ -106,14 +105,14 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
         }
     }
 
+
     @Override
-    public List<AlarmRecord> queryTodayErrorList() {
+    public List<AlarmRecord> queryTodayErrorList(String bizType, Date startTime, Date endTime, Integer offset, Integer pageSize) {
+        return alarmRecordMapper.queryAlarmRecordInBizType(bizType, startTime, endTime, offset, pageSize);
+    }
 
-        AlarmRecordCriteria criteria = new AlarmRecordCriteria();
-
-        criteria.createCriteria().andLevelEqualTo(EAlarmLevel.error.name()).andDataTimeGreaterThanOrEqualTo
-                (MonitorDateUtils.getOClockTime(new Date()));
-
-        return alarmRecordMapper.selectByExample(criteria);
+    @Override
+    public Integer countAlarmRecordInBizType(String bizType, Date startTime, Date endTime) {
+        return alarmRecordMapper.countInBizType(bizType, startTime, endTime);
     }
 }

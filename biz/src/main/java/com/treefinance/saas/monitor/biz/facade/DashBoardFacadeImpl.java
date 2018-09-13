@@ -5,7 +5,7 @@ import com.treefinance.saas.monitor.biz.service.AllBizTypeStatAccessService;
 import com.treefinance.saas.monitor.biz.service.OperatorStatAccessService;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
-import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
+import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.facade.domain.request.DashboardStatRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
@@ -16,6 +16,7 @@ import com.treefinance.saas.monitor.facade.service.stat.DashBoardFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -56,13 +57,14 @@ public class DashBoardFacadeImpl implements DashBoardFacade {
         List<String> list = operatorStatAccessService.queryDecreasedOperator(saasEnv);
 
         // TODO: 18/9/11 assemble returnResult ;
-        List<AlarmRecord> alarmRecords = alarmRecordService.queryTodayErrorList();
+        Integer count = alarmRecordService.countAlarmRecordInBizType(bizType.name().toLowerCase(),
+                MonitorDateUtils.getOClockTime(new Date()), new Date());
 
 
         result.setWholeConversionResult(wholeConversionResult);
         result.setOperators(list);
         result.setAppTaskStatResult(appTaskStatResult);
-        result.setCount(alarmRecords.size());
+        result.setCount(count);
 
         return MonitorResultBuilder.build(result);
     }

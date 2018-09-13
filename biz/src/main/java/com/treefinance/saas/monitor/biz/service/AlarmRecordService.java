@@ -7,6 +7,7 @@ import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
 import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
 import com.treefinance.saas.monitor.dao.entity.WorkOrderLog;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -93,8 +94,13 @@ public interface AlarmRecordService {
     /**
      * 查询当天error等级的预警和记录
      *
-     * */
-    List<AlarmRecord> queryTodayErrorList();
+     *
+     * @param bizType
+     * @param startTime
+     * @param endTime*/
+    List<AlarmRecord> queryTodayErrorList(String bizType, Date startTime, Date endTime,Integer offset,Integer pageSize);
 
 
+
+    Integer countAlarmRecordInBizType(String bizType, Date startTime, Date endTime);
 }

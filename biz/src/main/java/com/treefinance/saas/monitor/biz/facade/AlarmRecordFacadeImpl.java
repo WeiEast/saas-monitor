@@ -14,10 +14,7 @@ import com.treefinance.saas.monitor.biz.service.AlarmWorkOrderService;
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.biz.service.WorkOrderLogService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
-import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
-import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
+import com.treefinance.saas.monitor.common.enumeration.*;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
@@ -600,5 +597,40 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             default:
                 return MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -30);
         }
+    }
+
+
+    @Override
+    public MonitorResult<List<AlarmRecordRO>> queryAlarmRecordInDashBoard(AlarmRecordDashBoardRequest request) {
+
+        EBizType bizType = EBizType.getBizType(request.getBizType());
+
+        Integer count = alarmRecordService.countAlarmRecordInBizType(bizType.name().toLowerCase(), request.getStartTime(), request.getEndTime());
+
+
+        List<AlarmRecord> list = alarmRecordService.queryTodayErrorList(bizType.name().toLowerCase(), request
+                        .getStartTime(), request.getEndTime(),request.getOffset(),request.getPageSize());
+
+        List<AlarmRecordRO> alarmRecordROList = DataConverterUtils.convert(list, AlarmRecordRO.class);
+
+        for (AlarmRecordRO recordRO : alarmRecordROList) {
+            recordRO.setProcessDesc(EAlarmRecordStatus.getDesc(recordRO.getIsProcessed()));
+            Long recordId = recordRO.getId();
+
+            AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByRecordId(recordId);
+            if (alarmWorkOrder == null) {
+                continue;
+            }
+            recordRO.setDutyName(alarmWorkOrder.getDutyName());
+            recordRO.setDesc(alarmWorkOrder.getRemark());
+            recordRO.setProcessorName(alarmWorkOrder.getProcessorName());
+            recordRO.setOrderId(alarmWorkOrder.getId());
+            recordRO.setOrderStatus(alarmWorkOrder.getStatus());
+            recordRO.setOrderStatusDesc(EOrderStatus.getDesc(alarmWorkOrder.getStatus()));
+        }
+        return MonitorResultBuilder.pageResult(request, alarmRecordROList, count);
+
+
+
     }
 }
