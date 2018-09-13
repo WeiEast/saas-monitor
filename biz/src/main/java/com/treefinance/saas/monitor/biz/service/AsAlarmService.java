@@ -27,4 +27,7 @@ public interface AsAlarmService {
     long countByCondition(AlarmBasicConfigurationRequest request);
 
     void updateAlarmSwitch(Long alarmId);
+
+    void copyAlarm(Long id);
+
 }

@@ -280,19 +280,117 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         AsAlarm asAlarm = asAlarmMapper.selectByPrimaryKey(alarmId);
 
         if (("off").equals(asAlarm.getAlarmSwitch())) {
-
             asAlarm.setAlarmSwitch("on");
             asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
             alaramJobService.startJob(alarmId);
-
         } else {
             asAlarm.setAlarmSwitch("off");
             asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
             alaramJobService.stopJob(alarmId);
+        }
+    }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void copyAlarm(Long id) {
 
+        Date now = new Date();
+
+        //预警配置表
+        AsAlarm asAlarm = asAlarmMapper.selectByPrimaryKey(id);
+
+        asAlarm.setId(UidGenerator.getId());
+        asAlarm.setName(asAlarm.getName()+"-副本");
+        asAlarm.setAlarmSwitch("off");
+        asAlarm.setCreateTime(now);
+        asAlarm.setLastUpdateTime(now);
+
+        //预警常量表
+        AsAlarmConstantCriteria asAlarmConstantCriteria = new AsAlarmConstantCriteria();
+        asAlarmConstantCriteria.setOrderByClause("constIndex asc,id asc");
+        asAlarmConstantCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmConstant> asAlarmConstantList = asAlarmConstantMapper.selectByExample(asAlarmConstantCriteria);
+
+        for(AsAlarmConstant constant : asAlarmConstantList){
+            constant.setId(UidGenerator.getId());
+            constant.setAlarmId(asAlarm.getId());
+            constant.setCreateTime(now);
+            constant.setLastUpdateTime(now);
         }
 
+        //预警数据查询表
+        AsAlarmQueryCriteria asAlarmQueryCriteria = new AsAlarmQueryCriteria();
+        asAlarmQueryCriteria.setOrderByClause("queryIndex asc,id asc");
+        asAlarmQueryCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmQuery> asAlarmQueryList = asAlarmQueryMapper.selectByExample(asAlarmQueryCriteria);
+
+        for (AsAlarmQuery asAlarmQuery:asAlarmQueryList){
+            asAlarmQuery.setAlarmId(asAlarm.getId());
+            asAlarmQuery.setId(UidGenerator.getId());
+            asAlarmQuery.setCreateTime(now);
+            asAlarmQuery.setLastUpdateTime(now);
+        }
+
+        //预警变量表
+        AsAlarmVariableCriteria asAlarmVariableCriteria = new AsAlarmVariableCriteria();
+        asAlarmVariableCriteria.setOrderByClause("varIndex asc,id asc");
+        asAlarmVariableCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmVariable> asAlarmVariableList = asAlarmVariableMapper.selectByExample(asAlarmVariableCriteria);
+
+        for (AsAlarmVariable variable:asAlarmVariableList){
+            variable.setAlarmId(asAlarm.getId());
+            variable.setId(UidGenerator.getId());
+            variable.setCreateTime(now);
+            variable.setLastUpdateTime(now);
+        }
+
+
+
+        //预警通知表
+        AsAlarmNotifyCriteria asAlarmNotifyCriteria = new AsAlarmNotifyCriteria();
+        asAlarmNotifyCriteria.setOrderByClause("id asc");
+        asAlarmNotifyCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmNotify> asAlarmNotifyList = asAlarmNotifyMapper.selectByExample(asAlarmNotifyCriteria);
+
+        for (AsAlarmNotify variable:asAlarmNotifyList){
+            variable.setAlarmId(asAlarm.getId());
+            variable.setId(UidGenerator.getId());
+            variable.setCreateTime(now);
+            variable.setLastUpdateTime(now);
+        }
+
+
+        //预警消息模板表
+        AsAlarmMsgCriteria asAlarmMsgCriteria = new AsAlarmMsgCriteria();
+        asAlarmMsgCriteria.setOrderByClause("id asc");
+        asAlarmMsgCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmMsg> asAlarmMsgList = asAlarmMsgMapper.selectByExample(asAlarmMsgCriteria);
+        for (AsAlarmMsg variable:asAlarmMsgList){
+            variable.setAlarmId(asAlarm.getId());
+            variable.setId(UidGenerator.getId());
+            variable.setCreateTime(now);
+            variable.setLastUpdateTime(now);
+        }
+        //预警触发条件表
+        AsAlarmTriggerCriteria asAlarmTriggerCriteria = new AsAlarmTriggerCriteria();
+        asAlarmTriggerCriteria.setOrderByClause("triggerIndex asc,id asc");
+        asAlarmTriggerCriteria.createCriteria().andAlarmIdEqualTo(id);
+        List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerMapper.selectByExample(asAlarmTriggerCriteria);
+
+        for (AsAlarmTrigger variable:asAlarmTriggerList){
+            variable.setAlarmId(asAlarm.getId());
+            variable.setId(UidGenerator.getId());
+            variable.setCreateTime(now);
+            variable.setLastUpdateTime(now);
+        }
+
+        asAlarmMapper.insert(asAlarm);
+        asAlarmConstantMapper.batchInsert(asAlarmConstantList);
+        asAlarmQueryMapper.batchInsert(asAlarmQueryList);
+        asAlarmVariableMapper.batchInsert(asAlarmVariableList);
+        asAlarmNotifyMapper.batchInsert(asAlarmNotifyList);
+        asAlarmMsgMapper.batchInsert(asAlarmMsgList);
+        asAlarmTriggerMapper.batchInsert(asAlarmTriggerList);
 
     }
 }

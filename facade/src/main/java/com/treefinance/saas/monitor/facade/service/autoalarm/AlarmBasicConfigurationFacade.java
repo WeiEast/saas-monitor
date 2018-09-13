@@ -81,7 +81,6 @@ public interface AlarmBasicConfigurationFacade {
      */
     MonitorResult<Object> updateAlarmSwitch(Long alarmId);
 
-
-
+    MonitorResult<Boolean> depulicateConfig(Long alarmId);
 
 }
