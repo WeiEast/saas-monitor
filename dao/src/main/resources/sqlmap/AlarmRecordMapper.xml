@@ -739,10 +739,10 @@
         from alarm_record
         <where>
             level = 'error'
-            <if test="startTime != null and startTime != 'null'">
+            <if test="startTime != null">
                 AND datatime <![CDATA[>=]]>  #{startTime}
             </if>
-            <if test="endTime != null and endTime != 'null'">
+            <if test="endTime != null">
                 and dataTime <![CDATA[<]]> #{endTime}
             </if>
             <if test="bizType == 'operator'">
@@ -766,10 +766,10 @@
         from alarm_record
         <where>
             level = 'error'
-            <if test="startTime != null and startTime != 'null'">
+            <if test="startTime != null ">
                 AND datatime <![CDATA[>=]]>  #{startTime}
             </if>
-            <if test="endTime != null and endTime != 'null'">
+            <if test="endTime != null ">
                 and dataTime <![CDATA[<]]> #{endTime}
             </if>
             <if test="bizType == 'operator'">
