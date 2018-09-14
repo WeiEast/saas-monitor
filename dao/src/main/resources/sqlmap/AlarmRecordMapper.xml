@@ -746,13 +746,13 @@
                 and dataTime <![CDATA[<]]> #{endTime}
             </if>
             <if test="bizType == 'operator'">
-                AND (alarmType like '%operator%' or alarmType like '运营商')
+                AND (alarmType like '%operator%' or alarmType like '%运营商%' or alarmType like '%OPERATOR%')
             </if>
             <if test="bizType == 'ecommerce'">
-                AND (alarmType like '%ecommerce%' or alarmType like '电商')
+                AND (alarmType like '%ecommerce%' or alarmType like '%电商%' OR alarmType like '%ECOMMERCE%' )
             </if>
             <if test="bizType == 'email'">
-                AND (alarmType like '%email%' or alarmType like '邮箱')
+                AND (alarmType like '%email%' or alarmType like '%邮箱%' OR alarmType like '%EMAIL%')
             </if>
 
         </where>
@@ -773,13 +773,13 @@
                 and dataTime <![CDATA[<]]> #{endTime}
             </if>
             <if test="bizType == 'operator'">
-                AND (alarmType like '%operator%' or alarmType like '运营商')
+                AND (alarmType like '%operator%' or alarmType like '%运营商%' or alarmType like '%OPERATOR%')
             </if>
             <if test="bizType == 'ecommerce'">
-                AND (alarmType like '%ecommerce%' or alarmType like '电商')
+                AND (alarmType like '%ecommerce%' or alarmType like '%电商%' OR alarmType like '%ECOMMERCE%' )
             </if>
             <if test="bizType == 'email'">
-                AND (alarmType like '%email%' or alarmType like '邮箱')
+                AND (alarmType like '%email%' or alarmType like '%邮箱%' OR alarmType like '%EMAIL%')
             </if>
         </where>
         order by (dataTime) desc;
