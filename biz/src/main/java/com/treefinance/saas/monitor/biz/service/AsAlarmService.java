@@ -28,9 +28,9 @@ public interface AsAlarmService {
 
     void updateAlarmSwitch(Long alarmId);
 
-    void copyAlarm(Long id);
-
-
     void deleteById(Long alarmId);
+
+
+    void copyAlarm(Long id);
 
 }

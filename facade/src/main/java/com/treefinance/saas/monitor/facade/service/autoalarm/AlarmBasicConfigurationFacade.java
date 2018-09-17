@@ -81,12 +81,12 @@ public interface AlarmBasicConfigurationFacade {
      */
     MonitorResult<Object> updateAlarmSwitch(Long alarmId);
 
-    MonitorResult<Boolean> depulicateConfig(Long alarmId);
 
     /**
      * @param alarmId 编号
      *
      * */
     MonitorResult<Boolean> deleteById(Long alarmId);
+    MonitorResult<Boolean> duplicateConfig(Long alarmId);
 
 }
