@@ -2,7 +2,9 @@ package com.treefinance.saas.monitor.facade.service;
 
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
+import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
+import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.facade.domain.request.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,5 +86,19 @@ public class AlarmRecordFacadeTest extends BaseTest {
     public void queryAlarmTypeList() {
         result = alarmRecordFacade.queryAlarmTypeList();
     }
+
+    @Test
+    public void queryAlarmRecordInDashBoard(){
+
+        AlarmRecordDashBoardRequest request = new AlarmRecordDashBoardRequest();
+
+        request.setBizType(EBizType.OPERATOR.getCode());
+        request.setEndTime(null);
+        request.setStartTime(null);
+        request.setSaasEnv((byte)ESaasEnv.ALL.getValue());
+
+        result = alarmRecordFacade.queryAlarmRecordInDashBoard(request);
+    }
+
 
 }

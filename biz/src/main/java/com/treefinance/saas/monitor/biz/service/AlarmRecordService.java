@@ -7,6 +7,7 @@ import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
 import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
 import com.treefinance.saas.monitor.dao.entity.WorkOrderLog;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -57,6 +58,7 @@ public interface AlarmRecordService {
      * @param level   预警等级
      * @param summary 摘要信息
      * @param status  状态
+
      * @return 满足条件的最早的记录
      */
     AlarmRecord getFirstStatusRecord(EAlarmLevel level, String summary, EAlarmRecordStatus status);
@@ -88,4 +90,17 @@ public interface AlarmRecordService {
      */
     void repairAlarmRecord(AlarmWorkOrder order, AlarmRecord record, WorkOrderLog orderLog);
 
+
+    /**
+     * 查询当天error等级的预警和记录
+     *
+     *
+     * @param bizType
+     * @param startTime
+     * @param endTime*/
+    List<AlarmRecord> queryTodayErrorList(String bizType, Date startTime, Date endTime,Integer offset,Integer pageSize);
+
+
+
+    Integer countAlarmRecordInBizType(String bizType, Date startTime, Date endTime);
 }

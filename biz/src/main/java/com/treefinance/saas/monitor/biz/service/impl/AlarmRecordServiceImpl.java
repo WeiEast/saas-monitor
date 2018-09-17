@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -102,5 +103,16 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
         if(orderLog != null){
             workOrderLogMapper.insert(orderLog);
         }
+    }
+
+
+    @Override
+    public List<AlarmRecord> queryTodayErrorList(String bizType, Date startTime, Date endTime, Integer offset, Integer pageSize) {
+        return alarmRecordMapper.queryAlarmRecordInBizType(bizType, startTime, endTime, offset, pageSize);
+    }
+
+    @Override
+    public Integer countAlarmRecordInBizType(String bizType, Date startTime, Date endTime) {
+        return alarmRecordMapper.countInBizType(bizType, startTime, endTime);
     }
 }

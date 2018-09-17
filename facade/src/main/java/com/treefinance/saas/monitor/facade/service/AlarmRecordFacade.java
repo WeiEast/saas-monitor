@@ -78,4 +78,6 @@ public interface AlarmRecordFacade {
      */
     MonitorResult<List<AlarmRecordStatisticRO>> queryAlarmStatistic(AlarmRecordStatRequest recordStatRequest);
 
+    MonitorResult<List<AlarmRecordRO>> queryAlarmRecordInDashBoard(AlarmRecordDashBoardRequest request);
+
 }

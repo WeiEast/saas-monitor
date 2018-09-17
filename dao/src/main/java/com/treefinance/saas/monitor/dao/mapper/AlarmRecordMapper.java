@@ -2,9 +2,11 @@ package com.treefinance.saas.monitor.dao.mapper;
 
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.RowBounds;
+
+import java.util.Date;
+import java.util.List;
 
 public interface AlarmRecordMapper {
     /**
@@ -174,4 +176,14 @@ public interface AlarmRecordMapper {
      * @mbg.generated Tue Sep 04 15:37:29 CST 2018
      */
     int updateByPrimaryKey(AlarmRecord record);
+
+
+    List<AlarmRecord> queryAlarmRecordInBizType(@Param("bizType")String bizType, @Param("startTime")Date startTime,
+                                                @Param("endTime")Date endTime,@Param("offset")int offset,@Param
+                                                        ("pageSize")int pageSize);
+
+    Integer countInBizType(@Param("bizType")String bizType, @Param("startTime")Date startTime,
+                           @Param("endTime")Date endTime);
+
+
 }
