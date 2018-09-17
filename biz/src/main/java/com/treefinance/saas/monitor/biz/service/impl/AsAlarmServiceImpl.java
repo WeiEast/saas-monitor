@@ -280,19 +280,44 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         AsAlarm asAlarm = asAlarmMapper.selectByPrimaryKey(alarmId);
 
         if (("off").equals(asAlarm.getAlarmSwitch())) {
-
             asAlarm.setAlarmSwitch("on");
             asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
             alaramJobService.startJob(alarmId);
-
         } else {
             asAlarm.setAlarmSwitch("off");
             asAlarmMapper.updateByPrimaryKeySelective(asAlarm);
             alaramJobService.stopJob(alarmId);
-
-
         }
+    }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteById(Long alarmId) {
+        asAlarmMapper.deleteByPrimaryKey(alarmId);
+
+        AsAlarmConstantCriteria constantCriteria = new AsAlarmConstantCriteria();
+        constantCriteria.createCriteria().andAlarmIdEqualTo(alarmId);
+        asAlarmConstantMapper.deleteByExample(constantCriteria);
+
+        AsAlarmQueryCriteria queryCriteria = new AsAlarmQueryCriteria();
+        queryCriteria.createCriteria().andAlarmIdEqualTo(alarmId);
+        asAlarmQueryMapper.deleteByExample(queryCriteria);
+
+        AsAlarmVariableCriteria variableCriteria = new AsAlarmVariableCriteria();
+        variableCriteria.createCriteria().andAlarmIdEqualTo(alarmId);
+        asAlarmVariableMapper.deleteByExample(variableCriteria);
+
+        AsAlarmNotifyCriteria asAlarmNotifyCriteria = new AsAlarmNotifyCriteria();
+        asAlarmNotifyCriteria.createCriteria().andAlarmIdEqualTo(alarmId);
+        asAlarmNotifyMapper.deleteByExample(asAlarmNotifyCriteria);
+
+        AsAlarmTriggerCriteria asAlarmTriggerCriteria = new AsAlarmTriggerCriteria();
+        asAlarmTriggerCriteria.createCriteria().andAlarmIdEqualTo(alarmId);
+        asAlarmTriggerMapper.deleteByExample(asAlarmTriggerCriteria);
+
+        AsAlarmMsgCriteria asAlarmMsgCriteria = new AsAlarmMsgCriteria();
+        asAlarmMsgCriteria.createCriteria().andAlarmIdEqualTo(alarmId);
+        asAlarmMsgMapper.deleteByExample(asAlarmMsgCriteria);
 
     }
 }
