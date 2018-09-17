@@ -290,4 +290,13 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         asAlarmService.updateAlarmSwitch(alarmId);
         return MonitorResultBuilder.build();
     }
+
+
+    @Override
+    public MonitorResult<Boolean> depulicateConfig(Long alarmId) {
+
+        asAlarmService.copyAlarm(alarmId);
+
+        return MonitorResultBuilder.build(Boolean.TRUE);
+    }
 }

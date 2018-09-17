@@ -87,5 +87,6 @@ public interface AlarmBasicConfigurationFacade {
      *
      * */
     MonitorResult<Boolean> deleteById(Long alarmId);
+    MonitorResult<Boolean> depulicateConfig(Long alarmId);
 
 }
