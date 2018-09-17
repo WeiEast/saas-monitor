@@ -30,4 +30,7 @@ public interface AsAlarmService {
 
     void copyAlarm(Long id);
 
+
+    void deleteById(Long alarmId);
+
 }
