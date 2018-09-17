@@ -7,6 +7,7 @@ import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
 import com.treefinance.saas.monitor.biz.service.*;
+import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
@@ -293,9 +294,23 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
 
 
     @Override
-    public MonitorResult<Boolean> depulicateConfig(Long alarmId) {
+    public MonitorResult<Boolean> duplicateConfig(Long alarmId) {
 
         asAlarmService.copyAlarm(alarmId);
+
+        return MonitorResultBuilder.build(Boolean.TRUE);
+    }
+
+    @Override
+    public MonitorResult<Boolean> deleteById(Long alarmId) {
+
+        AsAlarm asAlarm = asAlarmService.getAsAlarmByPrimaryKey(alarmId);
+
+        if(asAlarm == null || AlarmConstants.SWITCH_OFF.equals(asAlarm.getAlarmSwitch())){
+            return MonitorResultBuilder.build("改预警配置不存在或者正在开启状态");
+        }
+
+        asAlarmService.deleteById(alarmId);
 
         return MonitorResultBuilder.build(Boolean.TRUE);
     }

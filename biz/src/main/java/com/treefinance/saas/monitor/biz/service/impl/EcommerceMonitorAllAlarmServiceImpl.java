@@ -122,7 +122,9 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
 
         String[] bounds = boundStr.split(",");
 
+        //15
         BigDecimal warning = new BigDecimal(Integer.valueOf(bounds[0]));
+        //10
         BigDecimal info = new BigDecimal(Integer.valueOf(bounds[1]));
 
 
