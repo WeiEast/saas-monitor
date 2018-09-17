@@ -78,14 +78,27 @@ public class OperatorStatAccessServiceImpl implements OperatorStatAccessService 
 
             }
 
-            model.average = new BigDecimal(model.succCount).divide(new BigDecimal(model.totalCount), 2,
-                    RoundingMode.HALF_UP);
+            if(model.totalCount == 0){
+                model.average = BigDecimal.ZERO;
+            }else {
+                model.average = new BigDecimal(model.succCount).divide(new BigDecimal(model.totalCount), 2,
+                        RoundingMode.HALF_UP);
+            }
 
-            model.rateToday = new BigDecimal(model.succToday).divide(new BigDecimal(model.totalToday), 2,
-                    RoundingMode.HALF_UP);
+            if(model.totalToday == 0){
+                model.rateToday = BigDecimal.ZERO;
+            }else {
+                model.rateToday = new BigDecimal(model.succToday).divide(new BigDecimal(model.totalToday), 2,
+                        RoundingMode.HALF_UP);
+            }
+            BigDecimal compare;
+            if(model.average.equals(BigDecimal.ZERO)){
+                compare = BigDecimal.ZERO;
+            }else {
+                compare = model.rateToday.subtract(model.average).divide(model.average, 2, RoundingMode
+                        .HALF_UP);
+            }
 
-            BigDecimal compare = model.rateToday.subtract(model.average).divide(model.average, 2, RoundingMode
-                    .HALF_UP);
 
             if (compare.compareTo(new BigDecimal(rate)) < 0) {
                 model.increase = compare;
