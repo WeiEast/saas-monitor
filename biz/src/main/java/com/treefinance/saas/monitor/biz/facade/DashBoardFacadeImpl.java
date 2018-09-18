@@ -53,10 +53,8 @@ public class DashBoardFacadeImpl implements DashBoardFacade {
 
         AppTaskStatResult appTaskStatResult = allBizTypeStatAccessService.getAppTaskStatResult(bizType,saasEnv);
 
-        // TODO: 18/9/11 appTaskStatResult get method service and db include;
         List<String> list = operatorStatAccessService.queryDecreasedOperator(saasEnv);
 
-        // TODO: 18/9/11 assemble returnResult ;
         Integer count = alarmRecordService.countAlarmRecordInBizType(bizType.name().toLowerCase(),
                 MonitorDateUtils.getOClockTime(new Date()), new Date());
 
