@@ -256,6 +256,8 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
                     .HALF_UP).multiply(HUNDRED);
         }
 
+        logger.info("计算商户任务数据：{}", JSON.toJSONString(model));
+
 
         appTaskStatResult.setTaskNumYesterday(model.totalYesterday);
         appTaskStatResult.setTaskNumToday(model.totalToday);
