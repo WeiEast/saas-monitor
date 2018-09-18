@@ -33,6 +33,7 @@ import java.util.List;
 public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessService {
 
     private static final Logger logger = LoggerFactory.getLogger(AllBizTypeStatAccessServiceImpl.class);
+    private static final BigDecimal HUNDRED = new BigDecimal(100);
 
     @Autowired
     OperatorStatAccessMapper operatorStatAccessMapper;
@@ -147,28 +148,28 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
             model.rateToday = BigDecimal.ZERO;
         }else{
             model.rateToday = new BigDecimal(model.succToday).divide(new BigDecimal(model.totalToday), 2,
-                    RoundingMode.HALF_UP);
+                    RoundingMode.HALF_UP).multiply(HUNDRED);
         }
 
         if(model.totalYesterday == 0){
             model.rateYesterday = BigDecimal.ZERO;
         }else{
             model.rateYesterday = new BigDecimal(model.succYesterday).divide(new BigDecimal(model.totalYesterday), 2,
-                    RoundingMode.HALF_UP);
+                    RoundingMode.HALF_UP).multiply(HUNDRED);
         }
 
         if(model.totalCount == 0){
             model.average = BigDecimal.ZERO;
         }else {
             model.average = new BigDecimal(model.succCount).divide(new BigDecimal(model.totalCount), 2,
-                    RoundingMode.HALF_UP);
+                    RoundingMode.HALF_UP).multiply(HUNDRED);
         }
 
         if(model.average.equals(BigDecimal.ZERO)){
             model.increase = BigDecimal.ZERO;
         }else {
             model.increase = model.rateToday.subtract(model.average).divide(model.average, 2, RoundingMode
-                    .HALF_UP);
+                    .HALF_UP).multiply(HUNDRED);
         }
     }
 
@@ -247,14 +248,14 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
         }else {
             BigDecimal average = new BigDecimal(model.totalCount).divide(new BigDecimal(count), 2, RoundingMode.HALF_UP);
             compare = new BigDecimal(model.totalToday).subtract(average).divide(average, 2, RoundingMode
-                    .HALF_UP);
+                    .HALF_UP).multiply(HUNDRED);
         }
 
 
         appTaskStatResult.setTaskNumYesterday(model.totalYesterday);
         appTaskStatResult.setTaskNumToday(model.totalToday);
         appTaskStatResult.setIsIncrease(compare.compareTo(BigDecimal.ZERO) >= 0 ? 1 : 0);
-        appTaskStatResult.setCompareRate(compare.toString() + "%");
+        appTaskStatResult.setCompareRate(String.valueOf(Math.abs(compare.doubleValue())+ "%"));
 
         return appTaskStatResult;
     }

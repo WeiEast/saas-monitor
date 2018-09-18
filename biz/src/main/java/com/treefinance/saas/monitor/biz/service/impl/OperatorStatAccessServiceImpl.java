@@ -86,7 +86,7 @@ public class OperatorStatAccessServiceImpl implements OperatorStatAccessService 
             }
 
             if(model.totalToday == 0){
-                model.rateToday = BigDecimal.ZERO;
+                continue;
             }else {
                 model.rateToday = new BigDecimal(model.succToday).divide(new BigDecimal(model.totalToday), 2,
                         RoundingMode.HALF_UP);
