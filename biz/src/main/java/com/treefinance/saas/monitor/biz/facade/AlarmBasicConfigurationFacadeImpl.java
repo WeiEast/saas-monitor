@@ -306,7 +306,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
 
         AsAlarm asAlarm = asAlarmService.getAsAlarmByPrimaryKey(alarmId);
 
-        if(asAlarm == null || AlarmConstants.SWITCH_OFF.equals(asAlarm.getAlarmSwitch())){
+        if(asAlarm == null || AlarmConstants.SWITCH_ON.equals(asAlarm.getAlarmSwitch())){
             return MonitorResultBuilder.build("改预警配置不存在或者正在开启状态");
         }
 

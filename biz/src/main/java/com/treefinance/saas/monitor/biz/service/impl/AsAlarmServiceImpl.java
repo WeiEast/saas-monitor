@@ -58,6 +58,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
     @Override
     public List<AsAlarm> queryPagingList(AlarmBasicConfigurationRequest request) {
         AsAlarmCriteria criteria = new AsAlarmCriteria();
+        criteria.setOrderByClause("alarmSwitch desc,createTime desc");
         AsAlarmCriteria.Criteria innerCriteria = criteria.createCriteria();
         if (!StringUtils.isEmpty(request.getName())) {
             innerCriteria.andNameLike(request.getName());
