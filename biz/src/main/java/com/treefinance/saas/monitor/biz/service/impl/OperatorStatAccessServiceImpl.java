@@ -92,7 +92,7 @@ public class OperatorStatAccessServiceImpl implements OperatorStatAccessService 
                         RoundingMode.HALF_UP);
             }
             BigDecimal compare;
-            if(model.average.equals(BigDecimal.ZERO)){
+            if(model.average.compareTo(BigDecimal.ZERO) <= 0){
                 compare = BigDecimal.ZERO;
             }else {
                 compare = model.rateToday.subtract(model.average).divide(model.average, 2, RoundingMode

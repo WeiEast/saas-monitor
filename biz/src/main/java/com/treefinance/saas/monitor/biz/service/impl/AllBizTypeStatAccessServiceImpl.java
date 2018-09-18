@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.biz.service.AllBizTypeStatAccessService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
@@ -52,9 +53,10 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
         WholeConversionResult result = new WholeConversionResult();
 
         Date now = new Date();
+
         Date yesterday = MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -1);
 
-        Date start = MonitorDateUtils.getOClockTime(MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -7));
+        Date start = MonitorDateUtils.getDayStartTime(MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -7));
 
         CalculateModel model = new CalculateModel();
 
@@ -165,12 +167,15 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
                     RoundingMode.HALF_UP).multiply(HUNDRED);
         }
 
-        if(model.average.equals(BigDecimal.ZERO)){
+        if(model.average.compareTo(BigDecimal.ZERO) <= 0){
             model.increase = BigDecimal.ZERO;
         }else {
             model.increase = model.rateToday.subtract(model.average).divide(model.average, 2, RoundingMode
                     .HALF_UP).multiply(HUNDRED);
         }
+
+        logger.info("计算工具当前数据model={}", JSON.toJSONString(model));
+
     }
 
     private void getEcommerceBizCalcModel(Date now, Date yesterday, Date start, CalculateModel model, ESaasEnv eSaasEnv) {
@@ -284,6 +289,50 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
 
         BigDecimal increase;
 
+
+        public String getName() {
+            return name;
+        }
+
+        public int getSuccCount() {
+            return succCount;
+        }
+
+        public int getTotalCount() {
+            return totalCount;
+        }
+
+        public int getTotalToday() {
+            return totalToday;
+        }
+
+        public int getSuccToday() {
+            return succToday;
+        }
+
+        public BigDecimal getRateToday() {
+            return rateToday;
+        }
+
+        public int getTotalYesterday() {
+            return totalYesterday;
+        }
+
+        public int getSuccYesterday() {
+            return succYesterday;
+        }
+
+        public BigDecimal getRateYesterday() {
+            return rateYesterday;
+        }
+
+        public BigDecimal getAverage() {
+            return average;
+        }
+
+        public BigDecimal getIncrease() {
+            return increase;
+        }
     }
 
 
