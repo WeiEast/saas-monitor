@@ -216,7 +216,7 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
         Date now = new Date();
         Date yesterday = MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -1);
 
-        Date start = MonitorDateUtils.getOClockTime(MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -7));
+        Date start = MonitorDateUtils.getDayStartTime(MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -7));
 
         Integer dataType = EBizType.OPERATOR.equals(bizType) ? 4 : EBizType.ECOMMERCE.equals(bizType) ? 2 : EBizType.EMAIL.equals(bizType) ? 3 : 0;
 
@@ -252,10 +252,11 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
             compare = BigDecimal.ZERO;
         }else {
             BigDecimal average = new BigDecimal(model.totalCount).divide(new BigDecimal(count), 2, RoundingMode.HALF_UP);
-            compare = new BigDecimal(model.totalToday).subtract(average).divide(average, 2, RoundingMode
+            compare = new BigDecimal(model.totalToday).subtract(average).divide(average, 4, RoundingMode
                     .HALF_UP).multiply(HUNDRED);
         }
 
+        logger.info("商户任务数的计算model:{},count:{}", model,count);
 
         appTaskStatResult.setTaskNumYesterday(model.totalYesterday);
         appTaskStatResult.setTaskNumToday(model.totalToday);
