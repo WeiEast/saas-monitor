@@ -218,14 +218,14 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
 
         Date start = MonitorDateUtils.getDayStartTime(MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -7));
 
-        Integer dataType = EBizType.OPERATOR.equals(bizType) ? 4 : EBizType.ECOMMERCE.equals(bizType) ? 2 : EBizType.EMAIL.equals(bizType) ? 3 : 0;
+        Byte dataType = bizType.getCode();
 
         AppTaskStatResult appTaskStatResult = new AppTaskStatResult();
 
         MerchantStatDayAccessCriteria criteria = new MerchantStatDayAccessCriteria();
 
         criteria.createCriteria().andAppIdEqualTo(AlarmConstants.VIRTUAL_TOTAL_STAT_APP_ID).andDataTypeEqualTo
-                (dataType.byteValue()).andSaasEnvEqualTo((byte) eSaasEnv.getValue()).andDataTimeGreaterThanOrEqualTo(start);
+                (dataType).andSaasEnvEqualTo((byte) eSaasEnv.getValue()).andDataTimeGreaterThanOrEqualTo(start);
 
         List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
 
