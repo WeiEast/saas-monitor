@@ -88,6 +88,15 @@ public class MonitorDateUtils {
         }
         return date;
     }
+    public static Date parse(String dateStr,String pattern) {
+        Date date = null;
+        try {
+            date = DateUtils.parseDate(dateStr, pattern);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
 
     /**
      * 获取当前日期开始时间
