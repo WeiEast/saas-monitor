@@ -149,29 +149,32 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
         if(model.totalToday == 0){
             model.rateToday = BigDecimal.ZERO;
         }else{
-            model.rateToday = new BigDecimal(model.succToday).divide(new BigDecimal(model.totalToday), 4,
-                    RoundingMode.HALF_UP).multiply(HUNDRED);
+            model.rateToday = new BigDecimal(model.succToday).multiply(HUNDRED).divide(new BigDecimal(model
+                            .totalToday), 2, RoundingMode.HALF_UP);
         }
 
         if(model.totalYesterday == 0){
             model.rateYesterday = BigDecimal.ZERO;
         }else{
-            model.rateYesterday = new BigDecimal(model.succYesterday).divide(new BigDecimal(model.totalYesterday), 4,
-                    RoundingMode.HALF_UP).multiply(HUNDRED);
+            model.rateYesterday = new BigDecimal(model.succYesterday).multiply(HUNDRED).divide(new BigDecimal(model
+                            .totalYesterday), 2,
+                    RoundingMode.HALF_UP);
         }
 
         if(model.totalCount == 0){
             model.average = BigDecimal.ZERO;
         }else {
-            model.average = new BigDecimal(model.succCount).divide(new BigDecimal(model.totalCount), 4,
-                    RoundingMode.HALF_UP).multiply(HUNDRED);
+            model.average = new BigDecimal(model.succCount).multiply(HUNDRED).divide(new BigDecimal(model.totalCount)
+                    , 2,
+                    RoundingMode.HALF_UP);
         }
 
         if(model.average.compareTo(BigDecimal.ZERO) <= 0){
             model.increase = BigDecimal.ZERO;
         }else {
-            model.increase = model.rateToday.subtract(model.average).divide(model.average, 4, RoundingMode
-                    .HALF_UP).multiply(HUNDRED);
+            model.increase = model.rateToday.subtract(model.average).multiply(HUNDRED).divide(model.average, 2,
+                    RoundingMode
+                    .HALF_UP);
         }
 
         logger.info("计算工具当前数据model={}", JSON.toJSONString(model));
