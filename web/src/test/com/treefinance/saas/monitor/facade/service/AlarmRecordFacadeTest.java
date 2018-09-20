@@ -5,6 +5,7 @@ import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
+import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.facade.domain.request.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -93,12 +94,15 @@ public class AlarmRecordFacadeTest extends BaseTest {
         AlarmRecordDashBoardRequest request = new AlarmRecordDashBoardRequest();
 
         request.setBizType(EBizType.OPERATOR.getCode());
-        request.setEndTime(null);
-        request.setStartTime(null);
+        request.setEndTime(MonitorDateUtils.parse("2018-09-20","yyyy-MM-dd"));
+        request.setStartTime(MonitorDateUtils.parse("2018-09-13","yyyy-MM-dd"));
         request.setSaasEnv((byte)ESaasEnv.ALL.getValue());
 
         result = alarmRecordFacade.queryAlarmRecordInDashBoard(request);
     }
+
+
+
 
 
 }

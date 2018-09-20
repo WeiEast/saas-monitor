@@ -607,6 +607,10 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         Integer count = alarmRecordService.countAlarmRecordInBizType(bizType.name().toLowerCase(), request.getStartTime(), request.getEndTime());
 
+        if(request.getEndTime() != null){
+            request.setEndTime(MonitorDateUtils.getDayEndTime(request.getEndTime()));
+        }
+
         List<AlarmRecord> list = alarmRecordService.queryTodayErrorList(bizType.name().toLowerCase(), request
                         .getStartTime(), request.getEndTime(),request.getOffset(),request.getPageSize());
 
