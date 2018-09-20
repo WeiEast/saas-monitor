@@ -149,14 +149,14 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
         if(model.totalToday == 0){
             model.rateToday = BigDecimal.ZERO;
         }else{
-            model.rateToday = new BigDecimal(model.succToday).divide(new BigDecimal(model.totalToday), 4,
+            model.rateToday = new BigDecimal(model.succToday).divide(new BigDecimal(model.totalToday), 2,
                     RoundingMode.HALF_UP).multiply(HUNDRED);
         }
 
         if(model.totalYesterday == 0){
             model.rateYesterday = BigDecimal.ZERO;
         }else{
-            model.rateYesterday = new BigDecimal(model.succYesterday).divide(new BigDecimal(model.totalYesterday), 4,
+            model.rateYesterday = new BigDecimal(model.succYesterday).divide(new BigDecimal(model.totalYesterday), 2,
                     RoundingMode.HALF_UP).multiply(HUNDRED);
         }
 

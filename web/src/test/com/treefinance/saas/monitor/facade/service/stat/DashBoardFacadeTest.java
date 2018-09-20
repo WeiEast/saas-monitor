@@ -26,7 +26,7 @@ public class DashBoardFacadeTest extends BaseTest{
     public void queryDashboardResult() {
         DashboardStatRequest request = new DashboardStatRequest();
 
-        request.setBizType(EBizType.ECOMMERCE.getCode());
+        request.setBizType(EBizType.OPERATOR.getCode());
         request.setSaasEnv((byte)ESaasEnv.ALL.getValue());
 
 
