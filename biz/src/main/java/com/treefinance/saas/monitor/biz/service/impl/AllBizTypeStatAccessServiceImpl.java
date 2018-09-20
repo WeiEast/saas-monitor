@@ -149,28 +149,28 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
         if(model.totalToday == 0){
             model.rateToday = BigDecimal.ZERO;
         }else{
-            model.rateToday = new BigDecimal(model.succToday).divide(new BigDecimal(model.totalToday), 2,
+            model.rateToday = new BigDecimal(model.succToday).divide(new BigDecimal(model.totalToday), 4,
                     RoundingMode.HALF_UP).multiply(HUNDRED);
         }
 
         if(model.totalYesterday == 0){
             model.rateYesterday = BigDecimal.ZERO;
         }else{
-            model.rateYesterday = new BigDecimal(model.succYesterday).divide(new BigDecimal(model.totalYesterday), 2,
+            model.rateYesterday = new BigDecimal(model.succYesterday).divide(new BigDecimal(model.totalYesterday), 4,
                     RoundingMode.HALF_UP).multiply(HUNDRED);
         }
 
         if(model.totalCount == 0){
             model.average = BigDecimal.ZERO;
         }else {
-            model.average = new BigDecimal(model.succCount).divide(new BigDecimal(model.totalCount), 2,
+            model.average = new BigDecimal(model.succCount).divide(new BigDecimal(model.totalCount), 4,
                     RoundingMode.HALF_UP).multiply(HUNDRED);
         }
 
         if(model.average.compareTo(BigDecimal.ZERO) <= 0){
             model.increase = BigDecimal.ZERO;
         }else {
-            model.increase = model.rateToday.subtract(model.average).divide(model.average, 2, RoundingMode
+            model.increase = model.rateToday.subtract(model.average).divide(model.average, 4, RoundingMode
                     .HALF_UP).multiply(HUNDRED);
         }
 
@@ -251,7 +251,8 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
         if(count == 0){
             compare = BigDecimal.ZERO;
         }else {
-            BigDecimal average = new BigDecimal(model.totalCount).divide(new BigDecimal(count), 2, RoundingMode.HALF_UP);
+            BigDecimal average = new BigDecimal(model.totalCount).divide(new BigDecimal(count), 4, RoundingMode
+                    .HALF_UP);
             compare = new BigDecimal(model.totalToday).subtract(average).divide(average, 4, RoundingMode
                     .HALF_UP).multiply(HUNDRED);
         }

@@ -33,7 +33,7 @@ public class OperatorStatAccessServiceImpl implements OperatorStatAccessService 
     protected DiamondConfig diamondConfig;
 
 
-    double rate = -0.1D;
+    private final double RATE = -0.1D;
 
 
     @Override
@@ -81,26 +81,26 @@ public class OperatorStatAccessServiceImpl implements OperatorStatAccessService 
             if(model.totalCount == 0){
                 model.average = BigDecimal.ZERO;
             }else {
-                model.average = new BigDecimal(model.succCount).divide(new BigDecimal(model.totalCount), 2,
+                model.average = new BigDecimal(model.succCount).divide(new BigDecimal(model.totalCount), 4,
                         RoundingMode.HALF_UP);
             }
 
             if(model.totalToday == 0){
                 continue;
             }else {
-                model.rateToday = new BigDecimal(model.succToday).divide(new BigDecimal(model.totalToday), 2,
+                model.rateToday = new BigDecimal(model.succToday).divide(new BigDecimal(model.totalToday), 4,
                         RoundingMode.HALF_UP);
             }
             BigDecimal compare;
             if(model.average.compareTo(BigDecimal.ZERO) <= 0){
                 compare = BigDecimal.ZERO;
             }else {
-                compare = model.rateToday.subtract(model.average).divide(model.average, 2, RoundingMode
+                compare = model.rateToday.subtract(model.average).divide(model.average, 4, RoundingMode
                         .HALF_UP);
             }
 
 
-            if (compare.compareTo(new BigDecimal(rate)) < 0) {
+            if (compare.compareTo(new BigDecimal(RATE)) < 0) {
                 model.increase = compare;
                 model.name = name;
                 orderedList.add(model);

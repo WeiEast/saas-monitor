@@ -56,7 +56,7 @@ public class DashBoardFacadeImpl implements DashBoardFacade {
         List<String> list = operatorStatAccessService.queryDecreasedOperator(saasEnv);
 
         Integer count = alarmRecordService.countAlarmRecordInBizType(bizType.name().toLowerCase(),
-                MonitorDateUtils.getOClockTime(new Date()), new Date());
+                MonitorDateUtils.getDayStartTime(new Date()), new Date());
 
 
         result.setWholeConversionResult(wholeConversionResult);
