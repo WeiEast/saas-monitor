@@ -8,10 +8,13 @@ import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.alarm.job.AlarmJob;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
 import com.treefinance.saas.monitor.biz.autostat.elasticjob.ElasticSimpleJobService;
+import com.treefinance.saas.monitor.biz.autostat.model.JobSettings;
 import com.treefinance.saas.monitor.common.domain.Constants;
 import com.treefinance.saas.monitor.common.enumeration.ESwitch;
 import com.treefinance.saas.monitor.dao.entity.AsAlarm;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmCriteria;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -61,10 +64,18 @@ public class AlaramJobService implements SimpleJob, InitializingBean {
             logger.info("start job failed : job is off  alarm={}", JSON.toJSONString(alarm));
             return;
         }
+        String lastUpdateTime = DateFormatUtils.format(alarm.getLastUpdateTime(), "yyyy-MM-dd HH:mm:ss");
+        // 根据最近的时间戳来判断任务是否更新
+        JobSettings jobSettings = elasticSimpleJobService.getJobSettings(autoJobName);
+        if (lastUpdateTime.equals(jobSettings.getJobParameter())) {
+            logger.info("start job interrupt : job is already start alarm={},jobSettings={}", JSON.toJSONString(alarm), JSON.toJSONString(jobSettings));
+            return;
+        }
         JobCoreConfiguration statCalculateJobConf = JobCoreConfiguration
                 .newBuilder(autoJobName, alarm.getRunInterval(), 1)
                 .failover(true)
                 .description(alarm.getName())
+                .jobParameter(lastUpdateTime)
                 .build();
         elasticSimpleJobService.createJob(new AlarmJob(alarmId, alarmConfigService, alarmHandlerChain), statCalculateJobConf);
         logger.info("start job success : alarm={}", JSON.toJSONString(alarm));

@@ -2,6 +2,7 @@ package com.treefinance.saas.monitor.biz.autostat.elasticjob;
 
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
+import com.treefinance.saas.monitor.biz.autostat.model.JobSettings;
 
 import java.util.List;
 
@@ -68,4 +69,12 @@ public interface ElasticSimpleJobService {
      * @return
      */
     boolean exists(String jobName);
+
+    /**
+     * 获取job配置信息
+     *
+     * @param jobName
+     * @return
+     */
+    JobSettings getJobSettings(String jobName);
 }

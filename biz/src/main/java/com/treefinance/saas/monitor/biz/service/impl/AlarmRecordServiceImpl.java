@@ -76,9 +76,15 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveAlarmRecords(AlarmWorkOrder order, AlarmRecord record, WorkOrderLog orderLog) {
-        alarmRecordMapper.insert(record);
-        workOrderLogMapper.insert(orderLog);
-        workOrderMapper.insert(order);
+        if (record != null) {
+            alarmRecordMapper.insert(record);
+        }
+        if (orderLog != null) {
+            workOrderLogMapper.insert(orderLog);
+        }
+        if (order != null) {
+            workOrderMapper.insert(order);
+        }
     }
 
     @Override
@@ -97,10 +103,10 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
     public void repairAlarmRecord(AlarmWorkOrder order, AlarmRecord record, WorkOrderLog orderLog) {
         alarmRecordMapper.updateByPrimaryKey(record);
 
-        if(order!= null){
+        if (order != null) {
             workOrderMapper.updateByPrimaryKey(order);
         }
-        if(orderLog != null){
+        if (orderLog != null) {
             workOrderLogMapper.insert(orderLog);
         }
     }

@@ -12,6 +12,7 @@ import com.treefinance.saas.monitor.biz.alarm.service.handler.Order;
 import com.treefinance.saas.monitor.biz.service.AlarmRecordService;
 import com.treefinance.saas.monitor.biz.service.AlarmWorkOrderService;
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
 import com.treefinance.saas.monitor.dao.entity.*;
@@ -77,24 +78,28 @@ public class WorkOrderHandler implements AlarmHandler {
                     alarmRecord.setContent(triggerRecord.getAlarmMessage());
                     alarmRecord.setStartTime(now);
 
-                    AlarmWorkOrder workOrder = new AlarmWorkOrder();
-                    workOrder.setCreateTime(now);
-                    workOrder.setDutyName(dutyNames);
-                    workOrder.setId(UidGenerator.getId());
-                    workOrder.setLastUpdateTime(now);
-                    workOrder.setRecordId(recordId);
-                    workOrder.setProcessorName("system");
-                    workOrder.setStatus(EAlarmRecordStatus.UNPROCESS.getCode());
-                    workOrder.setRemark("创建操作工单");
+                    AlarmWorkOrder workOrder = null;
+                    WorkOrderLog orderLog = null;
+                    if (!EAlarmLevel.info.name().equalsIgnoreCase(triggerRecord.getAlarmLevel())) {
+                        workOrder = new AlarmWorkOrder();
+                        workOrder.setCreateTime(now);
+                        workOrder.setDutyName(dutyNames);
+                        workOrder.setId(UidGenerator.getId());
+                        workOrder.setLastUpdateTime(now);
+                        workOrder.setRecordId(recordId);
+                        workOrder.setProcessorName("system");
+                        workOrder.setStatus(EAlarmRecordStatus.UNPROCESS.getCode());
+                        workOrder.setRemark("创建操作工单");
 
-                    WorkOrderLog orderLog = new WorkOrderLog();
-                    orderLog.setId(UidGenerator.getId());
-                    orderLog.setOrderId(workOrder.getId());
-                    orderLog.setRecordId(recordId);
-                    orderLog.setOpName("system");
-                    orderLog.setOpDesc("创建操作工单");
-                    orderLog.setCreateTime(now);
-                    orderLog.setLastUpdateTime(now);
+                        orderLog = new WorkOrderLog();
+                        orderLog.setId(UidGenerator.getId());
+                        orderLog.setOrderId(workOrder.getId());
+                        orderLog.setRecordId(recordId);
+                        orderLog.setOpName("system");
+                        orderLog.setOpDesc("创建操作工单");
+                        orderLog.setCreateTime(now);
+                        orderLog.setLastUpdateTime(now);
+                    }
                     try {
                         alarmRecordService.saveAlarmRecords(workOrder, alarmRecord, orderLog);
                     } finally {
@@ -114,7 +119,6 @@ public class WorkOrderHandler implements AlarmHandler {
             logger.info("no recover work-order： config={}", JSON.toJSONString(config));
             return;
         }
-
         AlarmRecordCriteria criteria = new AlarmRecordCriteria();
         criteria.createCriteria().andTriggerIdIn(triggerIds).andIsProcessedEqualTo(EAlarmRecordStatus.UNPROCESS.getCode());
         List<AlarmRecord> alarmRecords = alarmRecordService.queryByCondition(criteria);
@@ -127,7 +131,7 @@ public class WorkOrderHandler implements AlarmHandler {
 
                 WorkOrderLog workOrderLog = new WorkOrderLog();
                 AlarmWorkOrder alarmWorkOrder = alarmWorkOrderService.getByRecordId(recordId);
-                if(alarmWorkOrder != null){
+                if (alarmWorkOrder != null) {
                     alarmWorkOrder.setLastUpdateTime(now);
                     alarmWorkOrder.setStatus(EOrderStatus.REPAIRED.getCode());
                     alarmWorkOrder.setRemark("系统判定修复");
@@ -148,7 +152,7 @@ public class WorkOrderHandler implements AlarmHandler {
                     logger.info("系统判定恢复：work-order={},record={},log={}", JSON.toJSONString(alarmWorkOrder), JSON.toJSONString(alarmRecord), JSON.toJSONString(workOrderLog));
                 }
             } catch (Exception e) {
-                logger.error("repair work-order error：alarmRecord={}", JSON.toJSONString(alarmRecord),e);
+                logger.error("repair work-order error：alarmRecord={}", JSON.toJSONString(alarmRecord), e);
             }
         });
     }
