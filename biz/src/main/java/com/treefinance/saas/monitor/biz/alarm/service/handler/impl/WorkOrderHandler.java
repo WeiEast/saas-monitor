@@ -99,6 +99,9 @@ public class WorkOrderHandler implements AlarmHandler {
                         orderLog.setOpDesc("创建操作工单");
                         orderLog.setCreateTime(now);
                         orderLog.setLastUpdateTime(now);
+                    } else {
+                        alarmRecord.setIsProcessed(EAlarmRecordStatus.PROCESSED.getCode());
+                        alarmRecord.setEndTime(now);
                     }
                     try {
                         alarmRecordService.saveAlarmRecords(workOrder, alarmRecord, orderLog);
