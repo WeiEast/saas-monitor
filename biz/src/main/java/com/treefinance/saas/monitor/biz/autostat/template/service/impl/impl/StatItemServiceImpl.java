@@ -2,7 +2,7 @@ package com.treefinance.saas.monitor.biz.autostat.template.service.impl.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Function;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.autostat.base.AbstractCacheService;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatItemService;
 import com.treefinance.saas.monitor.dao.entity.StatItem;
@@ -12,6 +12,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -21,6 +22,8 @@ import java.util.List;
 public class StatItemServiceImpl extends AbstractCacheService<Long, List<StatItem>> implements StatItemService {
     @Autowired
     private StatItemMapper statItemMapper;
+    @Resource
+    private UidService uidService;
 
     @Override
     public List<StatItem> queryAll() {
@@ -59,7 +62,7 @@ public class StatItemServiceImpl extends AbstractCacheService<Long, List<StatIte
 
     @Override
     public long addStatItem(StatItem statItem) {
-        long id = UidGenerator.getId();
+        long id = uidService.getId();
         statItem.setId(id);
         logger.info("insert statitem : {}", JSON.toJSONString(statItem));
         statItemMapper.insert(statItem);

@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.service;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.common.domain.Constants;
 import com.treefinance.saas.monitor.common.domain.dto.IvrContactsDTO;
@@ -26,6 +26,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.Date;
@@ -52,6 +53,9 @@ public class IvrNotifyService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Resource
+    private UidService uidService;
 
     /**
      * 通知ivr
@@ -208,7 +212,7 @@ public class IvrNotifyService {
      */
     protected Map<String, Object> initMessageBody(String alarmInfo, List<IvrContactsDTO> contactsDTOS, String modelId, Map<String, Object> placeholder) {
         List<Map<String, Object>> taskItems = Lists.newArrayList();
-        Long refId = UidGenerator.getId();
+        Long refId = uidService.getId();
 
         contactsDTOS.forEach(ivrContactsDTO -> {
             Map<String, Object> msgMap = getTemplatePlaceHolderMap(placeholder, ivrContactsDTO);

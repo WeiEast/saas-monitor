@@ -1,6 +1,6 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.alarm.service.AlaramJobService;
 import com.treefinance.saas.monitor.biz.service.AsAlarmService;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,9 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
     @Autowired
     AlaramJobService alaramJobService;
+
+    @Resource
+    private UidService uidService;
 
     @Override
     public AsAlarm getAsAlarmByPrimaryKey(long id) {
@@ -106,7 +110,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         AsAlarm asAlarm = DataConverterUtils.convert(asAlarmInfoRequest, AsAlarm.class);
         if (asAlarm.getId() == null) {
-            asAlarm.setId(UidGenerator.getId());
+            asAlarm.setId(uidService.getId());
         }
         asAlarmMapper.insertOrUpdateBySelective(asAlarm);
 
@@ -122,7 +126,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         for (AsAlarmConstantInfoRequest asAlarmConstantInfoRequest : asAlarmConstantInfoRequestList) {
             AsAlarmConstant asAlarmConstant = DataConverterUtils.convert(asAlarmConstantInfoRequest, AsAlarmConstant.class);
             if (asAlarmConstant.getId() == null) {
-                asAlarmConstant.setId(UidGenerator.getId());
+                asAlarmConstant.setId(uidService.getId());
             }
             asAlarmConstant.setAlarmId(asAlarm.getId());
             asAlarmConstantMapper.insertSelective(asAlarmConstant);
@@ -140,7 +144,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         for (AsAlarmQueryInfoRequest asAlarmQueryInfoRequest : asAlarmQueryInfoRequestList) {
             AsAlarmQuery asAlarmQuery = DataConverterUtils.convert(asAlarmQueryInfoRequest, AsAlarmQuery.class);
             if (asAlarmQuery.getId() == null) {
-                asAlarmQuery.setId(UidGenerator.getId());
+                asAlarmQuery.setId(uidService.getId());
             }
             asAlarmQuery.setAlarmId(asAlarm.getId());
             asAlarmQueryMapper.insertSelective(asAlarmQuery);
@@ -157,7 +161,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         for (AsAlarmVariableInfoRequest asAlarmVariableInfoRequest : asAlarmVariableInfoRequestList) {
             AsAlarmVariable asAlarmVariable = DataConverterUtils.convert(asAlarmVariableInfoRequest, AsAlarmVariable.class);
             if (asAlarmVariable.getId() == null) {
-                asAlarmVariable.setId(UidGenerator.getId());
+                asAlarmVariable.setId(uidService.getId());
             }
             asAlarmVariable.setAlarmId(asAlarm.getId());
             asAlarmVariableMapper.insertSelective(asAlarmVariable);
@@ -171,7 +175,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         for (AsAlarmNotifyInfoRequest asAlarmNotifyInfoRequest : asAlarmNotifyInfoRequestList) {
             AsAlarmNotify asAlarmNotify = DataConverterUtils.convert(asAlarmNotifyInfoRequest, AsAlarmNotify.class);
             if (asAlarmNotify.getId() == null) {
-                asAlarmNotify.setId(UidGenerator.getId());
+                asAlarmNotify.setId(uidService.getId());
             }
             asAlarmNotify.setAlarmId(asAlarm.getId());
             asAlarmNotify.setCreateTime(new Date());
@@ -186,7 +190,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         for (AsAlarmMsgInfoRequest asAlarmMsgInfoRequest : asAlarmMsgInfoRequestList) {
             AsAlarmMsg asAlarmMsg = DataConverterUtils.convert(asAlarmMsgInfoRequest, AsAlarmMsg.class);
             if (asAlarmMsg.getId() == null) {
-                asAlarmMsg.setId(UidGenerator.getId());
+                asAlarmMsg.setId(uidService.getId());
             }
             asAlarmMsg.setAlarmId(asAlarm.getId());
             asAlarmMsgMapper.insertSelective(asAlarmMsg);
@@ -200,7 +204,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         for (AsAlarmTriggerInfoRequest asAlarmTriggerInfoRequest : asAlarmTriggerInfoRequestList) {
             AsAlarmTrigger asAlarmTrigger = DataConverterUtils.convert(asAlarmTriggerInfoRequest, AsAlarmTrigger.class);
             if (asAlarmTrigger.getId() == null) {
-                asAlarmTrigger.setId(UidGenerator.getId());
+                asAlarmTrigger.setId(uidService.getId());
             }
             asAlarmTrigger.setAlarmId(asAlarm.getId());
             asAlarmTriggerMapper.insertSelective(asAlarmTrigger);
@@ -332,7 +336,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         //预警配置表
         AsAlarm asAlarm = asAlarmMapper.selectByPrimaryKey(id);
 
-        asAlarm.setId(UidGenerator.getId());
+        asAlarm.setId(uidService.getId());
         asAlarm.setName(asAlarm.getName()+"-副本");
         asAlarm.setAlarmSwitch("off");
         asAlarm.setCreateTime(now);
@@ -345,7 +349,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         List<AsAlarmConstant> asAlarmConstantList = asAlarmConstantMapper.selectByExample(asAlarmConstantCriteria);
 
         for(AsAlarmConstant constant : asAlarmConstantList){
-            constant.setId(UidGenerator.getId());
+            constant.setId(uidService.getId());
             constant.setAlarmId(asAlarm.getId());
             constant.setCreateTime(now);
             constant.setLastUpdateTime(now);
@@ -359,7 +363,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         for (AsAlarmQuery asAlarmQuery:asAlarmQueryList){
             asAlarmQuery.setAlarmId(asAlarm.getId());
-            asAlarmQuery.setId(UidGenerator.getId());
+            asAlarmQuery.setId(uidService.getId());
             asAlarmQuery.setCreateTime(now);
             asAlarmQuery.setLastUpdateTime(now);
         }
@@ -372,7 +376,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         for (AsAlarmVariable variable:asAlarmVariableList){
             variable.setAlarmId(asAlarm.getId());
-            variable.setId(UidGenerator.getId());
+            variable.setId(uidService.getId());
             variable.setCreateTime(now);
             variable.setLastUpdateTime(now);
         }
@@ -387,7 +391,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         for (AsAlarmNotify variable:asAlarmNotifyList){
             variable.setAlarmId(asAlarm.getId());
-            variable.setId(UidGenerator.getId());
+            variable.setId(uidService.getId());
             variable.setCreateTime(now);
             variable.setLastUpdateTime(now);
         }
@@ -400,7 +404,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         List<AsAlarmMsg> asAlarmMsgList = asAlarmMsgMapper.selectByExample(asAlarmMsgCriteria);
         for (AsAlarmMsg variable:asAlarmMsgList){
             variable.setAlarmId(asAlarm.getId());
-            variable.setId(UidGenerator.getId());
+            variable.setId(uidService.getId());
             variable.setCreateTime(now);
             variable.setLastUpdateTime(now);
         }
@@ -412,7 +416,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         for (AsAlarmTrigger variable:asAlarmTriggerList){
             variable.setAlarmId(asAlarm.getId());
-            variable.setId(UidGenerator.getId());
+            variable.setId(uidService.getId());
             variable.setCreateTime(now);
             variable.setLastUpdateTime(now);
         }

@@ -6,7 +6,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskMonitorPerMinKeyHelper;
@@ -21,6 +21,7 @@ import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccRateAl
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccessRateAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.*;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.common.utils.SpringIocUtils;
 import com.treefinance.saas.monitor.dao.entity.*;
 import com.treefinance.saas.monitor.dao.mapper.MerchantStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.SaasStatAccessMapper;
@@ -36,6 +37,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
@@ -76,6 +78,11 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     private AlarmWorkOrderService alarmWorkOrderService;
     @Autowired
     private IvrConfig ivrConfig;
+    @Resource
+    private UidService uidService;
+
+//    @Resource
+//    private AbstractAlarmServiceTemplate abstractAlarmServiceTemplate;
 
     private static final BigDecimal HUNDRED = new BigDecimal(100);
 
@@ -115,7 +122,6 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
      */
     @Override
     public void alarm(EBizType bizType, TaskSuccessRateAlarmConfigDTO config, Date jobTime) {
-
         Integer intervalMins = getInterval(config);
 
         logger.info("当前的interval：{}", intervalMins);
@@ -189,8 +195,8 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             //获取值班人员
             List<SaasWorker> saasWorkers = findSaasWorkerOrDefault(statTime);
 
-            Long recordId = UidGenerator.getId();
-            Long orderId = UidGenerator.getId();
+            Long recordId = uidService.getId();
+            Long orderId = uidService.getId();
 
             notifyDutyMan(config, statTime, alarmLevel, env, saasWorkers, recordId);
 
@@ -255,7 +261,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
             if (order != null) {
                 WorkOrderLog workOrderLog = new WorkOrderLog();
 
-                workOrderLog.setId(UidGenerator.getId());
+                workOrderLog.setId(uidService.getId());
                 workOrderLog.setOrderId(order.getId());
                 workOrderLog.setRecordId(record.getId());
                 workOrderLog.setOpDesc("系统判定预警恢复");
@@ -796,7 +802,7 @@ public class TaskSuccessRateAlarmServiceImpl implements TaskSuccessRateAlarmServ
     private AlarmRecord genAlarmRecord(Long id, Date baseTime, EAlarmRecordStatus isProcessed, EAlarmLevel level, String content, ESaasEnv eSaasEnv, String bizType) {
         Date now = new Date();
         AlarmRecord alarmRecord = new AlarmRecord();
-        alarmRecord.setId(id == null ? UidGenerator.getId() : id);
+        alarmRecord.setId(id == null ? uidService.getId() : id);
         alarmRecord.setLevel(level.name());
         alarmRecord.setSummary(genSummary(eSaasEnv, level, bizType));
         alarmRecord.setContent(content);

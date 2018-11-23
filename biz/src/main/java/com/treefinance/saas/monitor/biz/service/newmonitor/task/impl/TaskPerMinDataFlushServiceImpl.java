@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.gateway.servicefacade.enums.TaskStepEnum;
 import com.treefinance.saas.monitor.biz.helper.TaskMonitorPerMinKeyHelper;
 import com.treefinance.saas.monitor.biz.service.*;
@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -45,6 +46,8 @@ public class TaskPerMinDataFlushServiceImpl implements TaskPerMinDataFlushServic
     private WebsiteService websiteService;
     @Autowired
     private OperatorService operatorService;
+    @Resource
+    private UidService uidService;
 
 
     @Override
@@ -65,7 +68,7 @@ public class TaskPerMinDataFlushServiceImpl implements TaskPerMinDataFlushServic
                     }
                     String json = JSON.toJSONString(dataMap);
                     SaasErrorStepDayStatDTO dto = JSON.parseObject(json, SaasErrorStepDayStatDTO.class);
-                    dto.setId(UidGenerator.getId());
+                    dto.setId(uidService.getId());
                     if (dto.getFailCount() == null) {
                         dto.setFailCount(0);
                     }
