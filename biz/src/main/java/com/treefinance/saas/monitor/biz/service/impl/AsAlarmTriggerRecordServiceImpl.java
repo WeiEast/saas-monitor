@@ -41,16 +41,13 @@ public class AsAlarmTriggerRecordServiceImpl implements AsAlarmTriggerRecordServ
         }
 
 
-        List<AsAlarmTriggerRecord> asAlarmTriggerRecordList = asAlarmTriggerRecordMapper.selectPaginationByExample(asAlarmTriggerRecordCriteria);
-
-
-        return asAlarmTriggerRecordList;
+        return asAlarmTriggerRecordMapper.selectPaginationByExample(asAlarmTriggerRecordCriteria);
 
     }
 
 
     @Override
-    public List<AsAlarmTriggerRecord> queryAsAlarmTriggerRecord(AlarmExcuteLogRequest alarmExcuteLogRequest) {
+    public long queryAsAlarmTriggerRecord(AlarmExcuteLogRequest alarmExcuteLogRequest) {
         AsAlarmTriggerRecordCriteria asAlarmTriggerRecordCriteria = new AsAlarmTriggerRecordCriteria();
 
         if (alarmExcuteLogRequest.getStartDate() == null && alarmExcuteLogRequest.getEndDate() == null) {
@@ -61,10 +58,7 @@ public class AsAlarmTriggerRecordServiceImpl implements AsAlarmTriggerRecordServ
         }
 
 
-        List<AsAlarmTriggerRecord> asAlarmTriggerRecordList = asAlarmTriggerRecordMapper.selectByExample(asAlarmTriggerRecordCriteria);
-
-
-        return asAlarmTriggerRecordList;
+        return asAlarmTriggerRecordMapper.countByExample(asAlarmTriggerRecordCriteria);
 
     }
 }

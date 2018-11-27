@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,7 +29,7 @@ public class BankServiceImpl implements BankService {
         criteria.createCriteria();
         List<Bank> banks = bankMapper.selectByExample(criteria);
         if (CollectionUtils.isEmpty(banks)){
-            return Lists.newArrayList();
+            return Collections.emptyList();
         }
         return DataConverterUtils.convert(banks,BankDTO.class);
     }

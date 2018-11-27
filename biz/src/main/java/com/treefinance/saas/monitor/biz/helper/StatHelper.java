@@ -88,16 +88,10 @@ public abstract class StatHelper {
         date = fmt.parse("2017-11-22 20:10:59");
         System.out.println(fmt.format(StatHelper.calculateIntervalTime(date, 10)));
     }
-    public static StartTimeModel getDiffDuration(String alarmType, Date endTime, Date dataTime,DiamondConfig config, EmailAlarmConfig
-            emailAlarmConfig,Date startTime) {
-
-        Integer advanceAmount = getNeedAdvanceAmount(alarmType,config,emailAlarmConfig);
+    public static StartTimeModel getDiffDuration(Date endTime, Date startTime) {
 
         long endStamp = endTime.getTime();
-        long dataStamp = dataTime.getTime();
         long startStamp = startTime.getTime();
-        long advanceAmountInMillSec = advanceAmount * 60 * 1000;
-//        long startTimeStamp = dataStamp - advanceAmountInMillSec;
 
         long realTime = endStamp - startStamp;
 
@@ -106,34 +100,10 @@ public abstract class StatHelper {
         double duration = Double.parseDouble(DECIMAL_FORMAT.format(realTime / (60 * 1000)));
 
         model.setDuration(duration);
-//        model.setStartTime(new Date(startTimeStamp));
 
         return model;
     }
 
-    private static Integer getNeedAdvanceAmount(String alarmType, DiamondConfig config, EmailAlarmConfig
-            emailAlarmConfig) {
-        return 0;
-//        switch (alarmType) {
-//            case TASK_SUCCESS_ALARM_OPERATOR:
-//                return calcTypedDuration("OPERATOR",config);
-//            case TASK_SUCCESS_ALARM_ECOMMERCE:
-//                return calcTypedDuration("ECOMMERCE",config);
-//            case OPERATOR_ALARM:
-//                String configStr = config.getOperatorMonitorAlarmConfig();
-//                List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, OperatorMonitorAlarmConfigDTO.class);
-//                OperatorMonitorAlarmConfigDTO operatorMonitorAlarmConfigDTO = configList.get(0);
-//                return operatorMonitorAlarmConfigDTO.getIntervalMins();
-//            case EMAIL_ALARM:
-//                List<EmailMonitorAlarmConfigDTO> configDTOList = JSON.parseArray(emailAlarmConfig.getEmailAlarmConfig(),
-//                        EmailMonitorAlarmConfigDTO
-//                                .class);
-//                EmailMonitorAlarmConfigDTO configDTO = configDTOList.get(0);
-//                return configDTO.getIntervalMins();
-//            default:
-//                throw new BizException("不支持的预警类型");
-//        }
-    }
 
     private static Integer calcTypedDuration(String type,DiamondConfig config) {
         String configStr = config.getTaskSuccessRateAlarmConfig();

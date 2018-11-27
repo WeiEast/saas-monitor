@@ -18,9 +18,9 @@ public interface AsAlarmTriggerRecordService {
     List<AsAlarmTriggerRecord> queryAsAlarmTriggerRecordPagination(AlarmExcuteLogRequest alarmExcuteLogRequest);
 
     /**
-     * 根据预警配置ID或触发时间段返回预警触发记录
+     * 根据预警配置ID或触发时间段返回预警触发记录总数
      * @param alarmExcuteLogRequest
      * @return
      */
-    List<AsAlarmTriggerRecord> queryAsAlarmTriggerRecord(AlarmExcuteLogRequest alarmExcuteLogRequest);
+    long queryAsAlarmTriggerRecord(AlarmExcuteLogRequest alarmExcuteLogRequest);
 }

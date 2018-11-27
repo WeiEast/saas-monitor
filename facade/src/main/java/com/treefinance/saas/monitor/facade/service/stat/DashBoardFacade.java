@@ -10,6 +10,11 @@ import com.treefinance.saas.monitor.facade.domain.ro.DashBoardResult;
  */
 public interface DashBoardFacade {
 
+    /**
+     * 数据看板对应数据的查询
+     * @param request request
+     * @return DashBoardResult
+     */
     MonitorResult<DashBoardResult> queryDashboardResult(DashboardStatRequest request);
 
 }

@@ -73,7 +73,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         if (!CollectionUtils.isEmpty(list)) {
             result = DataConverterUtils.convert(list, OperatorStatDayAccessRO.class);
         }
-        logger.info("查询各个运营商日监控统计数据(分页),返回结果result={}", JSON.toJSONString(result));
+        logger.info("查询各个运营商日监控统计数据(不分页),返回结果result={}", JSON.toJSONString(result));
         return MonitorResultBuilder.build(result);
     }
 
@@ -536,8 +536,6 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         }
         for (OperatorStatAccess data : list) {
             data.setDataTime(MonitorDateUtils.getIntervalDateTime(data.getDataTime(), request.getIntervalMins()));
-        }
-        for (OperatorStatAccess data : list) {
             OperatorStatAccessRO ro = DataConverterUtils.convert(data, OperatorStatAccessRO.class);
             ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
             result.add(ro);

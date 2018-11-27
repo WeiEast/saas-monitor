@@ -31,6 +31,7 @@ public interface ApiStatAccessFacade {
     MonitorResult<List<ApiStatDayAccessRO>> queryDayAccessList(ApiStatBaseRequest request);
 
     /**
+     * 各API访问情况
      *
      * @param request
      * @return

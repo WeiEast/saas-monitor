@@ -8,7 +8,7 @@ import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
 public class MonitorResultBuilder {
 
     public static <T> MonitorResult<T> build() {
-        return new MonitorResult();
+        return new MonitorResult<T>();
     }
 
     public static <T> MonitorResult<T> build(T data) {

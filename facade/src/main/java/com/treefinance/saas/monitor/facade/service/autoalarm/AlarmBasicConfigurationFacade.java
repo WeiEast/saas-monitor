@@ -83,10 +83,17 @@ public interface AlarmBasicConfigurationFacade {
 
 
     /**
+     * 删除预警配置
      * @param alarmId 编号
      *
      * */
     MonitorResult<Boolean> deleteById(Long alarmId);
+
+    /**
+     * 复制预警配置
+     * @param alarmId alarmId
+     * @return Boolean
+     */
     MonitorResult<Boolean> duplicateConfig(Long alarmId);
 
 }

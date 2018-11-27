@@ -15,8 +15,18 @@ import java.util.List;
  */
 public interface RealTimeStatAccessFacade {
 
+    /**
+     * 任务实时监控数据统计查询
+     * @param request request
+     * @return List<RealTimeStatAccessRO>
+     */
     MonitorResult<List<RealTimeStatAccessRO>> queryRealTimeStatAccess(BaseStatAccessRequest request);
 
+    /**
+     * 任务实时监控7天平均数据统计查询
+     * @param request request
+     * @return List<RealTimeStatAccessRO>
+     */
     MonitorResult<List<RealTimeStatAccessRO>> queryAvgRealTimeStatAccess(BaseStatAccessRequest request);
 
 }

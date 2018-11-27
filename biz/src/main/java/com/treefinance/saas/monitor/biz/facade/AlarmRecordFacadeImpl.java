@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.biz.facade;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.commonservice.uid.UidService;
@@ -249,7 +250,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
     @Override
     public MonitorResult<Boolean> updateWorkerOrderStatus(UpdateWorkOrderRequest request) {
-        logger.info("更新工单状态id:{}", request.toString());
+        logger.info("更新工单状态:{}", JSON.toJSONString(request));
 
         EOrderStatus newStatus = EOrderStatus.getByValue(request.getStatus());
         if (newStatus == null) {
@@ -468,8 +469,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
                     processedCount += 1;
                 }
 
-                double subDuration = StatHelper.getDiffDuration(record.getAlarmType(), record.getEndTime(), record
-                        .getDataTime(), config, emailAlarmConfig, record.getStartTime()).getDuration();
+                double subDuration = StatHelper.getDiffDuration( record.getEndTime(), record.getStartTime()).getDuration();
 
                 duration += subDuration;
                 maxDuration = subDuration > maxDuration ? subDuration : maxDuration;
@@ -578,7 +578,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             if (alarmWorkOrder == null) {
                 continue;
             }
-            StatHelper.StartTimeModel model = StatHelper.getDiffDuration(recordRO.getAlarmType(), recordRO.getEndTime(), recordRO.getDataTime(), config, emailAlarmConfig, recordRO.getStartTime());
+            StatHelper.StartTimeModel model = StatHelper.getDiffDuration(recordRO.getEndTime(), recordRO.getStartTime());
 
             recordRO.setContinueTime(model.getDuration());
             recordRO.setDesc(alarmWorkOrder.getRemark());
@@ -609,11 +609,11 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         EBizType bizType = EBizType.getBizType(request.getBizType());
 
-        Integer count = alarmRecordService.countAlarmRecordInBizType(bizType.name().toLowerCase(), request.getStartTime(), request.getEndTime());
-
         if(request.getEndTime() != null){
             request.setEndTime(MonitorDateUtils.getDayEndTime(request.getEndTime()));
         }
+
+        Integer count = alarmRecordService.countAlarmRecordInBizType(bizType.name().toLowerCase(), request.getStartTime(), request.getEndTime());
 
         List<AlarmRecord> list = alarmRecordService.queryTodayErrorList(bizType.name().toLowerCase(), request
                         .getStartTime(), request.getEndTime(),request.getOffset(),request.getPageSize());

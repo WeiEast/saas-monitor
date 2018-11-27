@@ -19,7 +19,6 @@ import java.util.List;
  */
 @Service("ecommerceFacade")
 public class EcommerceFacadeImpl implements EcommerceFacade {
-    private final static Logger logger = LoggerFactory.getLogger(EcommerceFacadeImpl.class);
     @Autowired
     private EcommerceService ecommerceService;
 

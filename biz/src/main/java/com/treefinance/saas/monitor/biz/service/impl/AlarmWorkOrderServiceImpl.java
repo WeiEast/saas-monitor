@@ -75,7 +75,9 @@ public class AlarmWorkOrderServiceImpl implements AlarmWorkOrderService {
         criteria.createCriteria().andRecordIdEqualTo(recordId);
 
         List<AlarmWorkOrder> list = alarmWorkOrderMapper.selectByExample(criteria);
-        if (list.isEmpty()) return null;
+        if (list.isEmpty()) {
+            return null;
+        }
         return list.get(0);
     }
 

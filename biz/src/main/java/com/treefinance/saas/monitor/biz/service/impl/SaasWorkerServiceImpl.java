@@ -39,7 +39,6 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
     @Override
     public List<SaasWorker> getNowDateWorker(Date now) {
         List<SaasWorker> workers = saasWorkerMapper.selectByExample(null);
-//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return getActiveWorkers(now, workers);
     }
 
@@ -50,6 +49,7 @@ public class SaasWorkerServiceImpl implements SaasWorkerService {
      * @param workers
      * @return
      */
+    @Override
     public List<SaasWorker> getActiveWorkers(Date now, List<SaasWorker> workers) {
         List<SaasWorker> active = new ArrayList<>();
         for (SaasWorker worker : workers) {
