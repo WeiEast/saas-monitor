@@ -1,5 +1,6 @@
 package com.treefinance.saas.monitor.dao.ecommerce.Impl;
 
+import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceTimeShareDTO;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.ecommerce.EcommerceDetailAccessDao;
@@ -27,13 +28,13 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
     private final static Logger logger = LoggerFactory.getLogger(EcommerceDetailAccessDaoImpl.class);
 
     @Autowired
-    EcommerceAllStatAccessMapper ecommerceAllStatAccessMapper;
+    private EcommerceAllStatAccessMapper ecommerceAllStatAccessMapper;
     @Autowired
-    EcommerceAllStatDayAccessMapper ecommerceAllStatDayAccessMapper;
+    private EcommerceAllStatDayAccessMapper ecommerceAllStatDayAccessMapper;
 
     @Override
     public List<EcommerceAllStatAccess> getEcommerceAllDetailList(EcommerceTimeShareDTO request) {
-        logger.info("查询电商日监控分时统计数据 dao层,传入的参数为{}", request.toString());
+        logger.info("查询电商日监控分时统计数据 dao层,传入的参数为{}", JSON.toJSONString(request));
         EcommerceAllStatAccessCriteria ecommerceAllStatAccessCriteria = new EcommerceAllStatAccessCriteria();
         ecommerceAllStatAccessCriteria.setOrderByClause("dataTime desc");
 
@@ -48,10 +49,7 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
                 .andDataTypeEqualTo(request.getStatType()).andSourceTypeEqualTo(request.getSourceType())
                 .andDataTimeBetween(request.getDataDate(), MonitorDateUtils.getDayEndTime(request.getDataDate()));
 
-        List<EcommerceAllStatAccess> allStatAccessList = ecommerceAllStatAccessMapper.selectByExample(ecommerceAllStatAccessCriteria);
-
-        return allStatAccessList;
-
+        return ecommerceAllStatAccessMapper.selectByExample(ecommerceAllStatAccessCriteria);
 
     }
 
@@ -60,7 +58,7 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
     public List<EcommerceAllStatDayAccess> getEcommerceAllList(EcommerceTimeShareDTO request) {
 
 
-        logger.info("查询电商日监控整体统计数据 dao层,传入的参数为{}", request.toString());
+        logger.info("查询电商日监控整体统计数据 dao层,传入的参数为:{}", JSON.toJSONString(request));
         EcommerceAllStatDayAccessCriteria ecommerceAllStatDayAccessCriteria = new EcommerceAllStatDayAccessCriteria();
 
 
@@ -78,10 +76,7 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
                 .andSourceTypeEqualTo(request.getSourceType()).andDataTypeEqualTo(request.getStatType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
 
-        List<EcommerceAllStatDayAccess> allStatAccessList = ecommerceAllStatDayAccessMapper.selectByExample(ecommerceAllStatDayAccessCriteria);
-
-        return allStatAccessList;
-
+        return ecommerceAllStatDayAccessMapper.selectByExample(ecommerceAllStatDayAccessCriteria);
 
     }
 

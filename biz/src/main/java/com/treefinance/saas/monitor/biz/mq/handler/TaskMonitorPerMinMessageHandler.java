@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -31,7 +31,7 @@ public class TaskMonitorPerMinMessageHandler implements TagBaseMessageHandler<Ta
     @Autowired
     private TaskMonitorPerMinService taskMonitorPerMinService;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate redisTemplate;
 
     @Override
     public MonitorTagEnum getMonitorType() {
@@ -44,7 +44,7 @@ public class TaskMonitorPerMinMessageHandler implements TagBaseMessageHandler<Ta
         //任务重复消息不处理
         Date redisTime = TaskMonitorPerMinKeyHelper.getRedisStatDateTime(message.getCompleteTime(), 10);
         String taskLogKey = TaskMonitorPerMinKeyHelper.keyOfTaskLog(redisTime);
-        BoundSetOperations<String, Object> setOperations = redisTemplate.boundSetOps(taskLogKey);
+        BoundSetOperations<String, String> setOperations = redisTemplate.boundSetOps(taskLogKey);
         if (setOperations.isMember(message.getTaskId().toString())) {
             logger.info("任务监控,消息处理,message={}重复发送不再统计.message={}", JSON.toJSONString(message));
             return;

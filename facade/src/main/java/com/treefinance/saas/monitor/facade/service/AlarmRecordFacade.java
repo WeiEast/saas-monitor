@@ -32,6 +32,7 @@ public interface AlarmRecordFacade {
 
     /**
      * 查询saas工作人员的列表
+     * 可根据name模糊查询
      *
      * @return 数据列表
      */
@@ -66,8 +67,18 @@ public interface AlarmRecordFacade {
      */
     MonitorResult<Boolean> updateWorkerOrderStatus(UpdateWorkOrderRequest request);
 
+    /**
+     * 查询预警工单操作记录
+     *
+     * @param request 数据参数
+     * @return 预警工单操作记录
+     */
     MonitorResult<List<WorkOrderLogRO>> queryWorkOrderLog(WorkOrderLogRequest request);
 
+    /**
+     * 查询预警配置列表
+     * @return 预警配置列表
+     */
     MonitorResult<List<AlarmTypeListRO>> queryAlarmTypeList();
 
     /**
@@ -78,6 +89,12 @@ public interface AlarmRecordFacade {
      */
     MonitorResult<List<AlarmRecordStatisticRO>> queryAlarmStatistic(AlarmRecordStatRequest recordStatRequest);
 
+    /**
+     * 查询当天error等级的预警和记录
+     *
+     * @param request 参数
+     * @return 当天error等级的预警和记录
+     */
     MonitorResult<List<AlarmRecordRO>> queryAlarmRecordInDashBoard(AlarmRecordDashBoardRequest request);
 
 }

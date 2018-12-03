@@ -236,10 +236,4 @@ public class MonitorDateUtils {
 
     }
 
-
-    public static void main(String[] args) throws ParseException {
-        System.out.println(isSameDay(new Date(),parse("2018-09-12 00:08:00")));
-    }
-
-
 }

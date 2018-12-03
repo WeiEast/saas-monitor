@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.autostat.template.calc.calculator;
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
 import com.google.common.collect.*;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.MybatisService;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.ExpressionCalculator;
@@ -28,6 +28,7 @@ import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +53,8 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
     private StatGroupService statGroupService;
     @Autowired
     private StatItemService statItemService;
+    @Resource
+    private UidService uidService;
 
 
     @Override
@@ -363,7 +366,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             Map<String, Object> dataMap = hashOperations.entries(dataKey);
             if (MapUtils.isNotEmpty(dataMap)) {
                 // 增加ID
-                dataMap.put("id", UidGenerator.getId());
+                dataMap.put("id", uidService.getId());
 
                 if (dataMap.get(AsConstants.DATA_TIME) != null) {
                     Long dataTime = Long.valueOf(dataMap.get(AsConstants.DATA_TIME).toString());
@@ -377,7 +380,8 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         });
         // 移除空数据key
         if (CollectionUtils.isNotEmpty(emptyDataKeys)) {
-            redisTemplate.boundSetOps(dataListKey).remove(emptyDataKeys.toArray(new String[emptyDataKeys.size()]));
+            String[] values = emptyDataKeys.toArray(new String[0]);
+            redisTemplate.boundSetOps(dataListKey).remove(values);
         }
 
         // 二次计算(统计数据来源：0-基础数据，1-统计数据项)

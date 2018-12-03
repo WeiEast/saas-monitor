@@ -30,9 +30,6 @@ public class StatItemFacadeImpl implements StatItemFacade {
             throw new ParamCheckerException("模板ID不能为空");
         }
         List<StatItem> statItems = statItemService.queryByTemplateId(templateId);
-        if (statItems == null) {
-            statItems = Lists.newArrayList();
-        }
         List<StatItemRO> statItemROS = DataConverterUtils.convert(statItems, StatItemRO.class);
         return MonitorResultBuilder.build(statItemROS);
     }

@@ -1,15 +1,15 @@
 package com.treefinance.saas.monitor.ivr.filter;
 
 import com.alibaba.fastjson.JSON;
-import com.datatrees.toolkits.util.http.servlet.ServletRequestUtils;
-import com.datatrees.toolkits.util.http.servlet.ServletResponseUtils;
-import com.datatrees.toolkits.util.json.Jackson;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.Constants;
 import com.treefinance.saas.monitor.common.utils.AESUtils;
 import com.treefinance.saas.monitor.ivr.utils.WrapUtils;
+import com.treefinance.toolkit.util.http.servlet.ServletRequests;
+import com.treefinance.toolkit.util.http.servlet.ServletResponses;
+import com.treefinance.toolkit.util.json.Jackson;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,6 +20,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -51,7 +52,7 @@ public class IvrFilter extends OncePerRequestFilter {
             if (!diamondConfig.getIvrToken().equals(token)) {
                 logger.info("无效的token: token={}, ivrToken={}...", token, diamondConfig.getIvrToken());
                 String responseBody = Jackson.toJSONString(SimpleResult.failResult("无效的token"));
-                ServletResponseUtils.responseJson(response, 403, responseBody);
+                ServletResponses.responseJson(response, 403, responseBody);
                 return;
             }
 
@@ -73,14 +74,14 @@ public class IvrFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             String responseBody = Jackson.toJSONString(SimpleResult.failResult(e.getMessage()));
-            ServletResponseUtils.responseJson(response, 400, responseBody);
+            ServletResponses.responseJson(response, 400, responseBody);
             logger.error("{} request {} {} : params={},  cost {} ms",
-                    ServletRequestUtils.getIP(request), request.getMethod(), request.getRequestURL(),
+                    ServletRequests.getIP(request), request.getMethod(), request.getRequestURL(),
                     JSON.toJSONString(request.getParameterMap()),
                     (System.currentTimeMillis() - start), e);
         } finally {
             logger.info("{} request {} {} : params={},  cost {} ms",
-                    ServletRequestUtils.getIP(request), request.getMethod(), request.getRequestURL(),
+                    ServletRequests.getIP(request), request.getMethod(), request.getRequestURL(),
                     JSON.toJSONString(inputMap),
                     (System.currentTimeMillis() - start));
         }

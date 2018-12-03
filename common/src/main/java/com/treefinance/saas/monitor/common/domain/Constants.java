@@ -1,15 +1,18 @@
 package com.treefinance.saas.monitor.common.domain;
 
-import com.datatrees.common.conf.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Constants {
+import com.treefinance.b2b.saas.conf.PropertiesConfiguration;
+
+
+public final class Constants {
 
     private static final Logger logger = LoggerFactory.getLogger(Constants.class);
 
     public static final String PREFIX_KEY = "saas-gateway:";
-    public static final int REDIS_KEY_TIMEOUT = PropertiesConfiguration.getInstance().getInt("platform.redisKey.timeout", 600);
+    public static final int REDIS_KEY_TIMEOUT = PropertiesConfiguration
+        .getInstance().getInt("platform.redisKey.timeout", 600);
 
     public static final String SAAS_ENV;
     public static final String SAAS_ENV_VALUE;
@@ -30,5 +33,8 @@ public class Constants {
         SAAS_ENV = saasEnv;
         SAAS_ENV_VALUE = saasEnvValue;
         logger.debug("system properties saas.env=" + saasEnv + " saasEnvValue=" + saasEnvValue);
+    }
+
+    private Constants() {
     }
 }

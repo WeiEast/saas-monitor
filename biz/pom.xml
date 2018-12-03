@@ -4,68 +4,46 @@
     <parent>
         <groupId>com.treefinance.saas.monitor</groupId>
         <artifactId>saas-monitor</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>monitor-biz</artifactId>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
-        <dependency>
-            <artifactId>gateway-facade</artifactId>
-            <groupId>com.treefinance.saas.gateway</groupId>
-        </dependency>
         <dependency>
             <groupId>com.treefinance.saas.monitor</groupId>
             <artifactId>monitor-facade</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.treefinance.saas.monitor</groupId>
             <artifactId>monitor-dao</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.treefinance.saas.monitor</groupId>
-            <artifactId>monitor-common</artifactId>
+            <artifactId>monitor-share</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>com.treefinance.saas</groupId>
-            <artifactId>grap-server-facade</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
-        </dependency>
-        
-        <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>com.datatrees.common</groupId>
-            <artifactId>common-util</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.dangdang</groupId>
             <artifactId>elastic-job-lite-spring</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>com.datatrees.common</groupId>
-            <artifactId>notify-common-facade</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.treefinance.saas</groupId>
-            <artifactId>assistant-monitor</artifactId>
-        </dependency>
+        
     </dependencies>
 
 </project>

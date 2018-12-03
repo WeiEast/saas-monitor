@@ -34,10 +34,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -89,7 +86,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         if (alarmExcuteLogRequest.getId() == null) {
             return new MonitorResult<>("执行日志查询预警配置id不能为空");
         }
-        logger.info("执行日志查询条件为{}", alarmExcuteLogRequest.toString());
+        logger.info("执行日志查询条件为{}", JSON.toJSONString(alarmExcuteLogRequest));
         AsAlarm asAlarm = asAlarmService.getAsAlarmByPrimaryKey(alarmExcuteLogRequest.getId());
 
 
@@ -101,7 +98,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         alarmExcuteLogRequest1.setPageSize(alarmExcuteLogRequest.getPageSize());
 
 
-        List<AsAlarmTriggerRecord> totalasAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecord(alarmExcuteLogRequest1);
+        long total = asAlarmTriggerRecordService.queryAsAlarmTriggerRecord(alarmExcuteLogRequest1);
         List<AsAlarmTriggerRecord> asAlarmTriggerRecordList = asAlarmTriggerRecordService.queryAsAlarmTriggerRecordPagination(alarmExcuteLogRequest);
 
         List<Long> conditionIds = new ArrayList<>();
@@ -127,23 +124,23 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         }
 
 
-        return new MonitorResult<>(alarmExcuteLogRequest, list, totalasAlarmTriggerRecordList.size());
+        return new MonitorResult<>(alarmExcuteLogRequest, list, total);
     }
 
     @Override
     public MonitorResult<List<AsAlarmRO>> queryAlarmConfigurationList(AlarmBasicConfigurationRequest request) {
-        logger.info("分页查询预警配置：{}", request);
+        logger.info("分页查询预警配置：{}", JSON.toJSONString(request));
 
         long count = asAlarmService.countByCondition(request);
 
         if (count == 0) {
-            return MonitorResultBuilder.pageResult(request, new ArrayList<>(), 0);
+            return MonitorResultBuilder.pageResult(request, Collections.emptyList(), 0);
         }
 
         List<AsAlarm> list = asAlarmService.queryPagingList(request);
 
         if (list.isEmpty()) {
-            return MonitorResultBuilder.pageResult(request, new ArrayList<>(), 0);
+            return MonitorResultBuilder.pageResult(request, Collections.emptyList(), 0);
         }
 
         List<AsAlarmRO> returnList = DataConverterUtils.convert(list, AsAlarmRO.class);
@@ -169,7 +166,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             BeanUtils.copyProperties(saasWorker, saasWorkerRO);
             list.add(saasWorkerRO);
         }
-        return new MonitorResult(list);
+        return MonitorResultBuilder.build(list);
     }
 
     @Override

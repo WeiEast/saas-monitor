@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.service;
 import com.datatrees.notify.async.body.mail.MailEnum;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
@@ -12,9 +12,19 @@ import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.enumeration.*;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
+import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
+import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.*;
+import com.treefinance.saas.monitor.common.utils.SpringIocUtils;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
+import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
+import com.treefinance.saas.monitor.dao.entity.SaasWorker;
+import com.treefinance.saas.monitor.dao.entity.WorkOrderLog;
 import com.treefinance.saas.monitor.dao.mapper.EmailStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import com.treefinance.saas.monitor.exception.NoNeedAlarmException;
@@ -24,11 +34,17 @@ import org.apache.commons.lang.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -44,8 +60,9 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
 
     public static Long day = 24 * 60 * 60 * 1000L;
 
-    @Autowired
-    protected RedisTemplate<String, Object> redisTemplate;
+    @Resource
+    private UidService uidService;
+
     @Autowired
     protected EmailStatAccessMapper emailStatAccessMapper;
     @Autowired
@@ -138,8 +155,8 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
                 saasWorkers.add(SaasWorker.DEFAULT_WORKER);
             }
 
-            Long recordId = UidGenerator.getId();
-            Long orderId = UidGenerator.getId();
+            Long recordId = uidService.getId();
+            Long orderId = uidService.getId();
 
             String content = "";
 
@@ -206,7 +223,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
             AlarmWorkOrder order = alarmWorkOrderService.getByRecordId(record.getId());
             if (order != null) {
                 WorkOrderLog workOrderLog = new WorkOrderLog();
-                workOrderLog.setId(UidGenerator.getId());
+                workOrderLog.setId(uidService.getId());
                 workOrderLog.setOrderId(order.getId());
                 workOrderLog.setRecordId(record.getId());
                 workOrderLog.setOpDesc("系统判定预警恢复");
@@ -264,7 +281,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
 
     public static WorkOrderLog getInitWorkOrderLog(Date now, Long recordId, Long orderId) {
         WorkOrderLog orderLog = new WorkOrderLog();
-        orderLog.setId(UidGenerator.getId());
+        orderLog.setId(SpringIocUtils.getBean(UidService.class).getId());
         orderLog.setOrderId(orderId);
         orderLog.setRecordId(recordId);
         orderLog.setOpName("system");
@@ -453,7 +470,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
     private AlarmRecord genAlarmRecord(Long id, Date baseTime, EAlarmRecordStatus isProcessed, EAlarmLevel level, String content, ESaasEnv eSaasEnv, List<BaseAlarmMsgDTO> msgList, BaseAlarmConfigDTO alarmConfigDTO) {
         Date now = new Date();
         AlarmRecord alarmRecord = new AlarmRecord();
-        alarmRecord.setId(id == null ? UidGenerator.getId() : id);
+        alarmRecord.setId(id == null ? uidService.getId() : id);
         alarmRecord.setLevel(level.name());
         alarmRecord.setSummary(generateSummary(level, eSaasEnv, msgList));
         alarmRecord.setContent(content);

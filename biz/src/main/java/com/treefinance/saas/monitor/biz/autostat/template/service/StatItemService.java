@@ -22,7 +22,7 @@ public interface StatItemService extends BaseQueryService<StatItem>, BaseCacheSe
      * 添加数据项
      *
      * @param statItem
-     * @return -1为添加失败
+     * @return
      */
     long addStatItem(StatItem statItem);
 

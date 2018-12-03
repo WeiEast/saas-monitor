@@ -9,7 +9,7 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.service.TaskExistMonitorAlarmService;
-import com.treefinance.saas.monitor.common.cache.RedisDao;
+import com.treefinance.saas.monitor.share.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoSuccessTaskConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoTaskConfigDTO;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;
@@ -88,7 +88,6 @@ public class NoTaskAlarmJob implements SimpleJob {
                             noSuccessTaskCount = dayMins / intervalMinutes;
                         }
                         Date startTime = DateUtils.addMinutes(redisKeyTime, -intervalMinutes * noSuccessTaskCount);
-                        Date endTime = redisKeyTime;
 
                         List<Boolean> noTaskList = Lists.newArrayList();
                         for (int i = 1; i <= noSuccessTaskCount; i++) {
@@ -102,7 +101,7 @@ public class NoTaskAlarmJob implements SimpleJob {
                             noTaskList.add(true);
                         }
                         if (noTaskList.size() == noSuccessTaskCount) {
-                            taskExistMonitorAlarmService.alarmNoSuccessTaskWithConfig(startTime, endTime, config);
+                            taskExistMonitorAlarmService.alarmNoSuccessTaskWithConfig(startTime, redisKeyTime, config);
                         }
                     }
                     return null;
@@ -144,8 +143,6 @@ public class NoTaskAlarmJob implements SimpleJob {
                             noTaskCount = dayMins / intervalMinutes;
                         }
                         Date startTime = DateUtils.addMinutes(redisKeyTime, -intervalMinutes * noTaskCount);
-                        Date endTime = redisKeyTime;
-
                         List<Boolean> noTaskList = Lists.newArrayList();
                         for (int i = 1; i <= noTaskCount; i++) {
                             Date keyDate = DateUtils.addMinutes(redisKeyTime, -intervalMinutes * i);
@@ -158,7 +155,7 @@ public class NoTaskAlarmJob implements SimpleJob {
                             noTaskList.add(true);
                         }
                         if (noTaskList.size() == noTaskCount) {
-                            taskExistMonitorAlarmService.alarmNoTaskWithConfig(startTime, endTime, config);
+                            taskExistMonitorAlarmService.alarmNoTaskWithConfig(startTime, redisKeyTime, config);
                         }
                     }
                     return null;

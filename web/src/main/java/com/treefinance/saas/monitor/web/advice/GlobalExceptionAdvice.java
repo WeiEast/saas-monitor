@@ -15,14 +15,12 @@
  */
 package com.treefinance.saas.monitor.web.advice;
 
-import com.datatrees.toolkits.util.http.servlet.ServletRequestUtils;
-import com.datatrees.toolkits.util.http.servlet.ServletResponseUtils;
-import com.datatrees.toolkits.util.json.Jackson;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.common.domain.Result;
-import com.treefinance.saas.monitor.exception.TaskTimeOutException;
-import com.treefinance.saas.monitor.exception.UnknownException;
 import com.treefinance.saas.monitor.web.auth.exception.ForbiddenException;
+import com.treefinance.toolkit.util.http.servlet.ServletRequests;
+import com.treefinance.toolkit.util.http.servlet.ServletResponses;
+import com.treefinance.toolkit.util.json.Jackson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -35,6 +33,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ValidationException;
+
 import java.util.Map;
 
 /**
@@ -45,20 +44,6 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionAdvice.class);
-
-    @ExceptionHandler(value = UnknownException.class)
-    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
-    @ResponseBody
-    public void handleUnknownException(HttpServletRequest request, UnknownException ex, HttpServletResponse response) {
-        responseException(request, ex, HttpStatus.SERVICE_UNAVAILABLE, response);
-    }
-
-    @ExceptionHandler(value = TaskTimeOutException.class)
-    @ResponseStatus(HttpStatus.GATEWAY_TIMEOUT)
-    @ResponseBody
-    public void handleTimeoutException(HttpServletRequest request, TaskTimeOutException ex, HttpServletResponse response) {
-        responseException(request, ex, HttpStatus.GATEWAY_TIMEOUT, response);
-    }
 
     @ExceptionHandler(value = ForbiddenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -92,7 +77,8 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
             logBuffer.append(",exception:" + ex);
         }
 //        logger.error(logBuffer.toString(), ex);
-        logger.error("{} of request url={},ip={}", request.getMethod(), request.getRequestURI(), ServletRequestUtils.getIP(request), ex);
+        logger.error("{} of request url={},ip={}", request.getMethod(), request.getRequestURI(),
+            ServletRequests.getIP(request), ex);
 
     }
 
@@ -107,7 +93,7 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
         result.setErrorMsg("系统忙，请稍后重试");//暂时
         //result.setErrorMsg(ex.getMessage());
         String responseBody = Jackson.toJSONString(result);
-        ServletResponseUtils.responseJson(response, httpStatus.value(), responseBody);
+        ServletResponses.responseJson(response, httpStatus.value(), responseBody);
     }
 
 }

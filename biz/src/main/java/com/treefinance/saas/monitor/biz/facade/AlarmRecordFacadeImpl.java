@@ -1,8 +1,9 @@
 package com.treefinance.saas.monitor.biz.facade;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.autostat.utils.CronUtils;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,6 +61,9 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
     private DiamondConfig config;
     @Autowired
     private EmailAlarmConfig emailAlarmConfig;
+
+    @Resource
+    private UidService uidService;
 
 
     private static Map<String, String> typeNameMapping = Maps.newHashMapWithExpectedSize(4);
@@ -217,7 +222,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         WorkOrderLog workOrderLog = new WorkOrderLog();
 
-        workOrderLog.setId(UidGenerator.getId());
+        workOrderLog.setId(uidService.getId());
         workOrderLog.setOrderId(alarmWorkOrder.getId());
         workOrderLog.setRecordId(alarmWorkOrder.getRecordId());
         workOrderLog.setOpDesc("指定处理人员" + request.getProcessorName());
@@ -245,7 +250,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
     @Override
     public MonitorResult<Boolean> updateWorkerOrderStatus(UpdateWorkOrderRequest request) {
-        logger.info("更新工单状态id:{}", request.toString());
+        logger.info("更新工单状态:{}", JSON.toJSONString(request));
 
         EOrderStatus newStatus = EOrderStatus.getByValue(request.getStatus());
         if (newStatus == null) {
@@ -307,7 +312,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         WorkOrderLog workOrderLog = new WorkOrderLog();
 
-        workOrderLog.setId(UidGenerator.getId());
+        workOrderLog.setId(uidService.getId());
         workOrderLog.setOrderId(alarmWorkOrder.getId());
         workOrderLog.setRecordId(alarmWorkOrder.getRecordId());
         workOrderLog.setOpDesc(opName + "处理工单，状态由" + (oldStatus == null ? "未处理" : oldStatus.getDesc()) +
@@ -464,8 +469,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
                     processedCount += 1;
                 }
 
-                double subDuration = StatHelper.getDiffDuration(record.getAlarmType(), record.getEndTime(), record
-                        .getDataTime(), config, emailAlarmConfig, record.getStartTime()).getDuration();
+                double subDuration = StatHelper.getDiffDuration( record.getEndTime(), record.getStartTime()).getDuration();
 
                 duration += subDuration;
                 maxDuration = subDuration > maxDuration ? subDuration : maxDuration;
@@ -574,7 +578,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
             if (alarmWorkOrder == null) {
                 continue;
             }
-            StatHelper.StartTimeModel model = StatHelper.getDiffDuration(recordRO.getAlarmType(), recordRO.getEndTime(), recordRO.getDataTime(), config, emailAlarmConfig, recordRO.getStartTime());
+            StatHelper.StartTimeModel model = StatHelper.getDiffDuration(recordRO.getEndTime(), recordRO.getStartTime());
 
             recordRO.setContinueTime(model.getDuration());
             recordRO.setDesc(alarmWorkOrder.getRemark());
@@ -605,11 +609,11 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         EBizType bizType = EBizType.getBizType(request.getBizType());
 
-        Integer count = alarmRecordService.countAlarmRecordInBizType(bizType.name().toLowerCase(), request.getStartTime(), request.getEndTime());
-
         if(request.getEndTime() != null){
             request.setEndTime(MonitorDateUtils.getDayEndTime(request.getEndTime()));
         }
+
+        Integer count = alarmRecordService.countAlarmRecordInBizType(bizType.name().toLowerCase(), request.getStartTime(), request.getEndTime());
 
         List<AlarmRecord> list = alarmRecordService.queryTodayErrorList(bizType.name().toLowerCase(), request
                         .getStartTime(), request.getEndTime(),request.getOffset(),request.getPageSize());

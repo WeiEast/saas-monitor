@@ -3,23 +3,19 @@ package com.treefinance.saas.monitor.biz.alarm.service.message.impl;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmMessage;
 import com.treefinance.saas.monitor.biz.alarm.service.message.MessageSender;
 import com.treefinance.saas.monitor.biz.alarm.service.message.MsgChannel;
 import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.common.domain.Constants;
-import com.treefinance.saas.monitor.common.domain.dto.IvrContactsDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.utils.AESUtils;
 import com.treefinance.saas.monitor.common.utils.HttpClientUtils;
 import com.treefinance.saas.monitor.dao.entity.SaasWorker;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +23,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import java.text.ParseException;
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +48,9 @@ public class IvrSender implements MessageSender {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Resource
+    private UidService uidService;
 
     @Override
     public void sendMessage(AlarmMessage alaramMessage, List<SaasWorker> recivers) {
@@ -78,7 +77,7 @@ public class IvrSender implements MessageSender {
      */
     protected Map<String, Object> generateBody(String alarmInfo, List<SaasWorker> saasWorkers) {
         List<Map<String, Object>> taskItems = Lists.newArrayList();
-        Long refId = UidGenerator.getId();
+        Long refId = uidService.getId();
 
         saasWorkers.stream().filter(saasWorker -> StringUtils.isNotEmpty(saasWorker.getMobile()))
                 .forEach(saasWorker -> {

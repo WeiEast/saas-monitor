@@ -64,7 +64,6 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
                 operatorAlarmMonitorService.alarm(jobTime, configDTO, type, EAlarmType.operator_alarm);
             } catch (Exception e) {
                 logger.error("运营商监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
-                continue;
             }
         }
         logger.info("运营商监控,预警定时任务执行jobTime={}完成,耗时{}ms", MonitorDateUtils.format(jobTime), System.currentTimeMillis() - start);

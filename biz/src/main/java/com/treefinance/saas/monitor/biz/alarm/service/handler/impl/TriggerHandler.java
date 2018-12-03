@@ -5,7 +5,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.alarm.expression.ExpressionParser;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
@@ -62,6 +62,9 @@ public class TriggerHandler implements AlarmHandler {
 
     @Autowired
     private List<ExpressionParser> expressionParsers;
+
+    @Resource
+    private UidService uidService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -317,7 +320,7 @@ public class TriggerHandler implements AlarmHandler {
         Long alarmId = trigger.getAlarmId();
 
         AsAlarmTriggerRecord record = new AsAlarmTriggerRecord();
-        record.setId(UidGenerator.getId());
+        record.setId(uidService.getId());
         record.setAlarmId(alarmId);
         record.setConditionId(triggerId);
         record.setContext(JSON.toJSONString(data));

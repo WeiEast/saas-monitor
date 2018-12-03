@@ -35,4 +35,8 @@ public class SpringIocUtils implements ApplicationContextAware {
     public static Object getBean(String name) throws BeansException {
         return applicationContext.getBean(name);
     }
+
+    public static <T> T getBean(Class<T> requiredType) {
+        return applicationContext.getBean(requiredType);
+    }
 }

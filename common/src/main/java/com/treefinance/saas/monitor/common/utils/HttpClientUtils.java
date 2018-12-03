@@ -341,15 +341,4 @@ public class HttpClientUtils {
         return httpStr;
     }
 
-
-
-    public static void main(String[] args) {
-        System.out.println(HttpClientUtils.doGet("https://www.google.co.jp/?gfe_rd=cr&ei=W435WL2vFbDU8AfP-KqABQ"));
-        System.out.println(HttpClientUtils.doGet("http://www.baidu.com"));
-        Map<String, Object> map = Maps.newHashMap();
-        map.put("kw", "%E7%AC%AC%E4%B8%89%E6%96%B9%E7%9A%84");
-        map.put("fr", "wwwt");
-        System.out.println(HttpClientUtils.doGet("https://tieba.baidu.com/f?", map));
-    }
-
 }

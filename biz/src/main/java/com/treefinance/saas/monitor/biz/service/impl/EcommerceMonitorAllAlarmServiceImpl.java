@@ -59,9 +59,8 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             //由于任务执行需要时间,保证预警的精确,预警统计向前一段时间(各业务任务的超时时间),此时此段时间的任务可以保证都已统计完毕.
             //好处:预警时间即使每隔1分钟预警,依然可以保证预警的准确.坏处:收到预警消息时间向后延迟了相应时间.
             //如:jobTime=14:11,但是电商超时时间为600s,则statTime=14:01
-            Date statTime = jobTime;
             //取得预警原点时间,如:statTime=14:01分,30分钟间隔统计一次,则beginTime为14:00.
-            Date baseTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(statTime, intervalMins);
+            Date baseTime = TaskOperatorMonitorKeyHelper.getRedisStatDateTime(jobTime, intervalMins);
 
             //判断此时刻是否预警预警过
             String alarmTimeKey = EcommerceAlarmKeyHelper.strKeyOfAlarmTimeLog(baseTime, config.getAlarmType(), statType);
@@ -75,11 +74,10 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
 
             //获取基础数据
             Date startTime = DateUtils.addMinutes(baseTime, -intervalMins);
-            Date endTime = baseTime;
-            EcommerceAllStatAccessDTO dataDTO = this.getBaseData(jobTime, startTime, endTime, config, statType);
+            EcommerceAllStatAccessDTO dataDTO = this.getBaseData(jobTime, startTime, baseTime, config, statType);
             if (dataDTO == null) {
                 logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有电商的统计数据",
-                        MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(endTime));
+                        MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(baseTime));
                 return;
             }
 
@@ -99,7 +97,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
                 return;
             }
             //发送预警
-            alarmMsg(msgList, jobTime, startTime, endTime, config, statType);
+            alarmMsg(msgList, jobTime, startTime, baseTime, config, statType);
 
         } catch (Exception e) {
             logger.error("电商预警,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);

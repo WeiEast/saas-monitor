@@ -7,7 +7,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.treefinance.saas.monitor.biz.autostat.model.AsConstants;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.model.DbColumn;
-import com.treefinance.saas.monitor.common.cache.RedisDao;
+import com.treefinance.saas.monitor.share.cache.RedisDao;
 import com.treefinance.saas.monitor.dao.mapper.AutoStatMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;

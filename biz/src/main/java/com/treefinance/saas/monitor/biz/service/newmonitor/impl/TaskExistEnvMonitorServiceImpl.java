@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -31,7 +31,7 @@ public class TaskExistEnvMonitorServiceImpl implements TaskExistMonitorService {
     private static final Logger logger = LoggerFactory.getLogger(TaskExistMonitorService.class);
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate redisTemplate;
 
 
     @Override

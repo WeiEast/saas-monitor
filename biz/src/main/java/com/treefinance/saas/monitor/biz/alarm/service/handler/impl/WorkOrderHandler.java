@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.alarm.service.handler.impl;
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmMessage;
@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,9 @@ public class WorkOrderHandler implements AlarmHandler {
     private AlarmRecordService alarmRecordService;
     @Autowired
     protected AlarmWorkOrderService alarmWorkOrderService;
+
+    @Resource
+    private UidService uidService;
 
     @Override
     public void handle(AlarmConfig config, AlarmContext context) {
@@ -84,7 +88,7 @@ public class WorkOrderHandler implements AlarmHandler {
                         workOrder = new AlarmWorkOrder();
                         workOrder.setCreateTime(now);
                         workOrder.setDutyName(dutyNames);
-                        workOrder.setId(UidGenerator.getId());
+                        workOrder.setId(uidService.getId());
                         workOrder.setLastUpdateTime(now);
                         workOrder.setRecordId(recordId);
                         workOrder.setProcessorName("system");
@@ -92,7 +96,7 @@ public class WorkOrderHandler implements AlarmHandler {
                         workOrder.setRemark("创建操作工单");
 
                         orderLog = new WorkOrderLog();
-                        orderLog.setId(UidGenerator.getId());
+                        orderLog.setId(uidService.getId());
                         orderLog.setOrderId(workOrder.getId());
                         orderLog.setRecordId(recordId);
                         orderLog.setOpName("system");
@@ -143,7 +147,7 @@ public class WorkOrderHandler implements AlarmHandler {
                     workOrderLog.setOrderId(alarmWorkOrder.getId());
                 }
 
-                workOrderLog.setId(UidGenerator.getId());
+                workOrderLog.setId(uidService.getId());
                 workOrderLog.setRecordId(recordId);
                 workOrderLog.setOpDesc("系统判定预警恢复");
                 workOrderLog.setOpName("system");
