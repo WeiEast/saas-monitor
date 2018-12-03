@@ -6,14 +6,14 @@
     http://www.springframework.org/schema/context  
     http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-	<import resource="classpath*:spring/core.diamond.xml" />
-	<import resource="classpath*:spring/core.dubbo.xml" />
-	<import resource="classpath*:spring/core.datasource.xml" />
-	<import resource="classpath*:spring/core.jedis.xml" />
+	<import resource="monitor-diamond.xml"/>
+	<import resource="monitor-dubbo-registry.xml"/>
+	<import resource="classpath*:spring/monitor-datasource.xml"/>
+	<import resource="classpath*:spring/monitor-jedis.xml"/>
 	<import resource="classpath*:spring/elastic-job.xml"/>
+
 	<context:component-scan base-package="com.treefinance.saas.monitor" />
-
-
+	
 	<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
 		<property name="corePoolSize" value="2" />
 		<property name="maxPoolSize" value="100" />

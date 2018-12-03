@@ -9,7 +9,7 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.service.ApiStatAccessService;
-import com.treefinance.saas.monitor.common.cache.RedisDao;
+import com.treefinance.saas.monitor.share.cache.RedisDao;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiBaseStatRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiStatAccessRO;
@@ -88,7 +88,8 @@ public class HttpDataFlushJob implements SimpleJob {
                     });
                     if (!deleteList.isEmpty()) {
                         logger.info("刷新数据完成，清除数据：deleteList={}", JSON.toJSONString(deleteList));
-                        redisOperations.opsForSet().remove(dayKey, deleteList.toArray(new String[]{}));
+                        String[] values = deleteList.toArray(new String[0]);
+                        redisOperations.opsForSet().remove(dayKey, values);
                     }
                     return null;
                 }

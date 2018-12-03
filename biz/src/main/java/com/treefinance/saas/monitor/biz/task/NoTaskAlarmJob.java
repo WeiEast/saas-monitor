@@ -9,7 +9,7 @@ import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.service.TaskExistMonitorAlarmService;
-import com.treefinance.saas.monitor.common.cache.RedisDao;
+import com.treefinance.saas.monitor.share.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoSuccessTaskConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoTaskConfigDTO;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;

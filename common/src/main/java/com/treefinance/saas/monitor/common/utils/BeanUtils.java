@@ -1,10 +1,7 @@
 package com.treefinance.saas.monitor.common.utils;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.springframework.cglib.beans.BeanCopier;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -61,13 +58,4 @@ public final class BeanUtils {
         return null;
     }
 
-    public static void main(String[] args) {
-        Map<String, List<String>> map = Maps.newHashMap();
-        map.put("1", Lists.newArrayList("1"));
-        String str = checkNull(() -> map.get("2").get(0));
-        String str1 = checkNull(() -> map.get("1").get(1));
-        System.out.println(str);
-        if (str == null)
-            return;
-    }
 }

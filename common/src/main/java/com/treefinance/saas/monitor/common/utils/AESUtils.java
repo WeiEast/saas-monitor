@@ -1,27 +1,19 @@
 package com.treefinance.saas.monitor.common.utils;
 
-import com.datatrees.toolkits.util.Base64Codec;
+
+import com.treefinance.toolkit.util.Base64Codec;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 
 public class AESUtils {
-
-    public static void main(String[] args) throws Exception {
-//        String url = "http://saas-taskdata.oss-cn-shanghai.aliyuncs.com/dev/QATestabcdefghQA/data-service/rpc-api/PengyuanEducationFacade_query/118756545411444736?Expires=1514278574&OSSAccessKeyId=v2V12KRXo6GNjZuu&Signature=bdV8CBVVe0DQiEG%2F6PZcjh192RA%3D";
-//        String key = "UocOo3tWNrc2p28PXgf1ow==";
-//        UrlResource resource = new UrlResource(url);
-//        byte[] data = IOUtils.toByteArray(resource.getInputStream());
-//        System.out.println(decrytData(data, key));
-        System.out.println(decrytDataWithBase64AsString("a+p/pJDbgmQQHxXlZA+ouOIjWn1zMyS6ONwei+mbF/avtM3JvzM/h7CuICELBLK5cVq+fd4BvqwRGdyuXNobMINAvVQGEnaoKoUD82/jRj5vmNYG1lPk1QyGE7Ll8lmzSy2i/KI8y2S434KUV1o0g55I59uVxN/SmI4ONlCC0tA=", "Kq421cj5L/PESFywMaOjqg=="));
-
-    }
 
     /**
      * 解密数据

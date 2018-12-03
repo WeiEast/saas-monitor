@@ -28,9 +28,9 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
     private final static Logger logger = LoggerFactory.getLogger(EcommerceDetailAccessDaoImpl.class);
 
     @Autowired
-    EcommerceAllStatAccessMapper ecommerceAllStatAccessMapper;
+    private EcommerceAllStatAccessMapper ecommerceAllStatAccessMapper;
     @Autowired
-    EcommerceAllStatDayAccessMapper ecommerceAllStatDayAccessMapper;
+    private EcommerceAllStatDayAccessMapper ecommerceAllStatDayAccessMapper;
 
     @Override
     public List<EcommerceAllStatAccess> getEcommerceAllDetailList(EcommerceTimeShareDTO request) {

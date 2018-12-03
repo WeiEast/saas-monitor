@@ -12,10 +12,19 @@ import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.enumeration.*;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
+import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
+import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.SpringIocUtils;
-import com.treefinance.saas.monitor.dao.entity.*;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
+import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
+import com.treefinance.saas.monitor.dao.entity.SaasWorker;
+import com.treefinance.saas.monitor.dao.entity.WorkOrderLog;
 import com.treefinance.saas.monitor.dao.mapper.EmailStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import com.treefinance.saas.monitor.exception.NoNeedAlarmException;
@@ -25,12 +34,17 @@ import org.apache.commons.lang.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -49,8 +63,6 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
     @Resource
     private UidService uidService;
 
-    @Autowired
-    protected RedisTemplate<String, Object> redisTemplate;
     @Autowired
     protected EmailStatAccessMapper emailStatAccessMapper;
     @Autowired

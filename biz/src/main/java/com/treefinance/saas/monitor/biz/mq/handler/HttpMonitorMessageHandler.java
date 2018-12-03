@@ -8,7 +8,7 @@ import com.treefinance.saas.assistant.model.MonitorTagEnum;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
-import com.treefinance.saas.monitor.common.cache.RedisDao;
+import com.treefinance.saas.monitor.share.cache.RedisDao;
 import com.treefinance.saas.monitor.dao.entity.ApiStatAccess;
 import com.treefinance.saas.monitor.dao.entity.ApiStatMerchantDayAccess;
 import com.treefinance.saas.monitor.dao.entity.ApiStatTotalAccess;

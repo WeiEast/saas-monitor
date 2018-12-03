@@ -380,7 +380,8 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
         });
         // 移除空数据key
         if (CollectionUtils.isNotEmpty(emptyDataKeys)) {
-            redisTemplate.boundSetOps(dataListKey).remove(emptyDataKeys.toArray(new String[emptyDataKeys.size()]));
+            String[] values = emptyDataKeys.toArray(new String[0]);
+            redisTemplate.boundSetOps(dataListKey).remove(values);
         }
 
         // 二次计算(统计数据来源：0-基础数据，1-统计数据项)

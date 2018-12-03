@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.task;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskPerMinDataFlushService;
-import com.treefinance.saas.monitor.common.cache.RedisDao;
+import com.treefinance.saas.monitor.share.cache.RedisDao;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorUtils;
 import org.slf4j.Logger;

@@ -45,14 +45,17 @@ public class ByteServletInputStream extends ServletInputStream {
     return inputStream.read();
   }
 
+  @Override
   public boolean isFinished() {
     return inputStream.available() == 0;
   }
 
+  @Override
   public boolean isReady() {
     return true;
   }
 
+  @Override
   public void setReadListener(ReadListener readListener) {
     throw new RuntimeException("This operation is unavailable");
   }

@@ -5,7 +5,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskMonitorMessage;
 import com.treefinance.saas.monitor.biz.helper.TaskMonitorPerMinKeyHelper;
-import com.treefinance.saas.monitor.common.cache.RedisDao;
+import com.treefinance.saas.monitor.share.cache.RedisDao;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatus;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
