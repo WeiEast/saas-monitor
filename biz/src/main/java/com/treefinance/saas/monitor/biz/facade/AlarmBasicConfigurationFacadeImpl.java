@@ -6,13 +6,24 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmConfig;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmContext;
 import com.treefinance.saas.monitor.biz.alarm.service.handler.AlarmHandlerChain;
-import com.treefinance.saas.monitor.biz.service.*;
+import com.treefinance.saas.monitor.biz.service.AsAlarmService;
+import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerRecordService;
+import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerService;
+import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
 import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.*;
+import com.treefinance.saas.monitor.dao.entity.AsAlarm;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmConstant;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmMsg;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmNotify;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmQuery;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmTrigger;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerRecord;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmVariable;
+import com.treefinance.saas.monitor.dao.entity.SaasWorker;
 import com.treefinance.saas.monitor.facade.domain.request.AlarmExcuteLogRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationDetailRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationRequest;
@@ -34,7 +45,11 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -47,9 +62,6 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
 
     @Autowired
     private AsAlarmService asAlarmService;
-
-    @Autowired
-    private AsAlarmMsgService asAlarmMsgService;
 
     @Autowired
     private AsAlarmTriggerService asAlarmTriggerService;

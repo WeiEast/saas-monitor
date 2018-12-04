@@ -30,13 +30,13 @@ public class AutoStatTemplateParser implements StatTemplateParser {
      */
     private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
-    BasicDataFilterContext basicDataFilterContext;
+    private BasicDataFilterContext basicDataFilterContext;
     @Autowired
-    StatTemplateService statTemplateService;
+    private StatTemplateService statTemplateService;
     @Autowired
-    ElasticSimpleJobService elasticSimpleJobService;
+    private ElasticSimpleJobService elasticSimpleJobService;
     @Autowired
-    DefaultStatDataCalculator statDataSpelCalculator;
+    private DefaultStatDataCalculator statDataSpelCalculator;
 
     /**
      * local job

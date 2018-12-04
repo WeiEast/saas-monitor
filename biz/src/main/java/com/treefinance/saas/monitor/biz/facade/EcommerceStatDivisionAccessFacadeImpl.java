@@ -22,7 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -37,7 +40,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
     private final static Logger logger = LoggerFactory.getLogger(EcommerceStatDivisionAccessFacadeImpl.class);
 
     @Autowired
-    EcommerceDetailAccessDao ecommerceDetailAccessDao;
+    private EcommerceDetailAccessDao ecommerceDetailAccessDao;
 
 
     /**
