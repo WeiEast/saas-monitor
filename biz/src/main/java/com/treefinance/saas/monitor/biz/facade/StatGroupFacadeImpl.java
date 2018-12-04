@@ -34,9 +34,9 @@ public class StatGroupFacadeImpl implements StatGroupFacade {
     private static final Logger logger = LoggerFactory.getLogger(StatGroupFacade.class);
 
     @Autowired
-    StatGroupService statGroupService;
+    private StatGroupService statGroupService;
     @Autowired
-    UidService uidService;
+    private UidService uidService;
 
 
     @Override

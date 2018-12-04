@@ -1,6 +1,5 @@
 package com.treefinance.saas.monitor.ivr.controller;
 
-import com.treefinance.saas.monitor.biz.service.IvrCallBackService;
 import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
@@ -22,14 +21,11 @@ public class IvrCallBackController {
     private static final Logger logger = LoggerFactory.getLogger(IvrCallBackController.class);
 
     @Autowired
-    private IvrCallBackService ivrCallBackService;
-    @Autowired
     private IvrNotifyService ivrNotifyService;
 
     @RequestMapping("/callback")
     public String dealIvrCallBackMessage(@RequestBody IvrCallBackResult ivrCallBackResult) {
         logger.info("Ivr回调信息传入为{}", ivrCallBackResult.toString());
-//        ivrCallBackService.dealIvrCallBackMessage(ivrCallBackResult);
         ivrNotifyService.resendMessage(ivrCallBackResult);
         return "success";
     }

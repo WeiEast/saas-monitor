@@ -27,11 +27,11 @@ import java.util.List;
 public class DashBoardFacadeImpl implements DashBoardFacade {
 
     @Autowired
-    AllBizTypeStatAccessService allBizTypeStatAccessService;
+    private AllBizTypeStatAccessService allBizTypeStatAccessService;
     @Autowired
-    AlarmRecordService alarmRecordService;
+    private AlarmRecordService alarmRecordService;
     @Autowired
-    OperatorStatAccessService operatorStatAccessService;
+    private OperatorStatAccessService operatorStatAccessService;
 
     @Override
     public MonitorResult<DashBoardResult> queryDashboardResult(DashboardStatRequest request) {

@@ -1,6 +1,8 @@
 package com.treefinance.saas.monitor.biz.service;
 
-import com.treefinance.saas.monitor.common.domain.dto.*;
+import com.treefinance.saas.monitor.common.domain.dto.MerchantStatEcommerceDTO;
+import com.treefinance.saas.monitor.common.domain.dto.MerchantStatMailDTO;
+import com.treefinance.saas.monitor.common.domain.dto.MerchantStatOperatorDTO;
 
 import java.util.List;
 
@@ -9,27 +11,6 @@ import java.util.List;
  * Created by yh-treefinance on 2017/6/1.
  */
 public interface StatAccessUpdateService {
-
-    /**
-     * 批量保存商户访问数据
-     *
-     * @param list
-     */
-    void batchInsertStatAccess(List<MerchantStatAccessDTO> list);
-
-    /**
-     * 批量保存商户日访问数据
-     *
-     * @param list
-     */
-    void batchInsertStaDayAccess(List<MerchantStatDayAccessDTO> list);
-
-    /**
-     * 批量保存银行访问数据
-     *
-     * @param list
-     */
-    void batchInsertBankList(List<MerchantStatBankDTO> list);
 
     /**
      * 批量保存电商访问数据
