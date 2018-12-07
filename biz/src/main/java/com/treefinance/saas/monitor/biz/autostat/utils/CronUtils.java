@@ -1,7 +1,6 @@
 package com.treefinance.saas.monitor.biz.autostat.utils;
 
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
-import org.apache.commons.lang3.time.DateUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.quartz.CronExpression;
 
 import java.text.ParseException;
@@ -11,7 +10,11 @@ import java.util.Date;
 /**
  * Created by yh-treefinance on 2018/2/5.
  */
-public class CronUtils {
+public final class CronUtils {
+
+    private CronUtils() {
+    }
+
     /**
      * 获取统计时间
      *
@@ -20,13 +23,12 @@ public class CronUtils {
      * @return
      */
     public static Date getStatDate(Date currentTime, String statCron) {
-        CronExpression cronExpression = null;
         try {
-            cronExpression = new CronExpression(statCron);
+            CronExpression cronExpression = new CronExpression(statCron);
             Date cronDate = cronExpression.getNextValidTimeAfter(currentTime);
             int timeDiff = ((Long) (cronExpression.getNextValidTimeAfter(cronDate).getTime() - cronDate.getTime())).intValue();
             while (currentTime.before(cronDate)) {
-                cronDate = DateUtils.addMilliseconds(cronDate, -2 * timeDiff);
+                cronDate = DateUtils.minusMillis(cronDate, 2 * timeDiff);
                 cronDate = cronExpression.getNextValidTimeAfter(cronDate);
             }
             return cronDate;
@@ -46,12 +48,13 @@ public class CronUtils {
         if (intervalMinutes == null) {
             intervalMinutes = 60;//默认定时统计时间段为60分钟
         }
-        Date intervalTime = org.apache.commons.lang.time.DateUtils.truncate(dataTime, Calendar.MINUTE);
-        Long currentMinute = org.apache.commons.lang.time.DateUtils.getFragmentInMinutes(intervalTime, Calendar.HOUR_OF_DAY);
+        Date intervalTime = org.apache.commons.lang3.time.DateUtils.truncate(dataTime, Calendar.MINUTE);
+        Long currentMinute = org.apache.commons.lang3.time.DateUtils.getFragmentInMinutes(intervalTime,
+            Calendar.HOUR_OF_DAY);
         if (currentMinute % intervalMinutes == 0) {
             return intervalTime;
         }
-        intervalTime = org.apache.commons.lang.time.DateUtils.addMinutes(intervalTime, (-currentMinute.intValue() % intervalMinutes));
+        intervalTime = DateUtils.plusMinutes(intervalTime, (-currentMinute.intValue() % intervalMinutes));
         return intervalTime;
     }
 
@@ -78,19 +81,10 @@ public class CronUtils {
         }
     }
 
-    public static void main(String[] args) {
-        String statCron = "* * * ? * Mon";
-//        Date date = CronUtils.getStatDate(new Date(), (Integer) null);
-//        System.out.println(MonitorDateUtils.format(date));
-
-        getPreMeetDay(statCron,new Date());
-
-    }
-
     public static Date getNextMeetDay(String corn,Date now){
         try {
             CronExpression cronExpression = new CronExpression(corn);
-            return cronExpression.getNextValidTimeAfter(MonitorDateUtils.getDayStartTime(now));
+            return cronExpression.getNextValidTimeAfter(DateUtils.getStartTimeOfDay(now));
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -100,10 +94,11 @@ public class CronUtils {
     public static Date getPreMeetDay(String corn,Date now){
         try {
             CronExpression cronExpression = new CronExpression(corn);
-            Date after = cronExpression.getNextValidTimeAfter(MonitorDateUtils.getDayStartTime(now));
+            Date after =
+                cronExpression.getNextValidTimeAfter(DateUtils.getStartTimeOfDay(now));
             Date afterAfter = cronExpression.getNextValidTimeAfter(new Date(after.getTime() + 24*60*60*1000));
 
-            Long interval = afterAfter.getTime() - after.getTime();
+            long interval = afterAfter.getTime() - after.getTime();
 
             return new Date(after.getTime() - interval);
         } catch (ParseException e) {

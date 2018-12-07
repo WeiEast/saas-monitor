@@ -5,18 +5,18 @@ import com.alibaba.fastjson.TypeReference;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.b2b.saas.util.SaasDateUtils;
 import com.treefinance.saas.monitor.biz.service.RealTimeAvgStatAccessService;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.domain.dto.RealTimeStatAccessDTO;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.RealTimeStatAccess;
 import com.treefinance.saas.monitor.dao.entity.RealTimeStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.RealTimeStatAccessMapper;
 import com.treefinance.saas.monitor.facade.domain.request.BaseStatAccessRequest;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -65,31 +65,27 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
         if (request.getSaasEnv() != null) {
             innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
         } else {
-            innerCriteria.andSaasEnvEqualTo((byte) 0);
+            innerCriteria.andSaasEnvEqualTo((byte)0);
         }
         if (request.getIntervalMins() != null && request.getIntervalMins() > 0) {
-            request.setStartTime(MonitorDateUtils.getIntervalDateTime(request.getStartTime(), request.getIntervalMins()));
+            request.setStartTime(SaasDateUtils.getIntervalDateTime(request.getStartTime(), request.getIntervalMins()));
         }
         if (request.getIntervalMins() != null && request.getIntervalMins() > 0) {
-            request.setEndTime(MonitorDateUtils.getLaterBorderIntervalDateTime(request.getEndTime(), request.getIntervalMins()));
+            request.setEndTime(SaasDateUtils.getLaterBorderIntervalDateTime(request.getEndTime(), request.getIntervalMins()));
         }
-        innerCriteria.andBizTypeEqualTo(request.getBizType())
-                .andDataTimeGreaterThanOrEqualTo(request.getStartTime())
-                .andDataTimeLessThan(request.getEndTime());
+        innerCriteria.andBizTypeEqualTo(request.getBizType()).andDataTimeGreaterThanOrEqualTo(request.getStartTime()).andDataTimeLessThan(request.getEndTime());
         List<RealTimeStatAccess> list = realTimeStatAccessMapper.selectByExample(criteria);
 
         List<RealTimeStatAccessDTO> dataList = this.convertStatData(list);
         Integer intervalMins = request.getIntervalMins() == null ? 1 : request.getIntervalMins();
         dataList = this.convertIntervalMinsData(dataList, intervalMins);
-        Map<String, RealTimeStatAccessDTO> dataMap = dataList.stream()
-                .collect(Collectors.toMap(d -> MonitorDateUtils.format(d.getDataTime()), d -> d));
-        List<String> timeList = this.getIntervalTimeStrList(request.getStartTime(), request.getEndTime(),
-                intervalMins, request.getHiddenRecentPoint());
+        Map<String, RealTimeStatAccessDTO> dataMap = dataList.stream().collect(Collectors.toMap(d -> DateUtils.format(d.getDataTime()), d -> d));
+        List<String> timeList = this.getIntervalTimeStrList(request.getStartTime(), request.getEndTime(), intervalMins, request.getHiddenRecentPoint());
         for (String timeStr : timeList) {
             if (dataMap.get(timeStr) == null) {
-                //初始化一个空值,填充时间空白点
+                // 初始化一个空值,填充时间空白点
                 RealTimeStatAccessDTO data = new RealTimeStatAccessDTO();
-                data.setDataTime(MonitorDateUtils.parse(timeStr));
+                data.setDataTime(DateUtils.parse(timeStr));
                 data.setStatDataMap(new HashMap<>());
                 result.add(data);
             } else {
@@ -101,20 +97,19 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
 
     @Override
     public void saveDataOnFixedTime() {
-        Date nowDate = MonitorDateUtils.getDayStartTime(new Date());
-        Date sevenDate = DateUtils.addDays(nowDate, -7);
+        Date nowDate = DateUtils.getStartTimeOfDay(new Date());
+        Date sevenDate = DateUtils.minusDays(nowDate, 7);
 
         RealTimeStatAccessCriteria criteria = new RealTimeStatAccessCriteria();
         RealTimeStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
-        innerCriteria.andDataTimeGreaterThanOrEqualTo(sevenDate)
-                .andDataTimeLessThan(nowDate);
+        innerCriteria.andDataTimeGreaterThanOrEqualTo(sevenDate).andDataTimeLessThan(nowDate);
         List<RealTimeStatAccess> list = realTimeStatAccessMapper.selectByExample(criteria);
 
-        //key:uniqueKey
-        Map<String, List<RealTimeStatAccess>> map = list.stream()
-                .collect(Collectors.groupingBy(r -> this.getUniqueKey(r.getAppId(), r.getGroupCode(), r.getDataType(), r.getBizType(), r.getSaasEnv())));
+        // key:uniqueKey
+        Map<String, List<RealTimeStatAccess>> map =
+            list.stream().collect(Collectors.groupingBy(r -> this.getUniqueKey(r.getAppId(), r.getGroupCode(), r.getDataType(), r.getBizType(), r.getSaasEnv())));
 
-        //key:uniqueKey,value:当天各个时刻7天平均值
+        // key:uniqueKey,value:当天各个时刻7天平均值
         Map<String, List<RealTimeStatAccessDTO>> avgMap = Maps.newHashMap();
         for (Map.Entry<String, List<RealTimeStatAccess>> entry : map.entrySet()) {
             if (CollectionUtils.isEmpty(entry.getValue())) {
@@ -130,14 +125,10 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
         redisTemplate.expire(redisKey, 3, TimeUnit.DAYS);
     }
 
-
     @Override
-    public List<RealTimeStatAccessDTO> queryDataByConditions(String appId, Byte saasEnv, Byte bizType,
-                                                             Date startTime, Date endTime, Integer intervalMins,
-                                                             Byte hiddenRecentPoint) {
+    public List<RealTimeStatAccessDTO> queryDataByConditions(String appId, Byte saasEnv, Byte bizType, Date startTime, Date endTime, Integer intervalMins, Byte hiddenRecentPoint) {
         if (startTime == null || endTime == null || bizType == null) {
-            logger.error("任务实时监控平均值查询,参数缺失,bizType,startTime,endTime必填,appId={},saaEnv={},startTime={},endTime={}",
-                    appId, saasEnv, bizType, startTime, endTime);
+            logger.error("任务实时监控平均值查询,参数缺失,bizType,startTime,endTime必填,appId={},saaEnv={},startTime={},endTime={}", appId, saasEnv, bizType, startTime, endTime);
             throw new IllegalArgumentException("任务实时监控平均值查询,参数缺失,bizType,startTime,endTime必填");
         }
         if (StringUtils.isBlank(appId)) {
@@ -147,10 +138,10 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
             saasEnv = 0;
         }
         if (intervalMins != null && intervalMins > 0) {
-            startTime = MonitorDateUtils.getIntervalDateTime(startTime, intervalMins);
+            startTime = SaasDateUtils.getIntervalDateTime(startTime, intervalMins);
         }
         if (intervalMins != null && intervalMins > 0) {
-            endTime = MonitorDateUtils.getLaterBorderIntervalDateTime(endTime, intervalMins);
+            endTime = SaasDateUtils.getLaterBorderIntervalDateTime(endTime, intervalMins);
         }
         List<Date> dateList = this.getDayStartTimeList(startTime, endTime);
         List<RealTimeStatAccessDTO> dataList = Lists.newArrayList();
@@ -164,15 +155,14 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
             }
         }
         dataList = this.convertIntervalMinsData(dataList, intervalMins);
-        Map<String, RealTimeStatAccessDTO> dataMap = dataList.stream()
-                .collect(Collectors.toMap(d -> MonitorDateUtils.format(d.getDataTime()), d -> d));
+        Map<String, RealTimeStatAccessDTO> dataMap = dataList.stream().collect(Collectors.toMap(d -> DateUtils.format(d.getDataTime()), d -> d));
         List<RealTimeStatAccessDTO> result = Lists.newArrayList();
         List<String> timeList = this.getIntervalTimeStrList(startTime, endTime, intervalMins, hiddenRecentPoint);
         for (String timeStr : timeList) {
             if (dataMap.get(timeStr) == null) {
-                //初始化一个空值,填充时间空白点
+                // 初始化一个空值,填充时间空白点
                 RealTimeStatAccessDTO data = new RealTimeStatAccessDTO();
-                data.setDataTime(MonitorDateUtils.parse(timeStr));
+                data.setDataTime(DateUtils.parse(timeStr));
                 data.setStatDataMap(new HashMap<>());
                 result.add(data);
             } else {
@@ -182,7 +172,6 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
         return result;
     }
 
-
     /**
      * 获取redisKey,存储某天7天平均值的redisKey
      *
@@ -190,8 +179,7 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
      * @return
      */
     private String getRedisKey(Date date) {
-        String redisKey = Joiner.on(":").join(REAL_TIME_STAT_REDIS_KEY_PREFIX, MonitorDateUtils.format2Ymd(date));
-        return redisKey;
+        return Joiner.on(":").join(REAL_TIME_STAT_REDIS_KEY_PREFIX, DateUtils.formatDate(date));
     }
 
     /**
@@ -205,11 +193,11 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
      * @return
      */
     private String getUniqueKey(String appId, String groupCode, Byte dataType, Byte bizType, Byte saasEnv) {
-        //现在只统计所有分组
+        // 现在只统计所有分组
         if (StringUtils.isBlank(groupCode)) {
             groupCode = MonitorConstants.VIRTUAL_TOTAL_STAT_GROUPCODE;
         }
-        //现在只统计任务
+        // 现在只统计任务
         if (dataType == null) {
             dataType = 0;
         }
@@ -225,8 +213,8 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
      */
     private List<RealTimeStatAccessDTO> computeAvgStatData(List<RealTimeStatAccessDTO> list) {
         List<RealTimeStatAccessDTO> result = Lists.newArrayList();
-        //key:时分秒时刻
-        Map<String, List<RealTimeStatAccessDTO>> map = list.stream().collect(Collectors.groupingBy(r -> MonitorDateUtils.format2Hms(r.getDataTime())));
+        // key:时分秒时刻
+        Map<String, List<RealTimeStatAccessDTO>> map = list.stream().collect(Collectors.groupingBy(r -> DateUtils.formatTime(r.getDataTime())));
         for (Map.Entry<String, List<RealTimeStatAccessDTO>> entry : map.entrySet()) {
 
             if (CollectionUtils.isEmpty(entry.getValue())) {
@@ -234,8 +222,8 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
             }
             RealTimeStatAccessDTO data = new RealTimeStatAccessDTO();
             BeanUtils.copyProperties(entry.getValue().get(0), data);
-            String dataStr = new StringBuilder().append(MonitorDateUtils.format2Ymd(new Date())).append(" ").append(entry.getKey()).toString();
-            data.setDataTime(MonitorDateUtils.parse(dataStr));
+            String dataStr = DateUtils.formatDate(new Date()) + " " + entry.getKey();
+            data.setDataTime(DateUtils.parse(dataStr));
 
             Map<String, Integer> statDataMap = Maps.newHashMap();
             for (RealTimeStatAccessDTO item : entry.getValue()) {
@@ -250,7 +238,7 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
                     }
                 }
             }
-            //这里暂时取整了,小数更好
+            // 这里暂时取整了,小数更好
             for (Map.Entry<String, Integer> item : statDataMap.entrySet()) {
                 statDataMap.put(item.getKey(), item.getValue() / entry.getValue().size());
             }
@@ -268,8 +256,7 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
                 continue;
             }
             if (StringUtils.isNotBlank(realTimeStatAccess.getStatData())) {
-                Map<String, Integer> statDataMap = JSON.parseObject(realTimeStatAccess.getStatData(), new TypeReference<Map<String, Integer>>() {
-                });
+                Map<String, Integer> statDataMap = JSON.parseObject(realTimeStatAccess.getStatData(), new TypeReference<Map<String, Integer>>() {});
                 realTimeStatAccessDTO.setStatDataMap(statDataMap);
             }
             result.add(realTimeStatAccessDTO);
@@ -278,13 +265,13 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
     }
 
     private List<RealTimeStatAccessDTO> convertIntervalMinsData(List<RealTimeStatAccessDTO> list, Integer intervalMins) {
-        //数据库中最小时间单位为1min钟,若比1min小则不转换,直接返回
+        // 数据库中最小时间单位为1min钟,若比1min小则不转换,直接返回
         if (intervalMins == null || intervalMins < 1) {
             return list;
         }
         List<RealTimeStatAccessDTO> result = Lists.newArrayList();
-        Map<Date, List<RealTimeStatAccessDTO>> map = list.stream()
-                .collect(Collectors.groupingBy(data -> MonitorDateUtils.getLaterBorderIntervalDateTime(data.getDataTime(), intervalMins)));
+        Map<Date, List<RealTimeStatAccessDTO>> map =
+            list.stream().collect(Collectors.groupingBy(data -> SaasDateUtils.getLaterBorderIntervalDateTime(data.getDataTime(), intervalMins)));
         for (Map.Entry<Date, List<RealTimeStatAccessDTO>> entry : map.entrySet()) {
             RealTimeStatAccessDTO data = new RealTimeStatAccessDTO();
             BeanUtils.copyProperties(entry.getValue().get(0), data);
@@ -309,7 +296,6 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
         return result;
     }
 
-
     /**
      * 获取时间区间内的每日开始时间(左闭右闭)
      *
@@ -319,33 +305,30 @@ public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements
      */
     private List<Date> getDayStartTimeList(Date startTime, Date endTime) {
         List<Date> result = Lists.newArrayList();
-        Date startDate = MonitorDateUtils.getDayStartTime(startTime);
-        Date endDate = MonitorDateUtils.getDayStartTime(endTime);
+        Date startDate = DateUtils.getStartTimeOfDay(startTime);
+        Date endDate = DateUtils.getStartTimeOfDay(endTime);
         while (startDate.compareTo(endDate) <= 0) {
             result.add(startDate);
-            startDate = DateUtils.addDays(startDate, 1);
+            startDate = DateUtils.plusDays(startDate, 1);
         }
         return result;
     }
 
-
     private List<String> getIntervalTimeStrList(Date startTime, Date endTime, Integer intervalMins, Byte hiddenRecentPoint) {
-        List<String> result = Lists.newArrayList();
         List<Date> list = Lists.newArrayList();
         Date endTimeInterval;
         if (hiddenRecentPoint != null && hiddenRecentPoint == 1) {
-            endTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(endTime, -intervalMins), intervalMins);
+            endTimeInterval = SaasDateUtils.getIntervalDateTime(DateUtils.minusMinutes(endTime, intervalMins), intervalMins);
         } else {
-            endTimeInterval = MonitorDateUtils.getIntervalDateTime(endTime, intervalMins);
+            endTimeInterval = SaasDateUtils.getIntervalDateTime(endTime, intervalMins);
         }
-        Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(startTime, intervalMins), intervalMins);
+        Date startTimeInterval = SaasDateUtils.getIntervalDateTime(DateUtils.plusMinutes(startTime, intervalMins), intervalMins);
         while (endTimeInterval.compareTo(startTimeInterval) >= 0) {
             list.add(endTimeInterval);
-            endTimeInterval = DateUtils.addMinutes(endTimeInterval, -intervalMins);
+            endTimeInterval = DateUtils.minusMinutes(endTimeInterval, intervalMins);
         }
         list = list.stream().sorted(Date::compareTo).collect(Collectors.toList());
-        result = list.stream().map(MonitorDateUtils::format).collect(Collectors.toList());
-        return result;
+        return list.stream().map(DateUtils::format).collect(Collectors.toList());
     }
 
 }

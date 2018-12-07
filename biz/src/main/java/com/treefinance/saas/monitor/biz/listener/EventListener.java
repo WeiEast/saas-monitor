@@ -11,10 +11,10 @@ import com.treefinance.saas.monitor.biz.service.IvrNotifyService;
 import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
 import com.treefinance.saas.monitor.dao.entity.SaasWorker;
+import com.treefinance.toolkit.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +54,7 @@ public class EventListener {
         EOrderStatus status = event.getResult();
 
         String body = "【预警解除】" + "【" + "saas-" + diamondConfig.getMonitorEnvironment() + "】" +
-                alarmType.getDesc() + "\n数据时间：" + MonitorDateUtils.format(alarmRecord.getDataTime()) +
+                alarmType.getDesc() + "\n数据时间：" + DateUtils.format(alarmRecord.getDataTime()) +
                 "\n预警等级：" + alarmRecord.getLevel() + "\n预警记录编号" + alarmRecord.getId() + "\n" + "值班人员：" + dutyMan + "\n处理人员：" + processor +
                 "\n操作信息：" + opDesc + "\n操作结果："+status.getDesc();
 

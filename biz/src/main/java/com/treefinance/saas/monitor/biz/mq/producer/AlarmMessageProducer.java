@@ -20,9 +20,9 @@ import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.alarm.service.message.ProducerHolder;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.MerchantStatAccess;
 import com.treefinance.saas.monitor.dao.entity.SaasStatAccess;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -371,11 +371,11 @@ public class AlarmMessageProducer {
             String mails = diamondConfig.getMonitorAlarmMails();
             if (StringUtils.isEmpty(mails)) {
                 logger.info("运营商监控,预警定时任务执行jobTime={},未配置邮件接收人,邮件发送失败,title={},dataBody={}",
-                        MonitorDateUtils.format(jobTime), title, dataBody);
+                    DateUtils.format(jobTime), title, dataBody);
                 return;
             }
             logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件到mails={}",
-                    MonitorDateUtils.format(jobTime), mails);
+                DateUtils.format(jobTime), mails);
             String topic = diamondConfig.getMonitorAlarmTopic();
             String tag = diamondConfig.getMonitorAlarmMailTag();
             String key = UUID.randomUUID().toString() + "_" + tag;
@@ -390,10 +390,10 @@ public class AlarmMessageProducer {
             body.setToList(tolist);
             body.setSubject(title);
             body.setBody(dataBody);
-            logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件message={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(body));
+            logger.info("运营商监控,预警定时任务执行jobTime={},发送邮件message={}", DateUtils.format(jobTime), JSON.toJSONString(body));
             sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
         } catch (Exception e) {
-            logger.error("运营商监控,预警定时任务执行jobTime={},发送邮件异常", MonitorDateUtils.format(jobTime), e);
+            logger.error("运营商监控,预警定时任务执行jobTime={},发送邮件异常", DateUtils.format(jobTime), e);
         }
     }
 
@@ -417,10 +417,10 @@ public class AlarmMessageProducer {
             body.setMessage(msg);
             body.setWeChatEnum(WeChatEnum.DASHU_AN_APP_TXT);
             body.setNotifyEnum(NotifyEnum.WECHAT);
-            logger.info("运营商监控,预警定时任务执行jobTime={},发送微信message={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(body));
+            logger.info("运营商监控,预警定时任务执行jobTime={},发送微信message={}", DateUtils.format(jobTime), JSON.toJSONString(body));
             sendMessage(topic, tag, key, BeanUtil.objectToByte(body));
         } catch (Exception e) {
-            logger.error("运营商监控,预警定时任务执行jobTime={},发送微信异常", MonitorDateUtils.format(jobTime), e);
+            logger.error("运营商监控,预警定时任务执行jobTime={},发送微信异常", DateUtils.format(jobTime), e);
         }
 
     }

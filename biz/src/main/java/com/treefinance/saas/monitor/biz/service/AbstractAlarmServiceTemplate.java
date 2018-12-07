@@ -18,7 +18,6 @@ import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.context.SpringUtils;
 import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
@@ -29,6 +28,7 @@ import com.treefinance.saas.monitor.dao.entity.WorkOrderLog;
 import com.treefinance.saas.monitor.dao.mapper.EmailStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import com.treefinance.saas.monitor.exception.NoNeedAlarmException;
+import com.treefinance.toolkit.util.DateUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.text.StrSubstitutor;
@@ -151,7 +151,7 @@ public abstract class AbstractAlarmServiceTemplate extends AbstractService imple
             List<SaasWorker> saasWorkers = saasWorkerService.getDutyWorker(baseTime);
 
             if (saasWorkers == null || saasWorkers.isEmpty()) {
-                logger.info("当前时间:{}没有配置值班人，使用默认值班人员", MonitorDateUtils.format(baseTime));
+                logger.info("当前时间:{}没有配置值班人，使用默认值班人员", DateUtils.format(baseTime));
                 saasWorkers = new ArrayList<>();
                 saasWorkers.add(SaasWorker.DEFAULT_WORKER);
             }
@@ -253,7 +253,7 @@ public abstract class AbstractAlarmServiceTemplate extends AbstractService imple
     private void sendAlarmRepair(AlarmRecord alarmRecord) {
 
         String stringBuilder = "【预警恢复】" + "环境:" + diamondConfig.getMonitorEnvironment() + "\n" +
-                "发生在 时间为:" + MonitorDateUtils.format(alarmRecord.getStartTime()) + " \n预警等级：" + alarmRecord.getLevel() +
+                "发生在 时间为:" + DateUtils.format(alarmRecord.getStartTime()) + " \n预警等级：" + alarmRecord.getLevel() +
                 " \n预警类型：" + alarmRecord.getAlarmType() + "\n预警编号:" +
                 alarmRecord.getId() +
                 "的预警由系统判定恢复。";

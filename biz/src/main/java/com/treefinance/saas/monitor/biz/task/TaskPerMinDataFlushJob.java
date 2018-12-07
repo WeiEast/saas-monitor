@@ -4,8 +4,8 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskPerMinDataFlushService;
 import com.treefinance.saas.monitor.share.cache.RedisDao;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.util.SystemUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ public class TaskPerMinDataFlushJob implements SimpleJob {
         }
         long start = System.currentTimeMillis();
         Date jobTime = new Date();//定时任务执行时间
-        logger.info("任务监控,定时任务执行jobTime={}", MonitorDateUtils.format(jobTime));
+        logger.info("任务监控,定时任务执行jobTime={}", DateUtils.format(jobTime));
         try {
             redisDao.getRedisTemplate().execute(new SessionCallback<Object>() {
                 @Override
@@ -48,9 +48,9 @@ public class TaskPerMinDataFlushJob implements SimpleJob {
                 }
             });
         } catch (Exception e) {
-            logger.error("任务监控,定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
+            logger.error("任务监控,定时任务执行jobTime={}异常", DateUtils.format(jobTime), e);
         } finally {
-            logger.info("任务监控,定时任务执行jobTime={}完成,耗时{}ms", MonitorDateUtils.format(jobTime), System.currentTimeMillis() - start);
+            logger.info("任务监控,定时任务执行jobTime={}完成,耗时{}ms", DateUtils.format(jobTime), System.currentTimeMillis() - start);
         }
     }
 }

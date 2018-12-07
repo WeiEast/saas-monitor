@@ -2,7 +2,6 @@ package com.treefinance.saas.monitor.dao.ecommerce.Impl;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceTimeShareDTO;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.ecommerce.EcommerceDetailAccessDao;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccessCriteria;
@@ -10,6 +9,7 @@ import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatDayAccess;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatDayAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.EcommerceAllStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.EcommerceAllStatDayAccessMapper;
+import com.treefinance.toolkit.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,7 @@ public class EcommerceDetailAccessDaoImpl implements EcommerceDetailAccessDao {
 
         innerCriteria.andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getStatType()).andSourceTypeEqualTo(request.getSourceType())
-                .andDataTimeBetween(request.getDataDate(), MonitorDateUtils.getDayEndTime(request.getDataDate()));
+                .andDataTimeBetween(request.getDataDate(), DateUtils.getEndTimeOfDay(request.getDataDate()));
 
         return ecommerceAllStatAccessMapper.selectByExample(ecommerceAllStatAccessCriteria);
 

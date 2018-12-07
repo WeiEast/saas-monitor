@@ -1,13 +1,14 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.google.common.base.Splitter;
+import com.treefinance.b2b.saas.util.SaasDateUtils;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.service.OperatorStatAccessService;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
+import com.treefinance.toolkit.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,12 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -26,22 +32,20 @@ import java.util.stream.Collectors;
 public class OperatorStatAccessServiceImpl implements OperatorStatAccessService {
 
     private static final Logger logger = LoggerFactory.getLogger(OperatorStatAccessServiceImpl.class);
+    private static final double RATE = -0.1D;
 
     @Autowired
     private OperatorStatAccessMapper operatorStatAccessMapper;
     @Autowired
     protected DiamondConfig diamondConfig;
 
-
-    private final double RATE = -0.1D;
-
-
     @Override
     public List<String> queryDecreasedOperator(ESaasEnv saasEnv) {
 
         Date now = new Date();
 
-        Date start = MonitorDateUtils.getOClockTime(MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -7));
+        Date date = DateUtils.minusDays(now, 7);
+        Date start = SaasDateUtils.getOClockTime(date);
 
         List<String> operatorNameList = Splitter.on(",").splitToList(diamondConfig.getOperatorAlarmOperatorNameList());
 
@@ -67,7 +71,7 @@ public class OperatorStatAccessServiceImpl implements OperatorStatAccessService 
 
             for (OperatorStatAccess operatorStatAccess : operatorStatAccessList) {
 
-                if (MonitorDateUtils.isSameDay(operatorStatAccess.getDataTime(), now)) {
+                if (DateUtils.isSameDay(operatorStatAccess.getDataTime(), now)) {
                     model.succToday += operatorStatAccess.getCallbackSuccessCount();
                     model.totalToday += operatorStatAccess.getEntryCount();
                     continue;

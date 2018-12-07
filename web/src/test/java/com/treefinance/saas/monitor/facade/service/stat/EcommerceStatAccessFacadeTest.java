@@ -2,10 +2,10 @@ package com.treefinance.saas.monitor.facade.service.stat;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.facade.domain.request.EcommerceDetailAccessRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.ecommerce.EcommerceAllDetailRO;
+import com.treefinance.toolkit.util.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ import java.util.List;
 @SpringBootTest(classes = SaasMonitorApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class EcommerceStatAccessFacadeTest {
     @Autowired
-    EcommerceStatDivisionAccessFacade ecommerceStatDivisionAccessFacade;
+    private EcommerceStatDivisionAccessFacade ecommerceStatDivisionAccessFacade;
 
 
     @Test
@@ -33,7 +33,7 @@ public class EcommerceStatAccessFacadeTest {
         request.setSaasEnv((byte) 0);
         request.setSourceType((byte) 0);
         request.setStatType((byte) 0);
-        request.setDataDate(MonitorDateUtils.getDayStartTime(new Date()));
+        request.setDataDate(DateUtils.getStartTimeOfDay(new Date()));
 
         MonitorResult<List<EcommerceAllDetailRO>> result = ecommerceStatDivisionAccessFacade.queryEcommerceAllDetailAccessList(request);
         System.out.println(JSON.toJSONString(result));

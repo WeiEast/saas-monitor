@@ -10,14 +10,15 @@ import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.util.SystemUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.annotation.Resource;
+
 import java.util.Date;
 import java.util.List;
 
@@ -66,9 +67,9 @@ public class EmailMonitorAlarmJob implements SimpleJob {
                 emailMonitorAlarmService.alarm(now, configDTO, type, EAlarmType.email_alarm);
             }
         } catch (Exception e) {
-            logger.error("邮箱监控,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(now), e);
+            logger.error("邮箱监控,预警定时任务执行jobTime={}异常", DateUtils.format(now), e);
         } finally {
-            logger.info("邮箱监控,预警定时任务执行jobTime={}完成,耗时{}ms", MonitorDateUtils.format(now), System.currentTimeMillis() -
+            logger.info("邮箱监控,预警定时任务执行jobTime={}完成,耗时{}ms", DateUtils.format(now), System.currentTimeMillis() -
                     start);
         }
 

@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.task;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.service.RealTimeAvgStatAccessService;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +26,14 @@ public class RealTimeAvgStatAccessJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        logger.info("任务实时监控,定时存储数据任务执行,now={}", MonitorDateUtils.format(new Date()));
+        logger.info("任务实时监控,定时存储数据任务执行,now={}", DateUtils.format(new Date()));
         long startTime = System.currentTimeMillis();
         try {
             realTimeAvgStatAccessService.saveDataOnFixedTime();
         } catch (Exception e) {
-            logger.info("任务实时监控,定时存储数据任务执行异常,now={}", MonitorDateUtils.format(new Date()), e);
+            logger.info("任务实时监控,定时存储数据任务执行异常,now={}", DateUtils.format(new Date()), e);
         } finally {
-            logger.info("任务实时监控,定时存储数据任务执行结束,耗时{}ms,now={}", System.currentTimeMillis() - startTime, MonitorDateUtils.format(new Date()));
+            logger.info("任务实时监控,定时存储数据任务执行结束,耗时{}ms,now={}", System.currentTimeMillis() - startTime, DateUtils.format(new Date()));
         }
     }
 

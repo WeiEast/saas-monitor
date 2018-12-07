@@ -2,8 +2,8 @@ package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.treefinance.b2b.saas.util.SaasDateUtils;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceTimeShareDTO;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.ecommerce.EcommerceDetailAccessDao;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
@@ -89,7 +89,7 @@ public class EcommerceStatDivisionAccessFacadeImpl extends AbstractFacade implem
     }
 
     private List<EcommerceAllStatAccess> changeIntervalDataTimeEcommerceAllStatAccess(List<EcommerceAllStatAccess> list, final Integer intervalMins) {
-        Map<Date, List<EcommerceAllStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
+        Map<Date, List<EcommerceAllStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> SaasDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
         List<EcommerceAllStatAccess> resultList = Lists.newArrayList();
         for (Map.Entry<Date, List<EcommerceAllStatAccess>> entry : map.entrySet()) {
             if (CollectionUtils.isEmpty(entry.getValue())) {

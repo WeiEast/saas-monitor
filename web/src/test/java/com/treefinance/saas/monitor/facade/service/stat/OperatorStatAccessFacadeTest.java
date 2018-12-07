@@ -4,12 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.facade.domain.request.OperatorStatAccessRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.OperatorStatAccessRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.operator.OperatorStatDayAccessRO;
-import org.apache.commons.lang3.time.DateUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * @Author: chengtong
@@ -44,7 +43,7 @@ public class OperatorStatAccessFacadeTest {
 
         request.setStatType((byte)1);
         request.setAppId("virtual_total_stat_appId");
-        request.setDataDate(MonitorDateUtils.parse("2018-06-19 00:00:00"));
+        request.setDataDate(DateUtils.parse("2018-06-19 00:00:00"));
         request.setSaasEnv((byte)0);
 
         MonitorResult<List<OperatorStatDayAccessRO>> result = operatorStatAccessFacade.queryOperatorStatDayAccessListWithPage(request);
@@ -56,7 +55,7 @@ public class OperatorStatAccessFacadeTest {
         OperatorStatAccessRequest request = new OperatorStatAccessRequest();
 
         request.setAppId("virtual_total_stat_appId");
-        request.setDataDate(MonitorDateUtils.parse("2018-06-15 15:30:00"));
+        request.setDataDate(DateUtils.parse("2018-06-15 15:30:00"));
         request.setSaasEnv((byte)ESaasEnv.ALL.getValue());
         request.setStatType((byte)1);
         request.setIntervalMins(30);
@@ -87,7 +86,8 @@ public class OperatorStatAccessFacadeTest {
         OperatorStatAccessRequest request = new OperatorStatAccessRequest();
 
         request.setStatType(new Byte("0"));
-        request.setStartDate(DateUtils.parseDate("2018-01-01 00:00:00", Locale.CHINA,"yyyy-MM-dd hh:mm:ss"));
+        Date startDate = DateUtils.parse("2018-01-01 00:00:00");
+        request.setStartDate(startDate);
     }
 
     @Test

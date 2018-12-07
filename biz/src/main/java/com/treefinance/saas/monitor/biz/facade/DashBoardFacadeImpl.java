@@ -5,7 +5,6 @@ import com.treefinance.saas.monitor.biz.service.AllBizTypeStatAccessService;
 import com.treefinance.saas.monitor.biz.service.OperatorStatAccessService;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.facade.domain.request.DashboardStatRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
@@ -13,6 +12,7 @@ import com.treefinance.saas.monitor.facade.domain.ro.AppTaskStatResult;
 import com.treefinance.saas.monitor.facade.domain.ro.DashBoardResult;
 import com.treefinance.saas.monitor.facade.domain.ro.WholeConversionResult;
 import com.treefinance.saas.monitor.facade.service.stat.DashBoardFacade;
+import com.treefinance.toolkit.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,8 +55,9 @@ public class DashBoardFacadeImpl implements DashBoardFacade {
 
         List<String> list = operatorStatAccessService.queryDecreasedOperator(saasEnv);
 
+        Date now = new Date();
         Integer count = alarmRecordService.countAlarmRecordInBizType(bizType.name().toLowerCase(),
-                MonitorDateUtils.getDayStartTime(new Date()), new Date());
+            DateUtils.getStartTimeOfDay(now), now);
 
 
         result.setWholeConversionResult(wholeConversionResult);

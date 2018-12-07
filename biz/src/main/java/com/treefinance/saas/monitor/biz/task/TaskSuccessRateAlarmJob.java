@@ -9,8 +9,8 @@ import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskSuccessRateA
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccessRateAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.util.SystemUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
@@ -47,14 +47,14 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
         long start = System.currentTimeMillis();
         //定时任务执行时间
         Date jobTime = new Date();
-        logger.info("任务成功率预警,定时任务执行jobTime={}", MonitorDateUtils.format(jobTime));
+        logger.info("任务成功率预警,定时任务执行jobTime={}", DateUtils.format(jobTime));
         try {
             String configStr = diamondConfig.getTaskSuccessRateAlarmConfig();
             List<TaskSuccessRateAlarmConfigDTO> configList = JSONObject.parseArray(configStr, TaskSuccessRateAlarmConfigDTO.class);
             //根据任务类型来分配的
             Map<String, List<TaskSuccessRateAlarmConfigDTO>> configMap = configList.stream().collect(Collectors.groupingBy(TaskSuccessRateAlarmConfigDTO::getType));
             if (MapUtils.isEmpty(configMap)) {
-                logger.info("任务成功率预警,定时任务执行jobTime={}任务成功率预警未设置", MonitorDateUtils.format(jobTime));
+                logger.info("任务成功率预警,定时任务执行jobTime={}任务成功率预警未设置", DateUtils.format(jobTime));
                 return;
             }
             for (EBizType bizType : EBizType.values()) {
@@ -69,14 +69,14 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
                         continue;
                     }
 
-                    logger.info("任务成功率预警,定时任务执行jobTime={}任务成功率预警执行config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(config));
+                    logger.info("任务成功率预警,定时任务执行jobTime={}任务成功率预警执行config={}", DateUtils.format(jobTime), JSON.toJSONString(config));
                     taskSuccessRateAlarmService.alarm(bizType, config, jobTime);
                 }
             }
         } catch (Exception e) {
-            logger.error("任务成功率预警,定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
+            logger.error("任务成功率预警,定时任务执行jobTime={}异常", DateUtils.format(jobTime), e);
         } finally {
-            logger.info("任务成功率预警,定时任务执行jobTime={}完成,耗时{}ms", MonitorDateUtils.format(jobTime), System.currentTimeMillis() - start);
+            logger.info("任务成功率预警,定时任务执行jobTime={}完成,耗时{}ms", DateUtils.format(jobTime), System.currentTimeMillis() - start);
         }
 
     }

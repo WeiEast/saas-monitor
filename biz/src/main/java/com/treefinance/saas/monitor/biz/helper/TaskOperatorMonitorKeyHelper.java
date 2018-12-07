@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import com.treefinance.saas.grapserver.facade.model.enums.ETaskOperatorMonitorStatus;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
 
@@ -212,7 +211,7 @@ public class TaskOperatorMonitorKeyHelper {
         if (currentMinute % intervalMinutes == 0) {
             return intervalTime;
         }
-        intervalTime = DateUtils.addMinutes(intervalTime, (-currentMinute.intValue() % intervalMinutes));
+        intervalTime = com.treefinance.toolkit.util.DateUtils.plusMinutes(intervalTime, (-currentMinute.intValue() % intervalMinutes));
         return intervalTime;
     }
 
@@ -231,7 +230,9 @@ public class TaskOperatorMonitorKeyHelper {
 
     public static String strKeyOfAlarmTimeLog(Date baseTime, OperatorMonitorAlarmConfigDTO config) {
         String intervalDateStr = DateFormatUtils.format(baseTime, "yyyy-MM-dd");
-        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, config.getAlarmType(), config.getDataType(), config.getSaasEnv(), MonitorDateUtils.format2Hms(baseTime));
+        return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr,
+            config.getAlarmType(), config.getDataType(), config.getSaasEnv(),
+            com.treefinance.toolkit.util.DateUtils.formatTime(baseTime));
     }
 
     public static String keyOfAlarmMsgTimeLog(Date baseTime, OperatorMonitorAlarmConfigDTO config) {

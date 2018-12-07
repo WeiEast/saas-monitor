@@ -1,9 +1,9 @@
 package com.treefinance.saas.monitor.biz.service.impl;
 
 import com.google.common.collect.Lists;
+import com.treefinance.b2b.saas.util.SaasDateUtils;
 import com.treefinance.saas.monitor.biz.service.StatAccessService;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.MerchantStatAccess;
 import com.treefinance.saas.monitor.dao.entity.MerchantStatAccessCriteria;
@@ -42,9 +42,9 @@ import com.treefinance.saas.monitor.facade.domain.ro.stat.MerchantStatEcommerceR
 import com.treefinance.saas.monitor.facade.domain.ro.stat.MerchantStatMailRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.MerchantStatOperatorRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.SaasErrorStepDayStatRO;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -179,10 +179,10 @@ public class StatAccessServiceImpl extends AbstractService implements StatAccess
     @Override
     public MonitorResult<List<MerchantStatAccessRO>> queryAllSuccessAccessList(MerchantStatAccessRequest request) {
         if (request.getIntervalMins() != null && request.getIntervalMins() > 0) {
-            request.setStartDate(MonitorDateUtils.getIntervalDateTime(request.getStartDate(), request.getIntervalMins()));
+            request.setStartDate(SaasDateUtils.getIntervalDateTime(request.getStartDate(), request.getIntervalMins()));
         }
         if (request.getIntervalMins() != null && request.getIntervalMins() > 0) {
-            request.setEndDate(MonitorDateUtils.getLaterBorderIntervalDateTime(request.getEndDate(), request.getIntervalMins()));
+            request.setEndDate(SaasDateUtils.getLaterBorderIntervalDateTime(request.getEndDate(), request.getIntervalMins()));
         }
         MerchantStatAccessCriteria criteria = new MerchantStatAccessCriteria();
         MerchantStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
@@ -201,7 +201,7 @@ public class StatAccessServiceImpl extends AbstractService implements StatAccess
 
         dataList = this.convertIntervalMinsData(dataList, intervalMins);
         Map<String, MerchantStatAccessRO> dataMap = dataList.stream()
-                .collect(Collectors.toMap(d -> MonitorDateUtils.format(d.getDataTime()), d -> d));
+                .collect(Collectors.toMap(d -> DateUtils.format(d.getDataTime()), d -> d));
         List<String> timeList = this.getIntervalTimeStrList(request.getStartDate(), request.getEndDate(),
                 intervalMins);
         List<MerchantStatAccessRO> result = Lists.newArrayList();
@@ -209,7 +209,7 @@ public class StatAccessServiceImpl extends AbstractService implements StatAccess
             if (dataMap.get(timeStr) == null) {
                 //初始化一个空值,填充时间空白点
                 MerchantStatAccessRO data = new MerchantStatAccessRO();
-                data.setDataTime(MonitorDateUtils.parse(timeStr));
+                data.setDataTime(DateUtils.parse(timeStr));
                 data.setTotalCount(0);
                 data.setSuccessCount(0);
                 data.setFailCount(0);
@@ -226,17 +226,15 @@ public class StatAccessServiceImpl extends AbstractService implements StatAccess
     }
 
     private List<String> getIntervalTimeStrList(Date startTime, Date endTime, Integer intervalMins) {
-        List<String> result = Lists.newArrayList();
         List<Date> list = Lists.newArrayList();
-        Date endTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(endTime, -intervalMins), intervalMins);
-        Date startTimeInterval = MonitorDateUtils.getIntervalDateTime(DateUtils.addMinutes(startTime, intervalMins), intervalMins);
+        Date endTimeInterval = SaasDateUtils.getIntervalDateTime(DateUtils.minusMinutes(endTime, intervalMins), intervalMins);
+        Date startTimeInterval = SaasDateUtils.getIntervalDateTime(DateUtils.plusMinutes(startTime, intervalMins), intervalMins);
         while (endTimeInterval.compareTo(startTimeInterval) >= 0) {
             list.add(endTimeInterval);
-            endTimeInterval = DateUtils.addMinutes(endTimeInterval, -intervalMins);
+            endTimeInterval = DateUtils.minusMinutes(endTimeInterval, intervalMins);
         }
         list = list.stream().sorted(Date::compareTo).collect(Collectors.toList());
-        result = list.stream().map(MonitorDateUtils::format).collect(Collectors.toList());
-        return result;
+        return list.stream().map(DateUtils::format).collect(Collectors.toList());
     }
 
     private List<MerchantStatAccessRO> convertIntervalMinsData(List<MerchantStatAccessRO> list, Integer intervalMins) {
@@ -247,7 +245,7 @@ public class StatAccessServiceImpl extends AbstractService implements StatAccess
         List<MerchantStatAccessRO> result = Lists.newArrayList();
 
         Map<Date, List<MerchantStatAccessRO>> map = list.stream()
-                .collect(Collectors.groupingBy(data -> MonitorDateUtils.getLaterBorderIntervalDateTime(data.getDataTime(), intervalMins)));
+                .collect(Collectors.groupingBy(data -> SaasDateUtils.getLaterBorderIntervalDateTime(data.getDataTime(), intervalMins)));
 
         for (Map.Entry<Date, List<MerchantStatAccessRO>> entry : map.entrySet()) {
             MerchantStatAccessRO data = new MerchantStatAccessRO();

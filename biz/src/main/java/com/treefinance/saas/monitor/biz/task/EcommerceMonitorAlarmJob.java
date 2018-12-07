@@ -9,8 +9,8 @@ import com.treefinance.saas.monitor.biz.service.EcommerceMonitorAllAlarmService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.util.SystemUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +42,12 @@ public class EcommerceMonitorAlarmJob implements SimpleJob {
         }
         long start = System.currentTimeMillis();
         Date jobTime = new Date();
-        logger.info("电商预警,预警定时任务执行时间jobTime={}", MonitorDateUtils.format(jobTime));
+        logger.info("电商预警,预警定时任务执行时间jobTime={}", DateUtils.format(jobTime));
         try {
             String configStr = diamondConfig.getEcommerceMonitorAlarmConfig();
             List<EcommerceMonitorAlarmConfigDTO> configList = JSONObject.parseArray(configStr, EcommerceMonitorAlarmConfigDTO.class);
             for (EcommerceMonitorAlarmConfigDTO configDTO : configList) {
-                logger.info("电商预警,预警定时任务执行时间jobTime={},config={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(configDTO));
+                logger.info("电商预警,预警定时任务执行时间jobTime={},config={}", DateUtils.format(jobTime), JSON.toJSONString(configDTO));
                 if (!StringUtils.equalsIgnoreCase(configDTO.getAlarmSwitch(), AlarmConstants.SWITCH_ON)) {
                     continue;
                 }
@@ -61,9 +61,9 @@ public class EcommerceMonitorAlarmJob implements SimpleJob {
                 }
             }
         } catch (Exception e) {
-            logger.error("电商预警,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
+            logger.error("电商预警,预警定时任务执行jobTime={}异常", DateUtils.format(jobTime), e);
         } finally {
-            logger.info("电商预警,预警定时任务执行jobTime={}完成,耗时{}ms", MonitorDateUtils.format(jobTime), System.currentTimeMillis() - start);
+            logger.info("电商预警,预警定时任务执行jobTime={}完成,耗时{}ms", DateUtils.format(jobTime), System.currentTimeMillis() - start);
         }
     }
 }

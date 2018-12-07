@@ -9,12 +9,12 @@ import com.treefinance.saas.monitor.biz.service.SmsNotifyService;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.facade.domain.request.BaseStatAccessRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.RealTimeStatAccessRO;
 import com.treefinance.saas.monitor.facade.service.stat.RealTimeStatAccessFacade;
 import com.treefinance.saas.monitor.share.cache.RedisDao;
+import com.treefinance.toolkit.util.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,15 +165,13 @@ public class MonitorServiceTest {
     }
 
     private String generateNoTaskWeChatBody(Date startTime, Date endTime) {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(EAlarmLevel.error).append(",");
-        buffer.append("您好,").append("saas-").append(diamondConfig.getMonitorEnvironment())
-                .append("发生任务预警,在")
-                .append(MonitorDateUtils.format(startTime))
-                .append("--")
-                .append(MonitorDateUtils.format(endTime))
-                .append("时段内没有任务创建,").append("请及时处理!").append("\n");
-        return buffer.toString();
+        return String.valueOf(EAlarmLevel.error) + ","
+            + "您好," + "saas-" + diamondConfig.getMonitorEnvironment()
+            + "发生任务预警,在"
+            + DateUtils.format(startTime)
+            + "--"
+            + DateUtils.format(endTime)
+            + "时段内没有任务创建," + "请及时处理!" + "\n";
     }
 
     @Test
@@ -196,8 +194,8 @@ public class MonitorServiceTest {
         BaseStatAccessRequest request = new BaseStatAccessRequest();
         request.setAppId("virtual_total_stat_appId");
         request.setSaasEnv((byte) 0);
-        request.setStartTime(MonitorDateUtils.parse("2018-07-18 16:22:00"));
-        request.setEndTime(MonitorDateUtils.parse("2018-07-18 16:32:00"));
+        request.setStartTime(DateUtils.parse("2018-07-18 16:22:00"));
+        request.setEndTime(DateUtils.parse("2018-07-18 16:32:00"));
         request.setBizType((byte) 0);
         request.setIntervalMins(10);
         MonitorResult<List<RealTimeStatAccessRO>> result = realTimeStatAccessFacade.queryRealTimeStatAccess(request);

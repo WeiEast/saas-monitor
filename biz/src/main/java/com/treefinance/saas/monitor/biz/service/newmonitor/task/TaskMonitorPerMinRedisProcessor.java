@@ -8,7 +8,7 @@ import com.treefinance.saas.monitor.biz.helper.TaskMonitorPerMinKeyHelper;
 import com.treefinance.saas.monitor.share.cache.RedisDao;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatus;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class TaskMonitorPerMinRedisProcessor {
                 String dayKey = TaskMonitorPerMinKeyHelper.keyOfDayOnMerchantIntervalStat(redisKeyTime, message.getAppId(), statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
                 //加入一个毫秒级的时间戳,防止刷新db数据时,将之后的再加入的时刻误删.
-                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(redisKeyTime), System.currentTimeMillis()));
+                setOperations.add(Joiner.on(";").join(DateUtils.format(redisKeyTime), System.currentTimeMillis()));
                 if (setOperations.getExpire() == -1) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
@@ -61,10 +61,10 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
-                    hashOperations.put("dataTime", MonitorDateUtils.format(redisKeyTime));
+                    hashOperations.put("dataTime", DateUtils.format(redisKeyTime));
                     hashOperations.put("dataType", statType.getType().toString());
                     hashOperations.put("appId", message.getAppId());
-                    statMap.put("dataTime", MonitorDateUtils.format(redisKeyTime));
+                    statMap.put("dataTime", DateUtils.format(redisKeyTime));
                     statMap.put("dataType", statType + "");
                     statMap.put("appId", message.getAppId());
                     // 设定超时时间默认为2天
@@ -106,10 +106,10 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
-                    hashOperations.put("dataTime", MonitorDateUtils.getDayStartTimeStr(redisKeyTime));
+                    hashOperations.put("dataTime", DateUtils.formatStartTimeOfDay(redisKeyTime));
                     hashOperations.put("dataType", statType.getType().toString());
                     hashOperations.put("appId", message.getAppId());
-                    statMap.put("dataTime", MonitorDateUtils.getDayStartTimeStr(redisKeyTime));
+                    statMap.put("dataTime", DateUtils.formatStartTimeOfDay(redisKeyTime));
                     statMap.put("dataType", statType + "");
                     statMap.put("appId", message.getAppId());
                     // 设定超时时间默认为2天
@@ -145,7 +145,7 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 需统计的当日特定时间列表
                 String dayKey = TaskMonitorPerMinKeyHelper.keyOfDayOnSaasIntervalStat(redisKeyTime, statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
-                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(redisKeyTime), System.currentTimeMillis()));
+                setOperations.add(Joiner.on(";").join(DateUtils.format(redisKeyTime), System.currentTimeMillis()));
                 if (setOperations.getExpire() == -1) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
@@ -153,9 +153,9 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
-                    hashOperations.put("dataTime", MonitorDateUtils.format(redisKeyTime));
+                    hashOperations.put("dataTime", DateUtils.format(redisKeyTime));
                     hashOperations.put("dataType", statType.getType().toString());
-                    statMap.put("dataTime", MonitorDateUtils.format(redisKeyTime));
+                    statMap.put("dataTime", DateUtils.format(redisKeyTime));
                     statMap.put("dataType", statType + "");
                     // 设定超时
                     hashOperations.expire(1, TimeUnit.HOURS);
@@ -190,9 +190,9 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
-                    hashOperations.put("dataTime", MonitorDateUtils.getDayStartTimeStr(redisKeyTime));
+                    hashOperations.put("dataTime", DateUtils.formatStartTimeOfDay(redisKeyTime));
                     hashOperations.put("dataType", statType.getType().toString());
-                    statMap.put("dataTime", MonitorDateUtils.getDayStartTimeStr(redisKeyTime));
+                    statMap.put("dataTime", DateUtils.formatStartTimeOfDay(redisKeyTime));
                     statMap.put("dataType", statType + "");
                     // 设定超时时间默认为2天
                     hashOperations.expire(2, TimeUnit.DAYS);
@@ -227,7 +227,7 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 需统计的当日特定时间列表
                 String dayKey = TaskMonitorPerMinKeyHelper.keyOfDayOnMerchantWithTypeIntervalStat(redisKeyTime, message.getAppId(), account, statType);
                 BoundSetOperations<String, String> setOperations = redisOperations.boundSetOps(dayKey);
-                setOperations.add(Joiner.on(";").join(MonitorDateUtils.format(redisKeyTime), System.currentTimeMillis()));
+                setOperations.add(Joiner.on(";").join(DateUtils.format(redisKeyTime), System.currentTimeMillis()));
                 if (setOperations.getExpire() == -1) {
                     setOperations.expire(2, TimeUnit.DAYS);
                 }
@@ -240,11 +240,11 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
-                    hashOperations.put("dataTime", MonitorDateUtils.format(redisKeyTime));
+                    hashOperations.put("dataTime", DateUtils.format(redisKeyTime));
                     hashOperations.put("dataType", statType.getType().toString());
                     hashOperations.put("appId", message.getAppId());
                     hashOperations.put("account", account);
-                    statMap.put("dataTime", MonitorDateUtils.format(redisKeyTime));
+                    statMap.put("dataTime", DateUtils.format(redisKeyTime));
                     statMap.put("dataType", statType + "");
                     statMap.put("appId", message.getAppId());
                     statMap.put("account", account);
@@ -307,7 +307,7 @@ public class TaskMonitorPerMinRedisProcessor {
                 break;
             default:
                 logger.error("任务监控,消息处理,刷新redis时,统计数据类型有误,redisKeyTime={},message={},statMap={}",
-                        MonitorDateUtils.format(redisKeyTime), JSON.toJSONString(message), JSON.toJSONString(statMap));
+                    DateUtils.format(redisKeyTime), JSON.toJSONString(message), JSON.toJSONString(statMap));
                 break;
         }
     }
@@ -323,10 +323,10 @@ public class TaskMonitorPerMinRedisProcessor {
                 // 判断是否有key
                 BoundHashOperations<String, String, String> hashOperations = redisOperations.boundHashOps(key);
                 if (!Boolean.TRUE.equals(redisOperations.hasKey(key))) {
-                    hashOperations.put("dataTime", MonitorDateUtils.getDayStartTimeStr(redisKeyTime));
+                    hashOperations.put("dataTime", DateUtils.formatStartTimeOfDay(redisKeyTime));
                     hashOperations.put("dataType", statType.getType().toString());
                     hashOperations.put("errorStepCode", message.getStepCode());
-                    statMap.put("dataTime", MonitorDateUtils.getDayStartTimeStr(redisKeyTime));
+                    statMap.put("dataTime", DateUtils.formatStartTimeOfDay(redisKeyTime));
                     statMap.put("dataType", statType + "");
                     statMap.put("errorStepCode", message.getStepCode());
                     // 设定超时时间默认为2天

@@ -20,7 +20,6 @@ import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
@@ -46,6 +45,7 @@ import com.treefinance.saas.monitor.facade.domain.ro.AlarmWorkOrderRO;
 import com.treefinance.saas.monitor.facade.domain.ro.SaasWorkerRO;
 import com.treefinance.saas.monitor.facade.domain.ro.WorkOrderLogRO;
 import com.treefinance.saas.monitor.facade.service.AlarmRecordFacade;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,6 @@ import javax.annotation.Resource;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -172,8 +171,8 @@ public class AlarmRecordFacadeImpl extends AbstractFacade implements AlarmRecord
 
         for (SaasWorkerRO ro : saasWorkerROS) {
             if (StringUtils.isNotEmpty(ro.getDutyCorn())) {
-                ro.setNextOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getNextMeetDay(ro.getDutyCorn(), now)));
-                ro.setPreOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getPreMeetDay(ro.getDutyCorn(), now)));
+                ro.setNextOnDuty(DateUtils.formatDate(CronUtils.getNextMeetDay(ro.getDutyCorn(), now)));
+                ro.setPreOnDuty(DateUtils.formatDate(CronUtils.getPreMeetDay(ro.getDutyCorn(), now)));
             }
         }
 
@@ -398,7 +397,7 @@ public class AlarmRecordFacadeImpl extends AbstractFacade implements AlarmRecord
 
 
         for (WorkOrderLogRO logRO : workOrderLogROs) {
-            logRO.setOpTime(MonitorDateUtils.format(logRO.getCreateTime()));
+            logRO.setOpTime(DateUtils.format(logRO.getCreateTime()));
         }
 
         return MonitorResultBuilder.build(workOrderLogROs);
@@ -423,11 +422,11 @@ public class AlarmRecordFacadeImpl extends AbstractFacade implements AlarmRecord
 
         for (SaasWorkerRO ro : saasWorkerROS) {
             if (StringUtils.isNotEmpty(ro.getDutyCorn())) {
-                ro.setNextOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getNextMeetDay(ro.getDutyCorn(), now)));
-                ro.setPreOnDuty(MonitorDateUtils.format2Ymd(CronUtils.getPreMeetDay(ro.getDutyCorn(), now)));
+                ro.setNextOnDuty(DateUtils.formatDate(CronUtils.getNextMeetDay(ro.getDutyCorn(), now)));
+                ro.setPreOnDuty(DateUtils.formatDate(CronUtils.getPreMeetDay(ro.getDutyCorn(), now)));
             }
-            ro.setCreateTimeStr(MonitorDateUtils.format(ro.getCreateTime()));
-            ro.setLastUpdateTimeStr(MonitorDateUtils.format(ro.getLastUpdateTime()));
+            ro.setCreateTimeStr(DateUtils.format(ro.getCreateTime()));
+            ro.setLastUpdateTimeStr(DateUtils.format(ro.getLastUpdateTime()));
         }
 
         return MonitorResultBuilder.pageResult(request, saasWorkerROS, count);
@@ -622,13 +621,11 @@ public class AlarmRecordFacadeImpl extends AbstractFacade implements AlarmRecord
 
         switch (dateType) {
             case 1:
-                return MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -1);
+                return DateUtils.minusDays(now, 1);
             case 2:
-                return MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -15);
-            case 3:
-                return MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -30);
+                return DateUtils.minusDays(now, 15);
             default:
-                return MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -30);
+                return DateUtils.minusDays(now, 30);
         }
     }
 
@@ -639,7 +636,7 @@ public class AlarmRecordFacadeImpl extends AbstractFacade implements AlarmRecord
         EBizType bizType = EBizType.getBizType(request.getBizType());
 
         if(request.getEndTime() != null){
-            request.setEndTime(MonitorDateUtils.getDayEndTime(request.getEndTime()));
+            request.setEndTime(DateUtils.getEndTimeOfDay(request.getEndTime()));
         }
 
         Integer count = alarmRecordService.countAlarmRecordInBizType(bizType.name().toLowerCase(), request.getStartTime(), request.getEndTime());

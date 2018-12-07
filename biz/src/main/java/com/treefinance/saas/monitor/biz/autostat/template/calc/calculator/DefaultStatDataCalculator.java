@@ -18,7 +18,7 @@ import com.treefinance.saas.monitor.biz.autostat.utils.CronUtils;
 import com.treefinance.saas.monitor.dao.entity.StatGroup;
 import com.treefinance.saas.monitor.dao.entity.StatItem;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -157,7 +157,7 @@ public class DefaultStatDataCalculator implements StatDataCalculator {
             // 分组唯一键
             redisGroups.add(dataTimeStr);
             if (statTemplate.getEffectiveTime() > 0) {
-                distinctUserGroups.add(MonitorDateUtils.format(CronUtils.getStatDate(dataTime, statTemplate.getEffectiveTime())));
+                distinctUserGroups.add(DateUtils.format(CronUtils.getStatDate(dataTime, statTemplate.getEffectiveTime())));
             }
             String redisKey = Joiner.on(":").useForNull("null").join(redisGroups);
             String distinctUserRedisKey = Joiner.on(":").useForNull("null").join(distinctUserGroups);

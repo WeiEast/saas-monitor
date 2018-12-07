@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.b2b.saas.util.SaasDateUtils;
 import com.treefinance.saas.monitor.biz.config.EmailAlarmConfig;
 import com.treefinance.saas.monitor.biz.helper.EmailMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.service.AbstractAlarmServiceTemplate;
@@ -24,18 +25,17 @@ import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
-import com.treefinance.saas.monitor.util.StatisticCalcUtils;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
 import com.treefinance.saas.monitor.dao.entity.EmailStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EmailStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.entity.SaasWorker;
 import com.treefinance.saas.monitor.exception.BizException;
+import com.treefinance.saas.monitor.util.StatisticCalcUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,15 +91,14 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     public List<BaseStatAccessDTO> getBaseData(Date baseTime, ETaskStatDataType statDataType, BaseAlarmConfigDTO alarmConfigDTO) {
 
         EmailMonitorAlarmConfigDTO configDTO = (EmailMonitorAlarmConfigDTO) alarmConfigDTO;
-        Date startTime = DateUtils.addMinutes(baseTime, -configDTO.getIntervalMins());
+        Date startTime = DateUtils.minusMinutes(baseTime, configDTO.getIntervalMins());
 
         List<BaseStatAccessDTO> result = doGetBaseData(baseTime, startTime, statDataType, configDTO);
 
         //是否需要预警？
         if (result.isEmpty()) {
             logger.info("邮箱监控,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有邮箱的统计数据",
-                    MonitorDateUtils.format(new Date()), MonitorDateUtils.format(startTime), MonitorDateUtils.format
-                            (baseTime));
+                DateUtils.format(new Date()), DateUtils.format(startTime), DateUtils.format(baseTime));
             throw new BizException("没有原始数据 无需预警");
         }
 
@@ -161,11 +160,11 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         EmailMonitorAlarmConfigDTO configDTO = (EmailMonitorAlarmConfigDTO) baseAlarmConfigDTO;
         List<String> emails = configDTO.getEmails();
         Integer previousDays = configDTO.getPreviousDays();
-        List<Date> previousOClockList = MonitorDateUtils.getPreviousOClockTime(baseTime, previousDays);
+        List<Date> previousOClockList = SaasDateUtils.getPreviousOClockTime(baseTime, previousDays);
         List<EmailStatAccessDTO> previousDTOList = Lists.newArrayList();
 
         for (Date previousOClock : previousOClockList) {
-            Date startTime = DateUtils.addMinutes(previousOClock, -configDTO.getIntervalMins());
+            Date startTime = com.treefinance.toolkit.util.DateUtils.minusMinutes(previousOClock, configDTO.getIntervalMins());
             List<BaseStatAccessDTO> list = doGetBaseData(previousOClock, startTime, statType, configDTO);
             if (list.isEmpty()) {
                 continue;
@@ -175,9 +174,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
         if (CollectionUtils.isEmpty(previousDTOList)) {
             logger.info("邮箱监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},在此时间前{}天内,未查询到区分邮箱的统计数据emailList={}," +
-                            "previousOClockList={},list={}",
-                    MonitorDateUtils.format(new Date()), MonitorDateUtils.format(baseTime), previousDays, JSON
-                            .toJSONString(emails),
+                "previousOClockList={},list={}", DateUtils.format(new Date()), DateUtils.format(baseTime), previousDays, JSON.toJSONString(emails),
                     JSON.toJSONString(previousOClockList), JSON.toJSONString(previousDTOList));
             return Maps.newHashMap();
         }
@@ -247,7 +244,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
 
         //是否需要预警？
         logger.info("邮箱监控,预警定时任务执行jobTime={},要统计的数据时刻dataTime={},获取前n天内,相同时刻区分邮箱统计的平均值compareMap={}",
-                MonitorDateUtils.format(new Date()), MonitorDateUtils.format(baseTime), JSON.toJSONString(compareMap));
+            DateUtils.format(new Date()), DateUtils.format(baseTime), JSON.toJSONString(compareMap));
         if (MapUtils.isEmpty(compareMap)) {
             throw new BizException("过去七天没有需要平均值数据");
         }
@@ -275,7 +272,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             EmailStatAccessDTO sourceDto = (EmailStatAccessDTO) baseStatAccessDTO;
             if (compareMap.get(sourceDto.getEmail()) == null) {
                 logger.info("邮箱监控,预警定时任务执行jobTime={},groupCode={}的邮箱数据前{}天未查询到统计数据",
-                        MonitorDateUtils.format(now), sourceDto.getEmail(), previousDays);
+                    DateUtils.format(now), sourceDto.getEmail(), previousDays);
                 continue;
             }
             //获取当前的某一个邮箱的前七天的比较值
@@ -529,7 +526,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             return null;
         }
 
-        Date startTime = DateUtils.addMinutes(endTime, -configDTO.getIntervalMins());
+        Date startTime = DateUtils.minusMinutes(endTime, configDTO.getIntervalMins());
         MonitorAlarmLevelConfigDTO levelConfig = emailConfig.getLevelConfig().stream().filter
                 (emailMonitorAlarmLevelConfigDTO ->
                         alarmLevel.name().equals(emailMonitorAlarmLevelConfigDTO.getLevel())).findFirst().orElse(null);
@@ -628,9 +625,9 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 (module)
                 .append(alarmBiz)
                 .append("预警,在")
-                .append(MonitorDateUtils.format(startTime))
+                .append(DateUtils.format(startTime))
                 .append("--")
-                .append(MonitorDateUtils.format(endTime))
+                .append(DateUtils.format(endTime))
                 .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("</br>");
         pageHtml.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\" >");
         pageHtml.append("<tr bgcolor=\"#C9C9C9\">")
@@ -658,9 +655,9 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
                 .append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(alarmBiz)
                 .append("预警,在")
-                .append(MonitorDateUtils.format(startTime))
+                .append(DateUtils.format(startTime))
                 .append("--")
-                .append(MonitorDateUtils.format(endTime))
+                .append(DateUtils.format(endTime))
                 .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("\n");
         for (BaseAlarmMsgDTO msg : msgList) {
             buffer.append("【").append(((EmailAlarmMsgDTO) msg).getEmail()).append("】").append("【").append(msg
@@ -679,7 +676,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     public void ifAlarmed(Date now, Date baseTime, String alarmTimeKey, BaseAlarmConfigDTO baseAlarmConfigDTO) {
         if (stringRedisTemplate.hasKey(alarmTimeKey)) {
             logger.info("邮箱监控,预警定时任务执行,已预警,不再预警,jobTime={},baseTime={},config={}",
-                    MonitorDateUtils.format(now), MonitorDateUtils.format(baseTime), JSON.toJSONString
+                DateUtils.format(now), DateUtils.format(baseTime), JSON.toJSONString
                             (baseAlarmConfigDTO));
             throw new BizException("该时段已经预警过");
         }
@@ -782,7 +779,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
     protected String genDutyManAlarmInfo(Long id, Long orderId, List<BaseAlarmMsgDTO> dtoList, EAlarmLevel alarmLevel, Date baseTime, ESaasEnv env) {
 
         return "${name}" + "小伙伴你好,当前环境:${saasEnv}," + "邮箱发生预警:\n环境：" + env.getDesc() + "\n时间：" +
-                MonitorDateUtils.format(baseTime) + "\n级别:" + alarmLevel.name() +
+            DateUtils.format(baseTime) + "\n级别:" + alarmLevel.name() +
                 "\n系统已经生成了编号为" + id + "的预警记录,请及时处理,地址："+diamondConfig.getConsoleAddress();
 
     }
@@ -801,7 +798,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         map.put("name", saasWorker.getName());
         map.put("biz", "邮箱");
         map.put("env", env.getDesc());
-        map.put("baseTime", MonitorDateUtils.format(baseTime));
+        map.put("baseTime", DateUtils.format(baseTime));
         map.put("level", alarmLevel.name());
         map.put("id", id);
         map.put("address", diamondConfig.getConsoleAddress());

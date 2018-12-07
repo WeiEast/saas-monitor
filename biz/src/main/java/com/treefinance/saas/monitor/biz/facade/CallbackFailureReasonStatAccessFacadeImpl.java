@@ -4,8 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.b2b.saas.util.SaasDateUtils;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.entity.CallbackFailureReasonStatAccess;
 import com.treefinance.saas.monitor.dao.entity.CallbackFailureReasonStatAccessCriteria;
@@ -233,7 +233,7 @@ public class CallbackFailureReasonStatAccessFacadeImpl extends AbstractFacade im
     }
 
     private List<OperatorStatAccess> changeOperatorIntervalDataTimeList(List<OperatorStatAccess> list, Integer intervalMins) {
-        Map<Date, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
+        Map<Date, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> SaasDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
         List<OperatorStatAccess> resultList = Lists.newArrayList();
         for (Map.Entry<Date, List<OperatorStatAccess>> entry : map.entrySet()) {
             if (CollectionUtils.isEmpty(entry.getValue())) {
@@ -257,7 +257,8 @@ public class CallbackFailureReasonStatAccessFacadeImpl extends AbstractFacade im
     }
 
     private List<CallbackFailureReasonStatAccess> changeIntervalDataTimeList(List<CallbackFailureReasonStatAccess> list, Integer intervalMins) {
-        Map<Date, List<CallbackFailureReasonStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
+        Map<Date, List<CallbackFailureReasonStatAccess>> map =
+            list.stream().collect(Collectors.groupingBy(data -> SaasDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
         List<CallbackFailureReasonStatAccess> resultList = Lists.newArrayList();
         for (Map.Entry<Date, List<CallbackFailureReasonStatAccess>> entry : map.entrySet()) {
             if (CollectionUtils.isEmpty(entry.getValue())) {

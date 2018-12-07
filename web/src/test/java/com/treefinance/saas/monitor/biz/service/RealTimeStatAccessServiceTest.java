@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.service;
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.common.domain.dto.RealTimeStatAccessDTO;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +29,9 @@ public class RealTimeStatAccessServiceTest {
     @Test
     public void test_queryDataByConditions() {
         String startTimeStr = "2018-06-27 16:00:00";
-        Date startTime = MonitorDateUtils.parse(startTimeStr);
+        Date startTime = DateUtils.parse(startTimeStr);
         String endTimeStr = "2018-06-27 17:00:00";
-        Date endTime = MonitorDateUtils.parse(endTimeStr);
+        Date endTime = DateUtils.parse(endTimeStr);
         List<RealTimeStatAccessDTO> list = realTimeAvgStatAccessService.queryDataByConditions("virtual_total_stat_appId", (byte) 0, (byte) 3, startTime, endTime, 10, (byte) 1);
         System.out.println("result--" + JSON.toJSONString(list));
     }

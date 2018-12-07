@@ -5,8 +5,14 @@ import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
-import com.treefinance.saas.monitor.facade.domain.request.*;
+import com.treefinance.saas.monitor.facade.domain.request.AlarmRecordDashBoardRequest;
+import com.treefinance.saas.monitor.facade.domain.request.AlarmRecordRequest;
+import com.treefinance.saas.monitor.facade.domain.request.AlarmRecordStatRequest;
+import com.treefinance.saas.monitor.facade.domain.request.SaasWorkerRequest;
+import com.treefinance.saas.monitor.facade.domain.request.UpdateWorkOrderRequest;
+import com.treefinance.saas.monitor.facade.domain.request.WorkOrderLogRequest;
+import com.treefinance.saas.monitor.facade.domain.request.WorkOrderRequest;
+import com.treefinance.toolkit.util.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,8 +100,8 @@ public class AlarmRecordFacadeTest extends BaseTest {
         AlarmRecordDashBoardRequest request = new AlarmRecordDashBoardRequest();
 
         request.setBizType(EBizType.OPERATOR.getCode());
-        request.setEndTime(MonitorDateUtils.parse("2018-09-20","yyyy-MM-dd"));
-        request.setStartTime(MonitorDateUtils.parse("2018-09-13","yyyy-MM-dd"));
+        request.setEndTime(DateUtils.parseDate("2018-09-20"));
+        request.setStartTime(DateUtils.parseDate("2018-09-13"));
         request.setSaasEnv((byte)ESaasEnv.ALL.getValue());
 
         result = alarmRecordFacade.queryAlarmRecordInDashBoard(request);

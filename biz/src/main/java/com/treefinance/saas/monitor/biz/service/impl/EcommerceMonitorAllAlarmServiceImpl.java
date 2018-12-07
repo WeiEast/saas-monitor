@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.datatrees.notify.async.body.mail.MailEnum;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.treefinance.b2b.saas.util.SaasDateUtils;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.biz.helper.TaskOperatorMonitorKeyHelper;
 import com.treefinance.saas.monitor.biz.mq.producer.AlarmMessageProducer;
@@ -14,15 +15,14 @@ import com.treefinance.saas.monitor.common.domain.dto.EcommerceMonitorAlarmConfi
 import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.EcommerceAllStatAccessMapper;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,25 +66,25 @@ public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService impleme
             String alarmTimeKey = EcommerceAlarmKeyHelper.strKeyOfAlarmTimeLog(baseTime, config.getAlarmType(), statType);
             if (stringRedisTemplate.hasKey(alarmTimeKey)) {
                 logger.info("电商预警,预警定时任务执行jobTime={},baseTime={},statType={},alarmType={}已预警,不再预警",
-                        MonitorDateUtils.format(baseTime), JSON.toJSONString(statType), config.getAlarmType());
+                        DateUtils.format(baseTime), JSON.toJSONString(statType), config.getAlarmType());
                 return;
             }
             stringRedisTemplate.opsForValue().set(alarmTimeKey, "1");
             stringRedisTemplate.expire(alarmTimeKey, 2, TimeUnit.HOURS);
 
             //获取基础数据
-            Date startTime = DateUtils.addMinutes(baseTime, -intervalMins);
+            Date startTime = DateUtils.minusMinutes(baseTime, intervalMins);
             EcommerceAllStatAccessDTO dataDTO = this.getBaseData(jobTime, startTime, baseTime, config, statType);
             if (dataDTO == null) {
                 logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有电商的统计数据",
-                        MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(baseTime));
+                    DateUtils.format(jobTime), DateUtils.format(startTime), DateUtils.format(baseTime));
                 return;
             }
 
             //获取前n天内,相同时刻电商统计的平均值(登录转化率平均值,抓取成功率平均值,洗数成功率平均值)
             EcommerceAllStatAccessDTO compareDTO = getPreviousCompareData(jobTime, baseTime, config, statType);
             logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻baseTime={},获取前n天内,相同时刻所有电商统计的平均值compareDTO={}",
-                    MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(compareDTO));
+                DateUtils.format(jobTime), DateUtils.format(baseTime), JSON.toJSONString(compareDTO));
             if (compareDTO == null) {
                 return;
             }
@@ -92,7 +92,7 @@ public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService impleme
             //获取需要预警的数据信息
             List<TaskStatAccessAlarmMsgDTO> msgList = getAlarmMsgList(dataDTO, compareDTO, config);
             logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻baseTime={},所有电商统计需要预警的数据信息msgList={}",
-                    MonitorDateUtils.format(jobTime), MonitorDateUtils.format(baseTime), JSON.toJSONString(msgList));
+                DateUtils.format(jobTime), DateUtils.format(baseTime), JSON.toJSONString(msgList));
             if (CollectionUtils.isEmpty(msgList)) {
                 return;
             }
@@ -100,7 +100,7 @@ public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService impleme
             alarmMsg(msgList, jobTime, startTime, baseTime, config, statType);
 
         } catch (Exception e) {
-            logger.error("电商预警,预警定时任务执行jobTime={}异常", MonitorDateUtils.format(jobTime), e);
+            logger.error("电商预警,预警定时任务执行jobTime={}异常", DateUtils.format(jobTime), e);
         }
 
     }
@@ -164,7 +164,7 @@ public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService impleme
             String title = generateTitle(baseTile);
             alarmMessageProducer.sendMail(title, mailDataBody, MailEnum.HTML_MAIL);
         } else {
-            logger.info("电商预警,预警定时任务执行jobTime={},发送邮件开关已关闭", MonitorDateUtils.format(jobTime));
+            logger.info("电商预警,预警定时任务执行jobTime={},发送邮件开关已关闭", DateUtils.format(jobTime));
         }
     }
 
@@ -173,7 +173,7 @@ public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService impleme
             String weChatBody = generateWeChatBody(alarmLevel,msgList, startTime, endTime, baseTile);
             alarmMessageProducer.sendWebChart(weChatBody);
         } else {
-            logger.info("电商预警,预警定时任务执行jobTime={},发送微信开关已关闭", MonitorDateUtils.format(jobTime));
+            logger.info("电商预警,预警定时任务执行jobTime={},发送微信开关已关闭", DateUtils.format(jobTime));
         }
     }
 
@@ -186,13 +186,13 @@ public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService impleme
             startTime, Date
             endTime,
                                         String baseTile) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("<br>").append("【").append(alarmLevel).append("】").append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(baseTile)
                 .append("预警,在")
-                .append(MonitorDateUtils.format(startTime))
+                .append(DateUtils.format(startTime))
                 .append("--")
-                .append(MonitorDateUtils.format(endTime))
+                .append(DateUtils.format(endTime))
                 .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("</br>");
         buffer.append("<table border=\"1\" cellspacing=\"0\" bordercolor=\"#BDBDBD\">");
         buffer.append("<tr bgcolor=\"#C9C9C9\">")
@@ -217,14 +217,14 @@ public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService impleme
                                       Date
             endTime, String
             baseTile) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("【").append(alarmLevel).append("】")
                 .append("您好，").append("saas-").append(diamondConfig.getMonitorEnvironment())
                 .append(baseTile)
                 .append("预警,在")
-                .append(MonitorDateUtils.format(startTime))
+                .append(DateUtils.format(startTime))
                 .append("--")
-                .append(MonitorDateUtils.format(endTime))
+                .append(DateUtils.format(endTime))
                 .append("时段数据存在问题").append("，此时监控数据如下，请及时处理：").append("\n");
         for (TaskStatAccessAlarmMsgDTO msg : msgList) {
             buffer.append("【").append(msg.getAlarmSimpleDesc()).append("】")
@@ -414,20 +414,19 @@ public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService impleme
                                                              EcommerceMonitorAlarmConfigDTO config,
                                                              ETaskStatDataType statType) {
         Integer previousDays = config.getPreviousDays();
-        List<Date> previousOClockList = MonitorDateUtils.getPreviousOClockTime(baseTime, previousDays);
+        List<Date> previousOClockList = SaasDateUtils.getPreviousOClockTime(baseTime, previousDays);
 
         List<EcommerceAllStatAccessDTO> previousDTOList = Lists.newArrayList();
         for (Date previousOClock : previousOClockList) {
-            Date startTime = DateUtils.addMinutes(previousOClock, -config.getIntervalMins());
-            Date endTime = previousOClock;
-            EcommerceAllStatAccessDTO dto = this.getBaseData(jobTime, startTime, endTime, config, statType);
+            Date startTime = DateUtils.minusMinutes(previousOClock, config.getIntervalMins());
+            EcommerceAllStatAccessDTO dto = this.getBaseData(jobTime, startTime, previousOClock, config, statType);
             if (dto != null) {
                 previousDTOList.add(dto);
             }
         }
         if (CollectionUtils.isEmpty(previousDTOList)) {
             logger.info("电商预警,预警定时任务执行jobTime={},在此时间前{}天内,未查询到所有电商统计数据previousOClockList={},list={}",
-                    MonitorDateUtils.format(jobTime), previousDays, JSON.toJSONString(previousOClockList), JSON.toJSONString(previousDTOList));
+                DateUtils.format(jobTime), previousDays, JSON.toJSONString(previousOClockList), JSON.toJSONString(previousDTOList));
             return null;
         }
 
@@ -495,7 +494,7 @@ public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService impleme
         List<EcommerceAllStatAccess> list = ecommerceAllStatAccessMapper.selectByExample(criteria);
         if (CollectionUtils.isEmpty(list)) {
             logger.info("电商预警,预警定时任务执行jobTime={},要统计的数据时刻startTime={},endTime={},此段时间内,未查询到所有电商的统计数据list={}",
-                    MonitorDateUtils.format(jobTime), MonitorDateUtils.format(startTime), MonitorDateUtils.format(endTime), JSON.toJSONString(list));
+                DateUtils.format(jobTime), DateUtils.format(startTime), DateUtils.format(endTime), JSON.toJSONString(list));
             return null;
         }
         EcommerceAllStatAccess ecommerceAllStatAccess = list.get(0);
@@ -538,15 +537,13 @@ public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService impleme
             return BigDecimal.valueOf(0, 2);
         }
 
-        BigDecimal rate = BigDecimal.valueOf(a, 2)
+        return BigDecimal.valueOf(a, 2)
                 .multiply(BigDecimal.valueOf(100))
                 .divide(BigDecimal.valueOf(b, 2), 2, BigDecimal.ROUND_HALF_UP);
-        return rate;
     }
 
     private BigDecimal calcRate(BigDecimal a, BigDecimal b, int scale) {
-        BigDecimal rate = a.divide(b, scale, BigDecimal.ROUND_HALF_UP);
-        return rate;
+        return a.divide(b, scale, BigDecimal.ROUND_HALF_UP);
     }
 
     private static class EcommerceAlarmKeyHelper {
@@ -555,7 +552,8 @@ public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService impleme
 
         public static String strKeyOfAlarmTimeLog(Date baseTime, Integer alarmType, ETaskStatDataType statType) {
             String intervalDateStr = DateFormatUtils.format(baseTime, "yyyy-MM-dd");
-            return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, alarmType, statType, MonitorDateUtils.format2Hms(baseTime));
+            return Joiner.on(":").useForNull("null").join(KEY_PREFIX, KEY_ALARM_TIMES, intervalDateStr, alarmType,
+                statType, DateUtils.formatTime(baseTime));
         }
     }
 }

@@ -8,7 +8,6 @@ import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoTaskConfig
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,7 +64,7 @@ public class OperatorMonitorAlarmJobTest {
 
     @Test
     public void testAlarmJob() {
-        Date jobTime = MonitorDateUtils.parse("2018-05-17 15:15:00");
+        Date jobTime = com.treefinance.toolkit.util.DateUtils.parse("2018-05-17 15:15:00");
         List<OperatorMonitorAlarmConfigDTO> configList = JSONObject.parseArray(diamondConfig.getOperatorMonitorAlarmConfig(), OperatorMonitorAlarmConfigDTO.class);
         for (OperatorMonitorAlarmConfigDTO configDTO : configList) {
             operatorAlarmMonitorService.alarm(jobTime, configDTO, ETaskStatDataType.USER, EAlarmType.operator_alarm);

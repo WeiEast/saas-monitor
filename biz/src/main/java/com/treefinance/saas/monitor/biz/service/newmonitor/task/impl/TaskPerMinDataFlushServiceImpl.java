@@ -8,11 +8,21 @@ import com.google.common.collect.Sets;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.enums.TaskStepEnum;
 import com.treefinance.saas.monitor.biz.helper.TaskMonitorPerMinKeyHelper;
-import com.treefinance.saas.monitor.biz.service.*;
+import com.treefinance.saas.monitor.biz.service.EcommerceService;
+import com.treefinance.saas.monitor.biz.service.OperatorService;
+import com.treefinance.saas.monitor.biz.service.SaasErrorStepDayStatUpdateService;
+import com.treefinance.saas.monitor.biz.service.StatAccessUpdateService;
+import com.treefinance.saas.monitor.biz.service.WebsiteService;
 import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskPerMinDataFlushService;
-import com.treefinance.saas.monitor.common.domain.dto.*;
+import com.treefinance.saas.monitor.common.domain.dto.EcommerceDTO;
+import com.treefinance.saas.monitor.common.domain.dto.MerchantStatEcommerceDTO;
+import com.treefinance.saas.monitor.common.domain.dto.MerchantStatMailDTO;
+import com.treefinance.saas.monitor.common.domain.dto.MerchantStatOperatorDTO;
+import com.treefinance.saas.monitor.common.domain.dto.OperatorDTO;
+import com.treefinance.saas.monitor.common.domain.dto.SaasErrorStepDayStatDTO;
+import com.treefinance.saas.monitor.common.domain.dto.WebsiteDTO;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
@@ -22,6 +32,7 @@ import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -62,7 +73,7 @@ public class TaskPerMinDataFlushServiceImpl implements TaskPerMinDataFlushServic
                     }
                     Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
                     logger.info("任务监控,定时任务执行jobTime={},刷新所有运营商按时间段统计数据到db中,key={},data={}",
-                            MonitorDateUtils.format(jobTime), hashKey, JSON.toJSONString(dataMap));
+                        DateUtils.format(jobTime), hashKey, JSON.toJSONString(dataMap));
                     if (MapUtils.isEmpty(dataMap)) {
                         continue;
                     }
@@ -79,11 +90,11 @@ public class TaskPerMinDataFlushServiceImpl implements TaskPerMinDataFlushServic
             }
 
             if (CollectionUtils.isNotEmpty(list)) {
-                logger.info("任务监控,定时任务执行jobTime={},刷新数据到db中list={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(list));
+                logger.info("任务监控,定时任务执行jobTime={},刷新数据到db中list={}", DateUtils.format(jobTime), JSON.toJSONString(list));
                 saasErrorStepDayStatUpdateService.batchInsertErrorDayStat(list);
             }
         } catch (Exception e) {
-            logger.error("任务监控,定时任务执行jobTime={},刷新数据到db中异常", MonitorDateUtils.format(jobTime), e);
+            logger.error("任务监控,定时任务执行jobTime={},刷新数据到db中异常", DateUtils.format(jobTime), e);
         }
 
     }
@@ -122,7 +133,7 @@ public class TaskPerMinDataFlushServiceImpl implements TaskPerMinDataFlushServic
                             ecommerceDataList.add(dto);
                         }
                         if (CollectionUtils.isNotEmpty(ecommerceDataList)) {
-                            logger.info("任务监控,定时任务执行jobTime={},刷新数据到db中list={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(ecommerceDataList));
+                            logger.info("任务监控,定时任务执行jobTime={},刷新数据到db中list={}", DateUtils.format(jobTime), JSON.toJSONString(ecommerceDataList));
                             statAccessUpdateService.batchInsertEcommerce(ecommerceDataList);
                         }
                         break;
@@ -155,7 +166,7 @@ public class TaskPerMinDataFlushServiceImpl implements TaskPerMinDataFlushServic
                             mailDataList.add(dto);
                         }
                         if (CollectionUtils.isNotEmpty(mailDataList)) {
-                            logger.info("任务监控,定时任务执行jobTime={},刷新数据到db中list={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(mailDataList));
+                            logger.info("任务监控,定时任务执行jobTime={},刷新数据到db中list={}", DateUtils.format(jobTime), JSON.toJSONString(mailDataList));
                             statAccessUpdateService.batchInsertMail(mailDataList);
                         }
                         break;
@@ -188,7 +199,7 @@ public class TaskPerMinDataFlushServiceImpl implements TaskPerMinDataFlushServic
                             operatorDataList.add(dto);
                         }
                         if (CollectionUtils.isNotEmpty(operatorDataList)) {
-                            logger.info("任务监控,定时任务执行jobTime={},刷新数据到db中list={}", MonitorDateUtils.format(jobTime), JSON.toJSONString(operatorDataList));
+                            logger.info("任务监控,定时任务执行jobTime={},刷新数据到db中list={}", DateUtils.format(jobTime), JSON.toJSONString(operatorDataList));
                             statAccessUpdateService.batchInsertOperator(operatorDataList);
                         }
                         break;
@@ -197,7 +208,7 @@ public class TaskPerMinDataFlushServiceImpl implements TaskPerMinDataFlushServic
                 }
             }
         } catch (NumberFormatException e) {
-            logger.error("任务监控,定时任务执行jobTime={},刷新数据到db中异常", MonitorDateUtils.format(jobTime), e);
+            logger.error("任务监控,定时任务执行jobTime={},刷新数据到db中异常", DateUtils.format(jobTime), e);
         }
     }
 
@@ -215,11 +226,11 @@ public class TaskPerMinDataFlushServiceImpl implements TaskPerMinDataFlushServic
                     continue;
                 }
                 logger.info("任务监控,定时任务执行jobTime={},保存统计数据,此次任务需要统计的时间段有dayKey={},dataTimeStrSets={}",
-                        MonitorDateUtils.format(jobTime), dayKey, JSON.toJSONString(redisStatDataTimeStrSets));
+                    DateUtils.format(jobTime), dayKey, JSON.toJSONString(redisStatDataTimeStrSets));
                 Set<Date> redisStatDataTimeSets = Sets.newHashSet();
                 for (String dateStr : redisStatDataTimeStrSets) {
                     List<String> strList = Splitter.on(";").splitToList(dateStr);
-                    Date date = MonitorDateUtils.parse(strList.get(0));
+                    Date date = DateUtils.parse(strList.get(0));
                     redisStatDataTimeSets.add(date);
                 }
                 if (CollectionUtils.isEmpty(redisStatDataTimeSets)) {
@@ -232,7 +243,7 @@ public class TaskPerMinDataFlushServiceImpl implements TaskPerMinDataFlushServic
                     }
                     Map<String, Object> dataMap = redisOperations.opsForHash().entries(hashKey);
                     logger.info("任务监控,定时任务执行jobTime={},刷新数据到db中,key={},data={}",
-                            MonitorDateUtils.format(jobTime), hashKey, JSON.toJSONString(dataMap));
+                        DateUtils.format(jobTime), hashKey, JSON.toJSONString(dataMap));
                     if (MapUtils.isEmpty(dataMap)) {
                         continue;
                     }
@@ -241,7 +252,7 @@ public class TaskPerMinDataFlushServiceImpl implements TaskPerMinDataFlushServic
                 }
                 if (CollectionUtils.isNotEmpty(redisStatDataTimeStrSets)) {
                     logger.info("任务监控,定时任务执行jobTime={},刷新数据到db后,删除dayKey={}中已统计数据时间dataTimeSet={},dataTimeStrSets={}",
-                            MonitorDateUtils.format(jobTime), dayKey, JSON.toJSONString(redisStatDataTimeSets), JSON.toJSONString(redisStatDataTimeStrSets));
+                            DateUtils.format(jobTime), dayKey, JSON.toJSONString(redisStatDataTimeSets), JSON.toJSONString(redisStatDataTimeStrSets));
                     String[] values = redisStatDataTimeStrSets.toArray(new String[0]);
                     redisOperations.opsForSet().remove(dayKey, values);
                 }

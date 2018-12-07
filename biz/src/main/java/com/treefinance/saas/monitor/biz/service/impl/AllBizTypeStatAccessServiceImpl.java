@@ -6,8 +6,14 @@ import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.*;
+import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
+import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.EmailStatAccess;
+import com.treefinance.saas.monitor.dao.entity.EmailStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatDayAccess;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatDayAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.EcommerceAllStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.EmailStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.MerchantStatDayAccessMapper;
@@ -15,6 +21,7 @@ import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
 import com.treefinance.saas.monitor.exception.BizException;
 import com.treefinance.saas.monitor.facade.domain.ro.AppTaskStatResult;
 import com.treefinance.saas.monitor.facade.domain.ro.WholeConversionResult;
+import com.treefinance.toolkit.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -54,9 +60,9 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
 
         Date now = new Date();
 
-        Date yesterday = MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -1);
+        Date yesterday = DateUtils.yesterday(now);
 
-        Date start = MonitorDateUtils.getDayStartTime(MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -7));
+        Date start = DateUtils.getStartTimeOfDayBefore(now, 7);
 
         CalculateModel model = new CalculateModel();
 
@@ -95,7 +101,7 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
 
         for (EmailStatAccess emailStatAccess : list) {
 
-            if (MonitorDateUtils.isSameDay(emailStatAccess.getDataTime(), now)) {
+            if (DateUtils.isSameDay(emailStatAccess.getDataTime(), now)) {
                 model.succToday += emailStatAccess.getCallbackSuccessCount();
                 model.totalToday += emailStatAccess.getEntryCount();
                 continue;
@@ -104,7 +110,7 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
             model.succCount += emailStatAccess.getCallbackSuccessCount();
             model.totalCount += emailStatAccess.getEntryCount();
 
-            if (MonitorDateUtils.isSameDay(emailStatAccess.getDataTime(), yesterday)) {
+            if (DateUtils.isSameDay(emailStatAccess.getDataTime(), yesterday)) {
                 model.succYesterday += emailStatAccess.getCallbackSuccessCount();
                 model.totalYesterday += emailStatAccess.getEntryCount();
             }
@@ -125,7 +131,7 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
 
         for (OperatorStatAccess operatorStatAccess : list) {
 
-            if (MonitorDateUtils.isSameDay(operatorStatAccess.getDataTime(), now)) {
+            if (DateUtils.isSameDay(operatorStatAccess.getDataTime(), now)) {
                 model.succToday += operatorStatAccess.getCallbackSuccessCount();
                 model.totalToday += operatorStatAccess.getEntryCount();
                 continue;
@@ -134,7 +140,7 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
             model.succCount += operatorStatAccess.getCallbackSuccessCount();
             model.totalCount += operatorStatAccess.getEntryCount();
 
-            if (MonitorDateUtils.isSameDay(operatorStatAccess.getDataTime(), yesterday)) {
+            if (DateUtils.isSameDay(operatorStatAccess.getDataTime(), yesterday)) {
                 model.succYesterday += operatorStatAccess.getCallbackSuccessCount();
                 model.totalYesterday += operatorStatAccess.getEntryCount();
             }
@@ -192,7 +198,7 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
 
         for (EcommerceAllStatAccess operatorStatAccess : list) {
 
-            if (MonitorDateUtils.isSameDay(operatorStatAccess.getDataTime(), now)) {
+            if (DateUtils.isSameDay(operatorStatAccess.getDataTime(), now)) {
                 model.succToday += operatorStatAccess.getCallbackSuccessCount();
                 model.totalToday += operatorStatAccess.getEntryCount();
                 continue;
@@ -202,7 +208,7 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
             model.totalCount += operatorStatAccess.getEntryCount();
 
 
-            if (MonitorDateUtils.isSameDay(operatorStatAccess.getDataTime(), yesterday)) {
+            if (DateUtils.isSameDay(operatorStatAccess.getDataTime(), yesterday)) {
                 model.succYesterday += operatorStatAccess.getCallbackSuccessCount();
                 model.totalYesterday += operatorStatAccess.getEntryCount();
             }
@@ -217,9 +223,9 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
     public AppTaskStatResult getAppTaskStatResult(EBizType bizType, ESaasEnv eSaasEnv) {
 
         Date now = new Date();
-        Date yesterday = MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -1);
+        Date yesterday = DateUtils.yesterday(now);
 
-        Date start = MonitorDateUtils.getDayStartTime(MonitorDateUtils.addTimeUnit(now, Calendar.DATE, -7));
+        Date start = DateUtils.getStartTimeOfDayBefore(now, 7);
 
         Byte dataType = bizType.getCode();
 
@@ -238,7 +244,7 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
 
         for (MerchantStatDayAccess operatorStatAccess : list) {
 
-            if (MonitorDateUtils.isSameDay(operatorStatAccess.getDataTime(), now)) {
+            if (DateUtils.isSameDay(operatorStatAccess.getDataTime(), now)) {
                 model.totalToday += operatorStatAccess.getTotalCount();
                 continue;
             }
@@ -246,7 +252,7 @@ public class AllBizTypeStatAccessServiceImpl implements AllBizTypeStatAccessServ
             model.totalCount += operatorStatAccess.getTotalCount();
             count++;
 
-            if (MonitorDateUtils.isSameDay(operatorStatAccess.getDataTime(), yesterday)) {
+            if (DateUtils.isSameDay(operatorStatAccess.getDataTime(), yesterday)) {
                 model.totalYesterday += operatorStatAccess.getTotalCount();
             }
         }

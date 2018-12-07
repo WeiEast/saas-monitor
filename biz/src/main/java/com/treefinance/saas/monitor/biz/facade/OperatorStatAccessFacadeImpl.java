@@ -2,9 +2,9 @@ package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.treefinance.b2b.saas.util.SaasDateUtils;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccessCriteria;
@@ -38,7 +38,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +131,7 @@ public class OperatorStatAccessFacadeImpl extends AbstractFacade implements Oper
 
     private BigDecimal getPreviousAverage(String appId, byte saasEnv, byte dataType, String groupCode, Date initDate,
                                           String groupName) {
-        Date startDate = MonitorDateUtils.addTimeUnit(initDate, Calendar.DATE, -7);
+        Date startDate = com.treefinance.toolkit.util.DateUtils.minusDays(initDate, 7);
 
         OperatorStatDayAccessCriteria criteria = new OperatorStatDayAccessCriteria();
         criteria.setOrderByClause("confirmMobileCount desc");
@@ -184,7 +183,8 @@ public class OperatorStatAccessFacadeImpl extends AbstractFacade implements Oper
         OperatorStatAccessCriteria criteria = new OperatorStatAccessCriteria();
         OperatorStatAccessCriteria.Criteria innerCriteria = criteria.createCriteria();
         Date startTime = request.getDataDate();
-        Date endTime = DateUtils.addMinutes(request.getDataDate(), request.getIntervalMins());
+        Date endTime = com.treefinance.toolkit.util.DateUtils.plusMinutes(request.getDataDate(),
+            request.getIntervalMins());
         innerCriteria.andAppIdEqualTo(request.getAppId())
                 .andDataTypeEqualTo(request.getStatType())
                 .andSaasEnvEqualTo(request.getSaasEnv())
@@ -228,7 +228,7 @@ public class OperatorStatAccessFacadeImpl extends AbstractFacade implements Oper
      */
     private BigDecimal getAverageWholeConversion(OperatorStatAccessRequest request, String groupCode) {
 
-        List<Date> dates = MonitorDateUtils.getPreviousOClockTime(request.getDataDate(), 7);
+        List<Date> dates = SaasDateUtils.getPreviousOClockTime(request.getDataDate(), 7);
 
         AtomicReference<Integer> callbackCount = new AtomicReference<>(0);
         AtomicReference<Integer> entryCount = new AtomicReference<>(0);
@@ -364,7 +364,8 @@ public class OperatorStatAccessFacadeImpl extends AbstractFacade implements Oper
                 .andGroupCodeEqualTo(request.getGroupCode())
                 .andDataTypeEqualTo(request.getStatType())
                 .andSaasEnvEqualTo(request.getSaasEnv())
-                .andDataTimeBetween(MonitorDateUtils.getDayStartTime(request.getStartDate()), MonitorDateUtils.getDayEndTime(request.getEndDate()));
+            .andDataTimeBetween(com.treefinance.toolkit.util.DateUtils.getStartTimeOfDay(request.getStartDate()), com.treefinance.toolkit.util.DateUtils
+                .getEndTimeOfDay(request.getEndDate()));
         List<OperatorStatAccess> list = operatorStatAccessMapper.selectByExample(criteria);
         if (CollectionUtils.isEmpty(list)) {
             return MonitorResultBuilder.build(result);
@@ -372,8 +373,10 @@ public class OperatorStatAccessFacadeImpl extends AbstractFacade implements Oper
         List<OperatorStatAccessDTO> changeList = this.changeIntervalDataTimeOperatorStatAccess(list, request.getIntervalMins());
         for (OperatorStatAccessDTO data : changeList) {
             OperatorStatAccessRO ro = convert(data, OperatorStatAccessRO.class);
-            ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
-            result.add(ro);
+            if (ro != null) {
+                ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
+                result.add(ro);
+            }
         }
         logger.info("查询各个运营商小时监控统计数据,输出结果result={}", JSON.toJSONString(result));
         return MonitorResultBuilder.build(result);
@@ -381,7 +384,7 @@ public class OperatorStatAccessFacadeImpl extends AbstractFacade implements Oper
 
 
     private List<OperatorStatAccessDTO> changeIntervalDataTimeOperatorStatAccess(List<OperatorStatAccess> list, final Integer intervalMins) {
-        Map<Date, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
+        Map<Date, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> SaasDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
         List<OperatorStatAccessDTO> resultList = Lists.newArrayList();
         for (Map.Entry<Date, List<OperatorStatAccess>> entry : map.entrySet()) {
             if (CollectionUtils.isEmpty(entry.getValue())) {
@@ -542,10 +545,12 @@ public class OperatorStatAccessFacadeImpl extends AbstractFacade implements Oper
             return MonitorResultBuilder.build(result);
         }
         for (OperatorStatAccess data : list) {
-            data.setDataTime(MonitorDateUtils.getIntervalDateTime(data.getDataTime(), request.getIntervalMins()));
+            data.setDataTime(SaasDateUtils.getIntervalDateTime(data.getDataTime(), request.getIntervalMins()));
             OperatorStatAccessRO ro = convert(data, OperatorStatAccessRO.class);
-            ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
-            result.add(ro);
+            if (ro != null) {
+                ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
+                result.add(ro);
+            }
         }
         logger.info("查询各个运营商小时监控统计数据,输出结果result={}", JSON.toJSONString(result));
         return MonitorResultBuilder.build(result);
@@ -554,7 +559,7 @@ public class OperatorStatAccessFacadeImpl extends AbstractFacade implements Oper
 
 
     private List<OperatorStatAccessDTO> changeIntervalDataTimeOperatorAllStatAccess(List<OperatorStatAccess> list, final Integer intervalMins) {
-        Map<Date, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> MonitorDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
+        Map<Date, List<OperatorStatAccess>> map = list.stream().collect(Collectors.groupingBy(data -> SaasDateUtils.getIntervalDateTime(data.getDataTime(), intervalMins)));
         List<OperatorStatAccessDTO> resultList = Lists.newArrayList();
         for (Map.Entry<Date, List<OperatorStatAccess>> entry : map.entrySet()) {
             if (CollectionUtils.isEmpty(entry.getValue())) {

@@ -12,7 +12,6 @@ import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerService;
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
-import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.entity.AsAlarm;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmConstant;
@@ -35,6 +34,7 @@ import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfi
 import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmRO;
 import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
 import com.treefinance.saas.monitor.facade.service.autoalarm.AlarmBasicConfigurationFacade;
+import com.treefinance.toolkit.util.DateUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,7 +203,7 @@ public class AlarmBasicConfigurationFacadeImpl extends AbstractFacade implements
             throw new ParamCheckerException("cron表达式错误");
         }
         Long intervalTime = intervalMilliSecond / 1000;
-        map.put("alarmTime", MonitorDateUtils.format(cronDate));
+        map.put("alarmTime", DateUtils.format(cronDate));
         map.put("intervalTime", String.valueOf(intervalTime));
         return MonitorResultBuilder.build(map);
     }
