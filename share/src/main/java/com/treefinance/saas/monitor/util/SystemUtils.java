@@ -1,16 +1,15 @@
-package com.treefinance.saas.monitor.common.utils;
+package com.treefinance.saas.monitor.util;
 
 import com.treefinance.saas.monitor.common.domain.Constants;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Created by haojiahong on 2018/1/17.
  */
-public class MonitorUtils {
+public final class SystemUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(MonitorUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemUtils.class);
 
     public static final String SAAS_ENV;
 
@@ -31,13 +30,12 @@ public class MonitorUtils {
      *
      * @return true:是预发布;false:不是预发布环境
      */
-    public static Boolean isPreProductContext() {
+    public static boolean isPreProductContext() {
         String saasEnv = SAAS_ENV;
         logger.info("当前所处环境saas.env={}", saasEnv);
-        if (StringUtils.isNotBlank(saasEnv)
-                && StringUtils.equalsIgnoreCase(saasEnv, Constants.SAAS_ENV_PRE_PRODUCT)) {
-            return true;
-        }
-        return false;
+        return Constants.SAAS_ENV_PRE_PRODUCT.equals(saasEnv);
+    }
+
+    private SystemUtils() {
     }
 }

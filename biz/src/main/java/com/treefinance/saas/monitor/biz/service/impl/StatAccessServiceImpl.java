@@ -3,14 +3,45 @@ package com.treefinance.saas.monitor.biz.service.impl;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.service.StatAccessService;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.*;
-import com.treefinance.saas.monitor.dao.mapper.*;
-import com.treefinance.saas.monitor.facade.domain.request.*;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.context.component.AbstractService;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatAccess;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatBank;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatBankCriteria;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatDayAccess;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatDayAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatEcommerce;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatEcommerceCriteria;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatMail;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatMailCriteria;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatOperator;
+import com.treefinance.saas.monitor.dao.entity.MerchantStatOperatorCriteria;
+import com.treefinance.saas.monitor.dao.entity.SaasErrorStepDayStat;
+import com.treefinance.saas.monitor.dao.entity.SaasErrorStepDayStatCriteria;
+import com.treefinance.saas.monitor.dao.mapper.MerchantStatAccessMapper;
+import com.treefinance.saas.monitor.dao.mapper.MerchantStatBankMapper;
+import com.treefinance.saas.monitor.dao.mapper.MerchantStatDayAccessMapper;
+import com.treefinance.saas.monitor.dao.mapper.MerchantStatEcommerceMapper;
+import com.treefinance.saas.monitor.dao.mapper.MerchantStatMailMapper;
+import com.treefinance.saas.monitor.dao.mapper.MerchantStatOperatorMapper;
+import com.treefinance.saas.monitor.dao.mapper.SaasErrorStepDayStatMapper;
+import com.treefinance.saas.monitor.facade.domain.request.MerchantStatAccessRequest;
+import com.treefinance.saas.monitor.facade.domain.request.MerchantStatBankRequest;
+import com.treefinance.saas.monitor.facade.domain.request.MerchantStatDayAccessRequest;
+import com.treefinance.saas.monitor.facade.domain.request.MerchantStatEcommerceRequest;
+import com.treefinance.saas.monitor.facade.domain.request.MerchantStatMailRequest;
+import com.treefinance.saas.monitor.facade.domain.request.MerchantStatOperaterRequest;
+import com.treefinance.saas.monitor.facade.domain.request.SaasErrorStepDayStatRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
-import com.treefinance.saas.monitor.facade.domain.ro.stat.*;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.MerchantStatAccessRO;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.MerchantStatBankRO;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.MerchantStatDayAccessRO;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.MerchantStatEcommerceRO;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.MerchantStatMailRO;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.MerchantStatOperatorRO;
+import com.treefinance.saas.monitor.facade.domain.ro.stat.SaasErrorStepDayStatRO;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -28,7 +59,7 @@ import java.util.stream.Collectors;
  * Created by yh-treefinance on 2017/6/2.
  */
 @Service("statAccessService")
-public class StatAccessServiceImpl implements StatAccessService {
+public class StatAccessServiceImpl extends AbstractService implements StatAccessService {
 
     @Autowired
     private MerchantStatDayAccessMapper merchantStatDayAccessMapper;
@@ -62,7 +93,7 @@ public class StatAccessServiceImpl implements StatAccessService {
         List<MerchantStatDayAccessRO> data = Lists.newArrayList();
         if (totalCount > 0) {
             List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
-            data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
+            data = convert(list, MerchantStatDayAccessRO.class);
         }
         return MonitorResultBuilder.pageResult(request, data, totalCount);
     }
@@ -79,7 +110,7 @@ public class StatAccessServiceImpl implements StatAccessService {
             innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
         }
         List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
-        List<MerchantStatDayAccessRO> data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
+        List<MerchantStatDayAccessRO> data = convert(list, MerchantStatDayAccessRO.class);
         return MonitorResultBuilder.build(data);
     }
 
@@ -95,7 +126,7 @@ public class StatAccessServiceImpl implements StatAccessService {
         List<MerchantStatDayAccessRO> data = Lists.newArrayList();
         if (totalCount > 0) {
             List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
-            data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
+            data = convert(list, MerchantStatDayAccessRO.class);
         }
         return MonitorResultBuilder.pageResult(request, data, totalCount);
     }
@@ -111,7 +142,7 @@ public class StatAccessServiceImpl implements StatAccessService {
             innerCriteria.andSaasEnvEqualTo(request.getSaasEnv());
         }
         List<MerchantStatDayAccess> list = merchantStatDayAccessMapper.selectByExample(criteria);
-        List<MerchantStatDayAccessRO> data = DataConverterUtils.convert(list, MerchantStatDayAccessRO.class);
+        List<MerchantStatDayAccessRO> data = convert(list, MerchantStatDayAccessRO.class);
         return MonitorResultBuilder.build(data);
     }
 
@@ -123,7 +154,7 @@ public class StatAccessServiceImpl implements StatAccessService {
                 .andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<MerchantStatAccess> list = merchantStatAccessMapper.selectByExample(criteria);
-        List<MerchantStatAccessRO> data = DataConverterUtils.convert(list, MerchantStatAccessRO.class);
+        List<MerchantStatAccessRO> data = convert(list, MerchantStatAccessRO.class);
         return MonitorResultBuilder.build(data);
     }
 
@@ -141,7 +172,7 @@ public class StatAccessServiceImpl implements StatAccessService {
             innerCriteria.andAppIdEqualTo(MonitorConstants.VIRTUAL_TOTAL_STAT_APP_ID);
         }
         List<MerchantStatAccess> list = merchantStatAccessMapper.selectByExample(criteria);
-        List<MerchantStatAccessRO> data = DataConverterUtils.convert(list, MerchantStatAccessRO.class);
+        List<MerchantStatAccessRO> data = convert(list, MerchantStatAccessRO.class);
         return MonitorResultBuilder.build(data);
     }
 
@@ -165,7 +196,7 @@ public class StatAccessServiceImpl implements StatAccessService {
         innerCriteria.andDataTimeGreaterThanOrEqualTo(request.getStartDate())
                 .andDataTimeLessThan(request.getEndDate());
         List<MerchantStatAccess> list = merchantStatAccessMapper.selectByExample(criteria);
-        List<MerchantStatAccessRO> dataList = DataConverterUtils.convert(list, MerchantStatAccessRO.class);
+        List<MerchantStatAccessRO> dataList = convert(list, MerchantStatAccessRO.class);
         Integer intervalMins = request.getIntervalMins() == null ? 1 : request.getIntervalMins();
 
         dataList = this.convertIntervalMinsData(dataList, intervalMins);
@@ -255,7 +286,7 @@ public class StatAccessServiceImpl implements StatAccessService {
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<MerchantStatBank> list = merchantStatBankMapper.selectByExample(criteria);
 
-        List<MerchantStatBankRO> data = DataConverterUtils.convert(list, MerchantStatBankRO.class);
+        List<MerchantStatBankRO> data = convert(list, MerchantStatBankRO.class);
         return MonitorResultBuilder.build(data);
     }
 
@@ -268,7 +299,7 @@ public class StatAccessServiceImpl implements StatAccessService {
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<MerchantStatEcommerce> list = merchantStatEcommerceMapper.selectByExample(criteria);
 
-        List<MerchantStatEcommerceRO> data = DataConverterUtils.convert(list, MerchantStatEcommerceRO.class);
+        List<MerchantStatEcommerceRO> data = convert(list, MerchantStatEcommerceRO.class);
         return MonitorResultBuilder.build(data);
     }
 
@@ -281,7 +312,7 @@ public class StatAccessServiceImpl implements StatAccessService {
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<MerchantStatMail> list = merchantStatMailMapper.selectByExample(criteria);
 
-        List<MerchantStatMailRO> data = DataConverterUtils.convert(list, MerchantStatMailRO.class);
+        List<MerchantStatMailRO> data = convert(list, MerchantStatMailRO.class);
         return MonitorResultBuilder.build(data);
     }
 
@@ -301,7 +332,7 @@ public class StatAccessServiceImpl implements StatAccessService {
         if (CollectionUtils.isEmpty(list)) {
             return MonitorResultBuilder.build(data);
         }
-        data = DataConverterUtils.convert(list, MerchantStatOperatorRO.class);
+        data = convert(list, MerchantStatOperatorRO.class);
         return MonitorResultBuilder.build(data);
     }
 
@@ -312,7 +343,7 @@ public class StatAccessServiceImpl implements StatAccessService {
         criteria.createCriteria().andDataTypeEqualTo(request.getDataType())
                 .andDataTimeBetween(request.getStartDate(), request.getEndDate());
         List<SaasErrorStepDayStat> list = saasErrorStepDayStatMapper.selectByExample(criteria);
-        List<SaasErrorStepDayStatRO> data = DataConverterUtils.convert(list, SaasErrorStepDayStatRO.class);
+        List<SaasErrorStepDayStatRO> data = convert(list, SaasErrorStepDayStatRO.class);
         return MonitorResultBuilder.build(data);
     }
 }

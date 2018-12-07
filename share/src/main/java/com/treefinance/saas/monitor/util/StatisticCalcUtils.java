@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.common.utils;
+package com.treefinance.saas.monitor.util;
 
 import java.math.BigDecimal;
 
@@ -6,7 +6,11 @@ import java.math.BigDecimal;
  * @author chengtong
  * @date 18/3/15 17:37
  */
-public class StatisticCalcUtil {
+public class StatisticCalcUtils {
+
+    private StatisticCalcUtils() {
+    }
+
     /**
      * @param numerator 分子
      * @param denominator 分母
@@ -27,9 +31,7 @@ public class StatisticCalcUtil {
         if (Integer.valueOf(0).compareTo(a) == 0) {
             return BigDecimal.ZERO;
         }
-        BigDecimal rate = BigDecimal.valueOf(b, 1)
-                .divide(BigDecimal.valueOf(a, 1), 1, BigDecimal.ROUND_HALF_UP);
-        return rate;
+        return BigDecimal.valueOf(b, 1).divide(BigDecimal.valueOf(a, 1), 1, BigDecimal.ROUND_HALF_UP);
     }
 
 

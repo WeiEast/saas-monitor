@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.facade;
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.biz.service.RealTimeAvgStatAccessService;
 import com.treefinance.saas.monitor.common.domain.dto.RealTimeStatAccessDTO;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.facade.domain.request.BaseStatAccessRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
@@ -24,7 +24,7 @@ import java.util.List;
  * @date 2018/6/21
  */
 @Service("realTimeStatAccessFacade")
-public class RealTimeStatAccessFacadeImpl implements RealTimeStatAccessFacade {
+public class RealTimeStatAccessFacadeImpl extends AbstractFacade implements RealTimeStatAccessFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(RealTimeStatAccessFacade.class);
 
@@ -40,7 +40,7 @@ public class RealTimeStatAccessFacadeImpl implements RealTimeStatAccessFacade {
         }
         logger.info("任务实时监控数据统计查询,输入参数request={}", JSON.toJSONString(request));
         List<RealTimeStatAccessDTO> list = realTimeAvgStatAccessService.queryRealTimeStatAccess(request);
-        List<RealTimeStatAccessRO> result = DataConverterUtils.convert(list, RealTimeStatAccessRO.class);
+        List<RealTimeStatAccessRO> result = convert(list, RealTimeStatAccessRO.class);
         return MonitorResultBuilder.build(result);
     }
 
@@ -54,7 +54,7 @@ public class RealTimeStatAccessFacadeImpl implements RealTimeStatAccessFacade {
         List<RealTimeStatAccessDTO> list = realTimeAvgStatAccessService.queryDataByConditions(request.getAppId(),
                 request.getSaasEnv(), request.getBizType(), request.getStartTime(),
                 request.getEndTime(), request.getIntervalMins(), request.getHiddenRecentPoint());
-        List<RealTimeStatAccessRO> result = DataConverterUtils.convert(list, RealTimeStatAccessRO.class);
+        List<RealTimeStatAccessRO> result = convert(list, RealTimeStatAccessRO.class);
         return MonitorResultBuilder.build(result);
 
     }

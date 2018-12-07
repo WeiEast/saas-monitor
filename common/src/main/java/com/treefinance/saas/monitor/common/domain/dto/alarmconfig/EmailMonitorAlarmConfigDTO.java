@@ -3,16 +3,20 @@ package com.treefinance.saas.monitor.common.domain.dto.alarmconfig;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.common.collect.Maps;
+import com.treefinance.b2b.saas.util.BeanUtils;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
-import com.treefinance.saas.monitor.common.utils.BeanUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
 
@@ -170,10 +174,9 @@ public class EmailMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
         emailMonitorAlarmConfigDTO.setLevelConfig(Arrays.asList(errorConfig, warning, info));
 
         EmailMonitorAlarmConfigDTO configDTO = new EmailMonitorAlarmConfigDTO();
-        configDTO = BeanUtils.convert(emailMonitorAlarmConfigDTO,
-                configDTO);
+        BeanUtils.copyProperties(emailMonitorAlarmConfigDTO, configDTO);
 
-        configDTO.setEmails(Arrays.asList("virtual_total_stat_email"));
+        configDTO.setEmails(Collections.singletonList("virtual_total_stat_email"));
         configDTO.setLevelConfig(emailMonitorAlarmConfigDTO.levelConfig);
         return configDTO;
     }
@@ -257,8 +260,7 @@ public class EmailMonitorAlarmConfigDTO extends BaseAlarmConfigDTO {
         emailMonitorAlarmConfigDTO.setLevelConfig(Arrays.asList(errorConfig, warning, info));
 
         EmailMonitorAlarmConfigDTO configDTO = new EmailMonitorAlarmConfigDTO();
-        configDTO = BeanUtils.convert(emailMonitorAlarmConfigDTO,
-                configDTO);
+        BeanUtils.copyProperties(emailMonitorAlarmConfigDTO, configDTO);
 
         configDTO.setEmails(Arrays.asList("126.com","163.com","139.com","exmail.qq.com","qq.com","sina.com","其他"));
         configDTO.setLevelConfig(emailMonitorAlarmConfigDTO.levelConfig);

@@ -6,10 +6,6 @@ package com.treefinance.saas.monitor.exception;
  */
 public class NoNeedAlarmException extends RuntimeException {
 
-    private int code;
-
-    private Object[] args;
-
     public NoNeedAlarmException(String message) {
         super(message);
     }

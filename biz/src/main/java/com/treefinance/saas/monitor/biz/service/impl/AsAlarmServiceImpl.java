@@ -3,11 +3,45 @@ package com.treefinance.saas.monitor.biz.service.impl;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.alarm.service.AlaramJobService;
 import com.treefinance.saas.monitor.biz.service.AsAlarmService;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.dao.entity.*;
-import com.treefinance.saas.monitor.dao.mapper.*;
-import com.treefinance.saas.monitor.facade.domain.request.autoalarm.*;
-import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.*;
+import com.treefinance.saas.monitor.context.component.AbstractService;
+import com.treefinance.saas.monitor.dao.entity.AsAlarm;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmConstant;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmConstantCriteria;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmCriteria;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmMsg;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmMsgCriteria;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmNotify;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmNotifyCriteria;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmQuery;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmQueryCriteria;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmTrigger;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmTriggerCriteria;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmVariable;
+import com.treefinance.saas.monitor.dao.entity.AsAlarmVariableCriteria;
+import com.treefinance.saas.monitor.dao.mapper.AsAlarmConstantMapper;
+import com.treefinance.saas.monitor.dao.mapper.AsAlarmMapper;
+import com.treefinance.saas.monitor.dao.mapper.AsAlarmMsgMapper;
+import com.treefinance.saas.monitor.dao.mapper.AsAlarmNotifyMapper;
+import com.treefinance.saas.monitor.dao.mapper.AsAlarmQueryMapper;
+import com.treefinance.saas.monitor.dao.mapper.AsAlarmTriggerMapper;
+import com.treefinance.saas.monitor.dao.mapper.AsAlarmVariableMapper;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationDetailRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AlarmBasicConfigurationRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AsAlarmConstantInfoRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AsAlarmInfoRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AsAlarmMsgInfoRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AsAlarmNotifyInfoRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AsAlarmQueryInfoRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AsAlarmTriggerInfoRequest;
+import com.treefinance.saas.monitor.facade.domain.request.autoalarm.AsAlarmVariableInfoRequest;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmBasicConfigurationDetailRO;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmConstantRO;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmMsgRO;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmNotifyRO;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmQueryRO;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmRO;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmTriggerRO;
+import com.treefinance.saas.monitor.facade.domain.ro.autoalarm.AsAlarmVariableRO;
 import com.treefinance.saas.monitor.facade.exception.ParamCheckerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +50,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -26,25 +61,25 @@ import java.util.stream.Collectors;
  * @date:Created in 2018/7/19上午10:57
  */
 @Service
-public class AsAlarmServiceImpl implements AsAlarmService {
+public class AsAlarmServiceImpl extends AbstractService implements AsAlarmService {
 
     @Autowired
-    AsAlarmMapper asAlarmMapper;
+    private AsAlarmMapper asAlarmMapper;
     @Autowired
-    AsAlarmConstantMapper asAlarmConstantMapper;
+    private AsAlarmConstantMapper asAlarmConstantMapper;
     @Autowired
-    AsAlarmQueryMapper asAlarmQueryMapper;
+    private AsAlarmQueryMapper asAlarmQueryMapper;
     @Autowired
-    AsAlarmVariableMapper asAlarmVariableMapper;
+    private AsAlarmVariableMapper asAlarmVariableMapper;
     @Autowired
-    AsAlarmNotifyMapper asAlarmNotifyMapper;
+    private AsAlarmNotifyMapper asAlarmNotifyMapper;
     @Autowired
-    AsAlarmMsgMapper asAlarmMsgMapper;
+    private AsAlarmMsgMapper asAlarmMsgMapper;
     @Autowired
-    AsAlarmTriggerMapper asAlarmTriggerMapper;
+    private AsAlarmTriggerMapper asAlarmTriggerMapper;
 
     @Autowired
-    AlaramJobService alaramJobService;
+    private AlaramJobService alaramJobService;
 
     @Resource
     private UidService uidService;
@@ -108,7 +143,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         }
 
-        AsAlarm asAlarm = DataConverterUtils.convert(asAlarmInfoRequest, AsAlarm.class);
+        AsAlarm asAlarm = convert(asAlarmInfoRequest, AsAlarm.class);
         if (asAlarm.getId() == null) {
             asAlarm.setId(uidService.getId());
         }
@@ -124,7 +159,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmConstantCriteria.createCriteria().andAlarmIdEqualTo(asAlarm.getId());
         asAlarmConstantMapper.deleteByExample(asAlarmConstantCriteria);
         for (AsAlarmConstantInfoRequest asAlarmConstantInfoRequest : asAlarmConstantInfoRequestList) {
-            AsAlarmConstant asAlarmConstant = DataConverterUtils.convert(asAlarmConstantInfoRequest, AsAlarmConstant.class);
+            AsAlarmConstant asAlarmConstant = convert(asAlarmConstantInfoRequest, AsAlarmConstant.class);
             if (asAlarmConstant.getId() == null) {
                 asAlarmConstant.setId(uidService.getId());
             }
@@ -142,7 +177,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmQueryCriteria.createCriteria().andAlarmIdEqualTo(asAlarm.getId());
         asAlarmQueryMapper.deleteByExample(asAlarmQueryCriteria);
         for (AsAlarmQueryInfoRequest asAlarmQueryInfoRequest : asAlarmQueryInfoRequestList) {
-            AsAlarmQuery asAlarmQuery = DataConverterUtils.convert(asAlarmQueryInfoRequest, AsAlarmQuery.class);
+            AsAlarmQuery asAlarmQuery = convert(asAlarmQueryInfoRequest, AsAlarmQuery.class);
             if (asAlarmQuery.getId() == null) {
                 asAlarmQuery.setId(uidService.getId());
             }
@@ -159,7 +194,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmVariableCriteria.createCriteria().andAlarmIdEqualTo(asAlarm.getId());
         asAlarmVariableMapper.deleteByExample(asAlarmVariableCriteria);
         for (AsAlarmVariableInfoRequest asAlarmVariableInfoRequest : asAlarmVariableInfoRequestList) {
-            AsAlarmVariable asAlarmVariable = DataConverterUtils.convert(asAlarmVariableInfoRequest, AsAlarmVariable.class);
+            AsAlarmVariable asAlarmVariable = convert(asAlarmVariableInfoRequest, AsAlarmVariable.class);
             if (asAlarmVariable.getId() == null) {
                 asAlarmVariable.setId(uidService.getId());
             }
@@ -173,7 +208,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmNotifyCriteria.createCriteria().andAlarmIdEqualTo(asAlarm.getId());
         asAlarmNotifyMapper.deleteByExample(asAlarmNotifyCriteria);
         for (AsAlarmNotifyInfoRequest asAlarmNotifyInfoRequest : asAlarmNotifyInfoRequestList) {
-            AsAlarmNotify asAlarmNotify = DataConverterUtils.convert(asAlarmNotifyInfoRequest, AsAlarmNotify.class);
+            AsAlarmNotify asAlarmNotify = convert(asAlarmNotifyInfoRequest, AsAlarmNotify.class);
             if (asAlarmNotify.getId() == null) {
                 asAlarmNotify.setId(uidService.getId());
             }
@@ -188,7 +223,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmMsgCriteria.createCriteria().andAlarmIdEqualTo(asAlarm.getId());
         asAlarmMsgMapper.deleteByExample(asAlarmMsgCriteria);
         for (AsAlarmMsgInfoRequest asAlarmMsgInfoRequest : asAlarmMsgInfoRequestList) {
-            AsAlarmMsg asAlarmMsg = DataConverterUtils.convert(asAlarmMsgInfoRequest, AsAlarmMsg.class);
+            AsAlarmMsg asAlarmMsg = convert(asAlarmMsgInfoRequest, AsAlarmMsg.class);
             if (asAlarmMsg.getId() == null) {
                 asAlarmMsg.setId(uidService.getId());
             }
@@ -202,7 +237,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmTriggerCriteria.createCriteria().andAlarmIdEqualTo(asAlarm.getId());
         asAlarmTriggerMapper.deleteByExample(asAlarmTriggerCriteria);
         for (AsAlarmTriggerInfoRequest asAlarmTriggerInfoRequest : asAlarmTriggerInfoRequestList) {
-            AsAlarmTrigger asAlarmTrigger = DataConverterUtils.convert(asAlarmTriggerInfoRequest, AsAlarmTrigger.class);
+            AsAlarmTrigger asAlarmTrigger = convert(asAlarmTriggerInfoRequest, AsAlarmTrigger.class);
             if (asAlarmTrigger.getId() == null) {
                 asAlarmTrigger.setId(uidService.getId());
             }
@@ -226,7 +261,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
 
         //预警配置表
         AsAlarm asAlarm = asAlarmMapper.selectByPrimaryKey(id);
-        AsAlarmRO asAlarmRO = DataConverterUtils.convert(asAlarm, AsAlarmRO.class);
+        AsAlarmRO asAlarmRO = convert(asAlarm, AsAlarmRO.class);
         result.setAsAlarmRO(asAlarmRO);
 
         //预警常量表
@@ -234,7 +269,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmConstantCriteria.setOrderByClause("constIndex asc,id asc");
         asAlarmConstantCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmConstant> asAlarmConstantList = asAlarmConstantMapper.selectByExample(asAlarmConstantCriteria);
-        List<AsAlarmConstantRO> asAlarmConstantROList = DataConverterUtils.convert(asAlarmConstantList, AsAlarmConstantRO.class);
+        List<AsAlarmConstantRO> asAlarmConstantROList = convert(asAlarmConstantList, AsAlarmConstantRO.class);
         result.setAsAlarmConstantROList(asAlarmConstantROList);
 
         //预警数据查询表
@@ -242,7 +277,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmQueryCriteria.setOrderByClause("queryIndex asc,id asc");
         asAlarmQueryCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmQuery> asAlarmQueryList = asAlarmQueryMapper.selectByExample(asAlarmQueryCriteria);
-        List<AsAlarmQueryRO> asAlarmQueryROList = DataConverterUtils.convert(asAlarmQueryList, AsAlarmQueryRO.class);
+        List<AsAlarmQueryRO> asAlarmQueryROList = convert(asAlarmQueryList, AsAlarmQueryRO.class);
         result.setAsAlarmQueryROList(asAlarmQueryROList);
 
         //预警变量表
@@ -250,7 +285,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmVariableCriteria.setOrderByClause("varIndex asc,id asc");
         asAlarmVariableCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmVariable> asAlarmVariableList = asAlarmVariableMapper.selectByExample(asAlarmVariableCriteria);
-        List<AsAlarmVariableRO> asAlarmVariableROList = DataConverterUtils.convert(asAlarmVariableList, AsAlarmVariableRO.class);
+        List<AsAlarmVariableRO> asAlarmVariableROList = convert(asAlarmVariableList, AsAlarmVariableRO.class);
         result.setAsAlarmVariableROList(asAlarmVariableROList);
 
         //预警通知表
@@ -258,7 +293,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmNotifyCriteria.setOrderByClause("id asc");
         asAlarmNotifyCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmNotify> asAlarmNotifyList = asAlarmNotifyMapper.selectByExample(asAlarmNotifyCriteria);
-        List<AsAlarmNotifyRO> asAlarmNotifyROList = DataConverterUtils.convert(asAlarmNotifyList, AsAlarmNotifyRO.class);
+        List<AsAlarmNotifyRO> asAlarmNotifyROList = convert(asAlarmNotifyList, AsAlarmNotifyRO.class);
         result.setAsAlarmNotifyROList(asAlarmNotifyROList);
 
         //预警消息模板表
@@ -266,7 +301,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmMsgCriteria.setOrderByClause("id asc");
         asAlarmMsgCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmMsg> asAlarmMsgList = asAlarmMsgMapper.selectByExample(asAlarmMsgCriteria);
-        List<AsAlarmMsgRO> asAlarmMsgROList = DataConverterUtils.convert(asAlarmMsgList, AsAlarmMsgRO.class);
+        List<AsAlarmMsgRO> asAlarmMsgROList = convert(asAlarmMsgList, AsAlarmMsgRO.class);
         result.setAsAlarmMsgROList(asAlarmMsgROList);
 
         //预警触发条件表
@@ -274,7 +309,7 @@ public class AsAlarmServiceImpl implements AsAlarmService {
         asAlarmTriggerCriteria.setOrderByClause("triggerIndex asc,id asc");
         asAlarmTriggerCriteria.createCriteria().andAlarmIdEqualTo(id);
         List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerMapper.selectByExample(asAlarmTriggerCriteria);
-        List<AsAlarmTriggerRO> asAlarmTriggerROList = DataConverterUtils.convert(asAlarmTriggerList, AsAlarmTriggerRO.class);
+        List<AsAlarmTriggerRO> asAlarmTriggerROList = convert(asAlarmTriggerList, AsAlarmTriggerRO.class);
         result.setAsAlarmTriggerROList(asAlarmTriggerROList);
 
         return result;

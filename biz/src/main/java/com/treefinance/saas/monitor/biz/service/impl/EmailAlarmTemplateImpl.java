@@ -12,12 +12,25 @@ import com.treefinance.saas.monitor.common.domain.dto.BaseAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.BaseStatAccessDTO;
 import com.treefinance.saas.monitor.common.domain.dto.EmailAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.domain.dto.EmailStatAccessDTO;
-import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.*;
-import com.treefinance.saas.monitor.common.enumeration.*;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
-import com.treefinance.saas.monitor.dao.entity.*;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.EmailMonitorAlarmTimeConfigDTO;
+import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.MonitorAlarmLevelConfigDTO;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmAspectType;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
+import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
+import com.treefinance.saas.monitor.common.enumeration.EStatType;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.StatisticCalcUtils;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
+import com.treefinance.saas.monitor.dao.entity.EmailStatAccess;
+import com.treefinance.saas.monitor.dao.entity.EmailStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.SaasWorker;
 import com.treefinance.saas.monitor.exception.BizException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -31,11 +44,18 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.treefinance.saas.monitor.common.constants.AlarmConstants.*;
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.ALL_EMAIL;
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.GROUP_EMAIL;
+import static com.treefinance.saas.monitor.common.constants.AlarmConstants.SWITCH_ON;
 import static java.util.stream.Collectors.groupingBy;
 
 /**
@@ -105,7 +125,7 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         for (String key : emailDataMap.keySet()) {
 
             EmailStatAccess emailStatAccess = emailDataMap.get(key).get(0);
-            EmailStatAccessDTO dataDTO = DataConverterUtils.convert(emailStatAccess, EmailStatAccessDTO.class);
+            EmailStatAccessDTO dataDTO = convertStrict(emailStatAccess, EmailStatAccessDTO.class);
 
             int entryCount = 0, startLoginCount = 0, loginSuccessCount = 0,
                     crawlSuccessCount = 0, processSuccessCount = 0, callbackSuccessCount = 0;
@@ -123,12 +143,12 @@ public class EmailAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             dataDTO.setCrawlSuccessCount(crawlSuccessCount);
             dataDTO.setProcessSuccessCount(processSuccessCount);
             dataDTO.setCallbackSuccessCount(callbackSuccessCount);
-            dataDTO.setLoginConversionRate(StatisticCalcUtil.calcRate(startLoginCount, entryCount));
-            dataDTO.setLoginSuccessRate(StatisticCalcUtil.calcRate(loginSuccessCount, startLoginCount));
-            dataDTO.setCrawlSuccessRate(StatisticCalcUtil.calcRate(crawlSuccessCount, loginSuccessCount));
-            dataDTO.setProcessSuccessRate(StatisticCalcUtil.calcRate(processSuccessCount, crawlSuccessCount));
-            dataDTO.setCallbackSuccessRate(StatisticCalcUtil.calcRate(callbackSuccessCount, processSuccessCount));
-            dataDTO.setWholeConversionRate(StatisticCalcUtil.calcRate(callbackSuccessCount, entryCount));
+            dataDTO.setLoginConversionRate(StatisticCalcUtils.calcRate(startLoginCount, entryCount));
+            dataDTO.setLoginSuccessRate(StatisticCalcUtils.calcRate(loginSuccessCount, startLoginCount));
+            dataDTO.setCrawlSuccessRate(StatisticCalcUtils.calcRate(crawlSuccessCount, loginSuccessCount));
+            dataDTO.setProcessSuccessRate(StatisticCalcUtils.calcRate(processSuccessCount, crawlSuccessCount));
+            dataDTO.setCallbackSuccessRate(StatisticCalcUtils.calcRate(callbackSuccessCount, processSuccessCount));
+            dataDTO.setWholeConversionRate(StatisticCalcUtils.calcRate(callbackSuccessCount, entryCount));
             result.add(dataDTO);
         }
         return result;

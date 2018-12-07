@@ -20,7 +20,7 @@ import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.alarm.service.message.ProducerHolder;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.enumeration.EStatType;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.entity.MerchantStatAccess;
 import com.treefinance.saas.monitor.dao.entity.SaasStatAccess;
 import org.apache.commons.lang3.StringUtils;

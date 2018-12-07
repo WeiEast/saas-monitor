@@ -2,7 +2,7 @@ package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.entity.AsStatCallback;
 import com.treefinance.saas.monitor.dao.entity.AsStatCallbackCriteria;
 import com.treefinance.saas.monitor.dao.entity.AsStatDayCallback;
@@ -32,7 +32,7 @@ import java.util.List;
  * @date 2018/3/15
  */
 @Service("callbackMsgStatAccessFacade")
-public class CallbackMsgStatAccessFacadeImpl implements CallbackMsgStatAccessFacade {
+public class CallbackMsgStatAccessFacadeImpl extends AbstractFacade implements CallbackMsgStatAccessFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(CallbackMsgStatAccessFacade.class);
 
@@ -60,7 +60,7 @@ public class CallbackMsgStatAccessFacadeImpl implements CallbackMsgStatAccessFac
                 .andDataTimeBetween(request.getStartTime(), request.getEndTime());
         List<AsStatDayCallback> list = asStatDayCallbackMapper.selectByExample(criteria);
         if (!CollectionUtils.isEmpty(list)) {
-            result = DataConverterUtils.convert(list, AsStatDayCallbackRO.class);
+            result = convert(list, AsStatDayCallbackRO.class);
         }
         return MonitorResultBuilder.build(result);
     }
@@ -83,7 +83,7 @@ public class CallbackMsgStatAccessFacadeImpl implements CallbackMsgStatAccessFac
                 .andDataTimeBetween(request.getStartTime(), request.getEndTime());
         List<AsStatCallback> list = asStatCallbackMapper.selectByExample(criteria);
         if (!CollectionUtils.isEmpty(list)) {
-            result = DataConverterUtils.convert(list, AsStatCallbackRO.class);
+            result = convert(list, AsStatCallbackRO.class);
         }
         return MonitorResultBuilder.build(result);
     }

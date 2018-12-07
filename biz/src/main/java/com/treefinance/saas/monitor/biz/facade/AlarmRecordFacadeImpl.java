@@ -15,14 +15,36 @@ import com.treefinance.saas.monitor.biz.service.AlarmWorkOrderService;
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.biz.service.WorkOrderLogService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
-import com.treefinance.saas.monitor.common.enumeration.*;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.*;
-import com.treefinance.saas.monitor.facade.domain.request.*;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
+import com.treefinance.saas.monitor.common.enumeration.EBizType;
+import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
+import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
+import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrderCriteria;
+import com.treefinance.saas.monitor.dao.entity.SaasWorker;
+import com.treefinance.saas.monitor.dao.entity.SaasWorkerCriteria;
+import com.treefinance.saas.monitor.dao.entity.WorkOrderLog;
+import com.treefinance.saas.monitor.dao.entity.WorkOrderLogCriteria;
+import com.treefinance.saas.monitor.facade.domain.request.AlarmRecordDashBoardRequest;
+import com.treefinance.saas.monitor.facade.domain.request.AlarmRecordRequest;
+import com.treefinance.saas.monitor.facade.domain.request.AlarmRecordStatRequest;
+import com.treefinance.saas.monitor.facade.domain.request.SaasWorkerRequest;
+import com.treefinance.saas.monitor.facade.domain.request.UpdateWorkOrderRequest;
+import com.treefinance.saas.monitor.facade.domain.request.WorkOrderLogRequest;
+import com.treefinance.saas.monitor.facade.domain.request.WorkOrderRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
-import com.treefinance.saas.monitor.facade.domain.ro.*;
+import com.treefinance.saas.monitor.facade.domain.ro.AlarmRecordRO;
+import com.treefinance.saas.monitor.facade.domain.ro.AlarmRecordStatisticRO;
+import com.treefinance.saas.monitor.facade.domain.ro.AlarmTypeListRO;
+import com.treefinance.saas.monitor.facade.domain.ro.AlarmWorkOrderRO;
+import com.treefinance.saas.monitor.facade.domain.ro.SaasWorkerRO;
+import com.treefinance.saas.monitor.facade.domain.ro.WorkOrderLogRO;
 import com.treefinance.saas.monitor.facade.service.AlarmRecordFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,8 +54,15 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.treefinance.saas.monitor.common.constants.AlarmConstants.TASK_SUCCESS_ALARM_OPERATOR;
@@ -43,7 +72,7 @@ import static com.treefinance.saas.monitor.common.constants.AlarmConstants.TASK_
  * @date 18/5/30 14:46
  */
 @Service("alarmRecordFacade")
-public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
+public class AlarmRecordFacadeImpl extends AbstractFacade implements AlarmRecordFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(AlarmRecordFacadeImpl.class);
     @Autowired
@@ -112,7 +141,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         List<AlarmRecord> list = alarmRecordService.queryPaginateByCondition(criteria);
 
-        List<AlarmRecordRO> alarmRecordROList = DataConverterUtils.convert(list, AlarmRecordRO.class);
+        List<AlarmRecordRO> alarmRecordROList = convert(list, AlarmRecordRO.class);
 
         for (AlarmRecordRO recordRO : alarmRecordROList) {
             recordRO.setProcessDesc(EAlarmRecordStatus.getDesc(recordRO.getIsProcessed()));
@@ -137,7 +166,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         List<SaasWorker> workers = saasWorkerService.getAllSaasWorker();
 
-        List<SaasWorkerRO> saasWorkerROS = DataConverterUtils.convert(workers, SaasWorkerRO.class);
+        List<SaasWorkerRO> saasWorkerROS = convert(workers, SaasWorkerRO.class);
 
         Date now = new Date();
 
@@ -185,7 +214,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         List<AlarmWorkOrder> list = alarmWorkOrderService.queryPaginateByCondition(criteria);
 
-        List<AlarmWorkOrderRO> alarmWorkOrderROS = DataConverterUtils.convert(list, AlarmWorkOrderRO.class);
+        List<AlarmWorkOrderRO> alarmWorkOrderROS = convert(list, AlarmWorkOrderRO.class);
 
         alarmWorkOrderROS.forEach(alarmWorkOrderRO -> alarmWorkOrderRO.setStatusDesc(EOrderStatus.getDesc(alarmWorkOrderRO.getStatus())));
 
@@ -365,7 +394,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         List<WorkOrderLog> workOrderLogs = workOrderLogService.queryByCondition(criteria);
 
-        List<WorkOrderLogRO> workOrderLogROs = DataConverterUtils.convert(workOrderLogs, WorkOrderLogRO.class);
+        List<WorkOrderLogRO> workOrderLogROs = convert(workOrderLogs, WorkOrderLogRO.class);
 
 
         for (WorkOrderLogRO logRO : workOrderLogROs) {
@@ -388,7 +417,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
 
         List<SaasWorker> saasWorkers = saasWorkerService.queryPaginateByCondition(criteria);
 
-        List<SaasWorkerRO> saasWorkerROS = DataConverterUtils.convert(saasWorkers, SaasWorkerRO.class);
+        List<SaasWorkerRO> saasWorkerROS = convert(saasWorkers, SaasWorkerRO.class);
 
         Date now = new Date();
 
@@ -550,7 +579,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         buildCriteria(recordStatRequest, criteria);
         List<AlarmRecord> list = alarmRecordService.queryByCondition(criteria);
 
-        List<AlarmRecordRO> alarmRecordROList = DataConverterUtils.convert(list, AlarmRecordRO.class);
+        List<AlarmRecordRO> alarmRecordROList = convert(list, AlarmRecordRO.class);
         List<AlarmRecordRO> newList = Lists.newArrayList();
 
         boolean hasName = StringUtils.isNotEmpty(recordStatRequest.getName());
@@ -618,7 +647,7 @@ public class AlarmRecordFacadeImpl implements AlarmRecordFacade {
         List<AlarmRecord> list = alarmRecordService.queryTodayErrorList(bizType.name().toLowerCase(), request
                         .getStartTime(), request.getEndTime(),request.getOffset(),request.getPageSize());
 
-        List<AlarmRecordRO> alarmRecordROList = DataConverterUtils.convert(list, AlarmRecordRO.class);
+        List<AlarmRecordRO> alarmRecordROList = convert(list, AlarmRecordRO.class);
 
         for (AlarmRecordRO recordRO : alarmRecordROList) {
             recordRO.setProcessDesc(EAlarmRecordStatus.getDesc(recordRO.getIsProcessed()));

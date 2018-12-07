@@ -12,9 +12,8 @@ import com.treefinance.saas.monitor.biz.service.AsAlarmTriggerService;
 import com.treefinance.saas.monitor.biz.service.SaasWorkerService;
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
-import com.treefinance.saas.monitor.common.utils.BeanUtils;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.entity.AsAlarm;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmConstant;
 import com.treefinance.saas.monitor.dao.entity.AsAlarmMsg;
@@ -45,11 +44,13 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +58,7 @@ import java.util.stream.Collectors;
  * @date:Created in 2018/7/19上午11:30
  */
 @Service("alarmBasicConfigurationFacade")
-public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfigurationFacade {
+public class AlarmBasicConfigurationFacadeImpl extends AbstractFacade implements AlarmBasicConfigurationFacade {
     private static final Logger logger = LoggerFactory.getLogger(AlarmBasicConfigurationFacade.class);
 
     @Autowired
@@ -122,15 +123,18 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         List<AlarmExecuteLogRO> list = new ArrayList<>();
         if (asAlarmTriggerRecordList.size() != 0) {
             List<AsAlarmTrigger> asAlarmTriggerList = asAlarmTriggerService.getAsAlarmTriggerByPrimaryKey(conditionIds);
-            Map<Long, AsAlarmTrigger> asAlarmTriggerMap = asAlarmTriggerList.stream().collect(Collectors.toMap(AsAlarmTrigger::getId, AsAlarmTrigger -> AsAlarmTrigger));
+            Map<Long, AsAlarmTrigger> asAlarmTriggerMap = asAlarmTriggerList.stream().collect(Collectors.toMap(AsAlarmTrigger::getId, Function.identity()));
 
             for (AsAlarmTriggerRecord asAlarmTriggerRecord : asAlarmTriggerRecordList) {
                 AlarmExecuteLogRO alarmExecuteLogRO = new AlarmExecuteLogRO();
-                BeanUtils.copyProperties(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()), alarmExecuteLogRO);
-                BeanUtils.copyProperties(asAlarm, alarmExecuteLogRO);
-                BeanUtils.copyProperties(asAlarmTriggerRecord, alarmExecuteLogRO);
-                alarmExecuteLogRO.setConditionName(asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId()).getName());
-                alarmExecuteLogRO.setCostTime(new BigDecimal(asAlarmTriggerRecord.getCostTime()).divide(new BigDecimal(1000)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                AsAlarmTrigger alarmTrigger = asAlarmTriggerMap.get(asAlarmTriggerRecord.getConditionId());
+                copy(alarmTrigger, alarmExecuteLogRO);
+                copy(asAlarm, alarmExecuteLogRO);
+                copy(asAlarmTriggerRecord, alarmExecuteLogRO);
+                alarmExecuteLogRO.setConditionName(alarmTrigger.getName());
+                double costTime =
+                    new BigDecimal(asAlarmTriggerRecord.getCostTime()).divide(new BigDecimal("1000"), RoundingMode.HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                alarmExecuteLogRO.setCostTime(costTime);
                 list.add(alarmExecuteLogRO);
             }
         }
@@ -155,7 +159,7 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
             return MonitorResultBuilder.pageResult(request, Collections.emptyList(), 0);
         }
 
-        List<AsAlarmRO> returnList = DataConverterUtils.convert(list, AsAlarmRO.class);
+        List<AsAlarmRO> returnList = convert(list, AsAlarmRO.class);
 
         for (AsAlarmRO asAlarmRO : returnList) {
             ESaasEnv env = ESaasEnv.getByValue(asAlarmRO.getRunEnv());
@@ -174,9 +178,11 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         List<SaasWorker> saasWorkerList = saasWorkerService.getNowDateWorker(date);
         List<SaasWorkerRO> list = new ArrayList<>();
         for (SaasWorker saasWorker : saasWorkerList) {
-            SaasWorkerRO saasWorkerRO = new SaasWorkerRO();
-            BeanUtils.copyProperties(saasWorker, saasWorkerRO);
-            list.add(saasWorkerRO);
+            if (saasWorker != null) {
+                SaasWorkerRO saasWorkerRO = new SaasWorkerRO();
+                copyProperties(saasWorker, saasWorkerRO);
+                list.add(saasWorkerRO);
+            }
         }
         return MonitorResultBuilder.build(list);
     }
@@ -215,33 +221,33 @@ public class AlarmBasicConfigurationFacadeImpl implements AlarmBasicConfiguratio
         String testCode = request.getTestCode();
         AlarmConfig alarmConfig = new AlarmConfig();
 
-        AsAlarm alarm = DataConverterUtils.convert(request.getAsAlarmInfoRequest(), AsAlarm.class);
+        AsAlarm alarm = convert(request.getAsAlarmInfoRequest(), AsAlarm.class);
         alarmConfig.setAlarm(alarm);
 
         List<AsAlarmConstant> alarmConstantList
-                = DataConverterUtils.convert(request.getAsAlarmConstantInfoRequestList(), AsAlarmConstant.class);
+            = convert(request.getAsAlarmConstantInfoRequestList(), AsAlarmConstant.class);
         alarmConfig.setAlarmConstants(alarmConstantList);
 
         List<AsAlarmQuery> alarmQueryList
-                = DataConverterUtils.convert(request.getAsAlarmQueryInfoRequestList(), AsAlarmQuery.class);
+            = convert(request.getAsAlarmQueryInfoRequestList(), AsAlarmQuery.class);
         alarmConfig.setAlarmQueries(alarmQueryList);
 
         List<AsAlarmVariable> alarmVariableList
-                = DataConverterUtils.convert(request.getAsAlarmVariableInfoRequestList(), AsAlarmVariable.class);
+            = convert(request.getAsAlarmVariableInfoRequestList(), AsAlarmVariable.class);
         alarmConfig.setAlarmVariables(alarmVariableList);
 
         List<AsAlarmNotify> alarmNotifyList
-                = DataConverterUtils.convert(request.getAsAlarmNotifyInfoRequestList(), AsAlarmNotify.class);
+            = convert(request.getAsAlarmNotifyInfoRequestList(), AsAlarmNotify.class);
         alarmConfig.setAlarmNotifies(alarmNotifyList);
 
-        List<AsAlarmMsg> alarmNotifyMsgList = DataConverterUtils.convert(request.getAsAlarmNotifyMsgInfoRequestList(), AsAlarmMsg.class);
+        List<AsAlarmMsg> alarmNotifyMsgList = convert(request.getAsAlarmNotifyMsgInfoRequestList(), AsAlarmMsg.class);
         alarmConfig.setAlarmMsgs(alarmNotifyMsgList);
 
-        List<AsAlarmMsg> alarmRecoveryMsgList = DataConverterUtils.convert(request.getAsAlarmRecoveryMsgInfoRequestList(), AsAlarmMsg.class);
+        List<AsAlarmMsg> alarmRecoveryMsgList = convert(request.getAsAlarmRecoveryMsgInfoRequestList(), AsAlarmMsg.class);
         alarmConfig.setRecoverMsgs(alarmRecoveryMsgList);
 
         List<AsAlarmTrigger> alarmTriggerList
-                = DataConverterUtils.convert(request.getAsAlarmTriggerInfoRequestList(), AsAlarmTrigger.class);
+            = convert(request.getAsAlarmTriggerInfoRequestList(), AsAlarmTrigger.class);
         alarmConfig.setAlarmTriggers(alarmTriggerList);
 
         AlarmContext alarmContext = null;

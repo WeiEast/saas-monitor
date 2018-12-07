@@ -35,12 +35,9 @@ public interface AlarmConstants {
 
     Integer GROUP_OPERATOR = 2;
 
-
-
     String OPERATOR_ALARM = "operator_alarm";
     String EMAIL_ALARM = "email_alarm";
     String TASK_SUCCESS_ALARM_OPERATOR = "task_success_alarm:OPERATOR";
     String TASK_SUCCESS_ALARM_ECOMMERCE = "task_success_alarm:ECOMMERCE";
-
 
 }

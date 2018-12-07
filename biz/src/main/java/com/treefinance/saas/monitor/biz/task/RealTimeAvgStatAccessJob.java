@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.task;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.treefinance.saas.monitor.biz.service.RealTimeAvgStatAccessService;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,8 +3,8 @@ package com.treefinance.saas.monitor.biz.facade;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceTimeShareDTO;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.ecommerce.EcommerceDetailAccessDao;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatDayAccess;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 
 @Service("ecommerceStatDivisionAccessFacade")
-public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivisionAccessFacade {
+public class EcommerceStatDivisionAccessFacadeImpl extends AbstractFacade implements EcommerceStatDivisionAccessFacade {
 
     private final static Logger logger = LoggerFactory.getLogger(EcommerceStatDivisionAccessFacadeImpl.class);
 
@@ -58,7 +58,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
         logger.info("查询电商日监控分时统计数据,输入参数request={}", JSON.toJSONString(request));
 
         List<EcommerceAllDetailRO> result = new ArrayList<>();
-        EcommerceTimeShareDTO ecommerceTimeShareDTO = DataConverterUtils.convert(request, EcommerceTimeShareDTO.class);
+        EcommerceTimeShareDTO ecommerceTimeShareDTO = convert(request, EcommerceTimeShareDTO.class);
         List<EcommerceAllStatAccess> allStatAccessList = ecommerceDetailAccessDao.getEcommerceAllDetailList(ecommerceTimeShareDTO);
 
         if (CollectionUtils.isEmpty(allStatAccessList)) {
@@ -70,7 +70,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
 
         for (EcommerceAllStatAccess ecommerceAllStatAccess : changeList) {
 
-            EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatAccess, EcommerceAllDetailRO.class);
+            EcommerceAllDetailRO ecommerceAllDetailRO = convert(ecommerceAllStatAccess, EcommerceAllDetailRO.class);
             ecommerceAllDetailRO.setOneClickLoginConversionRate(calcRate(ecommerceAllStatAccess.getEntryCount(), ecommerceAllStatAccess.getOneClickLoginCount()));
             ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatAccess.getOneClickLoginCount(), ecommerceAllStatAccess.getStartLoginCount()));
             ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatAccess.getStartLoginCount(), ecommerceAllStatAccess.getLoginSuccessCount()));
@@ -143,7 +143,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
         logger.info("查询电商日监控整体统计数据,输入参数request={}", JSON.toJSONString(request));
 
         List<EcommerceAllDetailRO> result = new ArrayList<>();
-        EcommerceTimeShareDTO ecommerceTimeShareDTO = DataConverterUtils.convert(request, EcommerceTimeShareDTO.class);
+        EcommerceTimeShareDTO ecommerceTimeShareDTO = convert(request, EcommerceTimeShareDTO.class);
 
         long total = ecommerceDetailAccessDao.countByExample(ecommerceTimeShareDTO);
         if (total > 0) {
@@ -152,7 +152,7 @@ public class EcommerceStatDivisionAccessFacadeImpl implements EcommerceStatDivis
 
             for (EcommerceAllStatDayAccess ecommerceAllStatDayAccess : allStatAccessList) {
 
-                EcommerceAllDetailRO ecommerceAllDetailRO = DataConverterUtils.convert(ecommerceAllStatDayAccess, EcommerceAllDetailRO.class);
+                EcommerceAllDetailRO ecommerceAllDetailRO = convert(ecommerceAllStatDayAccess, EcommerceAllDetailRO.class);
                 ecommerceAllDetailRO.setOneClickLoginConversionRate(calcRate(ecommerceAllStatDayAccess.getEntryCount(), ecommerceAllStatDayAccess.getOneClickLoginCount()));
                 ecommerceAllDetailRO.setLoginConversionRate(calcRate(ecommerceAllStatDayAccess.getOneClickLoginCount(), ecommerceAllStatDayAccess.getStartLoginCount()));
                 ecommerceAllDetailRO.setLoginSuccessRate(calcRate(ecommerceAllStatDayAccess.getStartLoginCount(), ecommerceAllStatDayAccess.getLoginSuccessCount()));

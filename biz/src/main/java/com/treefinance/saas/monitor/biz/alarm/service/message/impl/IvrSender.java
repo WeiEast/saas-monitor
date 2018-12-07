@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.alarm.service.message.impl;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.b2b.saas.util.DataUtils;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.alarm.model.AlarmMessage;
 import com.treefinance.saas.monitor.biz.alarm.service.message.MessageSender;
@@ -10,9 +11,8 @@ import com.treefinance.saas.monitor.biz.alarm.service.message.MsgChannel;
 import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.common.domain.Constants;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
-import com.treefinance.saas.monitor.common.utils.AESUtils;
-import com.treefinance.saas.monitor.common.utils.HttpClientUtils;
 import com.treefinance.saas.monitor.dao.entity.SaasWorker;
+import com.treefinance.saas.monitor.util.HttpClientUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,7 @@ public class IvrSender implements MessageSender {
                 .append(saasEnvDesc)
                 .append(alaramMessage.getMessage()).toString();
         Map<String, Object> bodyMap = generateBody(alarmInfo, recivers);
-        Map<String, String> encrytBody = encrytBody(bodyMap);
+        Map<String, String> encrytBody = encryptBody(bodyMap);
         doSend(encrytBody);
         logger.info("ivr message sender : bodyMap={}, ivrconfig={}, alaramMessage={},recivers={}",
                 JSON.toJSONString(bodyMap), JSON.toJSONString(ivrConfig), JSON.toJSONString(alaramMessage), JSON.toJSONString(recivers));
@@ -153,14 +154,14 @@ public class IvrSender implements MessageSender {
      *
      * @return
      */
-    protected Map<String, String> encrytBody(Map<String, Object> bodyMap) {
+    private Map<String, String> encryptBody(Map<String, Object> bodyMap) {
         Map<String, String> encryBodyMap = Maps.newHashMap();
-        String jsonBody = JSON.toJSONString(bodyMap);
-        String key = ivrConfig.getIvrKey();
+        String jsonBody;
         try {
-            jsonBody = AESUtils.encrytDataWithBase64AsString(jsonBody, key);
+            jsonBody = DataUtils.encryptBeanAsBase64StringByAes(bodyMap, ivrConfig.getIvrKey());
         } catch (Exception e) {
-            logger.error("encry ivr message exception: jsonBody={}", jsonBody, e);
+            jsonBody = JSON.toJSONString(bodyMap);
+            logger.error("encrypt ivr message exception: jsonBody={}", jsonBody, e);
         }
         encryBodyMap.put("params", jsonBody);
         return encryBodyMap;

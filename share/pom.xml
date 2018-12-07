@@ -19,6 +19,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.treefinance.b2b.saas</groupId>
+      <artifactId>b2b-saas-context</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.treefinance.commonservice</groupId>
       <artifactId>guid-service-facade</artifactId>
     </dependency>

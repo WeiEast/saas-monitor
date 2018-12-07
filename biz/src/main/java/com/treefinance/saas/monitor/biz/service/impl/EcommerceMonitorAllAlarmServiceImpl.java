@@ -14,8 +14,8 @@ import com.treefinance.saas.monitor.common.domain.dto.EcommerceMonitorAlarmConfi
 import com.treefinance.saas.monitor.common.domain.dto.TaskStatAccessAlarmMsgDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.EcommerceAllStatAccessMapper;
@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * Created by haojiahong on 2018/1/17.
  */
 @Service
-public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllAlarmService {
+public class EcommerceMonitorAllAlarmServiceImpl extends AbstractService implements EcommerceMonitorAllAlarmService {
 
     private static final Logger logger = LoggerFactory.getLogger(EcommerceMonitorAllAlarmService.class);
 
@@ -499,7 +499,7 @@ public class EcommerceMonitorAllAlarmServiceImpl implements EcommerceMonitorAllA
             return null;
         }
         EcommerceAllStatAccess ecommerceAllStatAccess = list.get(0);
-        EcommerceAllStatAccessDTO dataDTO = DataConverterUtils.convert(ecommerceAllStatAccess, EcommerceAllStatAccessDTO.class);
+        EcommerceAllStatAccessDTO dataDTO = convertStrict(ecommerceAllStatAccess, EcommerceAllStatAccessDTO.class);
         int entryCount = 0, startLoginCount = 0, loginSuccessCount = 0,
                 crawlSuccessCount = 0, processSuccessCount = 0, callbackSuccessCount = 0;
         for (EcommerceAllStatAccess item : list) {

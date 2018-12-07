@@ -2,7 +2,7 @@ package com.treefinance.saas.monitor.dao.ecommerce.Impl;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceTimeShareDTO;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.dao.ecommerce.EcommerceDetailAccessDao;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EcommerceAllStatAccessCriteria;

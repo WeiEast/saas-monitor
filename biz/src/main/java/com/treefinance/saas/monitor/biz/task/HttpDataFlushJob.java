@@ -10,7 +10,7 @@ import com.treefinance.saas.monitor.biz.helper.RedisKeyHelper;
 import com.treefinance.saas.monitor.biz.helper.StatHelper;
 import com.treefinance.saas.monitor.biz.service.ApiStatAccessService;
 import com.treefinance.saas.monitor.share.cache.RedisDao;
-import com.treefinance.saas.monitor.common.utils.MonitorUtils;
+import com.treefinance.saas.monitor.util.SystemUtils;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiBaseStatRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiStatAccessRO;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.api.ApiStatDayAccessRO;
@@ -43,7 +43,7 @@ public class HttpDataFlushJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        if (MonitorUtils.isPreProductContext()) {
+        if (SystemUtils.isPreProductContext()) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
         }

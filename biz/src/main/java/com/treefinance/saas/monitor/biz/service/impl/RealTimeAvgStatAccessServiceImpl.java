@@ -8,8 +8,8 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.service.RealTimeAvgStatAccessService;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.domain.dto.RealTimeStatAccessDTO;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.RealTimeStatAccess;
 import com.treefinance.saas.monitor.dao.entity.RealTimeStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.RealTimeStatAccessMapper;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * @date 2018/6/27
  */
 @Service
-public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessService {
+public class RealTimeAvgStatAccessServiceImpl extends AbstractService implements RealTimeAvgStatAccessService {
 
     private static final Logger logger = LoggerFactory.getLogger(RealTimeAvgStatAccessService.class);
 
@@ -263,7 +263,10 @@ public class RealTimeAvgStatAccessServiceImpl implements RealTimeAvgStatAccessSe
     private List<RealTimeStatAccessDTO> convertStatData(List<RealTimeStatAccess> list) {
         List<RealTimeStatAccessDTO> result = Lists.newArrayList();
         for (RealTimeStatAccess realTimeStatAccess : list) {
-            RealTimeStatAccessDTO realTimeStatAccessDTO = DataConverterUtils.convert(realTimeStatAccess, RealTimeStatAccessDTO.class);
+            RealTimeStatAccessDTO realTimeStatAccessDTO = convert(realTimeStatAccess, RealTimeStatAccessDTO.class);
+            if (realTimeStatAccessDTO == null) {
+                continue;
+            }
             if (StringUtils.isNotBlank(realTimeStatAccess.getStatData())) {
                 Map<String, Integer> statDataMap = JSON.parseObject(realTimeStatAccess.getStatData(), new TypeReference<Map<String, Integer>>() {
                 });

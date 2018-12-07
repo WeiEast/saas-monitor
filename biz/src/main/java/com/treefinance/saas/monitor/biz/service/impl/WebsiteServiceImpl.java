@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.service.impl;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.service.WebsiteService;
 import com.treefinance.saas.monitor.common.domain.dto.WebsiteDTO;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.Website;
 import com.treefinance.saas.monitor.dao.entity.WebsiteCriteria;
 import com.treefinance.saas.monitor.dao.mapper.WebsiteMapper;
@@ -18,7 +18,7 @@ import java.util.List;
  * Created by yh-treefinance on 2017/6/8.
  */
 @Service("websiteService")
-public class WebsiteServiceImpl implements WebsiteService {
+public class WebsiteServiceImpl extends AbstractService implements WebsiteService {
     @Autowired
     private WebsiteMapper websiteMapper;
 
@@ -33,7 +33,7 @@ public class WebsiteServiceImpl implements WebsiteService {
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
-        return DataConverterUtils.convert(list.get(0), WebsiteDTO.class);
+        return convert(list.get(0), WebsiteDTO.class);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class WebsiteServiceImpl implements WebsiteService {
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
-        return DataConverterUtils.convert(list, WebsiteDTO.class);
+        return convert(list, WebsiteDTO.class);
     }
 
     @Override
@@ -59,6 +59,6 @@ public class WebsiteServiceImpl implements WebsiteService {
         if (CollectionUtils.isEmpty(list)) {
             return result;
         }
-        return DataConverterUtils.convert(list, WebsiteDTO.class);
+        return convert(list, WebsiteDTO.class);
     }
 }

@@ -1,7 +1,7 @@
 package com.treefinance.saas.monitor.biz.autostat.basicdata.service.impl;
 
 import com.treefinance.saas.monitor.biz.autostat.basicdata.service.BasicDataHistoryService;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.AsBasicDataHistory;
 import com.treefinance.saas.monitor.dao.entity.AsBasicDataHistoryCriteria;
 import com.treefinance.saas.monitor.dao.mapper.AsBasicDataHistoryMapper;
@@ -17,7 +17,7 @@ import java.util.List;
  * Created by yh-treefinance on 2018/5/17.
  */
 @Component
-public class BasicDataHistoryServiceImpl implements BasicDataHistoryService {
+public class BasicDataHistoryServiceImpl extends AbstractService implements BasicDataHistoryService {
 
     @Autowired
     private AsBasicDataHistoryMapper basicDataHistoryMapper;
@@ -34,7 +34,7 @@ public class BasicDataHistoryServiceImpl implements BasicDataHistoryService {
             _criteria.andDataIdLike("%" + request.getDataId().concat("%"));
         }
         List<AsBasicDataHistory> list = basicDataHistoryMapper.selectPaginationByExample(criteria);
-        return DataConverterUtils.convert(list, BasicDataHistoryRO.class);
+        return convert(list, BasicDataHistoryRO.class);
     }
 
     @Override

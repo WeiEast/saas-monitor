@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.common.utils;
+package com.treefinance.saas.monitor.context;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -12,17 +12,13 @@ import org.springframework.stereotype.Component;
  * @date 2018/3/30
  */
 @Component
-public class SpringIocUtils implements ApplicationContextAware {
+public class SpringUtils implements ApplicationContextAware {
 
     private static ApplicationContext applicationContext;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        SpringIocUtils.applicationContext = applicationContext;
-    }
-
-    public static ApplicationContext getApplicationContext() {
-        return applicationContext;
+        SpringUtils.applicationContext = applicationContext;
     }
 
     /**

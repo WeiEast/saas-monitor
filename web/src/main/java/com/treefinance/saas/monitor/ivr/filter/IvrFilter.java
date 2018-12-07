@@ -2,10 +2,10 @@ package com.treefinance.saas.monitor.ivr.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
+import com.treefinance.b2b.saas.util.AesUtils;
 import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.Constants;
-import com.treefinance.saas.monitor.common.utils.AESUtils;
 import com.treefinance.saas.monitor.ivr.utils.WrapUtils;
 import com.treefinance.toolkit.util.http.servlet.ServletRequests;
 import com.treefinance.toolkit.util.http.servlet.ServletResponses;
@@ -44,8 +44,8 @@ public class IvrFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         long start = System.currentTimeMillis();
         String token = request.getHeader(Constants.TOKEN);
-        Map inputMap = Maps.newHashMap(request.getParameterMap());
-        String params = null;
+        Map<String, Object> inputMap = Maps.newHashMap(request.getParameterMap());
+        String params;
         try {
             // 1.验证token
             logger.info("{} request for {} : headers={}", request.getMethod(), request.getRequestURL(), JSON.toJSONString(request.getHeaderNames()));
@@ -61,7 +61,7 @@ public class IvrFilter extends OncePerRequestFilter {
                 Map<String, Object> jsonMap = WrapUtils.toJsonMap(jsonBody);
                 params = (String) jsonMap.get(Constants.PARAMS);
                 if (StringUtils.isNotEmpty(params)) {
-                    params = AESUtils.decrytDataWithBase64AsString(params, diamondConfig.getIvrAccessKey());
+                    params = AesUtils.decryptWithBase64AsString(params, diamondConfig.getIvrAccessKey());
                     // 合并加解密前后数据
                     Map<String, Object> paramsMap = WrapUtils.toJsonMap(params);
                     if (MapUtils.isNotEmpty(paramsMap)) {

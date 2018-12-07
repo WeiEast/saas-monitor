@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.common.exceptions;
+package com.treefinance.saas.monitor.exception;
 
 /**
  * 请求失败异常

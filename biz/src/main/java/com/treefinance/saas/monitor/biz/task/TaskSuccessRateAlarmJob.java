@@ -9,8 +9,8 @@ import com.treefinance.saas.monitor.biz.service.newmonitor.task.TaskSuccessRateA
 import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.TaskSuccessRateAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EBizType;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.SystemUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class TaskSuccessRateAlarmJob implements SimpleJob {
         if (!diamondConfig.isOldAlarmAllSwitchOn()) {
             return;
         }
-        if (MonitorUtils.isPreProductContext()) {
+        if (SystemUtils.isPreProductContext()) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
         }

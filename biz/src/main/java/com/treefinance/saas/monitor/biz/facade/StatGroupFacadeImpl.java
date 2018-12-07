@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.facade;
 import com.alibaba.fastjson.JSON;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatGroupService;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.entity.StatGroup;
 import com.treefinance.saas.monitor.facade.domain.base.BaseRequest;
 import com.treefinance.saas.monitor.facade.domain.request.StatGroupRequest;
@@ -29,7 +29,7 @@ import java.util.Set;
  * @date:Created in 2018/4/26下午8:16
  */
 @Service("statGroupFacade")
-public class StatGroupFacadeImpl implements StatGroupFacade {
+public class StatGroupFacadeImpl extends AbstractFacade implements StatGroupFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(StatGroupFacade.class);
 
@@ -51,7 +51,7 @@ public class StatGroupFacadeImpl implements StatGroupFacade {
             logger.error("查不到统计分组");
             return MonitorResultBuilder.build(System.currentTimeMillis(), "查不到统计分组", null);
         }
-        List<StatGroupRO> statTemplateROList = DataConverterUtils.convert(statGroupList, StatGroupRO.class);
+        List<StatGroupRO> statTemplateROList = convert(statGroupList, StatGroupRO.class);
         return new MonitorResult<>(statTemplateROList);
 
     }

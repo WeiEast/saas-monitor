@@ -10,8 +10,8 @@ import com.treefinance.saas.monitor.common.constants.AlarmConstants;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.SystemUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,7 @@ public class OperatorMonitorAlarmJob implements SimpleJob {
         if (!diamondConfig.isOldAlarmAllSwitchOn()) {
             return;
         }
-        if (MonitorUtils.isPreProductContext()) {
+        if (SystemUtils.isPreProductContext()) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
         }

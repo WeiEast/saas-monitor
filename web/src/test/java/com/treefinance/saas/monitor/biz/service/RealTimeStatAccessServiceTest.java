@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.service;
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
 import com.treefinance.saas.monitor.common.domain.dto.RealTimeStatAccessDTO;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

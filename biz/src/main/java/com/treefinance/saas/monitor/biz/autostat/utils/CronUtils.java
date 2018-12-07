@@ -1,6 +1,6 @@
 package com.treefinance.saas.monitor.biz.autostat.utils;
 
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.quartz.CronExpression;
 

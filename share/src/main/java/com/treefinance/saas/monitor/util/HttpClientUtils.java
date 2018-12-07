@@ -1,10 +1,9 @@
-package com.treefinance.saas.monitor.common.utils;
+package com.treefinance.saas.monitor.util;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.treefinance.saas.monitor.common.exceptions.RequestFailedException;
+import com.treefinance.saas.monitor.exception.RequestFailedException;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;

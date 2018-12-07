@@ -8,7 +8,7 @@ import com.treefinance.saas.monitor.biz.autostat.AutoStatService;
 import com.treefinance.saas.monitor.biz.autostat.mybatis.MybatisService;
 import com.treefinance.saas.monitor.biz.autostat.template.calc.calculator.DefaultStatDataCalculator;
 import com.treefinance.saas.monitor.share.cache.RedisDao;
-import com.treefinance.saas.monitor.common.utils.SpringIocUtils;
+import com.treefinance.saas.monitor.context.SpringUtils;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import com.treefinance.saas.monitor.dao.mapper.StatTemplateMapper;
 import org.apache.commons.collections.CollectionUtils;
@@ -92,7 +92,7 @@ public class MonitorAutoStatTest {
         private Long expire;
 
         RedisKeyTask(String lockKey, Long expire) {
-            this.redisDao = (RedisDao) SpringIocUtils.getBean("redisDaoImpl");
+            this.redisDao = (RedisDao) SpringUtils.getBean("redisDaoImpl");
             this.lockKey = lockKey;
             this.expire = expire;
         }
@@ -170,7 +170,7 @@ public class MonitorAutoStatTest {
         private DefaultStatDataCalculator defaultStatDataCalculator;
 
         public TestDataStatDataCalculatorTask() {
-            this.defaultStatDataCalculator = (DefaultStatDataCalculator) SpringIocUtils.getBean("defaultStatDataCalculator");
+            this.defaultStatDataCalculator = (DefaultStatDataCalculator) SpringUtils.getBean("defaultStatDataCalculator");
         }
 
         @Override
@@ -227,7 +227,7 @@ public class MonitorAutoStatTest {
         private DefaultStatDataCalculator defaultStatDataCalculator;
 
         public TestDataStatTask() {
-            this.defaultStatDataCalculator = (DefaultStatDataCalculator) SpringIocUtils.getBean("defaultStatDataCalculator");
+            this.defaultStatDataCalculator = (DefaultStatDataCalculator) SpringUtils.getBean("defaultStatDataCalculator");
         }
 
         @Override
@@ -274,7 +274,7 @@ public class MonitorAutoStatTest {
         private RedisDao redisDao;
 
         public MultiTestTask() {
-            this.redisDao = (RedisDao) SpringIocUtils.getBean("redisDaoImpl");
+            this.redisDao = (RedisDao) SpringUtils.getBean("redisDaoImpl");
         }
 
         @Override
@@ -314,7 +314,7 @@ public class MonitorAutoStatTest {
         private RedisDao redisDao;
 
         public MultiSleepTestTask() {
-            this.redisDao = (RedisDao) SpringIocUtils.getBean("redisDaoImpl");
+            this.redisDao = (RedisDao) SpringUtils.getBean("redisDaoImpl");
         }
 
         @Override

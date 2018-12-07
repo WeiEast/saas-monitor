@@ -12,7 +12,7 @@ import com.treefinance.saas.monitor.biz.service.TaskExistMonitorAlarmService;
 import com.treefinance.saas.monitor.share.cache.RedisDao;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoSuccessTaskConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.TaskExistAlarmNoTaskConfigDTO;
-import com.treefinance.saas.monitor.common.utils.MonitorUtils;
+import com.treefinance.saas.monitor.util.SystemUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class NoTaskAlarmJob implements SimpleJob {
         if (!diamondConfig.isOldAlarmAllSwitchOn()) {
             return;
         }
-        if (MonitorUtils.isPreProductContext()) {
+        if (SystemUtils.isPreProductContext()) {
             logger.info("定时任务,预发布环境暂不执行");
             return;
         }

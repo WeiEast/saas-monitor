@@ -14,6 +14,10 @@
 			<groupId>com.treefinance.b2b.saas</groupId>
 			<artifactId>b2b-saas-context</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.treefinance.b2b.saas</groupId>
+			<artifactId>b2b-saas-utils</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
@@ -23,11 +27,6 @@
 		<dependency>
 			<groupId>com.github.diamond</groupId>
 			<artifactId>super-diamond-client</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.treefinance.toolkit</groupId>
-			<artifactId>toolkit</artifactId>
 		</dependency>
 	</dependencies>
 

@@ -4,9 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorStatAccessDTO;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.*;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
+import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccess;
+import com.treefinance.saas.monitor.dao.entity.OperatorAllStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.OperatorAllStatDayAccess;
+import com.treefinance.saas.monitor.dao.entity.OperatorAllStatDayAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatDayAccess;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatDayAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.OperatorAllStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorAllStatDayAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
@@ -43,7 +50,7 @@ import java.util.stream.Collectors;
  * @date 2017/11/1
  */
 @Service("operatorStatAccessFacade")
-public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
+public class OperatorStatAccessFacadeImpl extends AbstractFacade implements OperatorStatAccessFacade {
 
     private final static Logger logger = LoggerFactory.getLogger(OperatorStatAccessFacade.class);
 
@@ -71,7 +78,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         criteria.createCriteria().andDataTimeEqualTo(request.getDataDate()).andDataTypeEqualTo(request.getStatType());
         List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectByExample(criteria);
         if (!CollectionUtils.isEmpty(list)) {
-            result = DataConverterUtils.convert(list, OperatorStatDayAccessRO.class);
+            result = convert(list, OperatorStatDayAccessRO.class);
         }
         logger.info("查询各个运营商日监控统计数据(不分页),返回结果result={}", JSON.toJSONString(result));
         return MonitorResultBuilder.build(result);
@@ -104,7 +111,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         if (total > 0) {
             List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectPaginationByExample(criteria);
             for (OperatorStatDayAccess data : list) {
-                OperatorStatDayAccessRO ro = DataConverterUtils.convert(data, OperatorStatDayAccessRO.class);
+                OperatorStatDayAccessRO ro = convert(data, OperatorStatDayAccessRO.class);
                 ro.setLoginConversionRate(calcRate(data.getConfirmMobileCount(), data.getStartLoginCount()));
                 ro.setLoginSuccessRate(calcRate(data.getStartLoginCount(), data.getLoginSuccessCount()));
                 ro.setCrawlSuccessRate(calcRate(data.getLoginSuccessCount(), data.getCrawlSuccessCount()));
@@ -209,7 +216,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
             pageList = changeList.subList(request.getOffset(), limit);
         }
         for (OperatorStatAccessDTO data : pageList) {
-            OperatorStatAccessRO ro = DataConverterUtils.convert(data, OperatorStatAccessRO.class);
+            OperatorStatAccessRO ro = convert(data, OperatorStatAccessRO.class);
             ro.setAverage(getAverageWholeConversion(request, ro.getGroupCode()));
             result.add(ro);
         }
@@ -327,7 +334,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         if (total > 0) {
             List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectPaginationByExample(criteria);
             for (OperatorStatDayAccess data : list) {
-                OperatorStatDayAccessRO ro = DataConverterUtils.convert(data, OperatorStatDayAccessRO.class);
+                OperatorStatDayAccessRO ro = convert(data, OperatorStatDayAccessRO.class);
                 ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
                 ro.setLoginConversionRate(calcRate(data.getConfirmMobileCount(), data.getStartLoginCount()));
                 ro.setLoginSuccessRate(calcRate(data.getStartLoginCount(), data.getLoginSuccessCount()));
@@ -364,7 +371,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         }
         List<OperatorStatAccessDTO> changeList = this.changeIntervalDataTimeOperatorStatAccess(list, request.getIntervalMins());
         for (OperatorStatAccessDTO data : changeList) {
-            OperatorStatAccessRO ro = DataConverterUtils.convert(data, OperatorStatAccessRO.class);
+            OperatorStatAccessRO ro = convert(data, OperatorStatAccessRO.class);
             ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
             result.add(ro);
         }
@@ -432,7 +439,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
 
         List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectByExample(criteria);
         if (!CollectionUtils.isEmpty(list)) {
-            result = DataConverterUtils.convert(list, OperatorAllStatDayAccessRO.class);
+            result = convert(list, OperatorAllStatDayAccessRO.class);
         }
         logger.info("查询所有运营商日监控统计数据,输出结果result={}", JSON.toJSONString(result));
         return MonitorResultBuilder.build(result);
@@ -462,7 +469,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         if (total > 0) {
             List<OperatorStatDayAccess> list = operatorStatDayAccessMapper.selectPaginationByExample(criteria);
             for (OperatorStatDayAccess data : list) {
-                OperatorAllStatDayAccessRO ro = DataConverterUtils.convert(data, OperatorAllStatDayAccessRO.class);
+                OperatorAllStatDayAccessRO ro = convert(data, OperatorAllStatDayAccessRO.class);
                 ro.setWholeConversionRate(calcRate(data.getEntryCount(), data.getCallbackSuccessCount()));
                 ro.setConfirmMobileConversionRate(calcRate(data.getEntryCount(), data.getConfirmMobileCount()));
                 ro.setLoginConversionRate(calcRate(data.getConfirmMobileCount(), data.getStartLoginCount()));
@@ -502,7 +509,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         List<OperatorStatAccessDTO> changeList = this.changeIntervalDataTimeOperatorAllStatAccess(list, request.getIntervalMins());
         changeList = changeList.stream().sorted((o1, o2) -> o2.getDataTime().compareTo(o1.getDataTime())).collect(Collectors.toList());
         for (OperatorStatAccessDTO data : changeList) {
-            OperatorAllStatAccessRO ro = DataConverterUtils.convert(data, OperatorAllStatAccessRO.class);
+            OperatorAllStatAccessRO ro = convert(data, OperatorAllStatAccessRO.class);
             ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
             ro.setWholeConversionRate(calcRate(data.getEntryCount(), data.getCallbackSuccessCount()));
             result.add(ro);
@@ -536,7 +543,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         }
         for (OperatorStatAccess data : list) {
             data.setDataTime(MonitorDateUtils.getIntervalDateTime(data.getDataTime(), request.getIntervalMins()));
-            OperatorStatAccessRO ro = DataConverterUtils.convert(data, OperatorStatAccessRO.class);
+            OperatorStatAccessRO ro = convert(data, OperatorStatAccessRO.class);
             ro.setTaskUserRatio(calcRatio(data.getUserCount(), data.getTaskCount()));
             result.add(ro);
         }
@@ -639,7 +646,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         for (List<OperatorAllStatAccess> parts : partLists) {
             List<OperatorStatAccess> resultList = Lists.newArrayList();
             for (OperatorAllStatAccess operatorAllStatAccess : parts) {
-                OperatorStatAccess operatorStatAccess = DataConverterUtils.convert(operatorAllStatAccess, OperatorStatAccess.class);
+                OperatorStatAccess operatorStatAccess = convert(operatorAllStatAccess, OperatorStatAccess.class);
                 operatorStatAccess.setGroupCode(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
                 operatorStatAccess.setGroupName(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR_NAME);
                 operatorStatAccess.setSaasEnv((byte) 0);
@@ -659,7 +666,7 @@ public class OperatorStatAccessFacadeImpl implements OperatorStatAccessFacade {
         for (List<OperatorAllStatDayAccess> parts : dayPartLists) {
             List<OperatorStatDayAccess> resultList = Lists.newArrayList();
             for (OperatorAllStatDayAccess operatorAllStatDayAccess : parts) {
-                OperatorStatDayAccess operatorStatAccess = DataConverterUtils.convert(operatorAllStatDayAccess, OperatorStatDayAccess.class);
+                OperatorStatDayAccess operatorStatAccess = convert(operatorAllStatDayAccess, OperatorStatDayAccess.class);
                 operatorStatAccess.setGroupCode(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR);
                 operatorStatAccess.setGroupName(MonitorConstants.VIRTUAL_TOTAL_STAT_OPERATOR_NAME);
                 operatorStatAccess.setSaasEnv((byte) 0);

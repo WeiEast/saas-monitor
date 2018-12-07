@@ -6,7 +6,7 @@ import com.treefinance.saas.monitor.biz.service.OperatorService;
 import com.treefinance.saas.monitor.biz.service.WebsiteService;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorDTO;
 import com.treefinance.saas.monitor.common.domain.dto.WebsiteDTO;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.Operator;
 import com.treefinance.saas.monitor.dao.entity.OperatorCriteria;
 import com.treefinance.saas.monitor.dao.mapper.OperatorMapper;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Created by yh-treefinance on 2017/6/8.
  */
 @Service("operatorService")
-public class OperatorServiceImpl implements OperatorService {
+public class OperatorServiceImpl extends AbstractService implements OperatorService {
     @Autowired
     private OperatorMapper operatorMapper;
     @Autowired
@@ -37,7 +37,7 @@ public class OperatorServiceImpl implements OperatorService {
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
-        return DataConverterUtils.convert(list, OperatorDTO.class);
+        return convert(list, OperatorDTO.class);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class OperatorServiceImpl implements OperatorService {
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
-        return DataConverterUtils.convert(list.get(0), OperatorDTO.class);
+        return convert(list.get(0), OperatorDTO.class);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class OperatorServiceImpl implements OperatorService {
         for (Map.Entry<String, Integer> entry : websiteNameIdMap.entrySet()) {
             OperatorDTO operatorDTO = operatorDTOMap.get(entry.getValue());
             if (operatorDTO != null) {
-                OperatorRO operatorRO = DataConverterUtils.convert(operatorDTO, OperatorRO.class);
+                OperatorRO operatorRO = convert(operatorDTO, OperatorRO.class);
                 resultMap.put(entry.getKey(), operatorRO);
             }
         }
@@ -89,6 +89,6 @@ public class OperatorServiceImpl implements OperatorService {
         if (CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }
-        return DataConverterUtils.convert(list, OperatorDTO.class);
+        return convert(list, OperatorDTO.class);
     }
 }

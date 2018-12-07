@@ -3,8 +3,7 @@ package com.treefinance.saas.monitor.biz.facade;
 import com.alibaba.fastjson.JSON;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.service.BasicDataService;
-import com.treefinance.saas.monitor.common.utils.BeanUtils;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.entity.BasicData;
 import com.treefinance.saas.monitor.facade.domain.base.BaseRequest;
 import com.treefinance.saas.monitor.facade.domain.base.PageRequest;
@@ -20,21 +19,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Date;
 import java.util.List;
 
 /**
  * @author:guoguoyun
  * @date:Created in 2018/4/23下午5:29
  */
-@Service("basicDataFacade") public class BasicDataFacadeImpl implements BasicDataFacade {
+@Service("basicDataFacade")
+public class BasicDataFacadeImpl extends AbstractFacade implements BasicDataFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(BasicDataFacade.class);
 
-    @Autowired private BasicDataService basicDataService;
-    @Autowired private UidService uidService;
+    @Autowired
+    private BasicDataService basicDataService;
+    @Autowired
+    private UidService uidService;
 
-    @Override public MonitorResult<List<BasicDataRO>> queryAllBasicData(PageRequest pageRequest) {
+    @Override
+    public MonitorResult<List<BasicDataRO>> queryAllBasicData(PageRequest pageRequest) {
 
         logger.info("查询所有的基础数据，传入的分页数据为:{}", JSON.toJSONString(pageRequest));
 
@@ -43,7 +45,7 @@ import java.util.List;
             logger.error("查不到基础数据");
             return MonitorResultBuilder.build(System.currentTimeMillis(), "查询不到基础数据", null);
         }
-        List<BasicDataRO> dataROList = DataConverterUtils.convert(dataList, BasicDataRO.class);
+        List<BasicDataRO> dataROList = convert(dataList, BasicDataRO.class);
         long totalCount = basicDataService.countBasicData(pageRequest);
         MonitorResult<List<BasicDataRO>> result = MonitorResultBuilder.pageResult(pageRequest, dataROList, totalCount);
         logger.info("返回查询基础数据的result为{}", JSON.toJSONString(result));
@@ -51,9 +53,9 @@ import java.util.List;
 
     }
 
-    @Override public MonitorResult<Boolean> addBasicData(BasicDataRequest basicDataRequest) {
-        if (basicDataRequest.getDataCode() == null || basicDataRequest.getDataJson() == null
-            || basicDataRequest.getDataName() == null || basicDataRequest.getDataSource() == null
+    @Override
+    public MonitorResult<Boolean> addBasicData(BasicDataRequest basicDataRequest) {
+        if (basicDataRequest.getDataCode() == null || basicDataRequest.getDataJson() == null || basicDataRequest.getDataName() == null || basicDataRequest.getDataSource() == null
             || basicDataRequest.getDataSourceConfigJson() == null) {
             logger.error("新增基础数据，请求参数不能为空:{}", JSON.toJSONString(basicDataRequest));
             throw new ParamCheckerException("请求参数非法");
@@ -61,16 +63,16 @@ import java.util.List;
         logger.info("新增一个基础数据，传入的基础数据为{}", JSON.toJSONString(basicDataRequest));
         long id = uidService.getId();
         BasicData basicData = new BasicData();
-        BeanUtils.convert(basicDataRequest, basicData);
+        copyProperties(basicDataRequest, basicData);
 
         basicData.setId(id);
         basicDataService.addBasicData(basicData);
         return new MonitorResult<>(true);
     }
 
-    @Override public MonitorResult<Boolean> updateBasicData(BasicDataRequest basicDataRequest) {
-        if (basicDataRequest.getDataCode() == null || basicDataRequest.getDataJson() == null
-            || basicDataRequest.getDataName() == null || basicDataRequest.getDataSource() == null
+    @Override
+    public MonitorResult<Boolean> updateBasicData(BasicDataRequest basicDataRequest) {
+        if (basicDataRequest.getDataCode() == null || basicDataRequest.getDataJson() == null || basicDataRequest.getDataName() == null || basicDataRequest.getDataSource() == null
             || basicDataRequest.getDataSourceConfigJson() == null) {
             logger.error("更新基础数据，请求参数不能为空{}", JSON.toJSONString(basicDataRequest));
             throw new ParamCheckerException("请求参数非法");
@@ -89,7 +91,8 @@ import java.util.List;
         return new MonitorResult<>(true);
     }
 
-    @Override public MonitorResult<List<String>> queryAllDataName(BaseRequest baseRequest) {
+    @Override
+    public MonitorResult<List<String>> queryAllDataName(BaseRequest baseRequest) {
 
         List<String> dataList = basicDataService.queryAllDataName();
         if (CollectionUtils.isEmpty(dataList)) {
@@ -102,7 +105,8 @@ import java.util.List;
 
     }
 
-    @Override public MonitorResult<BasicDataRO> getBasicDataById(BasicDataRequest basicDataRequest) {
+    @Override
+    public MonitorResult<BasicDataRO> getBasicDataById(BasicDataRequest basicDataRequest) {
 
         logger.info("根据ID查询对应的基础数据名字，传入的ID为{}", basicDataRequest.getId());
         BasicData basicData = basicDataService.getBasicDatayId(basicDataRequest.getId());
@@ -110,7 +114,7 @@ import java.util.List;
             logger.error("查不到基础数据");
             return MonitorResultBuilder.build(System.currentTimeMillis(), "查询不到基础数据", null);
         }
-        BasicDataRO basicDataRO = DataConverterUtils.convert(basicData, BasicDataRO.class);
+        BasicDataRO basicDataRO = convert(basicData, BasicDataRO.class);
         MonitorResult<BasicDataRO> monitorResult = MonitorResultBuilder.build(basicDataRO);
         logger.info("返回查询基础数据的result为{}", JSON.toJSONString(monitorResult));
         return monitorResult;

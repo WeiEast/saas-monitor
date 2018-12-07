@@ -3,7 +3,7 @@ package com.treefinance.saas.monitor.biz.facade;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.biz.service.OperatorService;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorDTO;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.OperatorRO;
@@ -19,14 +19,14 @@ import java.util.Map;
  * Created by yh-treefinance on 2017/6/12.
  */
 @Service("operatorFacade")
-public class OperatorFacadeImpl implements OperatorFacade {
+public class OperatorFacadeImpl extends AbstractFacade implements OperatorFacade {
     @Autowired
     private OperatorService operatorService;
 
     @Override
     public MonitorResult<List<OperatorRO>> queryAll() {
         List<OperatorDTO> list = operatorService.getAll();
-        List<OperatorRO> dataList = DataConverterUtils.convert(list, OperatorRO.class);
+        List<OperatorRO> dataList = convert(list, OperatorRO.class);
         return MonitorResultBuilder.build(dataList);
     }
 

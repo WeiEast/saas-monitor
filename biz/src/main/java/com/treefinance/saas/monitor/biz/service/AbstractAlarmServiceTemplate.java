@@ -18,8 +18,9 @@ import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.enumeration.EOrderStatus;
 import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
 import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.common.utils.SpringIocUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.context.SpringUtils;
+import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
 import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
 import com.treefinance.saas.monitor.dao.entity.AlarmWorkOrder;
@@ -54,7 +55,7 @@ import java.util.stream.Collectors;
  * @date 18/3/12 11:20
  */
 @Service
-public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmService {
+public abstract class AbstractAlarmServiceTemplate extends AbstractService implements MonitorAlarmService {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractAlarmServiceTemplate.class);
 
@@ -281,7 +282,7 @@ public abstract class AbstractAlarmServiceTemplate implements MonitorAlarmServic
 
     public static WorkOrderLog getInitWorkOrderLog(Date now, Long recordId, Long orderId) {
         WorkOrderLog orderLog = new WorkOrderLog();
-        orderLog.setId(SpringIocUtils.getBean(UidService.class).getId());
+        orderLog.setId(SpringUtils.getBean(UidService.class).getId());
         orderLog.setOrderId(orderId);
         orderLog.setRecordId(recordId);
         orderLog.setOpName("system");

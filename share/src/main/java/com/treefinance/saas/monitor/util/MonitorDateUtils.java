@@ -1,4 +1,4 @@
-package com.treefinance.saas.monitor.common.utils;
+package com.treefinance.saas.monitor.util;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.time.DateFormatUtils;

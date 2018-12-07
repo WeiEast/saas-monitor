@@ -2,11 +2,8 @@ package com.treefinance.saas.monitor.biz.facade;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.commonservice.uid.UidService;
-import com.treefinance.saas.monitor.biz.autostat.template.calc.ExpressionCalculator;
-import com.treefinance.saas.monitor.biz.autostat.template.calc.StatDataCalculator;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatTemplateService;
-import com.treefinance.saas.monitor.common.utils.BeanUtils;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import com.treefinance.saas.monitor.facade.domain.request.StatTemplateRequest;
 import com.treefinance.saas.monitor.facade.domain.request.autostat.TemplateExpressionTestRequest;
@@ -22,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -30,7 +26,7 @@ import java.util.List;
  * @date:Created in 2018/4/25下午4:09
  */
 @Service("statTemplateFacade")
-public class StatTemplateFacadeImpl implements StatTemplateFacade {
+public class StatTemplateFacadeImpl extends AbstractFacade implements StatTemplateFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(StatTemplateFacade.class);
 
@@ -48,7 +44,7 @@ public class StatTemplateFacadeImpl implements StatTemplateFacade {
             logger.error("查不到模板数据");
             return MonitorResultBuilder.build(System.currentTimeMillis(), "查询不到模板数据", null);
         }
-        List<StatTemplateRO> statTemplateROS = DataConverterUtils.convert(statTemplateList, StatTemplateRO.class);
+        List<StatTemplateRO> statTemplateROS = convert(statTemplateList, StatTemplateRO.class);
         long totalCount = statTemplateService.countStatTemplate(templateStatRequest);
         MonitorResult<List<StatTemplateRO>> monitorResult = MonitorResultBuilder.pageResult(templateStatRequest, statTemplateROS, totalCount);
         logger.info("返回查询模板数据的result为{}", JSON.toJSONString(monitorResult));
@@ -65,7 +61,7 @@ public class StatTemplateFacadeImpl implements StatTemplateFacade {
         logger.info("新增一个模板数据，传入的模板数据为{}", JSON.toJSONString(templateStatRequest));
         long id = uidService.getId();
         StatTemplate statTemplate = new StatTemplate();
-        BeanUtils.convert(templateStatRequest, statTemplate);
+        copyProperties(templateStatRequest, statTemplate);
         statTemplate.setId(id);
         statTemplateService.addStatTemplate(statTemplate);
         return new MonitorResult<>(true);
@@ -80,7 +76,7 @@ public class StatTemplateFacadeImpl implements StatTemplateFacade {
         logger.info("更新模板数据，传入的模板数据为{}", JSON.toJSONString(templateStatRequest));
 
         StatTemplate statTemplate = new StatTemplate();
-        BeanUtils.copyProperties(templateStatRequest, statTemplate);
+        copyProperties(templateStatRequest, statTemplate);
         statTemplateService.updateStatTemplate(statTemplate);
         return new MonitorResult<>(true);
     }

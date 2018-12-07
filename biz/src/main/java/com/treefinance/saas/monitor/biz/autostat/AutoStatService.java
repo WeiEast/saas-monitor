@@ -18,14 +18,12 @@ import com.treefinance.saas.monitor.biz.autostat.template.parser.StatTemplatePar
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatTemplateService;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
 import com.treefinance.saas.monitor.common.domain.dto.StatTemplateDTO;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.BasicData;
 import com.treefinance.saas.monitor.dao.entity.StatTemplate;
 import com.treefinance.saas.monitor.dao.mapper.AsBasicDataHistoryMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,11 +40,7 @@ import java.util.stream.Collectors;
  * Created by yh-treefinance on 2018/1/29.
  */
 @Component
-public class AutoStatService implements InitializingBean, SimpleJob, ApplicationContextAware {
-    /**
-     * logger
-     */
-    private Logger logger = LoggerFactory.getLogger(getClass());
+public class AutoStatService extends AbstractService implements InitializingBean, SimpleJob, ApplicationContextAware {
     @Autowired
     private StatTemplateService statTemplateService;
     @Autowired
@@ -216,7 +210,7 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
     public List<StatTemplate> getNeedUpdateStatTemplates() {
         //刷新模板任务有问题,先将模板缓存,未发生变化的模板无需刷新
         List<StatTemplate> statTemplates = statTemplateService.queryAll();
-        List<StatTemplateDTO> statTemplateDTOs = DataConverterUtils.convert(statTemplates, StatTemplateDTO.class);
+        List<StatTemplateDTO> statTemplateDTOs = convert(statTemplates, StatTemplateDTO.class);
 
         String templateKey = AsConstants.REDIS_AUTO_STAT_TEMPLATE_KEY;
         String statTemplateStr = redisTemplate.opsForValue().get(templateKey);
@@ -234,13 +228,13 @@ public class AutoStatService implements InitializingBean, SimpleJob, Application
 
         for (StatTemplateDTO statTemplate : statTemplateDTOs) {
             StatTemplateDTO oldStatTemplate = oldStatTemplateMap.get(statTemplate.getTemplateCode());
-            if (oldStatTemplate == null || !statTemplate.equals(oldStatTemplate)) {
+            if (!statTemplate.equals(oldStatTemplate)) {
                 changedStatTemplateDTOs.add(statTemplate);
             }
         }
         if (CollectionUtils.isNotEmpty(changedStatTemplateDTOs)) {
             redisTemplate.opsForValue().set(templateKey, JSON.toJSONString(statTemplateDTOs));
-            result = DataConverterUtils.convert(changedStatTemplateDTOs, StatTemplate.class);
+            result = convert(changedStatTemplateDTOs, StatTemplate.class);
         }
         return result;
     }

@@ -5,7 +5,7 @@ import com.treefinance.saas.monitor.biz.service.EcommerceService;
 import com.treefinance.saas.monitor.biz.service.WebsiteService;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceDTO;
 import com.treefinance.saas.monitor.common.domain.dto.WebsiteDTO;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractService;
 import com.treefinance.saas.monitor.dao.entity.Ecommerce;
 import com.treefinance.saas.monitor.dao.entity.EcommerceCriteria;
 import com.treefinance.saas.monitor.dao.mapper.EcommerceMapper;
@@ -21,7 +21,7 @@ import java.util.List;
  * Created by yh-treefinance on 2017/6/8.
  */
 @Service("ecommerceService")
-public class EcommerceServiceImpl implements EcommerceService {
+public class EcommerceServiceImpl extends AbstractService implements EcommerceService {
     /**
      * logger
      */
@@ -43,7 +43,7 @@ public class EcommerceServiceImpl implements EcommerceService {
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
-        return DataConverterUtils.convert(list.get(0), EcommerceDTO.class);
+        return convert(list.get(0), EcommerceDTO.class);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class EcommerceServiceImpl implements EcommerceService {
             logger.error("电商列表为空...");
             return null;
         }
-        return DataConverterUtils.convert(list, EcommerceDTO.class);
+        return convert(list, EcommerceDTO.class);
     }
 
     @Override
@@ -67,6 +67,6 @@ public class EcommerceServiceImpl implements EcommerceService {
         EcommerceCriteria ecommerceCriteria = new EcommerceCriteria();
         ecommerceCriteria.createCriteria().andWebsiteIdIn(websiteIds);
         List<Ecommerce> ecommerceList = ecommerceMapper.selectByExample(ecommerceCriteria);
-        return DataConverterUtils.convert(ecommerceList, EcommerceDTO.class);
+        return convert(ecommerceList, EcommerceDTO.class);
     }
 }

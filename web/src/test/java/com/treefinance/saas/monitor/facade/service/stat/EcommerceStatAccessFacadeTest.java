@@ -2,7 +2,7 @@ package com.treefinance.saas.monitor.facade.service.stat;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.monitor.app.SaasMonitorApplication;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
 import com.treefinance.saas.monitor.facade.domain.request.EcommerceDetailAccessRequest;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.ro.stat.ecommerce.EcommerceAllDetailRO;

@@ -17,11 +17,21 @@ import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.BaseAlarmConfi
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.MonitorAlarmLevelConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorAlarmTimeConfigDTO;
 import com.treefinance.saas.monitor.common.domain.dto.alarmconfig.OperatorMonitorAlarmConfigDTO;
-import com.treefinance.saas.monitor.common.enumeration.*;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
-import com.treefinance.saas.monitor.dao.entity.*;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmAspectType;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmChannel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmRecordStatus;
+import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
+import com.treefinance.saas.monitor.common.enumeration.ESaasEnv;
+import com.treefinance.saas.monitor.common.enumeration.EStatType;
+import com.treefinance.saas.monitor.common.enumeration.ETaskStatDataType;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.util.StatisticCalcUtils;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecord;
+import com.treefinance.saas.monitor.dao.entity.AlarmRecordCriteria;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.SaasWorker;
 import com.treefinance.saas.monitor.exception.BizException;
 import com.treefinance.saas.monitor.exception.NoNeedAlarmException;
 import org.apache.commons.collections.CollectionUtils;
@@ -36,7 +46,11 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -124,7 +138,7 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
         Map<String, List<OperatorStatAccess>> groupCodeDataMap = list.stream().collect(groupingBy(OperatorStatAccess::getGroupCode));
         for (Map.Entry<String, List<OperatorStatAccess>> entry : groupCodeDataMap.entrySet()) {
             OperatorStatAccess data = entry.getValue().get(0);
-            OperatorStatAccessDTO dataDTO = DataConverterUtils.convert(data, OperatorStatAccessDTO.class);
+            OperatorStatAccessDTO dataDTO = convert(data, OperatorStatAccessDTO.class);
             List<OperatorStatAccess> valueList = entry.getValue();
             int entryCount = 0, confirmMobileCount = 0, startLoginCount = 0, loginSuccessCount = 0,
                     crawlSuccessCount = 0, processSuccessCount = 0, callbackSuccessCount = 0;
@@ -144,13 +158,13 @@ public class OperatorAlarmTemplateImpl extends AbstractAlarmServiceTemplate {
             dataDTO.setCrawlSuccessCount(crawlSuccessCount);
             dataDTO.setProcessSuccessCount(processSuccessCount);
             dataDTO.setCallbackSuccessCount(callbackSuccessCount);
-            dataDTO.setConfirmMobileConversionRate(StatisticCalcUtil.calcRate(confirmMobileCount, entryCount));
-            dataDTO.setLoginConversionRate(StatisticCalcUtil.calcRate(startLoginCount, confirmMobileCount));
-            dataDTO.setLoginSuccessRate(StatisticCalcUtil.calcRate(loginSuccessCount, startLoginCount));
-            dataDTO.setCrawlSuccessRate(StatisticCalcUtil.calcRate(crawlSuccessCount, loginSuccessCount));
-            dataDTO.setProcessSuccessRate(StatisticCalcUtil.calcRate(processSuccessCount, crawlSuccessCount));
-            dataDTO.setCallbackSuccessRate(StatisticCalcUtil.calcRate(callbackSuccessCount, processSuccessCount));
-            dataDTO.setWholeConversionRate(StatisticCalcUtil.calcRate(callbackSuccessCount, entryCount));
+            dataDTO.setConfirmMobileConversionRate(StatisticCalcUtils.calcRate(confirmMobileCount, entryCount));
+            dataDTO.setLoginConversionRate(StatisticCalcUtils.calcRate(startLoginCount, confirmMobileCount));
+            dataDTO.setLoginSuccessRate(StatisticCalcUtils.calcRate(loginSuccessCount, startLoginCount));
+            dataDTO.setCrawlSuccessRate(StatisticCalcUtils.calcRate(crawlSuccessCount, loginSuccessCount));
+            dataDTO.setProcessSuccessRate(StatisticCalcUtils.calcRate(processSuccessCount, crawlSuccessCount));
+            dataDTO.setCallbackSuccessRate(StatisticCalcUtils.calcRate(callbackSuccessCount, processSuccessCount));
+            dataDTO.setWholeConversionRate(StatisticCalcUtils.calcRate(callbackSuccessCount, entryCount));
             dataDTOList.add(dataDTO);
         }
 

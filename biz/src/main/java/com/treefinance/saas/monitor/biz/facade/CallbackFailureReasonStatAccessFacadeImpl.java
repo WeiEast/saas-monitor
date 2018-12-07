@@ -5,9 +5,16 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.monitor.common.constants.MonitorConstants;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.common.utils.MonitorDateUtils;
-import com.treefinance.saas.monitor.dao.entity.*;
+import com.treefinance.saas.monitor.util.MonitorDateUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
+import com.treefinance.saas.monitor.dao.entity.CallbackFailureReasonStatAccess;
+import com.treefinance.saas.monitor.dao.entity.CallbackFailureReasonStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.CallbackFailureReasonStatDayAccess;
+import com.treefinance.saas.monitor.dao.entity.CallbackFailureReasonStatDayAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatAccess;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatAccessCriteria;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatDayAccess;
+import com.treefinance.saas.monitor.dao.entity.OperatorStatDayAccessCriteria;
 import com.treefinance.saas.monitor.dao.mapper.CallbackFailureReasonStatAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.CallbackFailureReasonStatDayAccessMapper;
 import com.treefinance.saas.monitor.dao.mapper.OperatorStatAccessMapper;
@@ -39,7 +46,7 @@ import java.util.stream.Collectors;
  * @date 2018/6/12
  */
 @Component("callbackFailureReasonStatAccessFacade")
-public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailureReasonStatAccessFacade {
+public class CallbackFailureReasonStatAccessFacadeImpl extends AbstractFacade implements CallbackFailureReasonStatAccessFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(CallbackFailureReasonStatAccessFacade.class);
 
@@ -107,7 +114,7 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
                 operatorMap.put(key, operator);
             }
             if (!CollectionUtils.isEmpty(list)) {
-                result = DataConverterUtils.convert(list, CallbackFailureReasonStatDayAccessRO.class);
+                result = convert(list, CallbackFailureReasonStatDayAccessRO.class);
             }
             List<CallbackFailureReasonStatDayAccessRO> countResult = Lists.newArrayList();
             for (CallbackFailureReasonStatDayAccessRO resultData : result) {
@@ -131,7 +138,7 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
             return MonitorResultBuilder.build(countResult);
         } else {
             if (!CollectionUtils.isEmpty(list)) {
-                result = DataConverterUtils.convert(list, CallbackFailureReasonStatDayAccessRO.class);
+                result = convert(list, CallbackFailureReasonStatDayAccessRO.class);
             }
             return MonitorResultBuilder.build(result);
         }
@@ -194,7 +201,7 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
                 operatorMap.put(key, operator);
             }
             if (!CollectionUtils.isEmpty(changeList)) {
-                result = DataConverterUtils.convert(changeList, CallbackFailureReasonStatAccessRO.class);
+                result = convert(changeList, CallbackFailureReasonStatAccessRO.class);
             }
             List<CallbackFailureReasonStatAccessRO> countResult = Lists.newArrayList();
             for (CallbackFailureReasonStatAccessRO resultData : result) {
@@ -218,7 +225,7 @@ public class CallbackFailureReasonStatAccessFacadeImpl implements CallbackFailur
             return MonitorResultBuilder.build(countResult);
         } else {
             if (!CollectionUtils.isEmpty(changeList)) {
-                result = DataConverterUtils.convert(changeList, CallbackFailureReasonStatAccessRO.class);
+                result = convert(changeList, CallbackFailureReasonStatAccessRO.class);
             }
             return MonitorResultBuilder.build(result);
         }

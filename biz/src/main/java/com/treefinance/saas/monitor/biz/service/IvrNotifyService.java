@@ -3,6 +3,7 @@ package com.treefinance.saas.monitor.biz.service;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.b2b.saas.util.DataUtils;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.config.IvrConfig;
 import com.treefinance.saas.monitor.common.domain.Constants;
@@ -10,8 +11,7 @@ import com.treefinance.saas.monitor.common.domain.dto.IvrContactsDTO;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmLevel;
 import com.treefinance.saas.monitor.common.enumeration.EAlarmType;
 import com.treefinance.saas.monitor.common.result.IvrCallBackResult;
-import com.treefinance.saas.monitor.common.utils.AESUtils;
-import com.treefinance.saas.monitor.common.utils.HttpClientUtils;
+import com.treefinance.saas.monitor.util.HttpClientUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -27,6 +27,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.Date;
@@ -48,8 +49,6 @@ public class IvrNotifyService {
 
     @Autowired
     private IvrConfig ivrConfig;
-
-
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -127,21 +126,17 @@ public class IvrNotifyService {
     private void initMessageAndSend(List<IvrContactsDTO> contactsDTOS, String alarmInfo, String modelId, Map<String, Object> placeHolder) {
         Map<String, Object> jsonMap = initMessageBody(alarmInfo, contactsDTOS,modelId, placeHolder);
         // 4.加密参数
-        Map<String, String> paramsMessage = encrytMessageBody(jsonMap);
+        Map<String, String> paramsMessage = encryptMessageBody(jsonMap);
         // 5.发送请求
         sendMessage(paramsMessage);
     }
-
-
-
-
 
     /**
      * 获取匹配的通知人
      *
      * @return
      */
-    public List<IvrContactsDTO> getDutyContacts() {
+    private List<IvrContactsDTO> getDutyContacts() {
         // 获取联系人心
         String contacts = ivrConfig.getContacts();
         List<IvrContactsDTO> contactsDTOS = JSON.parseArray(contacts, IvrContactsDTO.class);
@@ -193,13 +188,14 @@ public class IvrNotifyService {
      *
      * @return
      */
-    protected Map<String, String> encrytMessageBody(Map<String, Object> jsonMap) {
+    private Map<String, String> encryptMessageBody(Map<String, Object> jsonMap) {
         Map<String, String> paramMap = Maps.newHashMap();
-        String jsonString = JSON.toJSONString(jsonMap);
+        String jsonString;
         try {
-            jsonString = AESUtils.encrytDataWithBase64AsString(jsonString, ivrConfig.getIvrKey());
+            jsonString = DataUtils.encryptBeanAsBase64StringByAes(jsonMap, ivrConfig.getIvrKey());
         } catch (Exception e) {
-            logger.error("encry ivr message exception: json={}", jsonString, e);
+            jsonString = JSON.toJSONString(jsonMap);
+            logger.error("encrypt ivr message exception: json={}", jsonString, e);
         }
         paramMap.put("params", jsonString);
         return paramMap;
@@ -210,7 +206,8 @@ public class IvrNotifyService {
      *
      *
      */
-    protected Map<String, Object> initMessageBody(String alarmInfo, List<IvrContactsDTO> contactsDTOS, String modelId, Map<String, Object> placeholder) {
+    private Map<String, Object> initMessageBody(String alarmInfo, List<IvrContactsDTO> contactsDTOS, String modelId,
+        Map<String, Object> placeholder) {
         List<Map<String, Object>> taskItems = Lists.newArrayList();
         Long refId = uidService.getId();
 
@@ -309,8 +306,6 @@ public class IvrNotifyService {
      * 重播MQ消息
      */
     public void resendMessage(IvrCallBackResult callBackResult) {
-        Long currentCount = 0L;
-
         if (!("fail").equals(callBackResult.getStatus())) {
             logger.info("resend ivr message error : IVR状态信息为{}", JSON.toJSONString(callBackResult));
             return;
@@ -324,11 +319,11 @@ public class IvrNotifyService {
             return;
         }
         Map<String, Object> jsonMap = JSON.parseObject(message);
-        Map<String, String> paramsMap = encrytMessageBody(jsonMap);
+        Map<String, String> paramsMap = encryptMessageBody(jsonMap);
 
         // 计数判断
         String countKey = Constants.PREFIX_KEY + ":ivr-message:resend-count:" + refId;
-        currentCount = redisTemplate.opsForValue().increment(countKey, 1) - 1;
+        Long currentCount = redisTemplate.opsForValue().increment(countKey, 1) - 1;
         if (currentCount < ivrConfig.getIvrCount()) {
             sendMessage(paramsMap);
             logger.info("resend ivr message : ivrcount={}, resendcount={} , callback={}, message={}, encrytJson={}",

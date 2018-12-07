@@ -9,7 +9,7 @@ import com.google.common.collect.Lists;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilter;
 import com.treefinance.saas.monitor.biz.autostat.basicdata.filter.BasicDataFilterContext;
-import com.treefinance.saas.monitor.common.utils.SpringIocUtils;
+import com.treefinance.saas.monitor.context.SpringUtils;
 import com.treefinance.saas.monitor.dao.entity.AsBasicDataHistory;
 import com.treefinance.saas.monitor.dao.mapper.AsBasicDataHistoryMapper;
 import org.apache.commons.collections.CollectionUtils;
@@ -73,7 +73,7 @@ public class BasicDataMessageListener implements MessageListenerConcurrently {
                 basicData.setDataId(msg.getMsgId());
                 basicData.setDataTime(new Date());
                 basicData.setDataJson(dataJson);
-                basicData.setId(SpringIocUtils.getBean(UidService.class).getId());
+                basicData.setId(SpringUtils.getBean(UidService.class).getId());
                 datalist.add(basicData);
             }
             List<BasicDataFilter> filters = basicDataFilterContext.getBasicDataFilters(basicDataId);

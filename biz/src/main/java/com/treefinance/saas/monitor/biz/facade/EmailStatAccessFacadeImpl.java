@@ -3,8 +3,8 @@ package com.treefinance.saas.monitor.biz.facade;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.config.DiamondConfig;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
-import com.treefinance.saas.monitor.common.utils.StatisticCalcUtil;
+import com.treefinance.saas.monitor.util.StatisticCalcUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.entity.EmailStatAccess;
 import com.treefinance.saas.monitor.dao.entity.EmailStatAccessCriteria;
 import com.treefinance.saas.monitor.dao.entity.EmailStatDayAccess;
@@ -32,7 +32,7 @@ import java.util.List;
  * @date 18/3/15 10:34
  */
 @Service("emailStatAccessFacade")
-public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
+public class EmailStatAccessFacadeImpl extends AbstractFacade implements EmailStatAccessFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailStatAccessFacadeImpl.class);
 
@@ -67,7 +67,7 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
             return MonitorResultBuilder.pageResult(request, Collections.emptyList() ,0);
         }
 
-        List<EmailStatAccessBaseRO> result = DataConverterUtils.convert(list, EmailStatAccessBaseRO.class);
+        List<EmailStatAccessBaseRO> result = convert(list, EmailStatAccessBaseRO.class);
 
         calculateRate(result);
 
@@ -99,7 +99,7 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
             return MonitorResultBuilder.pageResult(request, Lists.newArrayList() ,0);
         }
 
-        List<EmailStatAccessBaseRO> result = DataConverterUtils.convert(list, EmailStatAccessBaseRO.class);
+        List<EmailStatAccessBaseRO> result = convert(list, EmailStatAccessBaseRO.class);
 
         calculateRate(result);
         logger.info("console请求邮箱监控日表详细数据，request={},response={}",JSON.toJSONString(request),JSON.toJSON(result));
@@ -109,14 +109,14 @@ public class EmailStatAccessFacadeImpl implements EmailStatAccessFacade {
     private void calculateRate(List<EmailStatAccessBaseRO> result) {
         for (EmailStatAccessBaseRO ro :result){
 
-            ro.setLoginConversionRate(StatisticCalcUtil.calcRate(ro.getStartLoginCount(),ro.getEntryCount()));
-            ro.setLoginSuccessRate(StatisticCalcUtil.calcRate(ro.getLoginSuccessCount(),ro.getStartLoginCount()));
-            ro.setCrawlSuccessRate(StatisticCalcUtil.calcRate(ro.getCrawlSuccessCount(),ro.getLoginSuccessCount()));
-            ro.setProcessSuccessRate(StatisticCalcUtil.calcRate(ro.getProcessSuccessCount(),ro.getCrawlSuccessCount()));
-            ro.setCallbackSuccessRate(StatisticCalcUtil.calcRate(ro.getCallbackSuccessCount(),ro.getProcessSuccessCount()));
-            ro.setWholeConversionRate(StatisticCalcUtil.calcRate(ro.getCallbackSuccessCount(),ro.getEntryCount()));
+            ro.setLoginConversionRate(StatisticCalcUtils.calcRate(ro.getStartLoginCount(), ro.getEntryCount()));
+            ro.setLoginSuccessRate(StatisticCalcUtils.calcRate(ro.getLoginSuccessCount(), ro.getStartLoginCount()));
+            ro.setCrawlSuccessRate(StatisticCalcUtils.calcRate(ro.getCrawlSuccessCount(), ro.getLoginSuccessCount()));
+            ro.setProcessSuccessRate(StatisticCalcUtils.calcRate(ro.getProcessSuccessCount(), ro.getCrawlSuccessCount()));
+            ro.setCallbackSuccessRate(StatisticCalcUtils.calcRate(ro.getCallbackSuccessCount(), ro.getProcessSuccessCount()));
+            ro.setWholeConversionRate(StatisticCalcUtils.calcRate(ro.getCallbackSuccessCount(), ro.getEntryCount()));
 
-            ro.setTaskUserRatio(StatisticCalcUtil.calcRatio(ro.getUserCount(),ro.getTaskCount()));
+            ro.setTaskUserRatio(StatisticCalcUtils.calcRatio(ro.getUserCount(), ro.getTaskCount()));
         }
     }
 

@@ -7,13 +7,11 @@ import com.treefinance.saas.monitor.biz.service.WebsiteService;
 import com.treefinance.saas.monitor.common.domain.dto.EcommerceDTO;
 import com.treefinance.saas.monitor.common.domain.dto.OperatorDTO;
 import com.treefinance.saas.monitor.common.domain.dto.WebsiteDTO;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
 import com.treefinance.saas.monitor.facade.domain.ro.WebsiteRO;
 import com.treefinance.saas.monitor.facade.service.WebsiteFacade;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -26,9 +24,7 @@ import java.util.stream.Collectors;
  * Created by haojiahong on 2017/8/15.
  */
 @Service("websiteFacade")
-public class WebsiteFacadeImpl implements WebsiteFacade {
-
-    private static final Logger logger = LoggerFactory.getLogger(WebsiteFacadeImpl.class);
+public class WebsiteFacadeImpl extends AbstractFacade implements WebsiteFacade {
 
     @Autowired
     private WebsiteService websiteService;
@@ -54,9 +50,11 @@ public class WebsiteFacadeImpl implements WebsiteFacade {
 
             if ("1".equals(entry.getKey())) {//邮箱
                 for (WebsiteDTO websiteDTO : entry.getValue()) {
-                    WebsiteRO websiteRO = DataConverterUtils.convert(websiteDTO, WebsiteRO.class);
-                    websiteRO.setWebsiteDetailName(websiteDTO.getWebsiteName());
-                    result.add(websiteRO);
+                    WebsiteRO websiteRO = convert(websiteDTO, WebsiteRO.class);
+                    if (websiteRO != null) {
+                        websiteRO.setWebsiteDetailName(websiteDTO.getWebsiteName());
+                        result.add(websiteRO);
+                    }
                 }
             }
 
@@ -67,12 +65,14 @@ public class WebsiteFacadeImpl implements WebsiteFacade {
                         .stream()
                         .collect(Collectors.toMap(OperatorDTO::getWebsiteId, operatorDTO -> operatorDTO, (key1, key2) -> key1));
                 for (WebsiteDTO websiteDTO : entry.getValue()) {
-                    WebsiteRO websiteRO = DataConverterUtils.convert(websiteDTO, WebsiteRO.class);
-                    OperatorDTO operatorDTO = operatorMap.get(websiteDTO.getId());
-                    if (operatorDTO != null) {
-                        websiteRO.setWebsiteDetailName(operatorDTO.getOperatorName());
+                    WebsiteRO websiteRO = convert(websiteDTO, WebsiteRO.class);
+                    if (websiteRO != null) {
+                        OperatorDTO operatorDTO = operatorMap.get(websiteDTO.getId());
+                        if (operatorDTO != null) {
+                            websiteRO.setWebsiteDetailName(operatorDTO.getOperatorName());
+                        }
+                        result.add(websiteRO);
                     }
-                    result.add(websiteRO);
                 }
             }
 
@@ -82,12 +82,14 @@ public class WebsiteFacadeImpl implements WebsiteFacade {
                         .stream()
                         .collect(Collectors.toMap(EcommerceDTO::getWebsiteId, ecommerceDTO -> ecommerceDTO, (key1, key2) -> key1));
                 for (WebsiteDTO websiteDTO : entry.getValue()) {
-                    WebsiteRO websiteRO = DataConverterUtils.convert(websiteDTO, WebsiteRO.class);
-                    EcommerceDTO ecommerceDTO = ecommerceMap.get(websiteDTO.getId());
-                    if (ecommerceDTO != null) {
-                        websiteRO.setWebsiteDetailName(ecommerceDTO.getEcommerceName());
+                    WebsiteRO websiteRO = convert(websiteDTO, WebsiteRO.class);
+                    if (websiteRO != null) {
+                        EcommerceDTO ecommerceDTO = ecommerceMap.get(websiteDTO.getId());
+                        if (ecommerceDTO != null) {
+                            websiteRO.setWebsiteDetailName(ecommerceDTO.getEcommerceName());
+                        }
+                        result.add(websiteRO);
                     }
-                    result.add(websiteRO);
                 }
             }
         }

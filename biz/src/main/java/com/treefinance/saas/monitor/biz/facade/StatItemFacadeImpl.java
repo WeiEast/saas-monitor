@@ -1,8 +1,7 @@
 package com.treefinance.saas.monitor.biz.facade;
 
-import com.google.common.collect.Lists;
 import com.treefinance.saas.monitor.biz.autostat.template.service.StatItemService;
-import com.treefinance.saas.monitor.common.utils.DataConverterUtils;
+import com.treefinance.saas.monitor.context.component.AbstractFacade;
 import com.treefinance.saas.monitor.dao.entity.StatItem;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResult;
 import com.treefinance.saas.monitor.facade.domain.result.MonitorResultBuilder;
@@ -19,7 +18,7 @@ import java.util.List;
  * Created by yh-treefinance on 2018/5/21.
  */
 @Service("statItemFacade")
-public class StatItemFacadeImpl implements StatItemFacade {
+public class StatItemFacadeImpl extends AbstractFacade implements StatItemFacade {
 
     @Autowired
     private StatItemService statItemService;
@@ -30,7 +29,7 @@ public class StatItemFacadeImpl implements StatItemFacade {
             throw new ParamCheckerException("模板ID不能为空");
         }
         List<StatItem> statItems = statItemService.queryByTemplateId(templateId);
-        List<StatItemRO> statItemROS = DataConverterUtils.convert(statItems, StatItemRO.class);
+        List<StatItemRO> statItemROS = convert(statItems, StatItemRO.class);
         return MonitorResultBuilder.build(statItemROS);
     }
 
@@ -54,7 +53,7 @@ public class StatItemFacadeImpl implements StatItemFacade {
         if (statItemRO.getDataSource() == null) {
             throw new ParamCheckerException("数据来源不能为空");
         }
-        StatItem statItem = DataConverterUtils.convert(statItemRO, StatItem.class);
+        StatItem statItem = convert(statItemRO, StatItem.class);
         Long id = statItemService.addStatItem(statItem);
         return MonitorResultBuilder.build(id);
     }
@@ -67,7 +66,7 @@ public class StatItemFacadeImpl implements StatItemFacade {
         if (statItemRO.getId() == null) {
             throw new ParamCheckerException("数据项ID不能为空");
         }
-        StatItem statItem = DataConverterUtils.convert(statItemRO, StatItem.class);
+        StatItem statItem = convert(statItemRO, StatItem.class);
         int result = statItemService.updateStatItem(statItem);
         return MonitorResultBuilder.build(result >= 0);
     }
