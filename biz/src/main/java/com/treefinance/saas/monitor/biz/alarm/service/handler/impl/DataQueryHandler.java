@@ -40,6 +40,7 @@ public class DataQueryHandler implements AlarmHandler {
      * logger
      */
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Pattern pattern = Pattern.compile("#\\{[^{}]+}");
 
     @Autowired
     private DataQueryMapper dataQueryMapper;
@@ -81,7 +82,6 @@ public class DataQueryHandler implements AlarmHandler {
             sql = formatSQL(sql);
             // 提取sql 语句中表达式
 //            Pattern pattern = Pattern.compile("(#\\S{1,}\\(.+\\)\\s?)|(#\\S{1,}\\s?)|(#\\{([^\\{\\}])+\\})");
-            Pattern pattern = Pattern.compile("#\\{([^\\{\\}])+\\}");
             List<String> sqlparts = pattern.splitAsStream(sql).collect(Collectors.toList());
             List<String> expressions = Lists.newArrayList();
             Matcher expressionMatcher = pattern.matcher(sql);
@@ -90,7 +90,7 @@ public class DataQueryHandler implements AlarmHandler {
             }
 
             // 拼接动态sql
-            StringBuffer sqlBf = new StringBuffer();
+            StringBuilder sqlBf = new StringBuilder();
             int size = sqlparts.size();
             Map<String, String> dynamicMap = Maps.newHashMap();
             for (int i = 0; i < size; i++) {
@@ -101,7 +101,7 @@ public class DataQueryHandler implements AlarmHandler {
                     String key = "p" + i;
                     String dynamicKey = "param." + key;
                     dynamicMap.put(key, expression);
-                    sqlBf.append("#{" + dynamicKey + "}");
+                    sqlBf.append("#{").append(dynamicKey).append("}");
                 }
             }
             // 计算sql中表达式值
@@ -138,7 +138,7 @@ public class DataQueryHandler implements AlarmHandler {
                 .replaceAll(" ", " ");
         // mysql 关键字换行
         for (String keyWord : MYSQL_KEYWORDS) {
-            if (sql.toLowerCase().indexOf(keyWord.toLowerCase()) == -1) {
+            if (!sql.toLowerCase().contains(keyWord.toLowerCase())) {
                 continue;
             }
             Pattern keyPattern = Pattern.compile("\\s+(" + keyWord + "){1}\\s+", Pattern.CASE_INSENSITIVE);
@@ -147,56 +147,4 @@ public class DataQueryHandler implements AlarmHandler {
         return sql;
     }
 
-
-    public static void main(String[] args) {
-        String sql = "select sum(total) as total,sum(success) as success" +
-                " from  ecommerce_all_stat_access " +
-                " where appId = #appId " +
-                "        and dataType= #dataType" +
-                "        and dataTime <= #sum(#alarmTime ,  #ss, #a(#d, #c)) " +
-                "and a=#s(dd)" +
-                "        and dataTime >= DATE_SUB(#alarmTime,INTERVAL #dataPointNum * #intervalTime MINUTE)  ";
-
-//        System.out.println(sql);
-//        System.out.println(SQLUtils.formatMySql(sql.replaceAll("#", "_")));
-
-        sql = "SELECT sum(userCount) as total , sum(callbackSuccessCount) from operator_stat_access\n" +
-                "WHERE\n" +
-                "  appId='virtual_total_stat_appId-1'\n" +
-                "      AND dataType=1\n" +
-                "      AND dataTime <='2018-08-06 14:50:00'\n" +
-                "      AND dataTime >=DATE_SUB('2018-08-06 14:50:00',    INTERVAL 3 *  300 MINUTE)\n" +
-                "\n" +
-                "\n";
-        System.out.println(sql.indexOf("from"));
-        // 提取sql 语句中表达式
-        sql = new DataQueryHandler().formatSQL(sql);
-        System.out.println("\n ========\n" + sql);
-
-//        Pattern pattern = Pattern.compile("(#\\S{1,}\\(.+\\)\\s?)|(#\\S{1,}\\s?)");
-//        List<String> sqlparts = pattern.splitAsStream(sql).collect(Collectors.toList());
-//        List<String> expressions = Lists.newArrayList();
-//        Matcher expressionMatcher = pattern.matcher(sql);
-//        while (expressionMatcher.find()) {
-//            expressions.add(expressionMatcher.group());
-//        }
-//
-//        StringBuffer sqlBf = new StringBuffer();
-//        int size = sqlparts.size();
-//
-//        Map<String, String> dynamicMap = Maps.newHashMap();
-//        for (int i = 0; i < size; i++) {
-//            String sqlpart = sqlparts.get(i);
-//            sqlBf.append(sqlpart);
-//            if (i < expressions.size()) {
-//                String expression = expressions.get(i);
-//                String dynamicKey = "data.p" + i;
-//                dynamicMap.put(dynamicKey, expression);
-//                sqlBf.append("${" + dynamicKey + "}");
-//            }
-//        }
-//        System.out.println("sqlparts=" + JSON.toJSONString(sqlparts));
-//        System.out.println("sql=" + sqlBf);
-//        System.out.println("dynamic=" + JSON.toJSONString(dynamicMap));
-    }
 }

@@ -217,7 +217,7 @@ public class AlarmMessageProducer {
      * @return
      */
     private String generateBody(List<MerchantStatAccess> data, EStatType type) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("您好，").append(generateTitle(type)).append("，监控数据如下，请及时处理：").append("\n");
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         List<String> appIdList = Lists.newArrayList();
@@ -427,7 +427,7 @@ public class AlarmMessageProducer {
 
 
     private String generateAllBody(List<SaasStatAccess> data, EStatType type) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("您好，").append(generateTitle(type)).append("，监控数据如下，请及时处理：").append("\n");
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         List<String> dataTimeList = Lists.newArrayList();

@@ -68,14 +68,14 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
     }
 
     private void handleLog(HttpServletRequest request, Exception ex) {
-        StringBuffer logBuffer = new StringBuffer();
-        if (request != null) {
-            logBuffer.append("request method=" + request.getMethod());
-            logBuffer.append(",url=" + request.getRequestURL());
-        }
-        if (ex != null) {
-            logBuffer.append(",exception:" + ex);
-        }
+//        StringBuilder logBuffer = new StringBuilder();
+//        if (request != null) {
+//            logBuffer.append("request method=").append(request.getMethod());
+//            logBuffer.append(",url=").append(request.getRequestURL());
+//        }
+//        if (ex != null) {
+//            logBuffer.append(",exception:").append(ex);
+//        }
 //        logger.error(logBuffer.toString(), ex);
         logger.error("{} of request url={},ip={}", request.getMethod(), request.getRequestURI(),
             ServletRequests.getIP(request), ex);
