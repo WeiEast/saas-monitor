@@ -7,3 +7,10 @@
 *.iml
 out
 gen
+biz/target/
+common/target/
+dao/target/
+facade/target/
+share/src/test/
+share/target/
+web/target/
